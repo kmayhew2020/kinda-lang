@@ -1,0 +1,21 @@
+// kinda variables
+kinda int x = 5;
+kinda int y = 10;
+
+// sorta print
+sorta print("Initial value of x:", x);
+sorta print("Initial value of y:", y);
+
+// fuzzy reassignment
+x ~= x + 2;
+sorta print("After fuzzy increment, x is now:", x);
+
+// sometimes block
+sometimes (x < y) {
+    sorta print("x is probably less than y");
+    x ~= x + 1;
+    sorta print("x was nudged up a bit:", x);
+}
+
+// end of script
+sorta print("Final value of x:", x);
