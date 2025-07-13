@@ -88,6 +88,30 @@ def write_transformed_file(input_path, transformed_code):
     output_path.write_text(transformed_code)
     return output_path
 
+def transform(input_path: Path, out_dir: Path = Path("build")):
+    """
+    Public API to transform a .knda file or directory.
+    Returns list of output paths.
+    """
+    out_dir.mkdir(parents=True, exist_ok=True)
+    output_files = []
+
+    if input_path.is_dir():
+        for file in input_path.rglob("*.knda"):
+            transformed = transform_file(file)
+            output_path = out_dir / file.with_suffix(".py").name
+            write_transformed_file(file, transformed)
+            output_files.append(output_path)
+    elif input_path.is_file():
+        transformed = transform_file(input_path)
+        output_path = out_dir / input_path.with_suffix(".py").name
+        write_transformed_file(input_path, transformed)
+        output_files.append(output_path)
+    else:
+        raise ValueError(f"{input_path} is neither a file nor a directory.")
+
+    return output_files
+
 if __name__ == "__main__":
     import argparse
     from pathlib import Path
