@@ -1,0 +1,6 @@
+kinda int x = 1;
+kinda int y = 2;
+sometimes (x < y) {
+  x ~= 10;
+  sorta print(x);
+}

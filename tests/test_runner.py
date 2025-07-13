@@ -1,22 +1,27 @@
 import subprocess
-import os
 
-def run_kinda_test(script_path):
-    full_path = os.path.abspath(script_path)
+def run_kinda_test(filepath):
     result = subprocess.run(
-        ['python3', 'interpreter.py', full_path],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True,
-        cwd=os.path.dirname(__file__) + "/.."
+        ["python", "interpreter.py", filepath, "--test"],
+        capture_output=True,
+        text=True
     )
-    print("STDOUT:\n", result.stdout)
-    print("STDERR:\n", result.stderr)
     return result.stdout + result.stderr
 
-def test_fuzzy_assignments():
-    output = run_kinda_test('tests/test_fuzzy_assignments.knda')
-    print("---- DEBUG OUTPUT ----")
-    print(output)
-    print("----------------------")
+def test_fuzzy_declaration():
+    output = run_kinda_test("tests/test_fuzzy_declaration.knda")
     assert "x ~=" in output
+    assert "[print]" in output
+
+def test_fuzzy_reassignment():
+    output = run_kinda_test("tests/test_fuzzy_reassignment.knda")
+    assert output.count("x ~=") == 2
+    assert "[print]" in output
+
+def test_sorta_print():
+    output = run_kinda_test("tests/test_sorta_print.knda")
+    assert "[print]" in output
+
+def test_sometimes_block():
+    output = run_kinda_test("tests/test_sometimes_block.knda")
+    assert "[sometimes]" in output or "[assign]" in output or "[print]" in output

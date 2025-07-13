@@ -140,7 +140,14 @@ def run_kinda_file(path):
 # ───────────────────────────────────────────────
 
 if __name__ == "__main__":
+    # Check for --test flag
+    test_mode = False
+    if "--test" in sys.argv:
+        test_mode = True
+        random.seed(42)  # ✅ Make randomness deterministic
+        sys.argv.remove("--test")  # Clean the arg list
+
     if len(sys.argv) != 2:
-        print("Usage: python interpreter.py <filename.knda>")
+        print("Usage: python interpreter.py [--test] <filename.knda>")
     else:
         run_kinda_file(sys.argv[1])
