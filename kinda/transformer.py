@@ -1,60 +1,116 @@
-import ast
-import astor  # requires `pip install astor`
+# kinda/transformer.py
+
+import re
 import sys
 from pathlib import Path
+from kinda.grammar.matchers import match_construct
+from kinda.grammar.constructs import KindaConstructs
+
+# Track which helpers to import
+used_helpers = set()
+
+def transform_line(line):
+    stripped = line.strip()
+
+    if not stripped:
+        return ""  # ignore blank lines
+
+    if stripped.startswith("//"):
+        return f"# {stripped[2:].strip()}"  # or just return "" to drop comment
+
+    key, groups = match_construct(line)
+    if not key:
+        return line  # fallback to original line
+
+    if key == "kinda int":
+        var, expr = groups
+        used_helpers.add("kinda_int")
+        return f"{var} = kinda_int('{var}', {expr})"
+
+    elif key == "~=":
+        var, expr = groups
+        used_helpers.add("kinda_int")
+        return f"{var} = kinda_int('{var}', {expr})"
+
+
+    elif key == "sorta print":
+        (expr,) = groups
+        used_helpers.add("sorta_print")
+        return f"sorta_print({expr})"
+
+    elif key == "sometimes":
+        (cond,) = groups
+        used_helpers.add("sometimes")
+        return f"if sometimes({cond}):"
+
+    return line
+
+
+def transform_file(path, target_language="python"):
+    lines = Path(path).read_text().splitlines()
+    output_lines = []
+
+    i = 0
+    while i < len(lines):
+        line = lines[i].strip()
+        if line.startswith("sometimes"):
+            block_lines = []
+            transformed = transform_line(line)
+            output_lines.append(transformed)
+            i += 1
+            while i < len(lines) and not lines[i].strip().startswith("}"):
+                block_lines.append("    " + transform_line(lines[i].strip()))
+                i += 1
+            output_lines.extend(block_lines)
+        else:
+            output_lines.append(transform_line(line))
+        i += 1
+
+    header = ""
+    if used_helpers:
+        helpers = ", ".join(sorted(used_helpers))
+        header = f"from kinda.runtime.{target_language}.fuzzy import {helpers}\n\n"
+
+    return header + "\n".join(output_lines)
 
 # ───────────────────────────────────────────────
-# 🧠 Transformer Core
+# CLI Entry Point
 # ───────────────────────────────────────────────
 
-class KindaTransformer(ast.NodeTransformer):
-    def visit_Assign(self, node):
-        # Leave assignments alone for now
-        return node
+import os
 
-    def visit_Print(self, node):
-        # Python 2 print stmt — not used
-        return node
+BUILD_DIR = "build"
 
-    def visit_Call(self, node):
-        # Replace print(...) with sorta_print(...)
-        if isinstance(node.func, ast.Name) and node.func.id == 'print':
-            node.func.id = 'sorta_print'
-        return self.generic_visit(node)
-
-# ───────────────────────────────────────────────
-# 🔄 Code Transformer
-# ───────────────────────────────────────────────
-
-def transform_file(input_path):
-    input_code = Path(input_path).read_text()
-    parsed_ast = ast.parse(input_code)
-
-    transformer = KindaTransformer()
-    transformed_ast = transformer.visit(parsed_ast)
-    ast.fix_missing_locations(transformed_ast)
-
-    transformed_code = astor.to_source(transformed_ast)
-
-    # Inject the Kinda import if used
-    if 'sorta_print' in transformed_code:
-        header = 'from kinda.runtime.fuzzy import sorta_print\n\n'
-    else:
-        header = ''
-
-    return header + transformed_code
-
-# ───────────────────────────────────────────────
-# 🚀 CLI Entry
-# ───────────────────────────────────────────────
+def write_transformed_file(input_path, transformed_code):
+    input_path = Path(input_path)
+    output_path = Path(BUILD_DIR) / input_path.with_suffix(".py").name
+    Path(BUILD_DIR).mkdir(exist_ok=True)
+    output_path.write_text(transformed_code)
+    return output_path
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print("Usage: python transformer.py <your_script.py>")
-        sys.exit(1)
+    import argparse
+    from pathlib import Path
 
-    input_path = sys.argv[1]
-    output = transform_file(input_path)
+    parser = argparse.ArgumentParser()
+    parser.add_argument("input", help="Path to .knda file or directory")
+    parser.add_argument("--out", default="build", help="Output directory")
 
-    print("🔁 Transformed Code:\n")
-    print(output)
+    args = parser.parse_args()
+    input_path = Path(args.input)
+    out_dir = Path(args.out)
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    if input_path.is_dir():
+        for file in input_path.rglob("*.knda"):
+            transformed = transform_file(file)
+            output_path = out_dir / file.with_suffix(".py").name
+            write_transformed_file(output_path, transformed)
+            print(f"✅ Transformed: {file} → {output_path}")
+    elif input_path.is_file():
+        transformed = transform_file(input_path)
+        output_path = out_dir / input_path.with_suffix(".py").name
+        write_transformed_file(output_path, transformed)
+        print(f"✅ Transformed: {input_path} → {output_path}")
+    else:
+        print(f"❌ Error: {input_path} is neither a file nor a directory.")

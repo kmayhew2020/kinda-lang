@@ -1,10 +1,13 @@
+# tests/test_runner.py
+
 import subprocess
 
 def run_kinda_test(filepath):
     result = subprocess.run(
         ["python", "-m", "kinda.interpreter", "--test", filepath],
         capture_output=True,
-        text=True
+        text=True,
+        check=True
     )
     return result.stdout + result.stderr
 
