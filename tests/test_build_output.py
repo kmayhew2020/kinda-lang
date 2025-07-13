@@ -6,7 +6,10 @@ from pathlib import Path
 
 def run_python_file(filepath):
     env = os.environ.copy()
-    env["PYTHONPATH"] = str(Path.cwd())  # Add repo root to PYTHONPATH
+    repo_root = str(Path.cwd())
+    existing_path = env.get("PYTHONPATH", "")
+    env["PYTHONPATH"] = repo_root + os.pathsep + existing_path if existing_path else repo_root
+
     result = subprocess.run(
         ["python", filepath],
         capture_output=True,

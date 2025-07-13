@@ -6,15 +6,39 @@ import pytest
 
 SRC_DIRS = ["examples", "tests"]
 BUILD_DIR = Path("build")
+RUNTIME_OUT = Path("kinda/runtime/python")
+
+
+def generate_runtime():
+    # Clean old runtime
+    if RUNTIME_OUT.exists():
+        shutil.rmtree(RUNTIME_OUT)
+    RUNTIME_OUT.mkdir(parents=True, exist_ok=True)
+
+    # Run Python codegen
+    result = subprocess.run(
+        ["python", "-m", "kinda.codegen.python", "--out", str(RUNTIME_OUT)],
+        capture_output=True,
+        text=True
+    )
+    if result.returncode != 0:
+        print("Runtime generation failed:")
+        print("STDOUT:\n", result.stdout)
+        print("STDERR:\n", result.stderr)
+        raise RuntimeError("Runtime codegen failed")
+
 
 @pytest.fixture(scope="session", autouse=True)
 def regenerate_build():
-    # Clean build/ folder first
+    # Step 1: Regenerate runtime
+    generate_runtime()
+
+    # Step 2: Clean and recreate build/ folder
     if BUILD_DIR.exists():
         shutil.rmtree(BUILD_DIR)
     BUILD_DIR.mkdir()
 
-    # Regenerate from all .knda files
+    # Step 3: Run transformer on all .knda files in each src dir
     for src_dir in SRC_DIRS:
         result = subprocess.run(
             ["python", "-m", "kinda.transformer", src_dir, "--out", str(BUILD_DIR)],
@@ -22,6 +46,7 @@ def regenerate_build():
             text=True
         )
         if result.returncode != 0:
+            print("Transformer failed:")
             print("STDOUT:\n", result.stdout)
             print("STDERR:\n", result.stderr)
             raise RuntimeError("Transformer failed during test setup")
