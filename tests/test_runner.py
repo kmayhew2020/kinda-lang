@@ -2,7 +2,7 @@ import subprocess
 
 def run_kinda_test(filepath):
     result = subprocess.run(
-        ["python", "interpreter.py", filepath, "--test"],
+        ["python", "-m", "kinda.interpreter", "--test", filepath],
         capture_output=True,
         text=True
     )
