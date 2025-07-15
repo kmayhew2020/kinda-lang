@@ -2,14 +2,14 @@
 
 import subprocess
 
-def run_kinda_test(filepath):
+def run_kinda_test(path):
     result = subprocess.run(
-        ["python", "-m", "kinda.interpreter", "--test", filepath],
+        ["python", "-m", "kinda", "interpret", path],
         capture_output=True,
         text=True,
-        check=True
+        check=True,
     )
-    return result.stdout + result.stderr
+    return result.stdout.strip()
 
 def test_fuzzy_declaration():
     output = run_kinda_test("tests/test_fuzzy_declaration.knda")

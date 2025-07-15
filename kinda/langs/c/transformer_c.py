@@ -6,6 +6,12 @@ from pathlib import Path
 from kinda.grammar.matchers import match_construct
 from kinda.grammar.constructs import KindaConstructs
 
+# NOTE: Temporary shim!
+# This transformer currently delegates to the Python transformer to enable early testing.
+# Even when `--lang c` is passed, this will produce Python output.
+# Once the C slice is implemented, replace this with actual C codegen logic.
+# Until then, tests using `--lang c` are effectively testing the Python runtime path.
+
 # Track which helpers to import
 used_helpers = set()
 

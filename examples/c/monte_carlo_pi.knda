@@ -1,0 +1,25 @@
+samples: kinda int = 10000;
+inside_circle = 0;
+
+i = 0;
+while (i < samples) {
+    x: kinda int = 0;
+    y: kinda int = 0;
+
+    // fuzzed int mod to simulate random float in [0,1]
+    x = x % 1000 / 1000;
+    y = y % 1000 / 1000;
+
+    if (sometimes((x * x + y * y) <= 1)) {
+        inside_circle = inside_circle + 1;
+    }
+
+    if (i % 1000 == 0) {
+        sorta print("At iteration: ", i);
+    }
+
+    i = i + 1;
+}
+
+pi_estimate = 4 * (inside_circle / samples);
+sorta print("Estimated Pi ≈ ", pi_estimate);

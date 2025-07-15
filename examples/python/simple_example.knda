@@ -1,0 +1,10 @@
+// simple kinda python example
+kinda int x = 5;
+sorta print(x + 2);
+
+sometimes (x > 3) {
+    sorta print("x is big!");
+}
+
+x ~= 10;
+sorta print(x);

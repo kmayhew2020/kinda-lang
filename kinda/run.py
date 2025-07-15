@@ -3,16 +3,23 @@
 import subprocess
 import os
 from pathlib import Path
-from kinda import transformer
+from kinda.langs.c import transformer_c as transformer
 
-def execute(input_path: str, out_dir: str = "build"):
+def execute(input_path, out_dir="build", transformer=None):
     """
     Transforms a .knda file and runs the resulting .py file.
     """
     input_path = Path(input_path)
     out_dir = Path(out_dir)
 
+    if transformer is None:
+        from kinda.langs.c import transformer  # default fallback
+
     output_paths = transformer.transform(input_path, out_dir=out_dir)
+    if isinstance(output_paths, list):
+        path_to_run = output_paths[0]  # just run the first for now
+    else:
+        path_to_run = output_paths
 
     if isinstance(output_paths, list):
         if len(output_paths) != 1:
