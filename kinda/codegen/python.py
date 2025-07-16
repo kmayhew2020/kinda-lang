@@ -1,5 +1,18 @@
 from pathlib import Path
-from kinda.grammar.constructs import KindaConstructs
+from kinda.grammar.python.constructs_py import KindaPythonConstructs as KindaConstructs
+
+def generate_runtime_helpers(used_keys, output_path: Path, constructs):
+    code = []
+
+    for key in sorted(used_keys):
+        construct = constructs.get(key)
+        if construct and "body" in construct:
+            code.append(construct["body"])  # ✅ grab the actual string
+
+    runtime_path = output_path / "fuzzy.py"
+    runtime_path.write_text("\n\n".join(code) + "\n")
+
+    return runtime_path
 
 
 def generate_runtime(output_dir: Path):
@@ -26,6 +39,8 @@ def generate_runtime(output_dir: Path):
         runtime_code = meta.get("runtime", {}).get("python")
         if runtime_code:
             lines.append(runtime_code + "\n")
+        elif "body" in meta:
+            lines.append(meta["body"] + "\n")
         elif meta["type"] == "print":
             lines.append(
                 "def sorta_print(*args):\n"

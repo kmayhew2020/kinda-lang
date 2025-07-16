@@ -3,7 +3,6 @@
 import subprocess
 import os
 from pathlib import Path
-from kinda.langs.c import transformer_c as transformer
 
 def execute(input_path, out_dir="build", transformer=None):
     """
@@ -13,13 +12,9 @@ def execute(input_path, out_dir="build", transformer=None):
     out_dir = Path(out_dir)
 
     if transformer is None:
-        from kinda.langs.c import transformer  # default fallback
+        raise ValueError("No transformer provided to execute(). CLI should supply one.")
 
     output_paths = transformer.transform(input_path, out_dir=out_dir)
-    if isinstance(output_paths, list):
-        path_to_run = output_paths[0]  # just run the first for now
-    else:
-        path_to_run = output_paths
 
     if isinstance(output_paths, list):
         if len(output_paths) != 1:
@@ -32,7 +27,18 @@ def execute(input_path, out_dir="build", transformer=None):
 
     # Ensure Python can find the kinda runtime
     env = os.environ.copy()
-    project_root = Path(__file__).parent.parent.resolve()
-    env["PYTHONPATH"] = str(project_root)
+
+    # Force the repo root (where kinda/ lives) into the path
+    project_root = Path(__file__).resolve().parent.parent
+    pythonpath = os.pathsep.join([
+        str(project_root),
+        env.get("PYTHONPATH", "")
+    ]).strip(os.pathsep)
+
+    env["PYTHONPATH"] = pythonpath
+
+    print(f"[debug] PYTHONPATH for subprocess: {env['PYTHONPATH']}")
+
+
 
     subprocess.run(["python", str(output_path)], env=env)

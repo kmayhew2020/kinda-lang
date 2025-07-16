@@ -8,3 +8,8 @@ sometimes (x > 3) {
 
 x ~= 10;
 sorta print(x);
+
+kinda int a
+kinda int b ~= 10
+a ~= 5
+b ~= 20

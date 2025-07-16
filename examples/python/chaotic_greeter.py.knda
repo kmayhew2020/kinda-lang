@@ -1,0 +1,19 @@
+from datetime import datetime
+
+kinda int repeat_count ~= 3
+
+name = "Kevin"
+current_hour = datetime.now().hour
+
+if current_hour < 12:
+    greeting = "Good morning"
+elif current_hour < 18:
+    greeting = "Good afternoon"
+else:
+    greeting = "Good evening"
+
+for i in range(repeat_count):
+    sorta print(f"{greeting}, {name}! This is greet #{i + 1}")
+
+sometimes:
+    sorta print("This message only shows up when the chaos gods allow it.")

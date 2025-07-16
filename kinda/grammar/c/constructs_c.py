@@ -1,9 +1,24 @@
 # kinda/grammar/constructs.py
 
 KindaConstructs = {
-    "kinda int": {
+    "kinda int decl_only": {
         "type": "declaration",
-        "pattern": r'kinda int (\w+)\s*=\s*(.+);',
+        "pattern": r'kinda int (\w+);',
+        "description": "Fuzzy integer declaration without assignment",
+        "runtime": {
+            "python": (
+                "def kinda_int(name):\n"
+                "    import random\n"
+                "    noisy = random.randint(0, 10)\n"
+                "    globals()[name] = noisy\n"
+                "    print(f\"[assign] {name} ~= {noisy}\")\n"
+                "    return noisy"
+            )
+        }
+    },
+    "kinda int with_assign": {
+        "type": "declaration",
+        "pattern": r'kinda int (\w+)\s*~=\s*(.+);',
         "description": "Fuzzy integer declaration with noise",
         "runtime": {
             "python": (
@@ -21,15 +36,26 @@ KindaConstructs = {
         "pattern": r'(\w+)\s*~=\s*(.+);',
         "description": "Fuzzy reassignment",
         "runtime": {
-            "python": "def fuzzy_assign(name, value):\n    import random\n    noisy = value + random.randint(-2, 2)\n    globals()[name] = noisy\n    print(f\"[assign] {name} ~= {noisy}\")"
+            "python": (
+                "def fuzzy_assign(name, value):\n"
+                "    import random\n"
+                "    noisy = value + random.randint(-2, 2)\n"
+                "    globals()[name] = noisy\n"
+                "    print(f\"[assign] {name} ~= {noisy}\")"
+            )
         }
     },
-        "sorta print": {
+    "sorta print": {
         "type": "print",
         "pattern": r'sorta print\((.+)\);',
         "description": "80% chance to print",
         "runtime": {
-            "python": "def sorta_print(*args):\n    import random\n    if random.random() < 0.8:\n        print('[print]', *args)"
+            "python": (
+                "def sorta_print(*args):\n"
+                "    import random\n"
+                "    if random.random() < 0.8:\n"
+                "        print('[print]', *args)"
+            )
         }
     },
     "sometimes": {
