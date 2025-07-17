@@ -5,14 +5,14 @@ from pathlib import Path
 from kinda.run import execute
 
 def get_transformer(lang):
-    if lang == "c":
-        from kinda.langs.c import transformer_c
-        return transformer_c
-    elif lang == "python":
+    if lang == "python":
         from kinda.langs.python import transformer_py
         return transformer_py
+    elif lang == "c":
+        return None  # 🔕 Disable C for now
     else:
         raise ValueError(f"Unsupported language: {lang}")
+
 
         
 def detect_language(file_path: Path, override: str = None) -> str:
@@ -74,6 +74,9 @@ def main():
         out_dir = Path(args.out)
         lang = detect_language(Path(args.input), args.lang)
         transformer = get_transformer(lang)
+        if transformer is None:
+            print(f"[skipping] No transformer for language: {lang}")
+            return
         output_paths = transformer.transform(input_path, out_dir=out_dir)
         for path in output_paths:
             print(f"✅ Transformed: {path}")

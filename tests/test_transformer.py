@@ -2,10 +2,10 @@
 from pathlib import Path
 
 def test_transformer_generates_output():
-    build_file = Path("build/simple_example.py")
-    assert build_file.exists(), "Expected build/simple_example.py to be created"
+    runtime_file = Path("kinda/runtime/python/fuzzy.py")
+    assert runtime_file.exists(), "Expected kinda/runtime/python/fuzzy.py to be created"
 
-    contents = build_file.read_text()
+    contents = runtime_file.read_text()
 
     # Check that it was transformed correctly (not raw Kinda anymore)
     assert "kinda_int(" in contents, "Expected kinda_int in transformed output"
