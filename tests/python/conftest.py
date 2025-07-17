@@ -4,8 +4,8 @@ import shutil
 from pathlib import Path
 import pytest
 
-SRC_DIRS = ["examples/python", "tests"]
-BUILD_DIR = Path("build")
+SRC_DIRS = ["tests/python/input", "tests"]
+BUILD_DIR = Path("build/python")
 RUNTIME_OUT = Path("kinda/runtime/python")
 
 

@@ -12,19 +12,19 @@ def run_kinda_test(path):
     return result.stdout.strip()
 
 def test_fuzzy_declaration():
-    output = run_kinda_test("tests/test_fuzzy_declaration.knda")
+    output = run_kinda_test("tests/python/input/test_fuzzy_declaration.py.knda")
     assert "x ~=" in output
     assert "[print]" in output
 
 def test_fuzzy_reassignment():
-    output = run_kinda_test("tests/test_fuzzy_reassignment.knda")
+    output = run_kinda_test("tests/python/input/test_fuzzy_reassignment.py.knda")
     assert output.count("x ~=") == 2
     assert "[print]" in output
 
 def test_sorta_print():
-    output = run_kinda_test("tests/test_sorta_print.knda")
+    output = run_kinda_test("tests/python/input/test_sorta_print.py.knda")
     assert "[print]" in output
 
 def test_sometimes_block():
-    output = run_kinda_test("tests/test_sometimes_block.knda")
+    output = run_kinda_test("tests/python/input/test_sometimes_block.py.knda")
     assert "[sometimes]" in output or "[assign]" in output or "[print]" in output
