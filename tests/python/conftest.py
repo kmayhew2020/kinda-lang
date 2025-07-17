@@ -41,12 +41,22 @@ def regenerate_build():
     # Step 3: Run transformer on all .knda files in each src dir
     for src_dir in SRC_DIRS:
         lang = "python" if "python" in src_dir else "c"  # crude but effective
-        result = subprocess.run(
+        result1 = subprocess.run(
             ["python", "-m", "kinda", "transform", src_dir, "--out", str(BUILD_DIR), "--lang", lang],
             capture_output=True,
             text=True
         )
-        if result.returncode != 0:
+        result2 = subprocess.run(
+            ["kinda", "transform", src_dir, "--out", str(BUILD_DIR), "--lang", lang],
+            capture_output=True,
+            text=True
+        )
+        if result1.returncode != 0:
+            print("Transformer failed:")
+            print("STDOUT:\n", result.stdout)
+            print("STDERR:\n", result.stderr)
+            raise RuntimeError("Transformer failed during test setup")
+        if result2.returncode != 0:
             print("Transformer failed:")
             print("STDOUT:\n", result.stdout)
             print("STDERR:\n", result.stderr)
