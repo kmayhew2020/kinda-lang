@@ -97,9 +97,18 @@ def transform(input_path: Path, out_dir: Path) -> list[Path]:
     if input_path.is_file():
         print(f"[transform] Starting transform_file for: {input_path}")
         output_code = transform_file(input_path)
-        output_path = out_dir / (input_path.stem + ".py")
+
+        # Strip the .py.knda or .knda extension properly
+        if input_path.name.endswith(".py.knda"):
+            base_name = input_path.name[:-len(".py.knda")]
+        else:
+            base_name = input_path.stem
+
+        output_path = out_dir / (base_name + ".py")
+        output_path.parent.mkdir(parents=True, exist_ok=True)
         output_path.write_text(output_code)
         output_paths.append(output_path)
+
 
     elif input_path.is_dir():
         for file in input_path.glob("**/*.knda"):

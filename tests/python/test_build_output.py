@@ -3,7 +3,7 @@ from tests.utils import run_python_file
 
 
 def test_simple_example_output():
-    source_file = Path("build/chaotic_greeter.py.py")
+    source_file = Path("build/chaotic_greeter.py")
     runtime_file = Path("kinda/runtime/python/fuzzy.py")
 
     # Sanity checks

@@ -36,7 +36,7 @@ def regenerate_build():
     # Step 2: Clean and recreate build/ folder
     if BUILD_DIR.exists():
         shutil.rmtree(BUILD_DIR)
-    BUILD_DIR.mkdir()
+    BUILD_DIR.mkdir(parents=True, exist_ok=True)
 
     # Step 3: Run transformer on all .knda files in each src dir
     for src_dir in SRC_DIRS:
