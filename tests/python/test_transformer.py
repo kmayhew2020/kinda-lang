@@ -4,7 +4,7 @@ import pytest
 from kinda.langs.python.transformer import transform_line
 
 def test_transformer_generates_output():
-    runtime_file = Path("kinda/runtime/python/fuzzy.py")
+    runtime_file = Path("kinda/langs/python/runtime/fuzzy.py")
     assert runtime_file.exists(), "Expected kinda/langs/python/runtime/fuzzy.py to be created"
 
     contents = runtime_file.read_text()

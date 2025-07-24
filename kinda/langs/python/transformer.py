@@ -110,7 +110,7 @@ def transform(input_path: Path, out_dir: Path) -> list[Path]:
         output_paths.append(output_file_path)
 
     # Generate fuzzy runtime
-    runtime_path = Path(__file__).parent.parent.parent / "runtime" / "python"
+    runtime_path = Path(__file__).parent.parent.parent / "langs" / "python" / "runtime"
     runtime_path.mkdir(parents=True, exist_ok=True)
 
     generate_runtime_helpers(used_helpers, runtime_path, KindaPythonConstructs)
