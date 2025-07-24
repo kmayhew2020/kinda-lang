@@ -76,7 +76,7 @@ def transform_file(path: Path, target_language="python") -> str:
     header = ""
     if used_helpers:
         helpers = ", ".join(sorted(used_helpers))
-        header = f"from kinda.runtime.{target_language}.fuzzy import {helpers}\n\n"
+        header = f"from kinda.langs.{target_language}.runtime.fuzzy import {helpers}\n\n"
 
     return header + "\n".join(output_lines)
 

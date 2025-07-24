@@ -1,5 +1,5 @@
 from pathlib import Path
-from tests.utils import run_python_file
+from tests.python.utils import run_python_file
 
 
 def test_simple_example_output():
