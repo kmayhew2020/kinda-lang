@@ -2,7 +2,7 @@ name: Kinda CI
 
 on:
   push:
-    branches: 
+    branches:
       - main
       - "ci/*"
   pull_request:
@@ -11,16 +11,28 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout repo
+        uses: actions/checkout@v3
 
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: 3.x
+          python-version: "3.12"
 
       - name: Install dependencies
-        run: pip install pytest
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-cov
 
-      - name: Run tests
-        run: pytest tests/
+      - name: Run tests with coverage
+        run: |
+          pytest --cov=kinda --cov-report=term-missing tests/
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: .coverage
