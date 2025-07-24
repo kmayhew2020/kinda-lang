@@ -5,7 +5,7 @@ import re
 KindaPythonConstructs = {
     "kinda_int": {
         "type": "declaration",
-        "pattern": re.compile(r'kinda int (\w+)\s*~=\s*(\d+)'),
+        "pattern": re.compile(r'kinda int (\w+)\s*~=\s*(.+)'),
         "description": "Fuzzy integer declaration with noise",
         "body": (
             "def kinda_int(val):\n"
@@ -33,5 +33,11 @@ KindaPythonConstructs = {
             "def sometimes():\n"
             "    return random.random() < 0.5"
         ),
+    },
+    "fuzzy_reassign": {
+    "type": "reassignment",
+    "pattern": re.compile(r'(\w+)\s*~=\s*(.+?);?$'),
+    "description": "Fuzzy reassignment to an existing variable",
+    "body": "# (not needed for now — handled in interpreter)",
     },
 }
