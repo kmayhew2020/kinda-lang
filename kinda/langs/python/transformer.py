@@ -1,9 +1,9 @@
 # kinda/langs/python/transformer_py.py
 
 from pathlib import Path
-from kinda.codegen.python import generate_runtime_helpers, generate_runtime
-from kinda.grammar.python.constructs_py import KindaPythonConstructs
-from kinda.grammar.python.matchers_py import match_python_construct
+from kinda.langs.python.runtime_gen import generate_runtime_helpers, generate_runtime
+from kinda.grammar.python.constructs import KindaPythonConstructs
+from kinda.grammar.python.matchers import match_python_construct
 
 
 used_helpers = set()

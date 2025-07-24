@@ -1,4 +1,4 @@
-# kinda/grammar/constructs_py.py
+# kinda/grammar/constructs.py
 
 import re
 

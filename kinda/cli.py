@@ -6,8 +6,8 @@ from kinda.run import execute
 
 def get_transformer(lang):
     if lang == "python":
-        from kinda.langs.python import transformer_py
-        return transformer_py
+        from kinda.langs.python import transformer
+        return transformer
     elif lang == "c":
         return None  # 🔕 Disable C for now
     else:

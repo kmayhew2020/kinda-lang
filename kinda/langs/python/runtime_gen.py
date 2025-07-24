@@ -1,5 +1,6 @@
 from pathlib import Path
-from kinda.grammar.python.constructs_py import KindaPythonConstructs as KindaConstructs
+from kinda.grammar.python.constructs import KindaPythonConstructs as KindaConstructs
+
 
 def generate_runtime_helpers(used_keys, output_path: Path, constructs):
     code = []
@@ -16,16 +17,22 @@ def generate_runtime_helpers(used_keys, output_path: Path, constructs):
 
 
 def generate_runtime(output_dir: Path):
+    """
+    Auto-generates fuzzy.py using defined constructs and writes it to the output_dir.
+    Typically used to write to: kinda/langs/python/runtime/
+    """
     # Create directory structure
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    # Ensure __init__.py files exist for module recognition
+    # Ensure __init__.py files for importability
     init_files = [
         Path("kinda/__init__.py"),
-        Path("kinda/runtime/__init__.py"),
+        Path("kinda/langs/__init__.py"),
+        Path("kinda/langs/python/__init__.py"),
         output_dir / "__init__.py",
     ]
     for f in init_files:
+        f.parent.mkdir(parents=True, exist_ok=True)
         f.touch()
 
     # Build runtime code
@@ -53,7 +60,7 @@ def generate_runtime(output_dir: Path):
                 "    return cond and random.random() < 0.5\n\n"
             )
 
-    # Write to fuzzy.py
+    # Write to fuzzy.py in correct place
     runtime_file = output_dir / "fuzzy.py"
     runtime_file.write_text("".join(lines))
 
@@ -66,7 +73,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--out",
-        default="kinda/runtime/python",
+        default="kinda/langs/python/runtime",
         help="Output directory for generated runtime",
     )
     args = parser.parse_args()

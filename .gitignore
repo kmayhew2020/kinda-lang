@@ -50,7 +50,8 @@ coverage.xml
 .hypothesis/
 .pytest_cache/
 cover/
-kinda/runtime/
+kinda/langs/python/runtime
+kinda/langs/c/runtime
 
 # Translations
 *.mo

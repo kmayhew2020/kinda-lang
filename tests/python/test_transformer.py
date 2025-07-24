@@ -1,11 +1,11 @@
 # tests/test_transformer.py
 from pathlib import Path
 import pytest
-from kinda.langs.python.transformer_py import transform_line
+from kinda.langs.python.transformer import transform_line
 
 def test_transformer_generates_output():
     runtime_file = Path("kinda/runtime/python/fuzzy.py")
-    assert runtime_file.exists(), "Expected kinda/runtime/python/fuzzy.py to be created"
+    assert runtime_file.exists(), "Expected kinda/langs/python/runtime/fuzzy.py to be created"
 
     contents = runtime_file.read_text()
 
@@ -14,13 +14,13 @@ def test_transformer_generates_output():
     assert "sorta_print(" in contents, "Expected sorta_print in transformed output"
 
 def test_blank_line_passthrough():
-    from kinda.langs.python.transformer_py import transform_line
+    from kinda.langs.python.transformer import transform_line
     line = "\n"
     result = transform_line(line)
     assert result == "", "Blank lines should return empty string"
 
 def test_comment_line_passthrough():
-        from kinda.langs.python.transformer_py import transform_line
+        from kinda.langs.python.transformer import transform_line
         line = "  # this is a comment\n"
         result = transform_line(line)
         assert result == line, "Comment lines should be returned unchanged"

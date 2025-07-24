@@ -1,6 +1,6 @@
 # kinda/grammar/python/matchers_py.py
 
-from kinda.grammar.python.constructs_py import KindaPythonConstructs
+from kinda.grammar.python.constructs import KindaPythonConstructs
 
 def match_python_construct(line: str):
     for key, data in KindaPythonConstructs.items():

@@ -1,13 +1,14 @@
-# tests/conftest.py
 import subprocess
 import shutil
 from pathlib import Path
 import pytest
 
+# ✅ Rename imported function to avoid name conflict
+from kinda.langs.python.runtime_gen import generate_runtime as generate_runtime_code
+
 SRC_DIRS = ["tests/python/input", "tests"]
 BUILD_DIR = Path("build/python")
-RUNTIME_OUT = Path("kinda/runtime/python")
-
+RUNTIME_OUT = Path("kinda/langs/python/runtime")
 
 def generate_runtime():
     # Clean old runtime
@@ -15,18 +16,8 @@ def generate_runtime():
         shutil.rmtree(RUNTIME_OUT)
     RUNTIME_OUT.mkdir(parents=True, exist_ok=True)
 
-    # Run Python codegen
-    result = subprocess.run(
-        ["python", "-m", "kinda.codegen.python", "--out", str(RUNTIME_OUT)],
-        capture_output=True,
-        text=True
-    )
-    if result.returncode != 0:
-        print("Runtime generation failed:")
-        print("STDOUT:\n", result.stdout)
-        print("STDERR:\n", result.stderr)
-        raise RuntimeError("Runtime codegen failed")
-
+    # Run Python runtime generation directly
+    generate_runtime_code(RUNTIME_OUT)
 
 @pytest.fixture(scope="session", autouse=True)
 def regenerate_build():
@@ -53,11 +44,11 @@ def regenerate_build():
         )
         if result1.returncode != 0:
             print("Transformer failed:")
-            print("STDOUT:\n", result.stdout)
-            print("STDERR:\n", result.stderr)
+            print("STDOUT:\n", result1.stdout)
+            print("STDERR:\n", result1.stderr)
             raise RuntimeError("Transformer failed during test setup")
         if result2.returncode != 0:
             print("Transformer failed:")
-            print("STDOUT:\n", result.stdout)
-            print("STDERR:\n", result.stderr)
+            print("STDOUT:\n", result2.stdout)
+            print("STDERR:\n", result2.stderr)
             raise RuntimeError("Transformer failed during test setup")

@@ -4,7 +4,7 @@ from tests.utils import run_python_file
 
 def test_simple_example_output():
     source_file = Path("build/python/chaotic_greeter.py")
-    runtime_file = Path("kinda/runtime/python/fuzzy.py")
+    runtime_file = Path("kinda/langs/python/runtime/fuzzy.py")
 
     # Sanity checks
     assert source_file.exists(), "Transformed file does not exist."
