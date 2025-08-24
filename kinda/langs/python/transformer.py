@@ -1,11 +1,12 @@
 from pathlib import Path
+from typing import List
 from kinda.langs.python.runtime_gen import generate_runtime_helpers, generate_runtime
 from kinda.grammar.python.constructs import KindaPythonConstructs
 from kinda.grammar.python.matchers import match_python_construct
 
 used_helpers = set()
 
-def transform_line(line: str) -> list[str]:
+def transform_line(line: str) -> List[str]:
     original_line = line
     stripped = line.strip()
 
@@ -88,7 +89,7 @@ def transform_file(path: Path, target_language="python") -> str:
     return header + "\n".join(output_lines)
 
 
-def transform(input_path: Path, out_dir: Path) -> list[Path]:
+def transform(input_path: Path, out_dir: Path) -> List[Path]:
     out_dir.mkdir(parents=True, exist_ok=True)
 
     input_path = Path(input_path)
