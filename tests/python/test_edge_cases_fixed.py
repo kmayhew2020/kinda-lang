@@ -313,8 +313,8 @@ class TestErrorRecovery:
             assert "kinda_int(42)" in result
             assert "kinda_int(100)" in result
             assert 'sorta_print("this should work")' in result
-            # Invalid lines should pass through
-            assert "~sorta print(broken_syntax" in result
+            # The enhanced parser now correctly handles unclosed parentheses  
+            assert "sorta_print(broken_syntax)" in result
             
         finally:
             temp_path.unlink()
