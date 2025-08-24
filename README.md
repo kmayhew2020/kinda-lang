@@ -1,110 +1,105 @@
-# Kinda
+# 🤷 Kinda
 
 > A programming language for people who aren't totally sure.
 
-**Kinda** is a fuzzy, emotionally unstable, and sometimes functional programming language.  
-It’s built for developers who write code like:
-> "I mean… this should work, right?"
+**Kinda** adds fuzzy logic and personality to your code. It's for developers who write code like _"I mean… this should work, right?"_
 
-Kinda introduces uncertainty as a first-class concept:
-- `kinda int x = 5;` declares a variable with soft intent
-- `sometimes (x > 3) { ... }` blocks might run. Or not.
-- `x ~= x + 1;` nudges x toward a new value… sorta
-- `sorta print(...)` prints. Probably.
-- `maybe (cond)` adds existential dread to conditionals
+## ⚡ Quick Start
 
----
+```bash
+# Install
+pip install kinda-lang
 
-## 🚀 Why Use Kinda?
+# Try it out 
+kinda examples
+kinda syntax
+kinda run examples/hello.py.knda
+```
 
-- To test your code's resilience to randomness  
-- To model uncertainty and human-like hesitation  
-- To simulate moody agents or erratic systems  
-- To debug real programs by writing fake ones  
-- To laugh while crying during incident response
+## 🎲 What Makes Kinda Special?
 
----
+Kinda introduces **uncertainty as a first-class concept** with the `~` (tilde) prefix:
 
-## 🔣 Example
-
-```knda
-kinda int x = 5;
-kinda int y = 10;
-
-sometimes (x < y) {
-    sorta print("x is probably less than y");
-    x ~= x + 1;
+```kinda
+~kinda int x ~= 42       # Fuzzy integer (adds ±1 noise)
+~sorta print("Hello!")   # Maybe prints (80% chance)  
+~sometimes (x > 40) {    # Random conditional (50% chance)
+    ~sorta print("Probably big!")
+    x ~= x + 1           # Fuzzy reassignment
 }
-
-sorta print("final x:", x);
 ```
 
-This might print:
+**Every time you run this, it behaves differently.** That's the point.
 
-```
-x is probably less than y
-final x: 6
-```
+## 🚀 Installation
 
-Or:
-
-```
-final x: 5
+### Option 1: pip (recommended)
+```bash
+pip install kinda-lang
 ```
 
-Or nothing at all. That’s the vibe.
+### Option 2: From source  
+```bash
+git clone https://github.com/kmayhew2020/kinda-lang.git
+cd kinda-lang
+pip install -e .
+```
 
----
+### Verify installation
+```bash
+kinda --help    # Should show snarky help messages
+kinda examples  # Try some examples
+```
 
-## 🧠 Philosophy
+**Supports:** Linux, macOS, Windows • Python 3.8+
 
-Kinda is not just a language.
-It’s a reflection of:
+## 📖 Usage
 
-* How humans think
-* How bugs happen
-* And how systems kinda sorta work until they don’t
+### Commands
+- `kinda run file.py.knda` - Transform and execute 
+- `kinda interpret file.py.knda` - Run in fuzzy runtime (max chaos)
+- `kinda transform file.py.knda` - Just transform to regular Python
+- `kinda examples` - See example programs
+- `kinda syntax` - Quick syntax reference
 
----
+### Syntax Reference
 
-## 🔧 Running Kinda Code
+| Kinda Construct | What It Does | Example |
+|-----------------|--------------|---------|
+| `~kinda int x ~= 42` | Fuzzy integer (±1 noise) | `x` might be 41, 42, or 43 |
+| `~sorta print(msg)` | Maybe prints (80% chance) | Sometimes prints, sometimes `[shrug]` |
+| `~sometimes (cond) {}` | Random conditional (50%) | Block runs if both random AND condition |
+| `x ~= x + 1` | Fuzzy assignment | Adds 1 ± random noise |
 
-### 1. Clone this repo
+## 🎯 Why Use Kinda?
+
+- **Test code resilience** - See how your logic handles randomness
+- **Simulate real-world uncertainty** - Model unreliable systems  
+- **Debug by chaos** - Find edge cases through controlled randomness
+- **Have fun** - Your compiler has personality and attitude
+
+## 🔧 Development
 
 ```bash
-git clone https://github.com/YOU/kinda.git
-cd kinda
+git clone https://github.com/kmayhew2020/kinda-lang.git
+cd kinda-lang
+pip install -e .[dev]
+pytest tests/
 ```
-
-### 2. Run the interpreter
-
-```bash
-python interpreter.py example.knda
-```
-
-You’ll need Python 3.8+
-No external dependencies. Just hope.
-
----
-
-## 🧪 Planned Features
-
-* `maybe` conditionals
-* `meh()` functions that do nothing
-* Personality modes (`--lazy`, `--anxious`, `--angry`)
-* Mood-based evaluation
-* Compiler messages like "You tried."
-
----
-
-## 📄 License
-
-MIT, but if it breaks everything you love, that's kinda on you.
-
----
 
 ## 🤝 Contributing
 
-Pull requests welcome. Or don’t.
-We’ll figure it out. Probably.
+Pull requests welcome! Kinda is chaos, but organized chaos.
 
+- File issues for bugs or feature requests
+- Add more fuzzy constructs
+- Improve the snark level
+- Help with other language support (C is next!)
+
+## 📜 License
+
+AGPL v3 - Use it, break it, fix it, but share the fixes. We're not responsible if kinda makes your code too honest about what it actually does.
+
+---
+
+*"Sometimes the best way to make software reliable is to admit it was never reliable in the first place."* 🎲

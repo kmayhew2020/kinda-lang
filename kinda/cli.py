@@ -5,6 +5,57 @@ import sys
 from pathlib import Path
 
 
+def show_examples():
+    """Show example kinda programs with attitude"""
+    print("🎲 Here are some kinda programs to get you started:")
+    print()
+    
+    examples = [
+        ("Hello World", "examples/hello.py.knda", "The classic, but fuzzy"),
+        ("Chaos Greeter", "examples/unified_syntax.py.knda", "Variables that kinda work"),
+        ("Maybe Math", None, "~kinda int x = 5\n~kinda int y ~= 10\n~sometimes (x < y) {\n    ~sorta print(\"Math happened!\")\n}"),
+    ]
+    
+    for title, filename, description in examples:
+        print(f"📝 {title}")
+        if filename and Path(filename).exists():
+            print(f"   Try: kinda run {filename}")
+            print(f"   Or:  kinda interpret {filename}")
+        elif description:
+            print("   Example code:")
+            for line in description.split('\n'):
+                print(f"   {line}")
+        print(f"   {description}")
+        print()
+    
+    print("🤷 Pro tip: Run any example with 'interpret' for maximum chaos")
+
+
+def show_syntax_reference():
+    """Show syntax reference with snark"""
+    print("📚 Kinda Syntax Reference (your cheat sheet)")
+    print()
+    
+    constructs = [
+        ("~kinda int x = 42", "Fuzzy integer (adds ±1 noise)"),
+        ("~kinda int y ~= 10", "Extra fuzzy assignment"),
+        ("~sorta print(x)", "Maybe prints (80% chance)"),
+        ("~sometimes (x > 0) { }", "Random conditional (50% chance)"),
+        ("x ~= x + 1", "Fuzzy reassignment"),
+    ]
+    
+    print("✨ Basic Constructs:")
+    for syntax, description in constructs:
+        print(f"   {syntax:<25} # {description}")
+    
+    print()
+    print("🎯 Pro Tips:")
+    print("   • Everything fuzzy starts with ~")
+    print("   • Your code will behave... differently each time")
+    print("   • That's the point. Embrace the chaos.")
+    print("   • Use 'kinda examples' to see it in action")
+
+
 def get_transformer(lang: str):
     if lang == "python":
         from kinda.langs.python import transformer
@@ -51,6 +102,10 @@ def main(argv=None) -> int:
     p_interpret = sub.add_parser("interpret", help="Run directly in fuzzy runtime (maximum chaos mode)")
     p_interpret.add_argument("input", help="Your questionable life choices in .knda form")
     p_interpret.add_argument("--lang", default=None, help="Force language (you know what you did)")
+
+    p_examples = sub.add_parser("examples", help="Show example kinda programs (for inspiration)")
+    
+    p_syntax = sub.add_parser("syntax", help="Quick syntax reference (because you'll forget)")
 
     args = parser.parse_args(argv)
 
@@ -107,6 +162,14 @@ def main(argv=None) -> int:
             return 0
         print(f"🤨 Interpret mode only works with Python. What are you even trying to do?")
         return 1
+
+    if args.command == "examples":
+        show_examples()
+        return 0
+        
+    if args.command == "syntax":
+        show_syntax_reference()
+        return 0
 
     return 1
 

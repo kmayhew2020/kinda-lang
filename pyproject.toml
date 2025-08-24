@@ -1,16 +1,64 @@
 # pyproject.toml
 
 [build-system]
-requires = ["setuptools"]
+requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "kinda"
-version = "0.1.0"
-description = "A chaotic language augmentation layer"
-authors = [{ name="Your Name", email="you@example.com" }]
+name = "kinda-lang"
+version = "0.2.0"
+description = "🤷 A programming language for people who aren't totally sure"
+authors = [
+    { name = "Kevin Mayhew", email = "kevin@example.com" }
+]
 readme = "README.md"
+license = { file = "LICENSE" }
 requires-python = ">=3.8"
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers", 
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9", 
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Compilers",
+    "Topic :: Software Development :: Interpreters",
+]
+keywords = ["programming-language", "fuzzy-logic", "chaos", "humor", "transpiler"]
+
+[project.urls]
+Homepage = "https://github.com/kmayhew2020/kinda-lang"
+Repository = "https://github.com/kmayhew2020/kinda-lang.git"
+Issues = "https://github.com/kmayhew2020/kinda-lang/issues"
 
 [project.scripts]
 kinda = "kinda.cli:main"
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=6.0",
+    "pytest-cov>=2.0",
+    "black>=22.0",
+    "mypy>=0.910",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+
+[tool.black]
+line-length = 100
+target-version = ['py38']
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["kinda*"]
+
+[tool.mypy]
+python_version = "3.8"
+warn_return_any = true
+warn_unused_configs = true
