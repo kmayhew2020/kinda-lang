@@ -41,8 +41,7 @@ def transform_line(line: str) -> list[str]:
     else:
         transformed_code = stripped  # fallback
 
-    print(f"[debug] Matching line: '{stripped}' → key={key}, groups={groups}")
-    print(f"[transformer] {stripped}  →  {transformed_code} yeah yeah")
+    # Debug removed for clean UX
 
     return [original_line.replace(stripped, transformed_code)]
 
@@ -51,13 +50,13 @@ def transform_file(path: Path, target_language="python") -> str:
     lines = path.read_text().splitlines()
     output_lines = []
 
-    print(f"[transform_file] Transforming file: {path}")
+    # Clean output - no debug spam
 
     i = 0
     while i < len(lines):
         line = lines[i]
         stripped = line.strip()
-        print(f"[transform_file] Transforming line: {stripped}")
+        # Processing silently
 
         if stripped.startswith("~sometimes"):
             output_lines.extend(transform_line(line))

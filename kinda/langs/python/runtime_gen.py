@@ -86,11 +86,8 @@ def generate_runtime(output_dir: Path):
 
     # Write full runtime file
     runtime_file = output_dir / "fuzzy.py"
-    print("==== FINAL RUNTIME CODE ====")
-    print("".join(lines))
+    # Generate runtime silently - no debug spam
     runtime_file.write_text("".join(lines))
-
-    print(f"✅ Wrote runtime to {runtime_file}")
 
 if __name__ == "__main__":
     import argparse

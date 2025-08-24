@@ -26,7 +26,7 @@ def load_fuzzy_runtime(runtime_path: Path):
 
 
 def run_interpreter(filepath, lang="python"):
-    print(f"[kinda::interpreter] Loading file: {filepath}")
+    # Clean execution - no debug spam
     input_path = Path(filepath)
 
     # === Transform code ===
@@ -44,8 +44,8 @@ def run_interpreter(filepath, lang="python"):
     fuzzy = load_fuzzy_runtime(runtime_path / "fuzzy.py")
     exec(helper_imports, {}, fuzzy.env)
 
-    print("[kinda::interpreter] Executing transformed code...")
     try:
         exec(code, fuzzy.env, fuzzy.env)
     except Exception as e:
-        print(f"[kinda::error] while executing transformed code:\n{e}")
+        print(f"💥 Well, that went sideways: {e}")
+        print(f"🤷 Your code was... creative. Maybe too creative.")
