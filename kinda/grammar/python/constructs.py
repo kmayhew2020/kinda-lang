@@ -53,4 +53,20 @@ KindaPythonConstructs = {
             "    return value + fuzz"
         ),
     },
+    "kinda_binary": {
+        "type": "declaration",
+        "pattern": re.compile(r'~kinda binary\s+(\w+)(?:\s*~\s*probabilities\s*\(([^)]+)\))?(?:;|$)'),
+        "description": "Three-state binary: positive (1), negative (-1), or neutral (0)",
+        "body": (
+            "def kinda_binary(pos_prob=0.4, neg_prob=0.4, neutral_prob=0.2):\n"
+            "    \"\"\"Returns 1 (positive), -1 (negative), or 0 (neutral) with specified probabilities.\"\"\"\n"
+            "    rand = random.random()\n"
+            "    if rand < pos_prob:\n"
+            "        return 1\n"
+            "    elif rand < pos_prob + neg_prob:\n"
+            "        return -1\n"
+            "    else:\n"
+            "        return 0"
+        ),
+    },
 }
