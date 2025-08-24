@@ -91,10 +91,10 @@ def get_transformer(lang: str):
         from kinda.langs.python import transformer
         return transformer
     elif lang == "c":
-        # C path not ready yet
-        return None
+        from kinda.langs.c import transformer_c
+        return transformer_c
     else:
-        raise ValueError(f"Unsupported language: {lang}")
+        return None
 
 
 def detect_language(path: Path, forced: Union[str, None]) -> str:
@@ -104,6 +104,8 @@ def detect_language(path: Path, forced: Union[str, None]) -> str:
     name = str(path)
     if name.endswith(".py.knda") or name.endswith(".py"):
         return "python"
+    elif name.endswith(".c.knda") or name.endswith(".c"):
+        return "c"
     # Default to python for now
     return "python"
 
