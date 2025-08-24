@@ -3,6 +3,7 @@
 import argparse
 import sys
 from pathlib import Path
+from typing import Union
 
 
 def show_examples():
@@ -67,7 +68,7 @@ def get_transformer(lang: str):
         raise ValueError(f"Unsupported language: {lang}")
 
 
-def detect_language(path: Path, forced: str | None) -> str:
+def detect_language(path: Path, forced: Union[str, None]) -> str:
     """Tiny heuristic; lets --lang override."""
     if forced:
         return forced
