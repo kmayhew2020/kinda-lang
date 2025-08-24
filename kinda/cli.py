@@ -109,7 +109,7 @@ def main(argv=None) -> int:
     argv = argv or sys.argv[1:]
     parser = argparse.ArgumentParser(
         prog="kinda", 
-        description="🤷 A programming language for people who aren't totally sure"
+        description="A programming language for people who aren't totally sure"
     )
     sub = parser.add_subparsers(dest="command", required=True)
 
