@@ -6,34 +6,24 @@ set -e
 echo "🤷 Installing kinda... (this might work)"
 echo
 
-# Check Python version
-if command -v python3 &> /dev/null; then
-    python_cmd="python3"
-elif command -v python &> /dev/null; then 
-    python_cmd="python"
+# Find Python (python3 preferred)
+if command -v python3 &>/dev/null; then
+  python_cmd="python3"
+elif command -v python &>/dev/null; then
+  python_cmd="python"
 else
-    echo "❌ Python not found. Install Python 3.8+ first."
-    exit 1
+  echo "❌ Python not found. Install Python 3.8+ first."
+  exit 1
 fi
 
-# Verify version >= 3.8
-if ! $python_cmd -c 'import sys; sys.exit(0 if sys.version_info >= (3,8) else 1)'; then
-    echo "❌ $($python_cmd --version) found, but Python 3.8+ is required."
-    exit 1
-fi
+# Capture major.minor and enforce >= 3.8 using real tuple compare
+version="$($python_cmd -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')"
+$python_cmd -c 'import sys; sys.exit(0 if sys.version_info >= (3,8) else 1)' || {
+  echo "❌ Python $version found, but 3.8+ is required."
+  exit 1
+}
 
-echo "✅ Using $python_cmd ($($python_cmd --version))"
-
-
-# Check Python version is adequate
-version=$($python_cmd -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')")
-if [[ $(echo "$version < 3.8" | bc -l 2>/dev/null || echo "0") == "1" ]]; then
-    echo "❌ Python $version found, but kinda needs Python 3.8+."
-    echo "🤷 Your Python is... vintage. Upgrade maybe?"
-    exit 1
-fi
-
-echo "✅ Found Python $version (good enough)"
+echo "✅ Using $python_cmd (Python $version)"
 
 # Install kinda
 echo "📦 Installing kinda-lang via pip..."
