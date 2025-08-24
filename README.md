@@ -70,6 +70,7 @@ kinda examples  # Try some examples
 | Kinda Construct | What It Does | Example |
 |-----------------|--------------|---------|
 | `~kinda int x ~= 42` | Fuzzy integer (±1 noise) | `x` might be 41, 42, or 43 |
+| `~kinda binary decision` | Three-state binary | Returns 1 (yes), -1 (no), or 0 (undecided) |
 | `~sorta print(msg)` | Maybe prints (80% chance) | Sometimes prints, sometimes `[shrug]` |
 | `~sometimes (cond) {}` | Random conditional (50%) | Block runs if both random AND condition |
 | `~maybe (cond) {}` | Less random conditional (60%) | More likely than ~sometimes but still fuzzy |

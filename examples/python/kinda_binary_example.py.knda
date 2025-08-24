@@ -1,0 +1,67 @@
+# Three-State Binary Example
+# Demonstrates ~kinda binary construct with neutral/undecided state
+
+# Basic three-state binary with default probabilities
+# 40% positive (1), 40% negative (-1), 20% neutral (0)
+~kinda binary user_decision
+
+~sorta print("User decision value:", user_decision)
+
+# Use the decision to control program flow
+~sometimes (user_decision == 1) {
+    ~sorta print("✅ User chose YES! Taking positive action...")
+}
+
+~sometimes (user_decision == -1) {
+    ~sorta print("❌ User chose NO! Avoiding that action...")
+}
+
+~sometimes (user_decision == 0) {
+    ~sorta print("🤷 User is undecided... maybe ask again?")
+}
+
+# Custom probabilities example
+# 60% positive, 30% negative, 10% neutral
+~kinda binary optimistic_choice ~ probabilities(0.6, 0.3, 0.1)
+
+~sorta print("\nOptimistic choice:", optimistic_choice)
+
+# Multiple decisions can create interesting behaviors
+~kinda binary vote1
+~kinda binary vote2  
+~kinda binary vote3
+
+# Calculate consensus
+total = vote1 + vote2 + vote3
+~sorta print("\nVotes:", vote1, vote2, vote3)
+~sorta print("Total vote score:", total)
+
+~maybe (total > 0) {
+    ~sorta print("📈 Overall positive sentiment!")
+}
+
+~maybe (total < 0) {
+    ~sorta print("📉 Overall negative sentiment...")
+}
+
+~maybe (total == 0) {
+    ~sorta print("⚖️ Perfectly balanced, as all things should be")
+}
+
+# Fun use case: AI mood simulator
+~kinda binary ai_mood ~ probabilities(0.45, 0.45, 0.10)
+
+~sometimes (ai_mood == 1) {
+    ~sorta print("\n🤖 AI is feeling helpful today!")
+    ~sorta print("Let me solve all your problems...")
+}
+
+~sometimes (ai_mood == -1) {
+    ~sorta print("\n🤖 AI is feeling grumpy...")
+    ~sorta print("Have you tried turning it off and on again?")
+}
+
+~sometimes (ai_mood == 0) {
+    ~sorta print("\n🤖 AI is contemplating its existence...")
+    ~sorta print("What even is a binary, really?")
+}

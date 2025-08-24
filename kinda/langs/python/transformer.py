@@ -60,6 +60,16 @@ def transform_line(line: str) -> List[str]:
         used_helpers.add("kinda_int")
         transformed_code = f"{var} = kinda_int({val})"
 
+    elif key == "kinda_binary":
+        if len(groups) == 2 and groups[1]:  # Custom probabilities provided
+            var, probs = groups
+            used_helpers.add("kinda_binary")
+            transformed_code = f"{var} = kinda_binary({probs})"
+        else:  # Default probabilities
+            var = groups[0]
+            used_helpers.add("kinda_binary")
+            transformed_code = f"{var} = kinda_binary()"
+
     elif key == "sorta_print":
         (expr,) = groups
         used_helpers.add("sorta_print")
