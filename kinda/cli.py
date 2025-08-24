@@ -67,6 +67,7 @@ def show_syntax_reference():
     constructs = [
         ("~kinda int x = 42", "Fuzzy integer (adds ±1 noise)"),
         ("~kinda int y ~= 10", "Extra fuzzy assignment"),
+        ("~kinda binary choice", "Three-state binary (1, -1, or 0)"),
         ("~sorta print(x)", "Maybe prints (80% chance)"),
         ("~sometimes (x > 0) { }", "Random conditional (50% chance)"),
         ("~maybe (x > 0) { }", "Less random conditional (60% chance)"),
