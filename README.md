@@ -27,6 +27,9 @@ Kinda introduces **uncertainty as a first-class concept** with the `~` (tilde) p
     ~sorta print("Probably big!")
     x ~= x + 1           # Fuzzy reassignment
 }
+~maybe (x > 39) {        # More likely conditional (60% chance)
+    ~sorta print("Quite likely big!")
+}
 ```
 
 **Every time you run this, it behaves differently.** That's the point.
@@ -69,6 +72,7 @@ kinda examples  # Try some examples
 | `~kinda int x ~= 42` | Fuzzy integer (±1 noise) | `x` might be 41, 42, or 43 |
 | `~sorta print(msg)` | Maybe prints (80% chance) | Sometimes prints, sometimes `[shrug]` |
 | `~sometimes (cond) {}` | Random conditional (50%) | Block runs if both random AND condition |
+| `~maybe (cond) {}` | Less random conditional (60%) | More likely than ~sometimes but still fuzzy |
 | `x ~= x + 1` | Fuzzy assignment | Adds 1 ± random noise |
 
 ## 🎯 Why Use Kinda?
