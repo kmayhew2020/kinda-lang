@@ -6,6 +6,42 @@ from kinda.grammar.python.matchers import match_python_construct
 
 used_helpers = set()
 
+def _process_conditional_block(lines: List[str], start_index: int, output_lines: List[str], indent: str) -> int:
+    """
+    Process a conditional block (~sometimes or ~maybe) with proper nesting support.
+    Returns the index after processing the block.
+    """
+    i = start_index
+    while i < len(lines):
+        line = lines[i]
+        stripped = line.strip()
+
+        # Stop at closing brace
+        if stripped == "}":
+            i += 1  # Skip the closing brace
+            break
+        
+        # Empty lines or comments - pass through with indentation
+        if not stripped or stripped.startswith("#"):
+            output_lines.append(indent + line)
+            i += 1
+            continue
+
+        # Handle nested conditional constructs
+        if stripped.startswith("~sometimes") or stripped.startswith("~maybe"):
+            transformed_nested = transform_line(line)
+            output_lines.extend([indent + l for l in transformed_nested])
+            i += 1
+            # Recursively process nested block with increased indentation
+            i = _process_conditional_block(lines, i, output_lines, indent + "    ")
+        else:
+            # Regular kinda constructs or normal python
+            transformed_block = transform_line(line)
+            output_lines.extend([indent + l for l in transformed_block])
+            i += 1
+
+    return i
+
 def transform_line(line: str) -> List[str]:
     original_line = line
     stripped = line.strip()
@@ -34,6 +70,11 @@ def transform_line(line: str) -> List[str]:
         cond = groups[0].strip() if groups and groups[0] else ""
         transformed_code = f"if sometimes({cond}):" if cond else "if sometimes():"
 
+    elif key == "maybe":
+        used_helpers.add("maybe")
+        cond = groups[0].strip() if groups and groups[0] else ""
+        transformed_code = f"if maybe({cond}):" if cond else "if maybe():"
+
     elif key == "fuzzy_reassign":
         var, val = groups
         used_helpers.add("fuzzy_assign")
@@ -59,24 +100,12 @@ def transform_file(path: Path, target_language="python") -> str:
         stripped = line.strip()
         # Processing silently
 
-        if stripped.startswith("~sometimes"):
+        if stripped.startswith("~sometimes") or stripped.startswith("~maybe"):
             output_lines.extend(transform_line(line))
             i += 1
 
-            # Add indented block under sometimes
-            while i < len(lines):
-                next_line = lines[i]
-                next_stripped = next_line.strip()
-
-                # Stop at closing brace or new construct
-                if next_stripped == "}" or not next_stripped or next_stripped.startswith("~kinda") or next_stripped.startswith("~sometimes"):
-                    if next_stripped == "}":
-                        i += 1  # Skip the closing brace
-                    break
-
-                transformed_block = transform_line(next_line)
-                output_lines.extend(["    " + l for l in transformed_block])
-                i += 1
+            # Process block with proper nesting support
+            i = _process_conditional_block(lines, i, output_lines, "    ")
         else:
             output_lines.extend(transform_line(line))
             i += 1

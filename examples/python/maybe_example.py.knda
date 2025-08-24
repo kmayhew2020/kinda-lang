@@ -1,0 +1,43 @@
+# ~maybe Construct Example (60% execution probability)
+# Demonstrates fuzzy conditional execution between ~sometimes (50%) and ~sorta print (80%)
+
+~kinda int user_score = 75;
+~kinda int threshold = 60;
+
+~sorta print("Starting maybe example...");
+
+# Basic ~maybe usage - 60% chance to execute when condition is true
+~maybe (user_score > threshold) {
+    ~sorta print("User score is above threshold!");
+    user_score ~= 5;
+}
+
+# ~maybe with no condition - 60% chance to execute unconditionally
+~maybe () {
+    ~sorta print("Maybe we'll say hello!");
+}
+
+# Nested constructs - ~maybe containing ~sometimes
+~maybe (user_score > 50) {
+    ~sorta print("Entering nested chaos zone...");
+    ~sometimes (True) {
+        ~sorta print("Sometimes nested in maybe - double uncertainty!");
+        ~kinda int bonus_points = 10;
+        user_score ~= bonus_points;
+    }
+}
+
+# Multiple ~maybe blocks showing different probabilities in action
+~maybe (True) {
+    ~sorta print("First maybe block (60% chance)");
+}
+
+~sometimes (True) {
+    ~sorta print("Sometimes block for comparison (50% chance)");
+}
+
+~maybe (user_score > 0) {
+    ~sorta print("Second maybe block (60% chance)");
+}
+
+~sorta print("Final score might be:", user_score);

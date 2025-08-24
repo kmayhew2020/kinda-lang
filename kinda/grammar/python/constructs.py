@@ -34,6 +34,15 @@ KindaPythonConstructs = {
             "    return random.random() < 0.5 and condition"
         ),
     },
+    "maybe": {
+        "type": "conditional",
+        "pattern": re.compile(r'~maybe\s*\(([^)]*)\)\s*\{?'),
+        "description": "Fuzzy conditional trigger (60% chance)",
+        "body": (
+            "def maybe(condition=True):\n"
+            "    return random.random() < 0.6 and condition"
+        ),
+    },
     "fuzzy_reassign": {
         "type": "reassignment",
         "pattern": re.compile(r'(\w+)\s*~=\s*(.+?)(?:;|$)'),
