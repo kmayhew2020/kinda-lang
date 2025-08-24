@@ -55,7 +55,7 @@ KindaPythonConstructs = {
     },
     "kinda_binary": {
         "type": "declaration",
-        "pattern": re.compile(r'~kinda binary\s+(\w+)(?:\s*~\s*probabilities\s*\(([^)]+)\))?(?:;|$)'),
+        "pattern": re.compile(r'~kinda\s+binary\s+(\w+)(?:\s*~\s*probabilities\s*\(([^)]+)\))?(?:;|$)'),
         "description": "Three-state binary: positive (1), negative (-1), or neutral (0)",
         "body": (
             "def kinda_binary(pos_prob=0.4, neg_prob=0.4, neutral_prob=0.2):\n"
