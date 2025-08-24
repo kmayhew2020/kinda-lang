@@ -1,15 +1,15 @@
 // simple kinda python example
-kinda int x = 5;
-sorta print(x + 2);
+~kinda int x = 5;
+~sorta print(x + 2);
 
-sometimes (x > 3) {
-    sorta print("x is big!");
+~sometimes (x > 3) {
+    ~sorta print("x is big!");
 }
 
 x ~= 10;
-sorta print(x);
+~sorta print(x);
 
-kinda int a
-kinda int b ~= 10
+~kinda int a
+~kinda int b ~= 10
 a ~= 5
 b ~= 20

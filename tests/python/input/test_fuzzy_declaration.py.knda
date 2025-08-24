@@ -1,2 +1,2 @@
-kinda int x = 9;
-sorta print(x);
+~kinda int x = 9;
+~sorta print(x);
