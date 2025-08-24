@@ -41,7 +41,7 @@ def show_examples():
     examples = [
         ("Hello World", "examples/hello.py.knda", "The classic, but fuzzy"),
         ("Chaos Greeter", "examples/unified_syntax.py.knda", "Variables that kinda work"),
-        ("Maybe Math", None, "~kinda int x = 5\n~kinda int y ~= 10\n~sometimes (x < y) {\n    ~sorta print(\"Math happened!\")\n}"),
+        ("Maybe Math", "examples/python/maybe_example.py.knda", "Fuzzy conditionals with ~sometimes and ~maybe"),
     ]
     
     for title, filename, description in examples:
@@ -69,6 +69,7 @@ def show_syntax_reference():
         ("~kinda int y ~= 10", "Extra fuzzy assignment"),
         ("~sorta print(x)", "Maybe prints (80% chance)"),
         ("~sometimes (x > 0) { }", "Random conditional (50% chance)"),
+        ("~maybe (x > 0) { }", "Less random conditional (60% chance)"),
         ("x ~= x + 1", "Fuzzy reassignment"),
     ]
     

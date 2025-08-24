@@ -50,9 +50,9 @@ class TestCLICommands:
         expected = normalize_emoji_output("🎲 Here are some kinda programs to get you started:")
         assert expected in normalize_emoji_output(output)
         assert "Hello World" in output
-        assert "~kinda int" in output
-        assert "~sorta print" in output
+        assert "Fuzzy conditionals" in output
         assert "~sometimes" in output
+        assert "~maybe" in output
         assert "Pro tip:" in output
 
     def test_syntax_command(self, capsys):
@@ -114,7 +114,7 @@ class TestCLIIntegration:
         assert result.returncode == 0
         expected = normalize_emoji_output("🎲 Here are some kinda programs")
         assert expected in normalize_emoji_output(result.stdout)
-        assert "~kinda int" in result.stdout
+        assert "Fuzzy conditionals" in result.stdout
 
     def test_syntax_command_integration(self):
         """Test syntax command via subprocess"""  

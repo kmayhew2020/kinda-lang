@@ -56,6 +56,34 @@ class TestTransformIntegration:
         assert "fuzzy_assign" in imports_line
         assert "sorta_print" in imports_line
     
+    def test_end_to_end_maybe_block(self, tmp_path):
+        """Test maybe block transforms and executes correctly"""
+        knda_file = tmp_path / "test_maybe.knda"
+        knda_file.write_text("""~kinda int confidence = 8;
+~maybe (confidence > 5) {
+    ~sorta print("Maybe we should proceed");
+    confidence ~= 10;
+}
+~sorta print("Final confidence:", confidence);
+""")
+        
+        output_paths = transform(knda_file, tmp_path / "output")
+        py_file = output_paths[0]
+        
+        content = py_file.read_text()
+        lines = content.split('\n')
+        
+        # Should have proper structure
+        assert any("if maybe(" in line for line in lines)
+        assert any("    " in line and "fuzzy_assign" in line for line in lines)
+        
+        # Should import all needed functions
+        imports_line = next(line for line in lines if line.startswith("from kinda.langs.python.runtime.fuzzy import"))
+        assert "kinda_int" in imports_line
+        assert "maybe" in imports_line
+        assert "fuzzy_assign" in imports_line
+        assert "sorta_print" in imports_line
+    
     def test_directory_transform(self, tmp_path):
         """Test transforming entire directory of .knda files"""
         input_dir = tmp_path / "input"
@@ -107,6 +135,12 @@ for i in range(3):
     }
     
 ~sorta print("Final counter:", counter);
+
+# Test maybe construct integration
+~maybe (counter < 5) {
+    ~sorta print("Maybe we should reset");
+    counter ~= 0;
+}
 """)
         
         output_paths = transform(knda_file, tmp_path / "output")
@@ -121,11 +155,13 @@ for i in range(3):
         assert "counter = kinda_int(0)" in content
         assert "fuzzy_assign('counter'" in content
         assert "if sometimes(counter > 2):" in content
+        assert "if maybe(counter < 5):" in content
         assert "sorta_print(" in content
         
         # Should preserve comments
         assert "# Complex test file" in content
         assert "# Loop simulation" in content
+        assert "# Test maybe construct integration" in content
 
 
 class TestTransformCLI:
