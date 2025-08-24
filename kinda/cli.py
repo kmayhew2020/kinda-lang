@@ -6,9 +6,35 @@ from pathlib import Path
 from typing import Union
 
 
+def safe_print(text: str) -> None:
+    """Print text with Windows-safe encoding fallbacks"""
+    try:
+        print(text)
+    except UnicodeEncodeError:
+        # Fallback for Windows: replace problematic emojis with ASCII
+        fallback = (text
+                   .replace("✨", "*")  # sparkle -> asterisk
+                   .replace("🎲", "*")  # die -> asterisk
+                   .replace("🤷", "?")  # shrug -> question mark
+                   .replace("📚", "*")  # book -> asterisk
+                   .replace("🎯", "*")  # target -> asterisk
+                   .replace("🤔", "?")  # thinking -> question mark
+                   .replace("🤷‍♂️", "?")  # shrug man -> question mark
+                   .replace("🙄", "~")  # eye roll -> tilde
+                   .replace("🎮", "*")  # game controller -> asterisk
+                   .replace("🎉", "!")  # party -> exclamation
+                   .replace("😅", "~")  # sweat smile -> tilde
+                   .replace("🙃", "~")  # upside down -> tilde
+                   .replace("🔮", "*")  # crystal ball -> asterisk
+                   .replace("🌪️", "~")  # tornado -> tilde
+                   .replace("🤨", "?")  # raised eyebrow -> question mark
+        )
+        print(fallback)
+
+
 def show_examples():
     """Show example kinda programs with attitude"""
-    print("🎲 Here are some kinda programs to get you started:")
+    safe_print("🎲 Here are some kinda programs to get you started:")
     print()
     
     examples = [
@@ -29,12 +55,12 @@ def show_examples():
         print(f"   {description}")
         print()
     
-    print("🤷 Pro tip: Run any example with 'interpret' for maximum chaos")
+    safe_print("🤷 Pro tip: Run any example with 'interpret' for maximum chaos")
 
 
 def show_syntax_reference():
     """Show syntax reference with snark"""
-    print("📚 Kinda Syntax Reference (your cheat sheet)")
+    safe_print("📚 Kinda Syntax Reference (your cheat sheet)")
     print()
     
     constructs = [
@@ -45,12 +71,12 @@ def show_syntax_reference():
         ("x ~= x + 1", "Fuzzy reassignment"),
     ]
     
-    print("✨ Basic Constructs:")
+    safe_print("✨ Basic Constructs:")
     for syntax, description in constructs:
         print(f"   {syntax:<25} # {description}")
     
     print()
-    print("🎯 Pro Tips:")
+    safe_print("🎯 Pro Tips:")
     print("   • Everything fuzzy starts with ~")
     print("   • Your code will behave... differently each time")
     print("   • That's the point. Embrace the chaos.")
@@ -113,55 +139,55 @@ def main(argv=None) -> int:
     if args.command == "transform":
         input_path = Path(args.input)
         if not input_path.exists():
-            print(f"🤔 '{args.input}' doesn't exist. Are you sure you typed that right?")
+            safe_print(f"🤔 '{args.input}' doesn't exist. Are you sure you typed that right?")
             return 1
         out_dir = Path(args.out)
         lang = detect_language(input_path, args.lang)
         transformer = get_transformer(lang)
         if transformer is None:
-            print(f"🤷 Sorry, I don't speak {lang} yet. Try Python maybe?")
+            safe_print(f"🤷 Sorry, I don't speak {lang} yet. Try Python maybe?")
             return 0
         output_paths = transformer.transform(input_path, out_dir=out_dir)
         for path in output_paths:
-            print(f"✨ Transformed your chaos into: {path}")
-        print(f"🎲 Generated {len(output_paths)} file(s). Hope they work!")
+            print(f"* Transformed your chaos into: {path}")
+        print(f"* Generated {len(output_paths)} file(s). Hope they work!")
         return 0
 
     if args.command == "run":
         input_path = Path(args.input)
         if not input_path.exists():
-            print(f"🤷‍♂️ Can't find '{args.input}'. Did you make that up?")
+            safe_print(f"🤷‍♂️ Can't find '{args.input}'. Did you make that up?")
             return 1
         lang = detect_language(input_path, args.lang)
         transformer = get_transformer(lang)
         if transformer is None:
-            print(f"🙄 Can't run {lang} files yet. Python works though.")
+            safe_print(f"🙄 Can't run {lang} files yet. Python works though.")
             return 1
         out_dir = Path(".kinda-build")
         out_paths = transformer.transform(input_path, out_dir=out_dir)
         if lang == "python":
             import runpy
-            print("🎮 Running your questionable code...")
+            safe_print("🎮 Running your questionable code...")
             # Execute the transformed file
             runpy.run_path(str(out_paths[0]), run_name="__main__")
-            print("🎉 Well, that didn't crash. Success?")
+            safe_print("🎉 Well, that didn't crash. Success?")
             return 0
-        print(f"😅 I can transform {lang} but can't run it. Try 'transform' instead?")
+        safe_print(f"😅 I can transform {lang} but can't run it. Try 'transform' instead?")
         return 1
 
     if args.command == "interpret":
         input_path = Path(args.input)
         if not input_path.exists():
-            print(f"🙃 '{args.input}' is nowhere to be found. Try again?")
+            safe_print(f"🙃 '{args.input}' is nowhere to be found. Try again?")
             return 1
         lang = detect_language(input_path, args.lang)
         if lang == "python":
             from kinda.interpreter.repl import run_interpreter
-            print("🔮 Entering the chaos dimension...")
+            safe_print("🔮 Entering the chaos dimension...")
             run_interpreter(str(input_path), lang)
-            print("🌪️ Chaos complete. Reality may have shifted slightly.")
+            safe_print("🌪️ Chaos complete. Reality may have shifted slightly.")
             return 0
-        print(f"🤨 Interpret mode only works with Python. What are you even trying to do?")
+        safe_print(f"🤨 Interpret mode only works with Python. What are you even trying to do?")
         return 1
 
     if args.command == "examples":
