@@ -15,7 +15,7 @@ KindaPythonConstructs = {
     },
     "sorta_print": {
         "type": "print",
-        "pattern": re.compile(r'~sorta print\s*\(([^)]+)\)'),
+        "pattern": re.compile(r'~sorta print\s*\((.*)\)\s*(?:;|$)'),
         "description": "Print with ~70% probability",
         "body": (
             "def sorta_print(*args):\n"

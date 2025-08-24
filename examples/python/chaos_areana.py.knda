@@ -1,0 +1,25 @@
+# Chaos Arena - Demo of all supported Kinda transforms
+# This example demonstrates every transform in the Kinda language:
+# 1. ~kinda int (fuzzy integer with ±1 noise)
+# 2. ~sorta print (probabilistic print, 80% chance)  
+# 3. x ~= value (fuzzy reassignment with ±1 noise)
+# 4. ~sometimes (probabilistic conditional, 50% chance)
+
+# Transform 1: ~kinda int (fuzzy integer declaration)
+~kinda int player_health = 100;
+~sorta print("Player health:", player_health);
+
+# Transform 2: x ~= value (fuzzy reassignment)
+player_health ~= player_health - 10;
+~sorta print("Health after damage:", player_health);
+
+# Transform 3: ~sorta print (probabilistic print)
+~sorta print("This message might appear!");
+
+# Transform 4: ~sometimes (probabilistic conditional)
+~sometimes (player_health > 50) {
+    ~sorta print("Player is healthy!");
+    player_health ~= player_health + 5;
+}
+
+~sorta print("Final health:", player_health);

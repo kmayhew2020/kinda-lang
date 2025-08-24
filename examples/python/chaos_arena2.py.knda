@@ -1,0 +1,445 @@
+# -----------------------------------------------------------
+# Chaos Arena 2 - Complex Multi-Agent Simulation with Kinda Transforms
+# -----------------------------------------------------------
+# A sophisticated chaos simulation demonstrating all 4 kinda transforms:
+# 1. ~kinda int x = value  (fuzzy integers with ±1 noise)
+# 2. ~sorta print(...)     (probabilistic printing 80/20)
+# 3. x ~= value           (fuzzy reassignment with ±1 noise)  
+# 4. ~sometimes (cond) {} (probabilistic conditionals 50%)
+
+import time, random, math, statistics
+from collections import defaultdict
+
+# === CONFIGURATION WITH KINDA TRANSFORMS ===
+~kinda int simulation_time = 10;
+~kinda int agent_count = 3;
+~kinda int steps_per_trial = 100;
+~kinda int trials_per_batch = 80;
+
+~sorta print("=== CHAOS ARENA 2 - KINDA EDITION ===");
+~sorta print("Simulation time:", simulation_time, "seconds");
+~sorta print("Agents:", agent_count);
+
+# Agent definitions
+AGENTS = [
+    {"name": "chaos_walker", "aggression": 0.2, "boost_power": 3},
+    {"name": "drift_master", "aggression": 0.1, "boost_power": 2},
+    {"name": "wild_jumper", "aggression": 0.4, "boost_power": 5},
+    {"name": "steady_eddie", "aggression": 0.05, "boost_power": 1},
+]
+
+def chaos_step():
+    # Basic chaotic step function
+    return 1 if random.random() < 0.5 else -1
+
+def run_agent_trial(agent, steps):
+    # Initialize agent with fuzzy starting values
+    ~kinda int position = 0;
+    ~kinda int energy = 50;
+    ~kinda int chaos_level = 1;
+    
+    # Track personality-specific metrics
+    aggression_triggers = 0
+    boost_applications = 0
+    total_boost_magnitude = 0
+    energy_restorations = 0
+    extreme_events_experienced = 0
+    position_dampings = 0
+    step_positions = []
+    step_energies = []
+    
+    for step in range(steps):
+        # Basic movement with fuzziness
+        ~kinda int movement = chaos_step();
+        position ~= position + movement;
+        
+        # Energy management
+        energy ~= energy - 1;
+        
+        # Agent-specific chaos events
+        chaos_trigger = random.random() < agent["aggression"]
+        if chaos_trigger:
+            aggression_triggers += 1
+            ~kinda int boost = agent["boost_power"] * chaos_step();
+            boost_applications += 1
+            total_boost_magnitude += abs(boost)
+            position ~= position + boost;
+            energy ~= energy + 3;  # Chaos restores energy
+            chaos_level ~= chaos_level + 1;
+        
+        # Energy restoration
+        if energy < 10:
+            energy_restorations += 1
+            energy ~= 25;  # Fuzzy energy restore
+        
+        # Rare extreme events
+        extreme_event = random.random() < 0.008
+        if extreme_event:
+            extreme_events_experienced += 1
+            ~kinda int extreme_jump = random.randint(20, 40) * chaos_step();
+            position ~= position + extreme_jump;
+            chaos_level ~= chaos_level + 2;
+        
+        # Position limits with fuzzy boundaries
+        if abs(position) > 200:
+            position_dampings += 1
+            position ~= position // 2;  # Fuzzy damping
+        
+        # Track step-by-step data for behavioral analysis
+        step_positions.append(position)
+        step_energies.append(energy)
+    
+    # Calculate behavioral metrics
+    observed_aggression_rate = aggression_triggers / steps
+    avg_boost_magnitude = total_boost_magnitude / max(boost_applications, 1)
+    position_variance = statistics.pvariance(step_positions) if len(step_positions) > 1 else 0
+    energy_stability = statistics.pstdev(step_energies) if len(step_energies) > 1 else 0
+    
+    return {
+        "position": position, 
+        "energy": energy, 
+        "chaos": chaos_level,
+        # Personality validation metrics
+        "observed_aggression_rate": observed_aggression_rate,
+        "expected_aggression_rate": agent["aggression"],
+        "aggression_triggers": aggression_triggers,
+        "boost_applications": boost_applications,
+        "avg_boost_magnitude": avg_boost_magnitude,
+        "expected_boost_power": agent["boost_power"],
+        "energy_restorations": energy_restorations,
+        "extreme_events": extreme_events_experienced,
+        "position_dampings": position_dampings,
+        "position_variance": position_variance,
+        "energy_stability": energy_stability,
+        "behavioral_consistency": abs(observed_aggression_rate - agent["aggression"])
+    }
+
+def run_batch_simulation(agent, steps, trials):
+    batch_results = []
+    
+    for trial in range(trials):
+        result = run_agent_trial(agent, steps)
+        batch_results.append(result)
+    
+    return batch_results
+
+def analyze_results(agent_name, results):
+    if not results:
+        return
+    
+    # Basic metrics
+    positions = [r["position"] for r in results]
+    energies = [r["energy"] for r in results]
+    chaos_levels = [r["chaos"] for r in results]
+    
+    pos_mean = statistics.fmean(positions)
+    pos_stdev = statistics.pstdev(positions) if len(positions) > 1 else 0
+    energy_mean = statistics.fmean(energies)
+    chaos_mean = statistics.fmean(chaos_levels)
+    
+    # Personality-specific metrics
+    observed_aggression_rates = [r["observed_aggression_rate"] for r in results]
+    expected_aggression_rates = [r["expected_aggression_rate"] for r in results]
+    avg_boost_magnitudes = [r["avg_boost_magnitude"] for r in results]
+    expected_boost_powers = [r["expected_boost_power"] for r in results]
+    behavioral_consistencies = [r["behavioral_consistency"] for r in results]
+    position_variances = [r["position_variance"] for r in results]
+    energy_stabilities = [r["energy_stability"] for r in results]
+    
+    # Calculate personality validation metrics
+    aggression_accuracy = 1 - statistics.fmean(behavioral_consistencies)
+    aggression_correlation = calculate_correlation(expected_aggression_rates, observed_aggression_rates)
+    boost_effectiveness = statistics.fmean(avg_boost_magnitudes)
+    behavioral_stability = statistics.pstdev(behavioral_consistencies) if len(behavioral_consistencies) > 1 else 0
+    movement_predictability = statistics.fmean(position_variances)
+    energy_management_skill = 1 / (1 + statistics.fmean(energy_stabilities))
+    
+    # Personality trait validation
+    expected_aggression = expected_aggression_rates[0]  # Should be consistent across trials
+    expected_boost = expected_boost_powers[0]
+    
+    print(f"\n{agent_name} Analysis:")
+    print(f"  Position: mean={pos_mean:.1f} stdev={pos_stdev:.1f} range=[{min(positions)}, {max(positions)}]")
+    print(f"  Energy: mean={energy_mean:.1f}")  
+    print(f"  Chaos Level: mean={chaos_mean:.1f}")
+    
+    print(f"\n{agent_name} Personality Validation:")
+    print(f"  Expected Aggression: {expected_aggression:.3f} | Observed: {statistics.fmean(observed_aggression_rates):.3f}")
+    print(f"  Aggression Accuracy: {aggression_accuracy:.3f} | Correlation: {aggression_correlation:.3f}")
+    print(f"  Expected Boost Power: {expected_boost} | Observed Effectiveness: {boost_effectiveness:.1f}")
+    print(f"  Behavioral Stability: {1-behavioral_stability:.3f} | Movement Predictability: {movement_predictability:.1f}")
+    print(f"  Energy Management: {energy_management_skill:.3f}")
+    
+    return {
+        "pos_mean": pos_mean,
+        "pos_stdev": pos_stdev,
+        "energy_mean": energy_mean,
+        "chaos_mean": chaos_mean,
+        # Personality metrics
+        "aggression_accuracy": aggression_accuracy,
+        "aggression_correlation": aggression_correlation,
+        "boost_effectiveness": boost_effectiveness,
+        "behavioral_stability": behavioral_stability,
+        "movement_predictability": movement_predictability,
+        "energy_management": energy_management_skill,
+        "expected_aggression": expected_aggression,
+        "expected_boost": expected_boost
+    }
+
+def calculate_correlation(x_values, y_values):
+    """Calculate Pearson correlation coefficient"""
+    if len(x_values) < 2 or len(y_values) < 2:
+        return 0.0
+    
+    n = len(x_values)
+    if n != len(y_values):
+        return 0.0
+    
+    sum_x = sum(x_values)
+    sum_y = sum(y_values)
+    sum_xy = sum(x * y for x, y in zip(x_values, y_values))
+    sum_x_sq = sum(x * x for x in x_values)
+    sum_y_sq = sum(y * y for y in y_values)
+    
+    numerator = n * sum_xy - sum_x * sum_y
+    denominator = math.sqrt((n * sum_x_sq - sum_x * sum_x) * (n * sum_y_sq - sum_y * sum_y))
+    
+    if denominator == 0:
+        return 0.0
+    
+    return numerator / denominator
+
+def simple_histogram(values, title="Distribution"):
+    if not values:
+        return
+    
+    print(f"\n{title}:")
+    
+    # Create simple bins
+    min_val = min(values)
+    max_val = max(values)
+    
+    if min_val == max_val:
+        print(f"  All values = {min_val}")
+        return
+    
+    # 8 bins for simplicity
+    bin_count = 8
+    bin_size = (max_val - min_val) / bin_count
+    bins = [0] * bin_count
+    
+    for val in values:
+        bin_idx = min(int((val - min_val) / bin_size), bin_count - 1)
+        bins[bin_idx] += 1
+    
+    max_count = max(bins) or 1
+    for i, count in enumerate(bins):
+        bin_start = min_val + i * bin_size
+        bin_end = min_val + (i + 1) * bin_size
+        bar = "#" * max(1, int((count / max_count) * 15))
+        print(f"  {bin_start:6.0f}-{bin_end:5.0f}: {bar} ({count})")
+
+def main():
+    start_time = time.time()
+    end_time = start_time + simulation_time
+    
+    # Initialize data collection
+    all_agent_data = {}
+    for agent in AGENTS[:agent_count]:
+        all_agent_data[agent["name"]] = []
+    
+    ~kinda int batch_number = 0;
+    ~kinda int total_trials_run = 0;
+    
+    ~sorta print("Beginning chaos simulation...");
+    
+    # Main simulation loop
+    while time.time() < end_time:
+        batch_number ~= batch_number + 1;
+        
+        ~sorta print("Running batch", batch_number);
+        
+        # Run simulation for each agent
+        for agent in AGENTS[:agent_count]:
+            ~kinda int current_trials = trials_per_batch;
+            
+            batch_results = run_batch_simulation(agent, steps_per_trial, current_trials)
+            all_agent_data[agent["name"]].extend(batch_results)
+            
+            total_trials_run ~= total_trials_run + current_trials;
+            
+            # Quick batch analysis with personality tracking
+            positions = [r["position"] for r in batch_results]
+            batch_mean = statistics.fmean(positions)
+            
+            # Personality validation during batch processing
+            batch_aggression_rates = [r["observed_aggression_rate"] for r in batch_results]
+            batch_aggr_mean = statistics.fmean(batch_aggression_rates)
+            expected_aggr = agent["aggression"]
+            aggr_deviation = abs(batch_aggr_mean - expected_aggr)
+            
+            # Real-time personality drift detection
+            personality_drift_detected = aggr_deviation > 0.15
+            if personality_drift_detected:
+                ~sorta print("PERSONALITY DRIFT ALERT:", agent["name"], "expected:", f"{expected_aggr:.3f}", "observed:", f"{batch_aggr_mean:.3f}");
+            
+            # Probabilistic progress reporting with personality insights
+            report_this_batch = random.random() < 0.4
+            if report_this_batch:
+                ~sorta print("Agent", agent["name"], "batch mean:", f"{batch_mean:.1f}", "aggr_accuracy:", f"{1-aggr_deviation:.3f}");
+        
+        # Periodic detailed reporting
+        if batch_number % 2 == 0:
+            time_remaining = max(0, int(end_time - time.time()))
+            print(f"\n--- Batch {batch_number} Status ({time_remaining}s remaining) ---")
+            
+            for agent in AGENTS[:agent_count]:
+                name = agent["name"]
+                if all_agent_data[name]:
+                    trial_count = len(all_agent_data[name])
+                    recent_positions = [r["position"] for r in all_agent_data[name][-current_trials:]]
+                    recent_mean = statistics.fmean(recent_positions)
+                    print(f"{name}: {trial_count} trials, recent_mean={recent_mean:.1f}")
+    
+    # === FINAL ANALYSIS WITH KINDA TRANSFORMS ===
+    ~sorta print("\n" + "="*60);
+    ~sorta print("FINAL CHAOS ARENA ANALYSIS");
+    ~sorta print("="*60);
+    ~sorta print("Total batches:", batch_number);
+    ~sorta print("Total trials:", total_trials_run);
+    
+    final_stats = {}
+    
+    for agent in AGENTS[:agent_count]:
+        name = agent["name"]
+        results = all_agent_data[name]
+        
+        if results:
+            stats = analyze_results(name, results)
+            final_stats[name] = stats
+            
+            # Create visualizations
+            positions = [r["position"] for r in results]
+            simple_histogram(positions, f"{name} Position Distribution")
+            
+            # Interesting pattern detection with kinda transforms
+            ~kinda int high_variance_threshold = 25;
+            ~kinda int extreme_position_threshold = 15;
+            
+            high_variance_detected = stats["pos_stdev"] > high_variance_threshold
+            extreme_position_detected = abs(stats["pos_mean"]) > extreme_position_threshold
+            
+            if high_variance_detected:
+                ~sorta print("HIGH VARIANCE DETECTED:", name, "stdev =", f"{stats['pos_stdev']:.1f}");
+            
+            if extreme_position_detected:
+                ~sorta print("EXTREME POSITIONING:", name, "mean =", f"{stats['pos_mean']:.1f}");
+    
+    # Advanced Cross-agent Personality Analysis
+    if len(final_stats) >= 2:
+        ~sorta print("\n" + "="*60);
+        ~sorta print("CROSS-AGENT PERSONALITY ANALYSIS");
+        ~sorta print("="*60);
+        
+        agent_names = list(final_stats.keys())
+        ~kinda int comparison_threshold = 10;
+        
+        # Behavioral consistency ranking
+        consistency_scores = []
+        for name in agent_names:
+            stats = final_stats[name]
+            consistency_score = (stats["aggression_accuracy"] + stats["behavioral_stability"] + 
+                               stats["energy_management"]) / 3
+            consistency_scores.append((name, consistency_score))
+        
+        consistency_scores.sort(key=lambda x: x[1], reverse=True)
+        ~sorta print("\nBehavioral Consistency Ranking:");
+        for i, (name, score) in enumerate(consistency_scores):
+            ~sorta print(f"  {i+1}. {name}: {score:.3f}");
+        
+        # Personality trait effectiveness analysis
+        ~sorta print("\nPersonality Trait Effectiveness:");
+        for name in agent_names:
+            stats = final_stats[name]
+            expected_aggr = stats["expected_aggression"]
+            expected_boost = stats["expected_boost"]
+            
+            trait_match = abs(stats["aggression_correlation"] - 1.0) < 0.3
+            boost_effective = stats["boost_effectiveness"] > expected_boost * 0.7
+            
+            trait_status = "VALIDATED" if trait_match and boost_effective else "INCONSISTENT"
+            ~sorta print(f"  {name}: {trait_status} (corr={stats['aggression_correlation']:.3f}, boost_eff={stats['boost_effectiveness']:.1f})");
+        
+        # Pairwise personality comparisons
+        ~sorta print("\nPairwise Agent Comparisons:");
+        for i, name1 in enumerate(agent_names):
+            for name2 in agent_names[i+1:]:
+                stats1, stats2 = final_stats[name1], final_stats[name2]
+                
+                # Position difference
+                pos_diff = abs(stats1["pos_mean"] - stats2["pos_mean"])
+                significant_pos_diff = pos_diff > comparison_threshold
+                
+                # Personality trait differences
+                aggr_diff = abs(stats1["expected_aggression"] - stats2["expected_aggression"])
+                boost_diff = abs(stats1["expected_boost"] - stats2["expected_boost"])
+                behavioral_diff = abs(stats1["behavioral_stability"] - stats2["behavioral_stability"])
+                
+                # Determine relationship type
+                if aggr_diff > 0.2:
+                    relationship = "AGGRESSION_CONTRAST"
+                elif boost_diff > 2:
+                    relationship = "POWER_CONTRAST" 
+                elif behavioral_diff > 0.1:
+                    relationship = "STABILITY_CONTRAST"
+                else:
+                    relationship = "SIMILAR_TRAITS"
+                
+                ~sorta print(f"  {name1} vs {name2}: {relationship}");
+                ~sorta print(f"    Position diff: {pos_diff:.1f} | Aggr diff: {aggr_diff:.3f} | Boost diff: {boost_diff:.1f}");
+                
+                if significant_pos_diff:
+                    ~sorta print(f"    >> SIGNIFICANT POSITIONAL DIVERGENCE");
+        
+        # Personality validation summary
+        validation_summary = {}
+        total_accuracy = 0
+        total_agents = 0
+        
+        for name in agent_names:
+            stats = final_stats[name]
+            validation_score = (stats["aggression_accuracy"] + 
+                              min(stats["aggression_correlation"], 1.0) + 
+                              min(stats["boost_effectiveness"] / stats["expected_boost"], 1.0)) / 3
+            validation_summary[name] = validation_score
+            total_accuracy += validation_score
+            total_agents += 1
+        
+        overall_personality_validation = total_accuracy / max(total_agents, 1)
+        
+        ~sorta print(f"\nOverall Personality Validation Score: {overall_personality_validation:.3f}");
+        
+        validation_quality = "EXCELLENT" if overall_personality_validation > 0.8 else \
+                           "GOOD" if overall_personality_validation > 0.6 else \
+                           "NEEDS_TUNING" if overall_personality_validation > 0.4 else "POOR"
+        
+        ~sorta print(f"Simulation Quality Assessment: {validation_quality}");
+    
+    ~sorta print("\n=== SIMULATION COMPLETE ===");
+    ~sorta print("Reality has been successfully perturbed.");
+
+# Demonstrate top-level sometimes blocks
+~sometimes (True) {
+    ~sorta print("Chaos initialization: READY");
+}
+
+if __name__ == "__main__":
+    try:
+        main()
+    except Exception as e:
+        print(f"Chaos overflow detected: {e}")
+    
+# Post-simulation chaos check
+~sometimes (True) {
+    ~sorta print("Post-simulation chaos level: ELEVATED");
+}
