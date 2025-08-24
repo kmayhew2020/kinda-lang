@@ -33,6 +33,11 @@ def transform_line(line: str) -> list[str]:
         cond = groups[0].strip() if groups and groups[0] else ""
         transformed_code = f"if sometimes({cond}):" if cond else "if sometimes():"
 
+    elif key == "fuzzy_reassign":
+        var, val = groups
+        used_helpers.add("fuzzy_assign")
+        transformed_code = f"{var} = fuzzy_assign('{var}', {val})"
+
     else:
         transformed_code = stripped  # fallback
 
@@ -54,7 +59,7 @@ def transform_file(path: Path, target_language="python") -> str:
         stripped = line.strip()
         print(f"[transform_file] Transforming line: {stripped}")
 
-        if stripped.startswith("sometimes"):
+        if stripped.startswith("~sometimes"):
             output_lines.extend(transform_line(line))
             i += 1
 
@@ -63,7 +68,10 @@ def transform_file(path: Path, target_language="python") -> str:
                 next_line = lines[i]
                 next_stripped = next_line.strip()
 
-                if not next_stripped or next_stripped.startswith("kinda") or next_stripped.startswith("sometimes"):
+                # Stop at closing brace or new construct
+                if next_stripped == "}" or not next_stripped or next_stripped.startswith("~kinda") or next_stripped.startswith("~sometimes"):
+                    if next_stripped == "}":
+                        i += 1  # Skip the closing brace
                     break
 
                 transformed_block = transform_line(next_line)
