@@ -1,0 +1,18 @@
+~kinda int confidence = 8;
+~kinda int uncertainty = 3;
+
+~maybe (confidence > uncertainty) {
+    ~sorta print("Maybe we should proceed...");
+    confidence ~= 2;
+}
+
+~maybe (uncertainty < 5) {
+    ~sorta print("Uncertainty is manageable");
+    ~sometimes (True) {
+        ~sorta print("Sometimes nested in maybe");
+    }
+}
+
+~maybe () {
+    ~sorta print("Just maybe, no conditions");
+}
