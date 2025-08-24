@@ -17,6 +17,7 @@ def safe_print(text: str) -> None:
                    .replace("🎲", "*")  # die -> asterisk
                    .replace("🤷", "?")  # shrug -> question mark
                    .replace("📚", "*")  # book -> asterisk
+                   .replace("📝", "*")  # memo -> asterisk
                    .replace("🎯", "*")  # target -> asterisk
                    .replace("🤔", "?")  # thinking -> question mark
                    .replace("🤷‍♂️", "?")  # shrug man -> question mark
@@ -44,7 +45,7 @@ def show_examples():
     ]
     
     for title, filename, description in examples:
-        print(f"📝 {title}")
+        safe_print(f"📝 {title}")
         if filename and Path(filename).exists():
             print(f"   Try: kinda run {filename}")
             print(f"   Or:  kinda interpret {filename}")

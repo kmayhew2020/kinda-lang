@@ -20,6 +20,7 @@ def normalize_emoji_output(text: str) -> str:
                .replace("🎲", "*")
                .replace("🤷", "?") 
                .replace("📚", "*")
+               .replace("📝", "*")
                .replace("✨", "*")
                .replace("🎯", "*"))
     return text
