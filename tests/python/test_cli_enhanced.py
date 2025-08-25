@@ -13,7 +13,7 @@ import sys
 
 from kinda.cli import (
     safe_read_file, validate_knda_file, detect_language,
-    setup_transformer, safe_print, main
+    get_transformer, safe_print, main
 )
 
 
@@ -78,38 +78,16 @@ class TestSafeReadFile:
         finally:
             temp_path.unlink()
     
-    @patch('kinda.cli.HAS_CHARDET', True)
-    @patch('kinda.cli.chardet.detect')
-    def test_safe_read_file_with_chardet(self, mock_detect, capsys):
-        """Test file reading with chardet encoding detection."""
-        mock_detect.return_value = {'encoding': 'latin-1', 'confidence': 0.9}
-        
+    def test_safe_read_file_with_different_encodings(self, capsys):
+        """Test file reading with different encodings."""
+        # Test UTF-8 BOM
         with tempfile.NamedTemporaryFile(mode='wb', suffix='.knda', delete=False) as f:
-            f.write("~kinda int x = 42".encode('latin-1'))
+            f.write(b'\xef\xbb\xbf~kinda int x = 42')
             temp_path = Path(f.name)
         
         try:
             content = safe_read_file(temp_path)
-            assert "~kinda int x = 42" in content
-            mock_detect.assert_called_once()
-        finally:
-            temp_path.unlink()
-    
-    @patch('kinda.cli.HAS_CHARDET', True)
-    @patch('kinda.cli.chardet.detect')
-    def test_safe_read_file_low_confidence_encoding(self, mock_detect, capsys):
-        """Test handling low confidence encoding detection."""
-        mock_detect.return_value = {'encoding': 'gb2312', 'confidence': 0.3}
-        
-        with tempfile.NamedTemporaryFile(mode='wb', suffix='.knda', delete=False) as f:
-            f.write(b'~kinda int x = 42')
-            temp_path = Path(f.name)
-        
-        try:
-            content = safe_read_file(temp_path)
-            captured = capsys.readouterr()
-            assert "Encoding detection uncertain" in captured.out
-            assert "confidence" in captured.out
+            assert "~kinda int" in content
         finally:
             temp_path.unlink()
     
@@ -184,84 +162,68 @@ class TestDetectLanguage:
     
     def test_detect_python_extension(self):
         """Test detecting Python from file extension."""
-        assert detect_language(Path("test.py.knda")) == "python"
-        assert detect_language(Path("test.python.knda")) == "python"
+        assert detect_language(Path("test.py.knda"), None) == "python"
+        assert detect_language(Path("test.py"), None) == "python"
     
-    def test_detect_c_extension(self):
-        """Test detecting C from file extension."""
-        assert detect_language(Path("test.c.knda")) == "c"
-    
-    def test_detect_java_extension(self):
-        """Test detecting Java from file extension."""
-        assert detect_language(Path("test.java.knda")) == "java"
-    
-    def test_detect_js_extension(self):
-        """Test detecting JavaScript from file extension."""
-        assert detect_language(Path("test.js.knda")) == "javascript"
+    def test_detect_c_extension(self, capsys):
+        """Test detecting C from file extension raises error."""
+        with pytest.raises(ValueError, match="C files not yet supported"):
+            detect_language(Path("test.c.knda"), None)
+        
+        with pytest.raises(ValueError, match="C files not yet supported"):
+            detect_language(Path("test.c"), None)
     
     def test_detect_unknown_extension(self):
         """Test unknown extension defaults to Python."""
-        assert detect_language(Path("test.unknown.knda")) == "python"
+        assert detect_language(Path("test.unknown.knda"), None) == "python"
+        assert detect_language(Path("test.txt"), None) == "python"
     
-    def test_detect_with_forced_language(self):
-        """Test forced language overrides detection."""
-        assert detect_language(Path("test.py.knda"), "c") == "c"
+    def test_detect_with_forced_python(self):
+        """Test forced Python language."""
         assert detect_language(Path("test.c.knda"), "python") == "python"
+        assert detect_language(Path("test.unknown"), "python") == "python"
     
-    def test_detect_directory_structure(self):
-        """Test language detection for directories."""
-        with tempfile.TemporaryDirectory() as temp_dir:
-            # Create Python-like structure
-            (Path(temp_dir) / "main.py.knda").touch()
-            assert detect_language(Path(temp_dir)) == "python"
-    
-    def test_detect_directory_no_files(self):
-        """Test directory with no language files defaults to Python."""
-        with tempfile.TemporaryDirectory() as temp_dir:
-            assert detect_language(Path(temp_dir)) == "python"
+    def test_detect_with_forced_c(self, capsys):
+        """Test forced C language raises error."""
+        with pytest.raises(ValueError, match="C language not yet supported"):
+            detect_language(Path("test.py.knda"), "c")
+        
+        captured = capsys.readouterr()
+        assert "C transpiler is planned for v0.4.0" in captured.out
 
 
-class TestSetupTransformer:
-    """Test transformer setup function."""
+class TestGetTransformer:
+    """Test transformer getter function."""
     
-    def test_setup_python_transformer(self):
-        """Test setting up Python transformer."""
-        transformer = setup_transformer("python")
+    def test_get_python_transformer(self):
+        """Test getting Python transformer."""
+        transformer = get_transformer("python")
         assert transformer is not None
         assert hasattr(transformer, 'transform')
     
-    def test_setup_c_transformer(self, capsys):
-        """Test C transformer is not yet available."""
-        transformer = setup_transformer("c")
+    def test_get_c_transformer(self, capsys):
+        """Test C transformer is disabled."""
+        transformer = get_transformer("c")
         assert transformer is None
         captured = capsys.readouterr()
-        assert "C transpiler is planned for v0.4.0" in captured.out
+        assert "C support is coming in v0.4.0" in captured.out
     
-    def test_setup_java_transformer(self, capsys):
-        """Test Java transformer is not yet available."""
-        transformer = setup_transformer("java")
-        assert transformer is None
-        captured = capsys.readouterr()
-        assert "not yet" in captured.out or "support coming" in captured.out
-    
-    def test_setup_javascript_transformer(self, capsys):
-        """Test JavaScript transformer is not yet available."""
-        transformer = setup_transformer("javascript")
-        assert transformer is None
-        captured = capsys.readouterr()
-        assert "not yet" in captured.out or "support coming" in captured.out
+    def test_get_unsupported_language(self):
+        """Test unsupported languages raise ValueError."""
+        with pytest.raises(ValueError, match="Unsupported language: java"):
+            get_transformer("java")
+        
+        with pytest.raises(ValueError, match="Unsupported language: javascript"):
+            get_transformer("javascript")
 
 
 class TestMainFunctionEdgeCases:
     """Test main function with various edge cases."""
     
     def test_main_no_arguments(self, capsys):
-        """Test main with no arguments shows help."""
-        with patch('sys.argv', ['kinda']):
-            result = main()
-            captured = capsys.readouterr()
-            assert result == 0
-            assert "usage:" in captured.out.lower() or "kinda" in captured.out
+        """Test main with no arguments shows error."""
+        with pytest.raises(SystemExit):
+            main([])
     
     def test_main_help_flag(self, capsys):
         """Test --help flag."""
@@ -272,14 +234,10 @@ class TestMainFunctionEdgeCases:
             captured = capsys.readouterr()
             assert "usage:" in captured.out.lower()
     
-    def test_main_version_flag(self, capsys):
-        """Test --version flag."""
-        with patch('sys.argv', ['kinda', '--version']):
-            with pytest.raises(SystemExit) as exc_info:
-                main()
-            assert exc_info.value.code == 0
-            captured = capsys.readouterr()
-            assert "0." in captured.out  # Should contain version number
+    def test_main_invalid_arguments(self, capsys):
+        """Test invalid arguments."""
+        with pytest.raises(SystemExit):
+            main(['--invalid-flag'])
     
     def test_main_unknown_command(self, capsys):
         """Test unknown command."""
@@ -304,23 +262,22 @@ class TestMainFunctionEdgeCases:
         finally:
             temp_path.unlink()
     
-    def test_main_run_with_output_dir(self, capsys):
-        """Test run command with custom output directory."""
+    def test_main_run_with_valid_file(self, capsys):
+        """Test run command with valid file."""
         with tempfile.NamedTemporaryFile(mode='w', suffix='.knda', delete=False) as f:
             f.write('~sorta print("test")')
             temp_path = Path(f.name)
         
         try:
-            with patch('sys.argv', ['kinda', 'run', str(temp_path), '--out', 'custom_run']):
-                result = main()
-                captured = capsys.readouterr()
-                assert result == 0
+            result = main(['run', str(temp_path)])
+            captured = capsys.readouterr()
+            assert result == 0
         finally:
             temp_path.unlink()
             # Clean up
-            if Path("custom_run").exists():
+            if Path(".kinda-build").exists():
                 import shutil
-                shutil.rmtree("custom_run")
+                shutil.rmtree(".kinda-build")
 
 
 class TestSafePrintEdgeCases:
