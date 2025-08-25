@@ -109,7 +109,7 @@ class TestCLIMainFunction:
             temp_path = Path(f.name)
 
         try:
-            with patch('sys.argv', ['kinda', 'transform', str(temp_path), '--lang', 'c']):
+            with patch('sys.argv', ['kinda', 'transform', str(temp_path), '--lang', 'rust']):
                 result = main()
                 captured = capsys.readouterr()
                 assert result == 1  # Returns 1 (error) because C support is disabled

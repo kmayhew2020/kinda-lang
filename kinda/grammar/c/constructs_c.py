@@ -1,73 +1,41 @@
-# kinda/grammar/constructs.py
+# kinda/grammar/c/constructs_c.py
 
-KindaConstructs = {
-    "kinda int decl_only": {
-        "type": "declaration",
-        "pattern": r'kinda int (\w+);',
-        "description": "Fuzzy integer declaration without assignment",
-        "runtime": {
-            "python": (
-                "def kinda_int(name):\n"
-                "    import random\n"
-                "    noisy = random.randint(0, 10)\n"
-                "    globals()[name] = noisy\n"
-                "    print(f\"[assign] {name} ~= {noisy}\")\n"
-                "    return noisy"
-            )
-        }
-    },
-    "kinda int with_assign": {
-        "type": "declaration",
-        "pattern": r'kinda int (\w+)\s*~=\s*(.+);',
+import re
+
+KindaCConstructs = {
+    "kinda_int": {
+        "type": "declaration", 
+        "pattern": re.compile(r'kinda int (\w+)\s*=\s*(.+?);'),
         "description": "Fuzzy integer declaration with noise",
-        "runtime": {
-            "python": (
-                "def kinda_int(name, value):\n"
-                "    import random\n"
-                "    noisy = value + random.randint(-2, 2)\n"
-                "    globals()[name] = noisy\n"
-                "    print(f\"[assign] {name} ~= {noisy}\")\n"
-                "    return noisy"
-            )
-        }
     },
-    "~=": {
-        "type": "assignment",
-        "pattern": r'(\w+)\s*~=\s*(.+);',
-        "description": "Fuzzy reassignment",
-        "runtime": {
-            "python": (
-                "def fuzzy_assign(name, value):\n"
-                "    import random\n"
-                "    noisy = value + random.randint(-2, 2)\n"
-                "    globals()[name] = noisy\n"
-                "    print(f\"[assign] {name} ~= {noisy}\")"
-            )
-        }
+    "kinda_int_decl": {
+        "type": "declaration",
+        "pattern": re.compile(r'(\w+):\s*kinda int\s*=\s*(.+?);'),
+        "description": "Fuzzy integer declaration with type annotation",
     },
-    "sorta print": {
+    "sorta_print": {
         "type": "print",
-        "pattern": r'sorta print\((.+)\);',
-        "description": "80% chance to print",
-        "runtime": {
-            "python": (
-                "def sorta_print(*args):\n"
-                "    import random\n"
-                "    if random.random() < 0.8:\n"
-                "        print('[print]', *args)"
-            )
-        }
+        "pattern": re.compile(r'sorta print\s*\((.*)\)\s*;?'),
+        "description": "Print with ~80% probability",
     },
     "sometimes": {
         "type": "conditional",
-        "pattern": r'sometimes\s*\((.+)\)\s*{',
-        "description": "Fuzzy conditional block",
-        "runtime": {
-            "python": (
-                "def sometimes(condition):\n"
-                "    import random\n"
-                "    return condition and random.random() < 0.5"
-            )
-        }
-    }
+        "pattern": re.compile(r'sometimes\s*\(([^)]*)\)\s*\{'),
+        "description": "Fuzzy conditional trigger (50% chance)",
+    },
+    "maybe": {
+        "type": "conditional", 
+        "pattern": re.compile(r'maybe\s*\(([^)]*)\)\s*\{'),
+        "description": "Fuzzy conditional trigger (60% chance)",
+    },
+    "fuzzy_reassign": {
+        "type": "reassignment",
+        "pattern": re.compile(r'(\w+)\s*~=\s*(.+?);'),
+        "description": "Fuzzy reassignment to an existing variable",
+    },
+    "kinda_binary": {
+        "type": "declaration",
+        "pattern": re.compile(r'kinda\s+binary\s+(\w+)(?:\s*~\s*probabilities\s*\(([^)]+)\))?;?'),
+        "description": "Three-state binary: positive (1), negative (-1), or neutral (0)",
+    },
 }

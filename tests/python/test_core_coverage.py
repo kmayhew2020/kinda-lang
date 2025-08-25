@@ -179,9 +179,9 @@ class TestCLIFunctionsCoverage:
         transformer = get_transformer("python")
         assert transformer is not None
         
-        # Test unsupported language
-        with pytest.raises(ValueError):
-            get_transformer("unsupported")
+        # Test unsupported language returns None
+        transformer = get_transformer("unsupported")
+        assert transformer is None
 
 
 class TestFileTransformation:
