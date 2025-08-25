@@ -173,7 +173,7 @@ KindaPythonConstructs = {
             "        return int(result) if isinstance(val, int) else result\n"
             "    except Exception as e:\n"
             "        print(f\"[shrug] Ish value kinda confused: {e}\")\n"
-            "        print(f\"[tip] Returning random value with variance ±{variance}\")\n"
+            "        print(f\"[tip] Returning random value with variance +/-{variance}\")\n"
             "        return random.uniform(-variance, variance)"
         ),
     },
