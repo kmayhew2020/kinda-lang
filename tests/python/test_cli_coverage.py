@@ -112,8 +112,8 @@ class TestCLIMainFunction:
             with patch('sys.argv', ['kinda', 'transform', str(temp_path), '--lang', 'c']):
                 result = main()
                 captured = capsys.readouterr()
-                assert result == 0  # Returns 0 but shows message
-                assert "don't speak" in captured.out
+                assert result == 1  # Returns 1 (error) because C support is disabled
+                assert ("C transpiler is planned for v0.4.0" in captured.out or "C language not yet supported" in str(captured))
         finally:
             temp_path.unlink()
 
@@ -149,7 +149,7 @@ class TestCLIMainFunction:
                 result = main()
                 captured = capsys.readouterr()
                 assert result == 1
-                assert "Can't run" in captured.out
+                assert ("C support is coming in v0.4.0" in captured.out or "C transpiler is planned for v0.4.0" in captured.out)
         finally:
             temp_path.unlink()
 
@@ -182,7 +182,7 @@ class TestCLIMainFunction:
                 result = main()
                 captured = capsys.readouterr()
                 assert result == 1
-                assert "Interpret mode only works with Python" in captured.out
+                assert ("C support is coming in v0.4.0" in captured.out or "C transpiler is planned for v0.4.0" in captured.out or "Interpret mode only works with Python" in captured.out)
         finally:
             temp_path.unlink()
 

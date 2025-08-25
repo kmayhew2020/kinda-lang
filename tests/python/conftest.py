@@ -31,7 +31,8 @@ def regenerate_build():
 
     # Step 3: Run transformer on all .knda files in each src dir
     for src_dir in SRC_DIRS:
-        lang = "python" if "python" in src_dir else "c"  # crude but effective
+        # Only use Python language since C support is disabled in v0.3.0
+        lang = "python"  
         result1 = subprocess.run(
             ["python", "-m", "kinda", "transform", src_dir, "--out", str(BUILD_DIR), "--lang", lang],
             capture_output=True,
