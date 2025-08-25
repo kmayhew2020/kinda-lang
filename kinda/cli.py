@@ -265,7 +265,14 @@ def main(argv=None) -> int:
         except ValueError as e:
             # Language not supported (like C)
             return 1
-        transformer = get_transformer(lang)
+        
+        try:
+            transformer = get_transformer(lang)
+        except ValueError as e:
+            # Unsupported language
+            safe_print(f"[shrug] Sorry, I don't speak {lang} yet. Try Python maybe?")
+            return 1
+            
         if transformer is None:
             safe_print(f"[shrug] Sorry, I don't speak {lang} yet. Try Python maybe?")
             return 1

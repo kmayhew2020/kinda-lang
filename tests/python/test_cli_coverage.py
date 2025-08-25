@@ -112,8 +112,8 @@ class TestCLIMainFunction:
             with patch('sys.argv', ['kinda', 'transform', str(temp_path), '--lang', 'rust']):
                 result = main()
                 captured = capsys.readouterr()
-                assert result == 1  # Returns 1 (error) because C support is disabled
-                assert ("C transpiler is planned for v0.4.0" in captured.out or "C language not yet supported" in str(captured))
+                assert result == 1  # Returns 1 (error) because rust is unsupported
+                assert ("Sorry, I don't speak rust yet" in captured.out or "Try Python maybe" in captured.out)
         finally:
             temp_path.unlink()
 
