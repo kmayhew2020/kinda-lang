@@ -5,6 +5,13 @@ import sys
 from pathlib import Path
 from typing import Union
 
+# Optional chardet import for encoding detection
+try:
+    import chardet
+    HAS_CHARDET = True
+except ImportError:
+    HAS_CHARDET = False
+
 
 def safe_print(text: str) -> None:
     """Print text with Windows-safe encoding fallbacks"""
@@ -15,12 +22,12 @@ def safe_print(text: str) -> None:
         fallback = (text
                    .replace("✨", "*")  # sparkle -> asterisk
                    .replace("🎲", "*")  # die -> asterisk
-                   .replace("🤷", "?")  # shrug -> question mark
+                   .replace("[shrug]", "?")  # shrug -> question mark
                    .replace("📚", "*")  # book -> asterisk
                    .replace("📝", "*")  # memo -> asterisk
                    .replace("🎯", "*")  # target -> asterisk
-                   .replace("🤔", "?")  # thinking -> question mark
-                   .replace("🤷‍♂️", "?")  # shrug man -> question mark
+                   .replace("[?]", "?")  # thinking -> question mark
+                   .replace("[shrug]‍♂️", "?")  # shrug man -> question mark
                    .replace("🙄", "~")  # eye roll -> tilde
                    .replace("🎮", "*")  # game controller -> asterisk
                    .replace("🎉", "!")  # party -> exclamation
@@ -31,6 +38,78 @@ def safe_print(text: str) -> None:
                    .replace("🤨", "?")  # raised eyebrow -> question mark
         )
         print(fallback)
+
+
+def safe_read_file(file_path: Path) -> str:
+    """Safely read a file with encoding detection and error handling"""
+    try:
+        # First try reading as binary to detect encoding
+        with open(file_path, 'rb') as f:
+            raw_data = f.read()
+        
+        if not raw_data:
+            safe_print(f"⚠️  '{file_path}' appears to be empty")
+            return ""
+        
+        # Try encoding detection if chardet is available
+        encoding = 'utf-8'  # default
+        if HAS_CHARDET:
+            detected = chardet.detect(raw_data)
+            encoding = detected.get('encoding', 'utf-8')
+            confidence = detected.get('confidence', 0)
+            
+            if confidence < 0.7:
+                safe_print(f"⚠️  Encoding detection uncertain for '{file_path}' (confidence: {confidence:.1%})")
+                safe_print(f"[info] Trying {encoding} encoding, but results may be wonky")
+        
+        # Try to decode with detected/default encoding
+        try:
+            content = raw_data.decode(encoding)
+        except UnicodeDecodeError:
+            # Fall back to UTF-8 with error replacement
+            if encoding != 'utf-8':
+                safe_print(f"[?] Encoding {encoding} failed, falling back to UTF-8...")
+            content = raw_data.decode('utf-8', errors='replace')
+        
+        return content
+    
+    except PermissionError:
+        safe_print(f"🚫 Permission denied reading '{file_path}'")
+        safe_print("[tip] Check if the file is readable or if you need different permissions")
+        raise
+    except OSError as e:
+        safe_print(f"💥 Error reading '{file_path}': {e}")
+        safe_print("[tip] File might be corrupted, in use by another program, or on a bad disk")
+        raise
+
+
+def validate_knda_file(file_path: Path) -> bool:
+    """Validate that a .knda file can be processed"""
+    try:
+        # Check if it's a directory
+        if file_path.is_dir():
+            # For directories, validation passes - let the transformer handle it
+            return True
+        
+        # For files, do content validation
+        content = safe_read_file(file_path)
+        
+        # Check if file is suspiciously large
+        if len(content) > 1_000_000:  # 1MB limit
+            safe_print(f"😰 '{file_path}' is pretty huge ({len(content):,} chars)")
+            safe_print("[tip] Large files might cause performance issues")
+            safe_print("[shrug] Proceeding anyway, but don't blame me if things get slow...")
+        
+        # Check for obviously non-text content
+        if '\x00' in content:
+            safe_print(f"🤨 '{file_path}' contains binary data - that's not gonna work")
+            safe_print("[tip] Make sure you're pointing to a text file with kinda code")
+            return False
+        
+        return True
+        
+    except Exception:
+        return False
 
 
 def show_examples():
@@ -56,7 +135,7 @@ def show_examples():
         print(f"   {description}")
         print()
     
-    safe_print("🤷 Pro tip: Run any example with 'interpret' for maximum chaos")
+    safe_print("[shrug] Pro tip: Run any example with 'interpret' for maximum chaos")
 
 
 def show_syntax_reference():
@@ -91,20 +170,42 @@ def get_transformer(lang: str):
         from kinda.langs.python import transformer
         return transformer
     elif lang == "c":
-        # C path not ready yet
+        # C support is coming in v0.4.0 - currently incomplete
+        safe_print("[note] C support is coming in v0.4.0 with full compilation pipeline!")
+        safe_print("[info] Currently only Python is supported. Use '--lang python' or omit --lang.")
+        safe_print("[link] Follow progress at: https://github.com/kinda-lang/kinda-lang/issues/19")
         return None
     else:
-        raise ValueError(f"Unsupported language: {lang}")
+        raise ValueError(f"Unsupported language: {lang}. Currently only 'python' is supported.")
 
 
 def detect_language(path: Path, forced: Union[str, None]) -> str:
-    """Tiny heuristic; lets --lang override."""
+    """
+    Detect target language from file extension or --lang override.
+    Currently only Python is fully supported.
+    """
     if forced:
-        return forced
+        if forced.lower() == "c":
+            # Reject C explicitly with helpful message
+            safe_print("[note] C transpiler is planned for v0.4.0 but not ready yet!")
+            safe_print("[info] Currently only Python is supported.")
+            safe_print("[tip] Tip: Remove '--lang c' to use Python (default)")
+            safe_print("[link] Track C support progress: https://github.com/kinda-lang/kinda-lang/issues/19")
+            raise ValueError("C language not yet supported")
+        return forced.lower()
+    
     name = str(path)
     if name.endswith(".py.knda") or name.endswith(".py"):
         return "python"
-    # Default to python for now
+    elif name.endswith(".c.knda") or name.endswith(".c"):
+        # C files not supported yet - reject with helpful message
+        safe_print("[note] C files detected but C transpiler isn't ready yet!")
+        safe_print("[info] C support is planned for v0.4.0 with full compilation pipeline")
+        safe_print("[tip] For now, please use .py.knda files with Python syntax")
+        safe_print("[link] Track C support: https://github.com/kinda-lang/kinda-lang/issues/19")
+        raise ValueError("C files not yet supported - use .py.knda instead")
+    
+    # Default to python - it's our only complete implementation
     return "python"
 
 
@@ -123,15 +224,15 @@ def main(argv=None) -> int:
     p_transform.add_argument(
         "--out", default="build", help="Where to dump the results (default: build)"
     )
-    p_transform.add_argument("--lang", default=None, help="Force a language if you're feeling decisive")
+    p_transform.add_argument("--lang", default=None, help="Target language (currently: 'python' only)")
 
     p_run = sub.add_parser("run", help="Transform then execute (living dangerously, I see)")
     p_run.add_argument("input", help="The .knda file you want to run")
-    p_run.add_argument("--lang", default=None, help="Override language detection (sure, why not)")
+    p_run.add_argument("--lang", default=None, help="Target language (currently: 'python' only)")
 
     p_interpret = sub.add_parser("interpret", help="Run directly in fuzzy runtime (maximum chaos mode)")
     p_interpret.add_argument("input", help="Your questionable life choices in .knda form")
-    p_interpret.add_argument("--lang", default=None, help="Force language (you know what you did)")
+    p_interpret.add_argument("--lang", default=None, help="Target language (currently: 'python' only)")
 
     p_examples = sub.add_parser("examples", help="Show example kinda programs (for inspiration)")
     
@@ -142,48 +243,129 @@ def main(argv=None) -> int:
     if args.command == "transform":
         input_path = Path(args.input)
         if not input_path.exists():
-            safe_print(f"🤔 '{args.input}' doesn't exist. Are you sure you typed that right?")
+            safe_print(f"[?] '{args.input}' doesn't exist. Are you sure you typed that right?")
+            safe_print("[tip] Tip: Check your file path and make sure the .knda file exists")
+            # Suggest similar files if possible
+            parent = input_path.parent
+            if parent.exists():
+                similar_files = list(parent.glob("*.knda"))
+                if similar_files:
+                    safe_print("📂 Found these .knda files in the same directory:")
+                    for f in similar_files[:3]:  # Show max 3 suggestions
+                        safe_print(f"   • {f.name}")
             return 1
+        # Validate file before processing
+        if not validate_knda_file(input_path):
+            safe_print("💥 File validation failed - cannot process this file")
+            return 1
+        
         out_dir = Path(args.out)
-        lang = detect_language(input_path, args.lang)
+        try:
+            lang = detect_language(input_path, args.lang)
+        except ValueError as e:
+            # Language not supported (like C)
+            return 1
         transformer = get_transformer(lang)
         if transformer is None:
-            safe_print(f"🤷 Sorry, I don't speak {lang} yet. Try Python maybe?")
+            safe_print(f"[shrug] Sorry, I don't speak {lang} yet. Try Python maybe?")
+            return 1
+        
+        try:
+            output_paths = transformer.transform(input_path, out_dir=out_dir)
+            for path in output_paths:
+                print(f"* Transformed your chaos into: {path}")
+            print(f"* Generated {len(output_paths)} file(s). Hope they work!")
             return 0
-        output_paths = transformer.transform(input_path, out_dir=out_dir)
-        for path in output_paths:
-            print(f"* Transformed your chaos into: {path}")
-        print(f"* Generated {len(output_paths)} file(s). Hope they work!")
-        return 0
+        except Exception as e:
+            # Handle parsing errors gracefully
+            if "KindaParseError" in str(type(e)):
+                safe_print(str(e).strip())
+                safe_print("[tip] Fix the syntax error above and try again")
+            else:
+                safe_print(f"💥 Transform failed: {e}")
+                safe_print("[tip] Check your .knda file for syntax issues")
+            return 1
 
     if args.command == "run":
         input_path = Path(args.input)
         if not input_path.exists():
-            safe_print(f"🤷‍♂️ Can't find '{args.input}'. Did you make that up?")
+            safe_print(f"[shrug]‍♂️ Can't find '{args.input}'. Did you make that up?")
+            safe_print("[tip] Double-check your file path - it should end with .knda")
+            # Suggest similar files
+            parent = input_path.parent
+            if parent.exists():
+                similar_files = list(parent.glob("*.knda"))
+                if similar_files:
+                    safe_print("📂 Found these runnable .knda files nearby:")
+                    for f in similar_files[:3]:  # Show max 3 suggestions
+                        safe_print(f"   • {f.name}")
             return 1
-        lang = detect_language(input_path, args.lang)
+        # Validate file before processing
+        if not validate_knda_file(input_path):
+            safe_print("💥 File validation failed - cannot run this file")
+            return 1
+            
+        try:
+            lang = detect_language(input_path, args.lang)
+        except ValueError as e:
+            # Language not supported (like C)
+            return 1
         transformer = get_transformer(lang)
         if transformer is None:
             safe_print(f"🙄 Can't run {lang} files yet. Python works though.")
             return 1
-        out_dir = Path(".kinda-build")
-        out_paths = transformer.transform(input_path, out_dir=out_dir)
-        if lang == "python":
-            import runpy
-            safe_print("🎮 Running your questionable code...")
-            # Execute the transformed file
-            runpy.run_path(str(out_paths[0]), run_name="__main__")
-            safe_print("🎉 Well, that didn't crash. Success?")
-            return 0
-        safe_print(f"😅 I can transform {lang} but can't run it. Try 'transform' instead?")
-        return 1
+        
+        try:
+            out_dir = Path(".kinda-build")
+            out_paths = transformer.transform(input_path, out_dir=out_dir)
+            if lang == "python":
+                import runpy
+                safe_print("🎮 Running your questionable code...")
+                # Execute the transformed file
+                try:
+                    runpy.run_path(str(out_paths[0]), run_name="__main__")
+                    safe_print("🎉 Well, that didn't crash. Success?")
+                except Exception as e:
+                    safe_print(f"💥 Runtime error: {e}")
+                    safe_print("[?] Your code transformed fine but crashed during execution")
+                    return 1
+                return 0
+            safe_print(f"😅 I can transform {lang} but can't run it. Try 'transform' instead?")
+            return 1
+        except Exception as e:
+            # Handle parsing errors gracefully
+            if "KindaParseError" in str(type(e)):
+                safe_print(str(e).strip())
+                safe_print("[tip] Fix the syntax error above and try again")
+            else:
+                safe_print(f"💥 Transform failed: {e}")
+                safe_print("[tip] Check your .knda file for syntax issues")
+            return 1
 
     if args.command == "interpret":
         input_path = Path(args.input)
         if not input_path.exists():
             safe_print(f"🙃 '{args.input}' is nowhere to be found. Try again?")
+            safe_print("[tip] Make sure your .knda file exists and the path is correct")
+            # Suggest similar files
+            parent = input_path.parent
+            if parent.exists():
+                similar_files = list(parent.glob("*.knda"))
+                if similar_files:
+                    safe_print("📂 These .knda files are available for interpretation:")
+                    for f in similar_files[:3]:  # Show max 3 suggestions
+                        safe_print(f"   • {f.name}")
             return 1
-        lang = detect_language(input_path, args.lang)
+        # Validate file before processing
+        if not validate_knda_file(input_path):
+            safe_print("💥 File validation failed - cannot interpret this file")
+            return 1
+            
+        try:
+            lang = detect_language(input_path, args.lang)
+        except ValueError as e:
+            # Language not supported (like C)
+            return 1
         if lang == "python":
             from kinda.interpreter.repl import run_interpreter
             safe_print("🔮 Entering the chaos dimension...")
