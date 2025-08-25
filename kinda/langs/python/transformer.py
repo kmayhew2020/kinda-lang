@@ -165,8 +165,20 @@ def _transform_welp_constructs(line: str) -> str:
             fallback_value = match.group(2).strip()
             replacement = f"welp_fallback(lambda: {primary_expr}, {fallback_value})"
             
-            # Replace the matched text
-            transformed_line = transformed_line[:start_pos] + replacement + transformed_line[end_pos:]
+            # Replace the matched text, preserving leading whitespace if needed
+            leading_space = ""
+            if start_pos < len(transformed_line) and transformed_line[start_pos].isspace():
+                # Count leading whitespace to preserve
+                space_end = start_pos
+                while space_end < len(transformed_line) and transformed_line[space_end].isspace():
+                    space_end += 1
+                leading_space = transformed_line[start_pos:space_end]
+                # Skip the whitespace in the primary expression parsing
+                actual_start = space_end
+            else:
+                actual_start = start_pos
+            
+            transformed_line = transformed_line[:start_pos] + leading_space + replacement + transformed_line[end_pos:]
     
     return transformed_line
 

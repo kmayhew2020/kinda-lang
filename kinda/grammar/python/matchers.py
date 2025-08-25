@@ -179,12 +179,159 @@ def find_welp_constructs(line: str):
     """
     constructs = []
     
-    # Find welp patterns (e.g., "api_call() ~welp default_value")
-    welp_pattern = re.compile(r'(.+)\s*~welp\s*(.+)')
-    for match in welp_pattern.finditer(line):
-        # Skip if inside string literal
-        if _is_inside_string_literal(line, match.start()):
-            continue
-        constructs.append(("welp", match, match.start(), match.end()))
+    # Find all occurrences of ~welp that are not in strings
+    welp_positions = []
+    for match in re.finditer(r'~welp\b', line):
+        if not _is_inside_string_literal(line, match.start()):
+            welp_positions.append(match.start())
+    
+    # Process each welp construct
+    for welp_start in welp_positions:
+        # Find the primary expression by working backwards with proper balance
+        primary_start = _find_balanced_expr_start(line, welp_start - 1)
+        primary_expr = line[primary_start:welp_start].strip()
+        
+        # Find the fallback expression by working forwards
+        fallback_start = welp_start + 5  # len("~welp")
+        while fallback_start < len(line) and line[fallback_start].isspace():
+            fallback_start += 1
+        fallback_end = _find_balanced_expr_end(line, fallback_start)
+        fallback_expr = line[fallback_start:fallback_end].strip()
+        
+        if primary_expr and fallback_expr:
+            # Create a custom match-like object
+            class TrimmedMatch:
+                def __init__(self, text, group1, group2):
+                    self.text = text
+                    self.group1 = group1
+                    self.group2 = group2
+                def group(self, n=0):
+                    if n == 0:
+                        return self.text
+                    elif n == 1:
+                        return self.group1
+                    elif n == 2:
+                        return self.group2
+                    return None
+            
+            match_text = f"{primary_expr} ~welp {fallback_expr}"
+            trimmed_match = TrimmedMatch(match_text, primary_expr, fallback_expr)
+            constructs.append(("welp", trimmed_match, primary_start, fallback_end))
     
     return constructs
+
+
+def _find_balanced_expr_start(line: str, pos: int) -> int:
+    """Find the start of an expression by working backwards with balanced delimiters."""
+    # Skip whitespace
+    while pos >= 0 and line[pos].isspace():
+        pos -= 1
+    
+    if pos < 0:
+        return 0
+    
+    # Track balance - start balanced (we're looking for the expression start)
+    paren_count = 0
+    bracket_count = 0
+    brace_count = 0
+    
+    while pos >= 0:
+        char = line[pos]
+        
+        if _is_inside_string_literal(line, pos):
+            pos -= 1
+            continue
+            
+        if char in ')]}':
+            if char == ')':
+                paren_count += 1
+            elif char == ']':
+                bracket_count += 1
+            elif char == '}':
+                brace_count += 1
+        elif char in '([{':
+            if char == '(':
+                paren_count -= 1
+                # If we're now unbalanced (more opens than closes), stop here
+                if paren_count < 0:
+                    return pos + 1  # Expression starts after the opening paren
+            elif char == '[':
+                bracket_count -= 1
+                if bracket_count < 0:
+                    return pos + 1
+            elif char == '{':
+                brace_count -= 1
+                if brace_count < 0:
+                    return pos + 1
+        elif paren_count == 0 and bracket_count == 0 and brace_count == 0:
+            # At top level - stop at major delimiters
+            if char in '=,;':
+                return pos + 1
+            # Check if we're at the end of a Python keyword
+            elif char.isspace() and pos > 0:
+                # Look backwards to see if we just passed a keyword
+                word_end = pos
+                word_start = pos - 1
+                while word_start >= 0 and (line[word_start].isalnum() or line[word_start] == '_'):
+                    word_start -= 1
+                word_start += 1
+                if word_start < word_end:
+                    word = line[word_start:word_end]
+                    if word in ['if', 'elif', 'else', 'for', 'while', 'try', 'except', 'finally', 'with', 'def', 'class', 'return', 'yield', 'raise', 'import', 'from']:
+                        # Stop after the keyword (include the space)
+                        return word_end
+                
+        pos -= 1
+    
+    return 0
+
+
+def _find_balanced_expr_end(line: str, pos: int) -> int:
+    """Find the end of an expression by working forwards with balanced delimiters."""
+    paren_count = 0
+    bracket_count = 0
+    brace_count = 0
+    length = len(line)
+    
+    while pos < length:
+        char = line[pos]
+        
+        if _is_inside_string_literal(line, pos):
+            pos += 1
+            continue
+            
+        if char in '([{':
+            if char == '(':
+                paren_count += 1
+            elif char == '[':
+                bracket_count += 1
+            elif char == '{':
+                brace_count += 1
+        elif char in ')]}':
+            if char == ')':
+                paren_count -= 1
+                if paren_count < 0:
+                    return pos
+            elif char == ']':
+                bracket_count -= 1
+                if bracket_count < 0:
+                    return pos
+            elif char == '}':
+                brace_count -= 1
+                if brace_count < 0:
+                    return pos
+        elif paren_count == 0 and bracket_count == 0 and brace_count == 0:
+            # At top level - stop at delimiters
+            if char in ',;)]}:':
+                return pos
+                
+        pos += 1
+    
+    return length
+
+
+def _skip_whitespace(line: str, pos: int) -> int:
+    """Skip whitespace characters starting from position."""
+    while pos < len(line) and line[pos].isspace():
+        pos += 1
+    return pos
