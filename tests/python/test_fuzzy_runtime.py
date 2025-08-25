@@ -9,10 +9,38 @@ from unittest.mock import patch, MagicMock
 from io import StringIO
 import sys
 
-# Import the fuzzy runtime module
-from kinda.langs.python.runtime.fuzzy import (
-    fuzzy_assign, kinda_binary, kinda_int, maybe, sometimes, sorta_print, env
-)
+# Import the fuzzy runtime module - generate it if it doesn't exist
+try:
+    from kinda.langs.python.runtime.fuzzy import (
+        fuzzy_assign, kinda_binary, kinda_int, maybe, sometimes, sorta_print, env
+    )
+except ImportError:
+    # Generate the runtime module if it doesn't exist
+    from pathlib import Path
+    runtime_dir = Path("kinda/langs/python/runtime")
+    runtime_dir.mkdir(parents=True, exist_ok=True)
+    
+    # Create __init__.py
+    (runtime_dir / "__init__.py").touch()
+    
+    # Generate basic fuzzy.py with all functions for testing
+    from kinda.langs.python.transformer import PythonTransformer
+    transformer = PythonTransformer()
+    
+    # Create a minimal .knda file to trigger runtime generation
+    import tempfile
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.knda', delete=False) as f:
+        f.write("~kinda int x = 42\n~kinda binary y\n~sorta print('test')\n~maybe (True) { }\n~sometimes (True) { }")
+        temp_path = Path(f.name)
+    
+    # Transform to generate runtime
+    transformer.transform(temp_path, out_dir=Path("build"))
+    temp_path.unlink()
+    
+    # Now import should work
+    from kinda.langs.python.runtime.fuzzy import (
+        fuzzy_assign, kinda_binary, kinda_int, maybe, sometimes, sorta_print, env
+    )
 
 
 class TestFuzzyAssign:
