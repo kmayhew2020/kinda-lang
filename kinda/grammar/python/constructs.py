@@ -5,12 +5,26 @@ import re
 KindaPythonConstructs = {
     "kinda_int": {
         "type": "declaration",
-        "pattern": re.compile(r'~kinda int (\w+)\s*[~=]+\s*(.+?)(?:;|$)'),
+        "pattern": re.compile(r'~kinda int (\w+)\s*[~=]+\s*([^#;]+?)(?:\s*#.*)?(?:;|$)'),
         "description": "Fuzzy integer declaration with noise",
         "body": (
             "def kinda_int(val):\n"
-            "    fuzz = random.randint(-1, 1)\n"
-            "    return val + fuzz"
+            "    \"\"\"Fuzzy integer with graceful error handling\"\"\"\n"
+            "    try:\n"
+            "        # Check if value is numeric\n"
+            "        if not isinstance(val, (int, float)):\n"
+            "            try:\n"
+            "                val = float(val)\n"
+            "            except (ValueError, TypeError):\n"
+            "                print(f\"[?] kinda int got something weird: {repr(val)}\")\n"
+            "                print(f\"[tip] Expected a number but got {type(val).__name__}\")\n"
+            "                return random.randint(0, 10)\n"
+            "        fuzz = random.randint(-1, 1)\n"
+            "        return int(val + fuzz)\n"
+            "    except Exception as e:\n"
+            "        print(f\"[shrug] Kinda int got kinda confused: {e}\")\n"
+            "        print(f\"[tip] Just picking a random number instead\")\n"
+            "        return random.randint(0, 10)"
         ),
     },
     "sorta_print": {
@@ -19,10 +33,28 @@ KindaPythonConstructs = {
         "description": "Print with ~70% probability",
         "body": (
             "def sorta_print(*args):\n"
-            "    if random.random() < 0.8:\n"
-            "        print('[print]', *args)\n"
-            "    else:\n"
-            "        print('[shrug]', *args)"
+            "    \"\"\"Sorta prints with 80% probability and kinda personality\"\"\"\n"
+            "    try:\n"
+            "        if not args:\n"
+            "            if random.random() < 0.5:\n"
+            "                print('[shrug] Nothing to print, I guess?')\n"
+            "            return\n"
+            "        if random.random() < 0.8:\n"
+            "            print('[print]', *args)\n"
+            "        else:\n"
+            "            # Add some personality to the \"shrug\" responses\n"
+            "            shrug_responses = [\n"
+            "                '[shrug] Meh...',\n"
+            "                '[shrug] Not feeling it right now',\n"
+            "                '[shrug] Maybe later?',\n"
+            "                '[shrug] *waves hand dismissively*',\n"
+            "                '[shrug] Kinda busy'\n"
+            "            ]\n"
+            "            response = random.choice(shrug_responses)\n"
+            "            print(response, *args)\n"
+            "    except Exception as e:\n"
+            "        print(f'[error] Sorta print kinda broke: {e}')\n"
+            "        print('[fallback]', *args)"
         ),
     },
     "sometimes": {
@@ -31,7 +63,16 @@ KindaPythonConstructs = {
         "description": "Fuzzy conditional trigger (50% chance)",
         "body": (
             "def sometimes(condition=True):\n"
-            "    return random.random() < 0.5 and condition"
+            "    \"\"\"Sometimes evaluates a condition with 50% probability\"\"\"\n"
+            "    try:\n"
+            "        if condition is None:\n"
+            "            print(\"[?] Sometimes got None as condition - treating as False\")\n"
+            "            return False\n"
+            "        return random.random() < 0.5 and bool(condition)\n"
+            "    except Exception as e:\n"
+            "        print(f\"[shrug] Sometimes got confused: {e}\")\n"
+            "        print(\"[tip] Flipping a coin instead\")\n"
+            "        return random.choice([True, False])"
         ),
     },
     "maybe": {
@@ -40,17 +81,40 @@ KindaPythonConstructs = {
         "description": "Fuzzy conditional trigger (60% chance)",
         "body": (
             "def maybe(condition=True):\n"
-            "    return random.random() < 0.6 and condition"
+            "    \"\"\"Maybe evaluates a condition with 60% probability\"\"\"\n"
+            "    try:\n"
+            "        if condition is None:\n"
+            "            print(\"[?] Maybe got None as condition - treating as False\")\n"
+            "            return False\n"
+            "        return random.random() < 0.6 and bool(condition)\n"
+            "    except Exception as e:\n"
+            "        print(f\"[shrug] Maybe couldn't decide: {e}\")\n"
+            "        print(\"[tip] Defaulting to random choice\")\n"
+            "        return random.choice([True, False])"
         ),
     },
     "fuzzy_reassign": {
         "type": "reassignment",
-        "pattern": re.compile(r'(\w+)\s*~=\s*(.+?)(?:;|$)'),
+        "pattern": re.compile(r'(\w+)\s*~=\s*([^#;]+?)(?:\s*#.*)?(?:;|$)'),
         "description": "Fuzzy reassignment to an existing variable",
         "body": (
             "def fuzzy_assign(var_name, value):\n"
-            "    fuzz = random.randint(-1, 1)\n"
-            "    return value + fuzz"
+            "    \"\"\"Fuzzy assignment with error handling\"\"\"\n"
+            "    try:\n"
+            "        # Check if value is numeric\n"
+            "        if not isinstance(value, (int, float)):\n"
+            "            try:\n"
+            "                value = float(value)\n"
+            "            except (ValueError, TypeError):\n"
+            "                print(f\"[?] fuzzy assignment got something weird: {repr(value)}\")\n"
+            "                print(f\"[tip] Expected a number but got {type(value).__name__}\")\n"
+            "                return random.randint(0, 10)\n"
+            "        fuzz = random.randint(-1, 1)\n"
+            "        return int(value + fuzz)\n"
+            "    except Exception as e:\n"
+            "        print(f\"[shrug] Fuzzy assignment kinda failed: {e}\")\n"
+            "        print(f\"[tip] Returning a random number because why not?\")\n"
+            "        return random.randint(0, 10)"
         ),
     },
     "kinda_binary": {
@@ -60,13 +124,28 @@ KindaPythonConstructs = {
         "body": (
             "def kinda_binary(pos_prob=0.4, neg_prob=0.4, neutral_prob=0.2):\n"
             "    \"\"\"Returns 1 (positive), -1 (negative), or 0 (neutral) with specified probabilities.\"\"\"\n"
-            "    rand = random.random()\n"
-            "    if rand < pos_prob:\n"
-            "        return 1\n"
-            "    elif rand < pos_prob + neg_prob:\n"
-            "        return -1\n"
-            "    else:\n"
-            "        return 0"
+            "    try:\n"
+            "        # Validate probabilities\n"
+            "        total_prob = pos_prob + neg_prob + neutral_prob\n"
+            "        if abs(total_prob - 1.0) > 0.01:  # Allow small floating point errors\n"
+            "            print(f\"[?] Binary probabilities don't add up to 1.0 (got {total_prob:.3f})\")\n"
+            "            print(f\"[tip] Normalizing: pos={pos_prob}, neg={neg_prob}, neutral={neutral_prob}\")\n"
+            "            # Normalize probabilities\n"
+            "            pos_prob /= total_prob\n"
+            "            neg_prob /= total_prob\n"
+            "            neutral_prob /= total_prob\n"
+            "        \n"
+            "        rand = random.random()\n"
+            "        if rand < pos_prob:\n"
+            "            return 1\n"
+            "        elif rand < pos_prob + neg_prob:\n"
+            "            return -1\n"
+            "        else:\n"
+            "            return 0\n"
+            "    except Exception as e:\n"
+            "        print(f\"[shrug] Binary choice kinda broke: {e}\")\n"
+            "        print(f\"[tip] Defaulting to random choice between -1, 0, 1\")\n"
+            "        return random.choice([-1, 0, 1])"
         ),
     },
 }

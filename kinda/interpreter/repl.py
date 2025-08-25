@@ -42,10 +42,15 @@ def run_interpreter(filepath, lang="python"):
     )
 
     fuzzy = load_fuzzy_runtime(runtime_path / "fuzzy.py")
+    
+    # Ensure fuzzy module has env attribute
+    if not hasattr(fuzzy, 'env'):
+        fuzzy.env = {}
+    
     exec(helper_imports, {}, fuzzy.env)
 
     try:
         exec(code, fuzzy.env, fuzzy.env)
     except Exception as e:
         print(f"💥 Well, that went sideways: {e}")
-        print(f"🤷 Your code was... creative. Maybe too creative.")
+        print(f"[shrug] Your code was... creative. Maybe too creative.")
