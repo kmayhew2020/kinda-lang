@@ -89,7 +89,8 @@ kinda examples  # Try some examples
 git clone https://github.com/kmayhew2020/kinda-lang.git
 cd kinda-lang
 pip install -e .[dev]
-pytest tests/
+pytest tests/                  # Run test suite
+pytest --cov=kinda tests/      # Run with coverage report (81% coverage)
 ```
 
 ## 🤝 Contributing

@@ -1,0 +1,16 @@
+# Example kinda program for test coverage
+~kinda int x = 42
+~kinda int y ~= 100
+~kinda binary decision
+
+~sorta print("Testing coverage improvements")
+~sorta print(x)
+~sorta print(y)
+
+~maybe (x > 40) {
+    ~sorta print("Maybe this will print")
+}
+
+~sometimes (y > 50) {
+    ~sorta print("Sometimes this executes")
+}
