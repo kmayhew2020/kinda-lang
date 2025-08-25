@@ -87,10 +87,42 @@ def match_python_construct(line: str):
     return None, None
 
 
+def _is_inside_string_literal(line: str, position: int) -> bool:
+    """Check if a position is inside a string literal (single or double quoted)."""
+    in_string = False
+    string_char = None
+    escaped = False
+    
+    for i, char in enumerate(line):
+        if i >= position:
+            return in_string
+            
+        if escaped:
+            escaped = False
+            continue
+            
+        if char == '\\' and in_string:
+            escaped = True
+            continue
+            
+        if not in_string:
+            if char in '"\'':
+                in_string = True
+                string_char = char
+        else:
+            # We're inside a string
+            if char == string_char:
+                in_string = False
+                string_char = None
+    
+    return in_string
+
+
 def find_ish_constructs(line: str):
     """
     Find all ~ish constructs in a line for inline transformation.
     Returns a list of (construct_type, match_object, start_pos, end_pos).
+    Only finds constructs that are NOT inside string literals.
     """
     constructs = []
     
@@ -99,12 +131,19 @@ def find_ish_constructs(line: str):
     # Find all ish_value patterns (e.g., "42~ish")
     ish_value_pattern = re.compile(r'(\d+(?:\.\d+)?)~ish')
     for match in ish_value_pattern.finditer(line):
+        # Skip if inside string literal
+        if _is_inside_string_literal(line, match.start()):
+            continue
         constructs.append(("ish_value", match, match.start(), match.end()))
     
     # Find ish_comparison patterns (e.g., "score ~ish 100")
     # Look for variable followed by ~ish followed by a number (but don't overlap with ish_value)
     ish_comparison_pattern = re.compile(r'(\w+)\s*~ish\s+(\w+)')
     for match in ish_comparison_pattern.finditer(line):
+        # Skip if inside string literal
+        if _is_inside_string_literal(line, match.start()):
+            continue
+            
         # Check if the right side is a number that was already captured as ish_value
         right_val = match.group(2)
         comparison_start = match.start()
@@ -128,5 +167,24 @@ def find_ish_constructs(line: str):
     
     # Sort by position to handle transformations correctly
     constructs.sort(key=lambda x: x[2])
+    
+    return constructs
+
+
+def find_welp_constructs(line: str):
+    """
+    Find all ~welp constructs in a line for inline transformation.
+    Returns a list of (construct_type, match_object, start_pos, end_pos).
+    Only finds constructs that are NOT inside string literals.
+    """
+    constructs = []
+    
+    # Find welp patterns (e.g., "api_call() ~welp default_value")
+    welp_pattern = re.compile(r'(.+)\s*~welp\s*(.+)')
+    for match in welp_pattern.finditer(line):
+        # Skip if inside string literal
+        if _is_inside_string_literal(line, match.start()):
+            continue
+        constructs.append(("welp", match, match.start(), match.end()))
     
     return constructs

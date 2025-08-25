@@ -2,7 +2,7 @@ from pathlib import Path
 from typing import List
 from kinda.langs.python.runtime_gen import generate_runtime_helpers, generate_runtime
 from kinda.grammar.python.constructs import KindaPythonConstructs
-from kinda.grammar.python.matchers import match_python_construct, find_ish_constructs
+from kinda.grammar.python.matchers import match_python_construct, find_ish_constructs, find_welp_constructs
 
 used_helpers = set()
 
@@ -40,9 +40,8 @@ def _process_conditional_block(lines: List[str], start_index: int, output_lines:
                     i += 1
                     continue
                     
-                # Track opening brace for nested construct
-                if stripped.endswith("{"):
-                    brace_count += 1
+                # Note: Don't increment brace_count for nested constructs
+                # The recursive call will handle the nested block's braces
                     
                 transformed_nested = transform_line(line)
                 output_lines.extend([indent + l for l in transformed_nested])
@@ -74,6 +73,48 @@ def _process_conditional_block(lines: List[str], start_index: int, output_lines:
     #         start_index, lines[start_index] if start_index < len(lines) else "", file_path
     #     )
 
+    return i
+
+def _process_python_indented_block(lines: List[str], start_index: int, output_lines: List[str], 
+                                   conditional_line: str, file_path: str = None) -> int:
+    """
+    Process a Python-style indented block after a conditional (~sometimes or ~maybe).
+    Returns the index after processing the block.
+    """
+    i = start_index
+    base_indent = len(conditional_line) - len(conditional_line.lstrip())
+    
+    while i < len(lines):
+        line = lines[i]
+        stripped = line.strip()
+        line_number = i + 1
+        
+        # Empty lines - pass through
+        if not stripped:
+            output_lines.append(line)
+            i += 1
+            continue
+            
+        # Calculate indentation level
+        line_indent = len(line) - len(line.lstrip())
+        
+        # If line is not indented more than the conditional, we've reached the end of the block
+        if line_indent <= base_indent and stripped:
+            break
+            
+        # Process the indented line
+        try:
+            transformed = transform_line(line)
+            if not transformed:
+                _warn_about_line(stripped, line_number, file_path)
+            output_lines.extend(transformed)
+            i += 1
+        except Exception as e:
+            raise KindaParseError(
+                f"Error in Python indented block: {str(e)}",
+                line_number, line, file_path
+            )
+    
     return i
 
 def _transform_ish_constructs(line: str) -> str:
@@ -109,6 +150,27 @@ def _transform_ish_constructs(line: str) -> str:
     return transformed_line
 
 
+def _transform_welp_constructs(line: str) -> str:
+    """Transform inline ~welp constructs in a line."""
+    welp_constructs = find_welp_constructs(line)
+    if not welp_constructs:
+        return line
+    
+    # Transform from right to left to preserve positions
+    transformed_line = line
+    for construct_type, match, start_pos, end_pos in reversed(welp_constructs):
+        if construct_type == "welp":
+            used_helpers.add("welp_fallback")
+            primary_expr = match.group(1).strip()
+            fallback_value = match.group(2).strip()
+            replacement = f"welp_fallback(lambda: {primary_expr}, {fallback_value})"
+            
+            # Replace the matched text
+            transformed_line = transformed_line[:start_pos] + replacement + transformed_line[end_pos:]
+    
+    return transformed_line
+
+
 def transform_line(line: str) -> List[str]:
     original_line = line
     stripped = line.strip()
@@ -120,13 +182,19 @@ def transform_line(line: str) -> List[str]:
 
     # First check for inline ~ish constructs
     ish_transformed_line = _transform_ish_constructs(line)
-    if ish_transformed_line != line:
-        return [ish_transformed_line]
-
-    # Then check for main kinda constructs
-    key, groups = match_python_construct(stripped)
+    
+    # Then check for inline ~welp constructs
+    welp_transformed_line = _transform_welp_constructs(ish_transformed_line)
+    
+    # Then check for main kinda constructs on the (potentially transformed) line
+    stripped_for_matching = welp_transformed_line.strip()
+    key, groups = match_python_construct(stripped_for_matching)
     if not key:
-        return [original_line]
+        # If no main construct found but transforms were applied, return the transformed line
+        if welp_transformed_line != line:
+            return [welp_transformed_line]
+        else:
+            return [original_line]
 
     if key == "kinda_int":
         var, val = groups
@@ -168,7 +236,7 @@ def transform_line(line: str) -> List[str]:
 
     # Debug removed for clean UX
 
-    return [original_line.replace(stripped, transformed_code)]
+    return [welp_transformed_line.replace(stripped_for_matching, transformed_code)]
 
 
 class KindaParseError(Exception):
@@ -226,8 +294,13 @@ def transform_file(path: Path, target_language="python") -> str:
                 output_lines.extend(transform_line(line))
                 i += 1
                 
-                # Process block with proper nesting support and error handling
-                i = _process_conditional_block(lines, i, output_lines, "    ", str(path))
+                # Only process as block if there's an opening brace
+                if stripped.endswith("{"):
+                    # Process block with proper nesting support and error handling
+                    i = _process_conditional_block(lines, i, output_lines, "    ", str(path))
+                else:
+                    # Python-style indented block - process indented lines
+                    i = _process_python_indented_block(lines, i, output_lines, line, str(path))
             else:
                 transformed = transform_line(line)
                 if not transformed:  # Empty result might indicate parse failure
@@ -252,15 +325,15 @@ def transform_file(path: Path, target_language="python") -> str:
 def _validate_conditional_syntax(line: str, line_number: int, file_path: str) -> bool:
     """Validate ~sometimes and ~maybe syntax with helpful error messages"""
     if line.startswith("~sometimes"):
-        if not line.strip().endswith("{") and "(" not in line:
+        if "(" not in line:
             raise KindaParseError(
-                "~sometimes blocks need parentheses and curly braces. Try: ~sometimes (condition) {",
+                "~sometimes needs parentheses. Try: ~sometimes() or ~sometimes(condition)",
                 line_number, line, file_path
             )
     elif line.startswith("~maybe"):
-        if not line.strip().endswith("{") and "(" not in line:
+        if "(" not in line:
             raise KindaParseError(
-                "~maybe blocks need parentheses and curly braces. Try: ~maybe (condition) {",
+                "~maybe needs parentheses. Try: ~maybe() or ~maybe(condition)",
                 line_number, line, file_path
             )
     return True
@@ -312,7 +385,10 @@ def transform(input_path: Path, out_dir: Path) -> List[Path]:
     else:
         try:
             output_code = transform_file(input_path)
-            new_name = input_path.name.replace(".py.knda", ".py")
+            if input_path.name.endswith(".py.knda"):
+                new_name = input_path.name.replace(".py.knda", ".py")
+            else:
+                new_name = input_path.stem + ".py"
             output_file_path = out_dir / new_name
             output_file_path.parent.mkdir(parents=True, exist_ok=True)
             output_file_path.write_text(output_code)

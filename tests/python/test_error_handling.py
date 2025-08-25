@@ -153,7 +153,7 @@ class TestTransformErrorHandling:
         """Test that transformation handles various constructs without crashing."""
         with tempfile.NamedTemporaryFile(mode='w', suffix='.knda', delete=False) as f:
             # Test multiple constructs that should transform successfully
-            f.write('~kinda int x = 42\n~sorta print("test message")\n~sometimes {\n  ~sorta print("conditional")\n}')
+            f.write('~kinda int x = 42\n~sorta print("test message")\n~sometimes () {\n  ~sorta print("conditional")\n}')
             temp_path = Path(f.name)
 
         try:

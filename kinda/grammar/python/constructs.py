@@ -211,4 +211,29 @@ KindaPythonConstructs = {
             "        return random.choice([True, False])"
         ),
     },
+    "welp": {
+        "type": "fallback",
+        "pattern": re.compile(r'(.+)\s*~welp\s*(.+)'),
+        "description": "Graceful fallback when expression fails (e.g., api_call() ~welp \"default\")",
+        "body": (
+            "def welp_fallback(primary_expr, fallback_value):\n"
+            "    \"\"\"Execute primary expression with graceful fallback\"\"\"\n"
+            "    try:\n"
+            "        # If primary_expr is a callable, call it\n"
+            "        if callable(primary_expr):\n"
+            "            result = primary_expr()\n"
+            "        else:\n"
+            "            result = primary_expr\n"
+            "        \n"
+            "        # Return fallback if result is None or falsy (but not 0 or False explicitly)\n"
+            "        if result is None:\n"
+            "            print(f\"[welp] Got None, using fallback: {repr(fallback_value)}\")\n"
+            "            return fallback_value\n"
+            "        \n"
+            "        return result\n"
+            "    except Exception as e:\n"
+            "        print(f\"[welp] Operation failed ({type(e).__name__}: {e}), using fallback: {repr(fallback_value)}\")\n"
+            "        return fallback_value"
+        ),
+    },
 }
