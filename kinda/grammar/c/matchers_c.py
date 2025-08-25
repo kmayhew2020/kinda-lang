@@ -1,11 +1,12 @@
-# kinda/core/matchers.py
+# kinda/grammar/c/matchers_c.py
 
 import re
-from .constructs import KindaConstructs
+from .constructs_c import KindaCConstructs
 
-def match_construct(line):
-    for key, meta in KindaConstructs.items():
-        match = re.match(meta["pattern"], line)
+def match_c_construct(line):
+    """Match C kinda-lang constructs in the given line."""
+    for key, meta in KindaCConstructs.items():
+        match = meta["pattern"].match(line.strip())
         if match:
             return key, match.groups()
     return None, None

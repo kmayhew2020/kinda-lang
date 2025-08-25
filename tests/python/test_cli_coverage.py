@@ -109,7 +109,7 @@ class TestCLIMainFunction:
             temp_path = Path(f.name)
 
         try:
-            with patch('sys.argv', ['kinda', 'transform', str(temp_path), '--lang', 'c']):
+            with patch('sys.argv', ['kinda', 'transform', str(temp_path), '--lang', 'rust']):
                 result = main()
                 captured = capsys.readouterr()
                 assert result == 0  # Returns 0 but shows message
@@ -149,7 +149,7 @@ class TestCLIMainFunction:
                 result = main()
                 captured = capsys.readouterr()
                 assert result == 1
-                assert "Can't run" in captured.out
+                assert "can transform c but can't run it" in captured.out
         finally:
             temp_path.unlink()
 
