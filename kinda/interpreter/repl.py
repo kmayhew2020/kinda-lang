@@ -42,6 +42,11 @@ def run_interpreter(filepath, lang="python"):
     )
 
     fuzzy = load_fuzzy_runtime(runtime_path / "fuzzy.py")
+    
+    # Ensure fuzzy module has env attribute
+    if not hasattr(fuzzy, 'env'):
+        fuzzy.env = {}
+    
     exec(helper_imports, {}, fuzzy.env)
 
     try:
