@@ -2,7 +2,7 @@ from pathlib import Path
 from typing import List
 from kinda.langs.python.runtime_gen import generate_runtime_helpers, generate_runtime
 from kinda.grammar.python.constructs import KindaPythonConstructs
-from kinda.grammar.python.matchers import match_python_construct
+from kinda.grammar.python.matchers import match_python_construct, find_ish_constructs
 
 used_helpers = set()
 
@@ -76,6 +76,39 @@ def _process_conditional_block(lines: List[str], start_index: int, output_lines:
 
     return i
 
+def _transform_ish_constructs(line: str) -> str:
+    """Transform inline ~ish constructs in a line."""
+    ish_constructs = find_ish_constructs(line)
+    if not ish_constructs:
+        return line
+    
+    # Transform from right to left to preserve positions
+    transformed_line = line
+    for construct_type, match, start_pos, end_pos in reversed(ish_constructs):
+        if construct_type == "ish_value":
+            used_helpers.add("ish_value")
+            value = match.group(1)
+            replacement = f"ish_value({value})"
+        elif construct_type == "ish_comparison":
+            used_helpers.add("ish_comparison")
+            left_val = match.group(1)
+            right_val = match.group(2)
+            replacement = f"ish_comparison({left_val}, {right_val})"
+        elif construct_type == "ish_comparison_with_ish_value":
+            used_helpers.add("ish_comparison")
+            used_helpers.add("ish_value")
+            left_val = match.group(1)
+            right_val = match.group(2)
+            replacement = f"ish_comparison({left_val}, ish_value({right_val}))"
+        else:
+            continue  # Skip unknown constructs
+        
+        # Replace the matched text
+        transformed_line = transformed_line[:start_pos] + replacement + transformed_line[end_pos:]
+    
+    return transformed_line
+
+
 def transform_line(line: str) -> List[str]:
     original_line = line
     stripped = line.strip()
@@ -85,6 +118,12 @@ def transform_line(line: str) -> List[str]:
     if stripped.startswith("#"):
         return [original_line]
 
+    # First check for inline ~ish constructs
+    ish_transformed_line = _transform_ish_constructs(line)
+    if ish_transformed_line != line:
+        return [ish_transformed_line]
+
+    # Then check for main kinda constructs
     key, groups = match_python_construct(stripped)
     if not key:
         return [original_line]

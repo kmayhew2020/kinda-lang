@@ -85,3 +85,48 @@ def match_python_construct(line: str):
                 return key, match.groups()
 
     return None, None
+
+
+def find_ish_constructs(line: str):
+    """
+    Find all ~ish constructs in a line for inline transformation.
+    Returns a list of (construct_type, match_object, start_pos, end_pos).
+    """
+    constructs = []
+    
+    # Strategy: find all individual ~ish tokens and classify them based on context
+    
+    # Find all ish_value patterns (e.g., "42~ish")
+    ish_value_pattern = re.compile(r'(\d+(?:\.\d+)?)~ish')
+    for match in ish_value_pattern.finditer(line):
+        constructs.append(("ish_value", match, match.start(), match.end()))
+    
+    # Find ish_comparison patterns (e.g., "score ~ish 100")
+    # Look for variable followed by ~ish followed by a number (but don't overlap with ish_value)
+    ish_comparison_pattern = re.compile(r'(\w+)\s*~ish\s+(\w+)')
+    for match in ish_comparison_pattern.finditer(line):
+        # Check if the right side is a number that was already captured as ish_value
+        right_val = match.group(2)
+        comparison_start = match.start()
+        comparison_end = match.end()
+        
+        # Find if there's an ish_value that overlaps with the right side
+        overlapping_value = None
+        for i, (ctype, cmatch, cstart, cend) in enumerate(constructs):
+            if ctype == "ish_value" and cstart < comparison_end and cend > comparison_start:
+                overlapping_value = (i, ctype, cmatch, cstart, cend)
+                break
+        
+        if overlapping_value:
+            # Remove the overlapping ish_value and create nested structure
+            constructs.pop(overlapping_value[0])
+            # The comparison should include the full range including the trailing ~ish
+            value_end_pos = overlapping_value[4]  # End position of the ish_value
+            constructs.append(("ish_comparison_with_ish_value", match, comparison_start, value_end_pos))
+        else:
+            constructs.append(("ish_comparison", match, comparison_start, comparison_end))
+    
+    # Sort by position to handle transformations correctly
+    constructs.sort(key=lambda x: x[2])
+    
+    return constructs

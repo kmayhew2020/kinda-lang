@@ -148,4 +148,67 @@ KindaPythonConstructs = {
             "        return random.choice([-1, 0, 1])"
         ),
     },
+    "ish_value": {
+        "type": "value",
+        "pattern": re.compile(r'(\d+(?:\.\d+)?)~ish'),
+        "description": "Fuzzy value with ±2 variance (e.g., 42~ish)",
+        "body": (
+            "def ish_value(val, variance=2):\n"
+            "    \"\"\"Create a fuzzy value with specified variance\"\"\"\n"
+            "    try:\n"
+            "        # Convert to float for processing\n"
+            "        if not isinstance(val, (int, float)):\n"
+            "            try:\n"
+            "                val = float(val)\n"
+            "            except (ValueError, TypeError):\n"
+            "                print(f\"[?] ish value got something weird: {repr(val)}\")\n"
+            "                print(f\"[tip] Expected a number but got {type(val).__name__}\")\n"
+            "                return random.uniform(-variance, variance)\n"
+            "        \n"
+            "        # Generate fuzzy variance\n"
+            "        fuzz = random.uniform(-variance, variance)\n"
+            "        result = val + fuzz\n"
+            "        \n"
+            "        # Return integer if input was integer, float otherwise\n"
+            "        return int(result) if isinstance(val, int) else result\n"
+            "    except Exception as e:\n"
+            "        print(f\"[shrug] Ish value kinda confused: {e}\")\n"
+            "        print(f\"[tip] Returning random value with variance ±{variance}\")\n"
+            "        return random.uniform(-variance, variance)"
+        ),
+    },
+    "ish_comparison": {
+        "type": "comparison",
+        "pattern": re.compile(r'(\w+)\s*~ish\s*([^#;\s]+)'),
+        "description": "Fuzzy comparison with ±2 tolerance (e.g., score ~ish 100)",
+        "body": (
+            "def ish_comparison(left_val, right_val, tolerance=2):\n"
+            "    \"\"\"Check if values are approximately equal within tolerance\"\"\"\n"
+            "    try:\n"
+            "        # Convert both values to numeric\n"
+            "        if not isinstance(left_val, (int, float)):\n"
+            "            try:\n"
+            "                left_val = float(left_val)\n"
+            "            except (ValueError, TypeError):\n"
+            "                print(f\"[?] ish comparison got weird left value: {repr(left_val)}\")\n"
+            "                print(f\"[tip] Expected a number but got {type(left_val).__name__}\")\n"
+            "                return random.choice([True, False])\n"
+            "        \n"
+            "        if not isinstance(right_val, (int, float)):\n"
+            "            try:\n"
+            "                right_val = float(right_val)\n"
+            "            except (ValueError, TypeError):\n"
+            "                print(f\"[?] ish comparison got weird right value: {repr(right_val)}\")\n"
+            "                print(f\"[tip] Expected a number but got {type(right_val).__name__}\")\n"
+            "                return random.choice([True, False])\n"
+            "        \n"
+            "        # Check if values are within tolerance\n"
+            "        difference = abs(left_val - right_val)\n"
+            "        return difference <= tolerance\n"
+            "    except Exception as e:\n"
+            "        print(f\"[shrug] Ish comparison kinda broke: {e}\")\n"
+            "        print(f\"[tip] Flipping a coin instead\")\n"
+            "        return random.choice([True, False])"
+        ),
+    },
 }
