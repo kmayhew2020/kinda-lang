@@ -176,40 +176,230 @@ def find_welp_constructs(line: str):
     Find all ~welp constructs in a line for inline transformation.
     Returns a list of (construct_type, match_object, start_pos, end_pos).
     Only finds constructs that are NOT inside string literals.
-    
-    TEMPORARILY DISABLED for Task #53 completion.
     """
-    # TEMPORARY: Return empty list to disable welp construct matching
-    return []
+    constructs = []
     
-    # Original implementation temporarily disabled
-    # constructs = []
-    # 
-    # # Look for ~welp patterns, but be more careful about expression boundaries
-    # # The expression should be a function call, variable, or simple expression
-    # # but NOT keywords that are part of other kinda constructs
-    # 
-    # welp_pattern = re.compile(r'(\w+\([^)]*\)|\w+)\s*~welp\s+([^,)]+?)(?=\s*[,)]|\s*$)')
-    # 
-    # for match in welp_pattern.finditer(line):
-    #     # Check if ~welp is inside a string literal
-    #     welp_pos = line.find('~welp', match.start())
-    #     if welp_pos != -1 and _is_inside_string_literal(line, welp_pos):
-    #         continue
-    #     
-    #     # Check if the expression is preceded by ~sorta or other constructs
-    #     # Look backwards from the match start to see if there's a construct marker
-    #     expr_start = match.start()
-    #     check_pos = expr_start - 1
-    #     while check_pos >= 0 and line[check_pos].isspace():
-    #         check_pos -= 1
-    #     
-    #     # If we find "print" and before that "~sorta", skip this match
-    #     if (check_pos >= 5 and 
-    #         match.group(1) == "print" and 
-    #         line[check_pos-5:check_pos+1] == "~sorta"):
-    #         continue
-    #     
-    #     constructs.append(("welp", match, match.start(), match.end()))
-    # 
-    # return constructs
+    # Find all ~welp occurrences in the line
+    welp_positions = []
+    start = 0
+    while True:
+        pos = line.find('~welp', start)
+        if pos == -1:
+            break
+        welp_positions.append(pos)
+        start = pos + 1
+    
+    for welp_pos in welp_positions:
+        # Skip if inside string literal
+        if _is_inside_string_literal(line, welp_pos):
+            continue
+        
+        # Find the expression before ~welp
+        # Work backwards to find the start of the expression
+        expr_start = welp_pos - 1
+        
+        # Skip whitespace before ~welp
+        while expr_start >= 0 and line[expr_start].isspace():
+            expr_start -= 1
+        
+        if expr_start < 0:
+            continue
+            
+        # Find the actual start of the expression by looking for balanced parentheses/brackets
+        # and assignment operators or delimiters
+        paren_depth = 0
+        bracket_depth = 0
+        brace_depth = 0
+        in_string = False
+        string_char = None
+        escaped = False
+        
+        # Scan backwards to find the start of the expression
+        actual_start = expr_start
+        for i in range(expr_start, -1, -1):
+            char = line[i]
+            
+            if escaped:
+                escaped = False
+                continue
+                
+            if char == '\\' and in_string:
+                escaped = True
+                continue
+                
+            if not in_string:
+                if char in '"\'':
+                    in_string = True
+                    string_char = char
+                elif char == ')':
+                    paren_depth += 1
+                elif char == '(':
+                    paren_depth -= 1
+                    if paren_depth < 0:
+                        # Found unmatched opening paren - this is the start boundary
+                        actual_start = i + 1
+                        break
+                elif char == ']':
+                    bracket_depth += 1
+                elif char == '[':
+                    bracket_depth -= 1
+                    if bracket_depth < 0:
+                        # Found unmatched opening bracket - this is the start boundary
+                        actual_start = i + 1
+                        break
+                elif char == '}':
+                    brace_depth += 1
+                elif char == '{':
+                    brace_depth -= 1
+                    if brace_depth < 0:
+                        # Found unmatched opening brace - this is the start boundary
+                        actual_start = i + 1
+                        break
+                elif (char in '=,;:' and 
+                      paren_depth == 0 and bracket_depth == 0 and brace_depth == 0):
+                    # Found delimiter at same level - this is the start boundary
+                    actual_start = i + 1
+                    break
+                elif (char.isspace() and 
+                      paren_depth == 0 and bracket_depth == 0 and brace_depth == 0):
+                    # Check if this whitespace is after a Python keyword
+                    # that shouldn't be part of the expression (only at top level)
+                    word_start = i + 1
+                    while word_start < len(line) and line[word_start].isspace():
+                        word_start += 1
+                    
+                    # Look backwards to see if we have a keyword before this space
+                    word_end = i
+                    while word_end > 0 and not line[word_end - 1].isspace() and line[word_end - 1].isalnum():
+                        word_end -= 1
+                    
+                    if word_end < i:
+                        keyword = line[word_end:i]
+                        if keyword in ['if', 'elif', 'while', 'for', 'return', 'yield', 'assert', 'del']:
+                            # Found keyword boundary - this is the start
+                            actual_start = word_start
+                            break
+            else:
+                if char == string_char:
+                    in_string = False
+                    string_char = None
+            
+            actual_start = i
+        
+        expr_start = actual_start
+        
+        # Skip leading whitespace
+        while expr_start < welp_pos and line[expr_start].isspace():
+            expr_start += 1
+        
+        # Extract the expression before ~welp
+        expr_before = line[expr_start:welp_pos].strip()
+        
+        # Skip empty expressions
+        if not expr_before:
+            continue
+        
+        # Check if this is part of a ~sorta print construct
+        if 'print(' in expr_before:
+            # Look further back to see if there's ~sorta
+            check_start = max(0, expr_start - 10)
+            prefix = line[check_start:expr_start].strip()
+            if prefix.endswith('~sorta'):
+                continue
+        
+        # Find the fallback value after ~welp
+        fallback_start = welp_pos + 5  # Skip past '~welp'
+        
+        # Skip whitespace after ~welp
+        while fallback_start < len(line) and line[fallback_start].isspace():
+            fallback_start += 1
+        
+        if fallback_start >= len(line):
+            continue
+        
+        # Find the end of the fallback expression
+        # It ends at comma, closing paren/bracket/brace, or end of line
+        fallback_end = fallback_start
+        paren_depth = 0
+        bracket_depth = 0
+        brace_depth = 0
+        in_string = False
+        string_char = None
+        escaped = False
+        
+        for i in range(fallback_start, len(line)):
+            char = line[i]
+            
+            if escaped:
+                escaped = False
+                continue
+                
+            if char == '\\' and in_string:
+                escaped = True
+                continue
+                
+            if not in_string:
+                if char in '"\'':
+                    in_string = True
+                    string_char = char
+                elif char == '(':
+                    paren_depth += 1
+                elif char == ')':
+                    paren_depth -= 1
+                    if paren_depth < 0:
+                        fallback_end = i
+                        break
+                elif char == '[':
+                    bracket_depth += 1
+                elif char == ']':
+                    bracket_depth -= 1
+                elif char == '{':
+                    brace_depth += 1
+                elif char == '}':
+                    brace_depth -= 1
+                elif char in ',:;' and paren_depth == 0 and bracket_depth == 0 and brace_depth == 0:
+                    fallback_end = i
+                    break
+            else:
+                if char == string_char:
+                    in_string = False
+                    string_char = None
+            
+            fallback_end = i + 1
+        
+        fallback_value = line[fallback_start:fallback_end].strip()
+        
+        if not fallback_value:
+            continue
+        
+        # Create a synthetic match object that mimics the old regex match
+        class WelpMatch:
+            def __init__(self, full_match, primary_expr, fallback_val, start, end):
+                self.full_match = full_match
+                self.primary_expr = primary_expr
+                self.fallback_val = fallback_val
+                self.start_pos = start
+                self.end_pos = end
+            
+            def group(self, n=0):
+                if n == 0:
+                    return self.full_match
+                elif n == 1:
+                    return self.primary_expr
+                elif n == 2:
+                    return self.fallback_val
+                else:
+                    raise IndexError("No such group")
+            
+            def start(self):
+                return self.start_pos
+            
+            def end(self):
+                return self.end_pos
+        
+        full_match = line[expr_start:fallback_end]
+        match_obj = WelpMatch(full_match, expr_before, fallback_value, expr_start, fallback_end)
+        
+        constructs.append(("welp", match_obj, expr_start, fallback_end))
+    
+    return constructs

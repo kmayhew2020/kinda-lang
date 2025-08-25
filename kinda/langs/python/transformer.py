@@ -151,31 +151,24 @@ def _transform_ish_constructs(line: str) -> str:
 
 
 def _transform_welp_constructs(line: str) -> str:
-    """Transform inline ~welp constructs in a line.
+    """Transform inline ~welp constructs in a line."""
+    welp_constructs = find_welp_constructs(line)
+    if not welp_constructs:
+        return line
     
-    TEMPORARILY DISABLED for Task #53 completion.
-    """
-    # TEMPORARY: Return line unchanged to disable welp construct transformation
-    return line
+    # Transform from right to left to preserve positions
+    transformed_line = line
+    for construct_type, match, start_pos, end_pos in reversed(welp_constructs):
+        if construct_type == "welp":
+            used_helpers.add("welp_fallback")
+            primary_expr = match.group(1).strip()
+            fallback_value = match.group(2).strip()
+            replacement = f"welp_fallback(lambda: {primary_expr}, {fallback_value})"
+            
+            # Replace the matched text
+            transformed_line = transformed_line[:start_pos] + replacement + transformed_line[end_pos:]
     
-    # Original implementation temporarily disabled
-    # welp_constructs = find_welp_constructs(line)
-    # if not welp_constructs:
-    #     return line
-    # 
-    # # Transform from right to left to preserve positions
-    # transformed_line = line
-    # for construct_type, match, start_pos, end_pos in reversed(welp_constructs):
-    #     if construct_type == "welp":
-    #         used_helpers.add("welp_fallback")
-    #         primary_expr = match.group(1).strip()
-    #         fallback_value = match.group(2).strip()
-    #         replacement = f"welp_fallback(lambda: {primary_expr}, {fallback_value})"
-    #         
-    #         # Replace the matched text
-    #         transformed_line = transformed_line[:start_pos] + replacement + transformed_line[end_pos:]
-    # 
-    # return transformed_line
+    return transformed_line
 
 
 def transform_line(line: str) -> List[str]:
