@@ -17,25 +17,19 @@ try:
 except ImportError:
     # Generate the runtime module if it doesn't exist
     from pathlib import Path
-    runtime_dir = Path("kinda/langs/python/runtime")
-    runtime_dir.mkdir(parents=True, exist_ok=True)
-    
-    # Create __init__.py
-    (runtime_dir / "__init__.py").touch()
-    
-    # Generate basic fuzzy.py with all functions for testing
-    from kinda.langs.python.transformer import PythonTransformer
-    transformer = PythonTransformer()
+    import tempfile
+    from kinda.langs.python import transformer
     
     # Create a minimal .knda file to trigger runtime generation
-    import tempfile
     with tempfile.NamedTemporaryFile(mode='w', suffix='.knda', delete=False) as f:
         f.write("~kinda int x = 42\n~kinda binary y\n~sorta print('test')\n~maybe (True) { }\n~sometimes (True) { }")
         temp_path = Path(f.name)
     
-    # Transform to generate runtime
-    transformer.transform(temp_path, out_dir=Path("build"))
-    temp_path.unlink()
+    try:
+        # Transform to generate runtime
+        transformer.transform_file(temp_path, out_dir=Path("build"))
+    finally:
+        temp_path.unlink()
     
     # Now import should work
     from kinda.langs.python.runtime.fuzzy import (
