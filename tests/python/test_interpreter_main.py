@@ -12,10 +12,13 @@ class TestInterpreterMain:
     
     def test_interpreter_main_import_error_handling(self):
         """Test that interpreter __main__ handles import errors gracefully"""
+        # Get project root dynamically
+        project_root = Path(__file__).parent.parent.parent
+        
         # Test that the module fails to import due to missing cli module
         result = subprocess.run([
             sys.executable, '-m', 'kinda.interpreter'
-        ], capture_output=True, text=True, cwd='/workspaces/kinda-lang')
+        ], capture_output=True, text=True, cwd=str(project_root))
         
         # Should fail with import error
         assert result.returncode == 1
@@ -24,6 +27,10 @@ class TestInterpreterMain:
     
     def test_interpreter_main_with_mock_cli(self):
         """Test interpreter __main__ execution with mocked cli module"""
+        # Get project root dynamically
+        project_root = Path(__file__).parent.parent.parent
+        main_file = project_root / "kinda" / "interpreter" / "__main__.py"
+        
         # Create a mock cli module in the interpreter package
         mock_cli = MagicMock()
         mock_cli.main = MagicMock()
@@ -34,7 +41,7 @@ class TestInterpreterMain:
             import importlib.util
             spec = importlib.util.spec_from_file_location(
                 "test_main", 
-                "/workspaces/kinda-lang/kinda/interpreter/__main__.py"
+                str(main_file)
             )
             test_main = importlib.util.module_from_spec(spec)
             
@@ -47,7 +54,9 @@ class TestInterpreterMain:
     
     def test_interpreter_main_file_structure(self):
         """Test that the __main__.py file has expected structure"""
-        main_file = Path('/workspaces/kinda-lang/kinda/interpreter/__main__.py')
+        # Get project root dynamically
+        project_root = Path(__file__).parent.parent.parent
+        main_file = project_root / "kinda" / "interpreter" / "__main__.py"
         assert main_file.exists()
         
         content = main_file.read_text()
