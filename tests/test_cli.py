@@ -18,7 +18,7 @@ def normalize_emoji_output(text: str) -> str:
     if platform.system() == "Windows":
         return (text
                .replace("🎲", "*")
-               .replace("🤷", "?") 
+               .replace("[shrug]", "?") 
                .replace("📚", "*")
                .replace("📝", "*")
                .replace("✨", "*")
@@ -78,7 +78,7 @@ class TestCLICommands:
         
         captured = capsys.readouterr()
         output = captured.out  # Error messages go to stdout
-        assert "🤔" in output or "doesn't exist" in output
+        assert "[?]" in output or "doesn't exist" in output
 
     def test_run_command_missing_file(self, capsys):
         """Test run with missing file shows snarky error"""
@@ -87,7 +87,7 @@ class TestCLICommands:
         
         captured = capsys.readouterr()
         output = captured.out  # Error messages go to stdout
-        assert "🤷‍♂️" in output or "Can't find" in output
+        assert "[shrug]‍♂️" in output or "Can't find" in output
 
     def test_interpret_command_missing_file(self, capsys):
         """Test interpret with missing file shows snarky error"""

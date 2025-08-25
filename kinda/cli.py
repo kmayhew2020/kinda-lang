@@ -22,12 +22,12 @@ def safe_print(text: str) -> None:
         fallback = (text
                    .replace("✨", "*")  # sparkle -> asterisk
                    .replace("🎲", "*")  # die -> asterisk
-                   .replace("🤷", "?")  # shrug -> question mark
+                   .replace("[shrug]", "?")  # shrug -> question mark
                    .replace("📚", "*")  # book -> asterisk
                    .replace("📝", "*")  # memo -> asterisk
                    .replace("🎯", "*")  # target -> asterisk
-                   .replace("🤔", "?")  # thinking -> question mark
-                   .replace("🤷‍♂️", "?")  # shrug man -> question mark
+                   .replace("[?]", "?")  # thinking -> question mark
+                   .replace("[shrug]‍♂️", "?")  # shrug man -> question mark
                    .replace("🙄", "~")  # eye roll -> tilde
                    .replace("🎮", "*")  # game controller -> asterisk
                    .replace("🎉", "!")  # party -> exclamation
@@ -60,7 +60,7 @@ def safe_read_file(file_path: Path) -> str:
             
             if confidence < 0.7:
                 safe_print(f"⚠️  Encoding detection uncertain for '{file_path}' (confidence: {confidence:.1%})")
-                safe_print(f"📍 Trying {encoding} encoding, but results may be wonky")
+                safe_print(f"[info] Trying {encoding} encoding, but results may be wonky")
         
         # Try to decode with detected/default encoding
         try:
@@ -68,18 +68,18 @@ def safe_read_file(file_path: Path) -> str:
         except UnicodeDecodeError:
             # Fall back to UTF-8 with error replacement
             if encoding != 'utf-8':
-                safe_print(f"🤔 Encoding {encoding} failed, falling back to UTF-8...")
+                safe_print(f"[?] Encoding {encoding} failed, falling back to UTF-8...")
             content = raw_data.decode('utf-8', errors='replace')
         
         return content
     
     except PermissionError:
         safe_print(f"🚫 Permission denied reading '{file_path}'")
-        safe_print("💡 Check if the file is readable or if you need different permissions")
+        safe_print("[tip] Check if the file is readable or if you need different permissions")
         raise
     except OSError as e:
         safe_print(f"💥 Error reading '{file_path}': {e}")
-        safe_print("💡 File might be corrupted, in use by another program, or on a bad disk")
+        safe_print("[tip] File might be corrupted, in use by another program, or on a bad disk")
         raise
 
 
@@ -97,13 +97,13 @@ def validate_knda_file(file_path: Path) -> bool:
         # Check if file is suspiciously large
         if len(content) > 1_000_000:  # 1MB limit
             safe_print(f"😰 '{file_path}' is pretty huge ({len(content):,} chars)")
-            safe_print("💡 Large files might cause performance issues")
-            safe_print("🤷 Proceeding anyway, but don't blame me if things get slow...")
+            safe_print("[tip] Large files might cause performance issues")
+            safe_print("[shrug] Proceeding anyway, but don't blame me if things get slow...")
         
         # Check for obviously non-text content
         if '\x00' in content:
             safe_print(f"🤨 '{file_path}' contains binary data - that's not gonna work")
-            safe_print("💡 Make sure you're pointing to a text file with kinda code")
+            safe_print("[tip] Make sure you're pointing to a text file with kinda code")
             return False
         
         return True
@@ -135,7 +135,7 @@ def show_examples():
         print(f"   {description}")
         print()
     
-    safe_print("🤷 Pro tip: Run any example with 'interpret' for maximum chaos")
+    safe_print("[shrug] Pro tip: Run any example with 'interpret' for maximum chaos")
 
 
 def show_syntax_reference():
@@ -171,9 +171,9 @@ def get_transformer(lang: str):
         return transformer
     elif lang == "c":
         # C support is coming in v0.4.0 - currently incomplete
-        safe_print("🚧 C support is coming in v0.4.0 with full compilation pipeline!")
-        safe_print("📍 Currently only Python is supported. Use '--lang python' or omit --lang.")
-        safe_print("🔗 Follow progress at: https://github.com/kinda-lang/kinda-lang/issues/19")
+        safe_print("[note] C support is coming in v0.4.0 with full compilation pipeline!")
+        safe_print("[info] Currently only Python is supported. Use '--lang python' or omit --lang.")
+        safe_print("[link] Follow progress at: https://github.com/kinda-lang/kinda-lang/issues/19")
         return None
     else:
         raise ValueError(f"Unsupported language: {lang}. Currently only 'python' is supported.")
@@ -187,10 +187,10 @@ def detect_language(path: Path, forced: Union[str, None]) -> str:
     if forced:
         if forced.lower() == "c":
             # Reject C explicitly with helpful message
-            safe_print("🚧 C transpiler is planned for v0.4.0 but not ready yet!")
-            safe_print("📍 Currently only Python is supported.")
-            safe_print("💡 Tip: Remove '--lang c' to use Python (default)")
-            safe_print("🔗 Track C support progress: https://github.com/kinda-lang/kinda-lang/issues/19")
+            safe_print("[note] C transpiler is planned for v0.4.0 but not ready yet!")
+            safe_print("[info] Currently only Python is supported.")
+            safe_print("[tip] Tip: Remove '--lang c' to use Python (default)")
+            safe_print("[link] Track C support progress: https://github.com/kinda-lang/kinda-lang/issues/19")
             raise ValueError("C language not yet supported")
         return forced.lower()
     
@@ -199,10 +199,10 @@ def detect_language(path: Path, forced: Union[str, None]) -> str:
         return "python"
     elif name.endswith(".c.knda") or name.endswith(".c"):
         # C files not supported yet - reject with helpful message
-        safe_print("🚧 C files detected but C transpiler isn't ready yet!")
-        safe_print("📍 C support is planned for v0.4.0 with full compilation pipeline")
-        safe_print("💡 For now, please use .py.knda files with Python syntax")
-        safe_print("🔗 Track C support: https://github.com/kinda-lang/kinda-lang/issues/19")
+        safe_print("[note] C files detected but C transpiler isn't ready yet!")
+        safe_print("[info] C support is planned for v0.4.0 with full compilation pipeline")
+        safe_print("[tip] For now, please use .py.knda files with Python syntax")
+        safe_print("[link] Track C support: https://github.com/kinda-lang/kinda-lang/issues/19")
         raise ValueError("C files not yet supported - use .py.knda instead")
     
     # Default to python - it's our only complete implementation
@@ -243,8 +243,8 @@ def main(argv=None) -> int:
     if args.command == "transform":
         input_path = Path(args.input)
         if not input_path.exists():
-            safe_print(f"🤔 '{args.input}' doesn't exist. Are you sure you typed that right?")
-            safe_print("💡 Tip: Check your file path and make sure the .knda file exists")
+            safe_print(f"[?] '{args.input}' doesn't exist. Are you sure you typed that right?")
+            safe_print("[tip] Tip: Check your file path and make sure the .knda file exists")
             # Suggest similar files if possible
             parent = input_path.parent
             if parent.exists():
@@ -267,7 +267,7 @@ def main(argv=None) -> int:
             return 1
         transformer = get_transformer(lang)
         if transformer is None:
-            safe_print(f"🤷 Sorry, I don't speak {lang} yet. Try Python maybe?")
+            safe_print(f"[shrug] Sorry, I don't speak {lang} yet. Try Python maybe?")
             return 1
         
         try:
@@ -280,17 +280,17 @@ def main(argv=None) -> int:
             # Handle parsing errors gracefully
             if "KindaParseError" in str(type(e)):
                 safe_print(str(e).strip())
-                safe_print("💡 Fix the syntax error above and try again")
+                safe_print("[tip] Fix the syntax error above and try again")
             else:
                 safe_print(f"💥 Transform failed: {e}")
-                safe_print("💡 Check your .knda file for syntax issues")
+                safe_print("[tip] Check your .knda file for syntax issues")
             return 1
 
     if args.command == "run":
         input_path = Path(args.input)
         if not input_path.exists():
-            safe_print(f"🤷‍♂️ Can't find '{args.input}'. Did you make that up?")
-            safe_print("💡 Double-check your file path - it should end with .knda")
+            safe_print(f"[shrug]‍♂️ Can't find '{args.input}'. Did you make that up?")
+            safe_print("[tip] Double-check your file path - it should end with .knda")
             # Suggest similar files
             parent = input_path.parent
             if parent.exists():
@@ -327,7 +327,7 @@ def main(argv=None) -> int:
                     safe_print("🎉 Well, that didn't crash. Success?")
                 except Exception as e:
                     safe_print(f"💥 Runtime error: {e}")
-                    safe_print("🤔 Your code transformed fine but crashed during execution")
+                    safe_print("[?] Your code transformed fine but crashed during execution")
                     return 1
                 return 0
             safe_print(f"😅 I can transform {lang} but can't run it. Try 'transform' instead?")
@@ -336,17 +336,17 @@ def main(argv=None) -> int:
             # Handle parsing errors gracefully
             if "KindaParseError" in str(type(e)):
                 safe_print(str(e).strip())
-                safe_print("💡 Fix the syntax error above and try again")
+                safe_print("[tip] Fix the syntax error above and try again")
             else:
                 safe_print(f"💥 Transform failed: {e}")
-                safe_print("💡 Check your .knda file for syntax issues")
+                safe_print("[tip] Check your .knda file for syntax issues")
             return 1
 
     if args.command == "interpret":
         input_path = Path(args.input)
         if not input_path.exists():
             safe_print(f"🙃 '{args.input}' is nowhere to be found. Try again?")
-            safe_print("💡 Make sure your .knda file exists and the path is correct")
+            safe_print("[tip] Make sure your .knda file exists and the path is correct")
             # Suggest similar files
             parent = input_path.parent
             if parent.exists():

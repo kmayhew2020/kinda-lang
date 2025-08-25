@@ -48,4 +48,4 @@ def run_interpreter(filepath, lang="python"):
         exec(code, fuzzy.env, fuzzy.env)
     except Exception as e:
         print(f"💥 Well, that went sideways: {e}")
-        print(f"🤷 Your code was... creative. Maybe too creative.")
+        print(f"[shrug] Your code was... creative. Maybe too creative.")

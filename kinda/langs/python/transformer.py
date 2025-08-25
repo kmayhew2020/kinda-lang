@@ -147,10 +147,10 @@ class KindaParseError(Exception):
             location = f"{self.file_path}:{self.line_number}"
         
         return f"""
-🤔 Kinda parse error at {location}:
+[?] Kinda parse error at {location}:
    {self.line_number:3d} | {self.line_content}
    
-💡 {self.message}
+[tip] {self.message}
 """
 
 

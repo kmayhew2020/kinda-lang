@@ -234,7 +234,7 @@ class TestSafePrintCoverage:
         
         # Test with UnicodeEncodeError
         mock_print.side_effect = [UnicodeEncodeError('utf-8', '', 0, 1, 'test'), None]
-        safe_print("text with emojis 🎲🤷📚")
+        safe_print("text with emojis 🎲[shrug]📚")
         
         # Should call print twice - once failing, once with fallbacks
         assert mock_print.call_count >= 2
@@ -246,7 +246,7 @@ class TestSafePrintCoverage:
         # This tests the fallback logic by checking the replacement patterns exist
         with patch('builtins.print') as mock_print:
             mock_print.side_effect = [UnicodeEncodeError('utf-8', '', 0, 1, 'test'), None]
-            safe_print("✨🎲🤷📚📝🎯")
+            safe_print("✨🎲[shrug]📚📝🎯")
             
             # Check that fallback was called with replacements
             if mock_print.call_count > 1:
