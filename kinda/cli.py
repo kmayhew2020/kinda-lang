@@ -127,6 +127,7 @@ def show_examples():
         ("Sorta Print Demo", "examples/python/individual/sorta_print_example.py.knda", "Probabilistic output (80% chance)"),
         ("Sometimes Demo", "examples/python/individual/sometimes_example.py.knda", "50% conditional execution"),
         ("Ish Demo", "examples/python/individual/ish_example.py.knda", "Fuzzy values and comparisons"),
+        ("Welp Fallbacks", "examples/python/individual/welp_example.py.knda", "Graceful fallbacks for risky operations"),
         ("Maybe Math", "examples/python/maybe_example.py.knda", "60% conditional execution"),
         ("Binary Logic", "examples/python/kinda_binary_example.py.knda", "Ternary logic: yes/no/maybe"),
         
