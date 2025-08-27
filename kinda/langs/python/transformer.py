@@ -3,6 +3,7 @@ from typing import List
 from kinda.langs.python.runtime_gen import generate_runtime_helpers, generate_runtime
 from kinda.grammar.python.constructs import KindaPythonConstructs
 from kinda.grammar.python.matchers import match_python_construct, find_ish_constructs, find_welp_constructs
+from kinda.cli import safe_read_file
 
 used_helpers = set()
 
@@ -266,7 +267,9 @@ class KindaParseError(Exception):
 def transform_file(path: Path, target_language="python") -> str:
     """Transform a .knda file with enhanced error reporting"""
     try:
-        lines = path.read_text().splitlines()
+        # Use safe encoding-aware file reading for Windows compatibility
+        content = safe_read_file(path)
+        lines = content.splitlines()
     except UnicodeDecodeError as e:
         raise KindaParseError(
             f"File encoding issue - try saving as UTF-8: {e}",
