@@ -5,8 +5,12 @@ from unittest.mock import patch
 import tempfile
 from pathlib import Path
 
-# Skip entire file - welp construct is disabled
-pytestmark = pytest.mark.skip("welp construct is disabled - skipping all welp tests")
+# Import required functions for welp construct tests
+from kinda.grammar.python.matchers import find_welp_constructs
+from kinda.langs.python.transformer import transform_line, transform_file
+from kinda.langs.python.runtime.fuzzy import welp_fallback
+
+# Welp construct tests - now enabled!
 
 
 class TestWelpMatching:

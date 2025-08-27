@@ -235,9 +235,8 @@ class TestIshValue:
         sys.stdout = sys.__stdout__
 
 
-@pytest.mark.skip("welp construct is disabled - skipping welp_fallback tests")
 class TestWelpFallback:
-    """Test welp_fallback function - DISABLED (welp construct is disabled)."""
+    """Test welp_fallback function - now enabled!"""
     
     def test_welp_fallback_with_direct_value(self):
         """Test welp_fallback with direct value (non-callable)."""
