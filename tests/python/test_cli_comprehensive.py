@@ -115,7 +115,7 @@ class TestShowExamples:
             # Should contain example descriptions when files are missing
             assert "The classic, but fuzzy" in printed_text
             assert "Variables that kinda work" in printed_text
-            assert "Fuzzy conditionals" in printed_text
+            assert "60% conditional execution" in printed_text
 
 
 class TestTransformCommandErrorHandling:

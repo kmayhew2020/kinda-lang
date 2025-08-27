@@ -1,0 +1,190 @@
+# Fuzzy Game Logic - All Constructs in a Simple Game
+# Demonstrates realistic game scenarios with fuzzy programming
+
+~sorta print("🎮 FUZZY QUEST - A Probabilistic Adventure")
+~sorta print("Where your choices might not matter... or do they?")
+
+# Player stats with fuzzy initialization  
+~kinda int player_level = 5
+~kinda int player_gold = 50
+~kinda int player_experience = 120
+~kinda int player_luck = 75
+
+~sorta print("\n👤 PLAYER STATS")
+~sorta print("Level:", player_level)
+~sorta print("Gold:", player_gold)  
+~sorta print("Experience:", player_experience)
+~sorta print("Luck:", player_luck)
+
+# Game event 1: Finding treasure
+~sorta print("\n💰 You discover a mysterious chest!")
+
+# Use kinda binary for player decision
+~kinda binary open_chest ~ probabilities(0.5, 0.2, 0.3)
+~sorta print("Decision to open:", open_chest)
+
+~sometimes (open_chest == 1) {
+    ~sorta print("🗝️  You boldly open the chest!")
+    
+    # Fuzzy treasure amount
+    treasure = 30~ish
+    player_gold ~= treasure
+    ~sorta print("Found", treasure, "gold!")
+    
+    # Check if it's a good haul
+    ~maybe (treasure ~ish 35) {
+        ~sorta print("💎 Excellent treasure haul!")
+        bonus_experience = 25~ish
+        player_experience ~= bonus_experience
+        ~sorta print("Bonus XP:", bonus_experience)
+    }
+}
+
+~sometimes (open_chest == -1) {
+    ~sorta print("🚫 You cautiously avoid the chest")
+    ~sorta print("Sometimes discretion is the better part of valor...")
+    
+    # But sometimes you get rewarded for caution
+    ~maybe (player_luck ~ish 80) {
+        ~sorta print("🍀 Your caution pays off - you spot a hidden gem!")
+        player_gold ~= 15
+    }
+}
+
+~sometimes (open_chest == 0) {
+    ~sorta print("🤔 You stand there, paralyzed by indecision")
+    
+    # Indecision has consequences too
+    ~sometimes (True) {
+        ~sorta print("⏰ While you hesitate, a goblin steals some gold!")
+        player_gold ~= -10
+    }
+}
+
+# Game event 2: Combat encounter
+~sorta print("\n⚔️  A wild monster appears!")
+
+# Monster stats
+~kinda int monster_health = 40
+~kinda int monster_attack = 15
+
+~sorta print("Monster health:", monster_health)
+
+# Combat decision
+~kinda binary combat_choice ~ probabilities(0.6, 0.3, 0.1)
+
+~sometimes (combat_choice == 1) {
+    ~sorta print("💪 You choose to fight!")
+    
+    # Player attack with level bonus
+    attack_power = (player_level~ish * 8) + player_luck~ish
+    ~sorta print("Your attack power:", attack_power)
+    
+    monster_health = monster_health - attack_power
+    ~sorta print("Monster health after attack:", monster_health)
+    
+    # Check if monster is defeated
+    ~maybe (monster_health ~ish 0) {
+        ~sorta print("🏆 Monster defeated!")
+        victory_gold = 25~ish
+        victory_xp = 40~ish
+        
+        player_gold ~= victory_gold
+        player_experience ~= victory_xp
+        
+        ~sorta print("Victory rewards!")
+        ~sorta print("Gold:", victory_gold)
+        ~sorta print("XP:", victory_xp)
+        
+        # Chance for rare drop
+        ~maybe (player_luck ~ish 90) {
+            ~sorta print("🌟 RARE DROP! Magic potion found!")
+            player_luck ~= 10  # permanent luck boost
+        }
+    }
+}
+
+~sometimes (combat_choice == -1) {
+    ~sorta print("🏃 You attempt to flee!")
+    
+    # Fleeing success based on luck
+    ~maybe (player_luck ~ish 60) {
+        ~sorta print("✅ Successfully escaped!")
+        ~sorta print("Live to fight another day!")
+    }
+    
+    # But sometimes you don't escape
+    ~sometimes (player_luck ~ish 30) {  
+        ~sorta print("💥 Failed to escape! Monster attacks!")
+        flee_damage = monster_attack~ish
+        player_experience = player_experience - flee_damage
+        ~sorta print("Lost", flee_damage, "XP from hasty retreat!")
+    }
+}
+
+~sometimes (combat_choice == 0) {
+    ~sorta print("🧘 You try to negotiate with the monster")
+    
+    # Negotiation outcomes
+    ~maybe (player_gold ~ish 40) {
+        ~sorta print("💰 You bribe the monster with gold!")
+        bribe_amount = 20~ish
+        player_gold = player_gold - bribe_amount
+        ~sorta print("Paid", bribe_amount, "gold for safe passage")
+        
+        # Sometimes the monster gives something back
+        ~sometimes (True) {
+            ~sorta print("😊 The monster appreciates honesty!")
+            player_luck ~= 5
+        }
+    }
+}
+
+# Level up check
+~sorta print("\n📈 LEVEL CHECK")
+experience_threshold = 150
+~maybe (player_experience ~ish experience_threshold) {
+    ~sorta print("🎉 LEVEL UP!")
+    player_level ~= 1
+    player_luck ~= 10
+    ~sorta print("New level:", player_level)
+    ~sorta print("Luck increased!")
+    
+    # Level up bonus
+    ~sometimes (player_level ~ish 6) {
+        ~sorta print("🎁 Level 6 milestone bonus!")
+        milestone_bonus = 50~ish  
+        player_gold ~= milestone_bonus
+        ~sorta print("Milestone gold:", milestone_bonus)
+    }
+}
+
+# Final status report
+~sorta print("\n📊 FINAL STATUS")
+~sorta print("Level:", player_level)
+~sorta print("Gold:", player_gold)
+~sorta print("Experience:", player_experience)
+~sorta print("Luck:", player_luck)
+
+# Game evaluation
+total_score = (player_level * 20) + player_gold + (player_luck / 2)
+~sorta print("\nTotal score:", total_score)
+
+~maybe (total_score ~ish 200) {
+    ~sorta print("🏆 EXCELLENT ADVENTURE!")
+    ~sorta print("You've mastered the art of fuzzy gaming!")
+}
+
+~maybe (total_score ~ish 100) {
+    ~sorta print("👍 DECENT ADVENTURE!")
+    ~sorta print("Not bad for a fuzzy quest!")
+}
+
+~maybe (total_score ~ish 50) {
+    ~sorta print("🤷 CHAOTIC ADVENTURE!")
+    ~sorta print("Well, at least it was... interesting?")
+}
+
+~sorta print("\n🎮 THANKS FOR PLAYING FUZZY QUEST!")
+~sorta print("🎲 Where every decision is probably maybe correct!")
+~sorta print("✨ Come back for more fuzzy adventures!")
