@@ -17,9 +17,17 @@ runtime_dir = Path("kinda/langs/python/runtime")
 generate_runtime(runtime_dir)
 
 # Import the functions we need to test (welp_fallback imported but tests disabled)
-from kinda.langs.python.runtime.fuzzy import (
-    ish_comparison, ish_value, welp_fallback, env
-)
+try:
+    from kinda.langs.python.runtime.fuzzy import (
+        ish_comparison, ish_value, welp_fallback, env
+    )
+except ImportError as e:
+    # If import fails, regenerate and try again
+    print(f"Import failed: {e}, regenerating runtime...")
+    generate_runtime(runtime_dir)
+    from kinda.langs.python.runtime.fuzzy import (
+        ish_comparison, ish_value, welp_fallback, env
+    )
 
 
 class TestIshComparison:
