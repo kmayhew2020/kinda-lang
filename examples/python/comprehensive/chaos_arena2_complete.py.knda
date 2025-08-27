@@ -35,13 +35,13 @@ AGENTS = [
 def chaos_step():
     # Enhanced chaotic step with ish fuzzy values
     base_step = 1 if random.random() < 0.5 else -1
-    return base_step~ish  # Add fuzzy variance to chaos steps
+    return base_step ~ish  # Add fuzzy variance to chaos steps
 
 def run_agent_trial(agent, steps):
     # Initialize agent with fuzzy starting values
-    ~kinda int position = 0;
-    ~kinda int energy = 50;
-    ~kinda int chaos_level = 1;
+    ~kinda int position = 0
+    ~kinda int energy = 50
+    ~kinda int chaos_level = 1
     
     # NEW: Agent mood system using kinda binary
     ~kinda binary agent_mood ~ probabilities(0.4, 0.3, 0.3)
