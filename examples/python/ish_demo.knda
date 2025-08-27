@@ -1,0 +1,38 @@
+from kinda.langs.python.runtime.fuzzy import ish_comparison, ish_value, sometimes
+
+# Demo of ~ish fuzzy values and comparisons
+
+# Fuzzy values with ±2 variance
+print("Creating fuzzy values:")
+x = ish_value(42)
+y = ish_value(100)
+z = ish_value(3.14)
+
+print(f"x = {x}")  # ~40-44
+print(f"y = {y}")  # ~98-102
+print(f"z = {z}")  # ~1.14-5.14
+
+# Fuzzy comparisons with ±2 tolerance
+print("\nFuzzy comparisons:")
+score = 98
+target = 100
+
+if ish_comparison(score, target):
+    print(f"Score {score} ish_comparison(is, equal) to target {target}")
+else:
+    print(f"Score {score} is ish_comparison(NOT, equal) to target {target}")
+
+# Mixed usage
+print("\nMixed usage:")
+if ish_comparison(score, ish_value(100)):
+    print("Score is approximately a fuzzy 100")
+
+# Complex expressions
+result = (ish_value(42) * 2) if ish_comparison(x, 40) else 0
+print(f"Complex result: {result}")
+
+# Integration with other kinda constructs
+if sometimes():
+    ~sorta print("Sometimes we print fuzzy values:", ish_value(42))
+
+print("Done!")

@@ -119,22 +119,22 @@ def show_examples():
     
     examples = [
         # Basic examples
-        ("Hello World", "examples/hello.py.knda", "The classic, but fuzzy"),
-        ("Chaos Greeter", "examples/unified_syntax.py.knda", "Variables that kinda work"),
+        ("Hello World", "examples/python/hello.py.knda", "The classic, but fuzzy"),
+        ("Chaos Greeter", "examples/python/unified_syntax.py.knda", "Variables that kinda work"),
         
         # Individual construct examples
-        ("Kinda Int Demo", "examples/individual/kinda_int_example.py.knda", "Fuzzy integers with ±1 variance"),
-        ("Sorta Print Demo", "examples/individual/sorta_print_example.py.knda", "Probabilistic output (80% chance)"),
-        ("Sometimes Demo", "examples/individual/sometimes_example.py.knda", "50% conditional execution"),
-        ("Ish Demo", "examples/individual/ish_example.py.knda", "Fuzzy values and comparisons"),
+        ("Kinda Int Demo", "examples/python/individual/kinda_int_example.py.knda", "Fuzzy integers with ±1 variance"),
+        ("Sorta Print Demo", "examples/python/individual/sorta_print_example.py.knda", "Probabilistic output (80% chance)"),
+        ("Sometimes Demo", "examples/python/individual/sometimes_example.py.knda", "50% conditional execution"),
+        ("Ish Demo", "examples/python/individual/ish_example.py.knda", "Fuzzy values and comparisons"),
         ("Maybe Math", "examples/python/maybe_example.py.knda", "60% conditional execution"),
         ("Binary Logic", "examples/python/kinda_binary_example.py.knda", "Ternary logic: yes/no/maybe"),
         
         # Comprehensive examples
-        ("Fuzzy Calculator", "examples/comprehensive/fuzzy_calculator.py.knda", "All constructs in realistic calculator"),
-        ("Chaos Arena Complete", "examples/comprehensive/chaos_arena_complete.py.knda", "Epic battle with all constructs"),
-        ("Fuzzy Game Quest", "examples/comprehensive/fuzzy_game_logic.py.knda", "Adventure game with fuzzy decisions"),
-        ("Advanced Chaos Arena", "examples/comprehensive/chaos_arena2_complete.py.knda", "Multi-agent simulation with ALL constructs"),
+        ("Fuzzy Calculator", "examples/python/comprehensive/fuzzy_calculator.py.knda", "All constructs in realistic calculator"),
+        ("Chaos Arena Complete", "examples/python/comprehensive/chaos_arena_complete.py.knda", "Epic battle with all constructs"),
+        ("Fuzzy Game Quest", "examples/python/comprehensive/fuzzy_game_logic.py.knda", "Adventure game with fuzzy decisions"),
+        ("Advanced Chaos Arena", "examples/python/comprehensive/chaos_arena2_complete.py.knda", "Multi-agent simulation with ALL constructs"),
     ]
     
     for title, filename, description in examples:

@@ -27,14 +27,15 @@
     ~sorta print("🗝️  You boldly open the chest!")
     
     # Fuzzy treasure amount
-    treasure = 30~ish
+    treasure = 30 ~ish
     player_gold ~= treasure
     ~sorta print("Found", treasure, "gold!")
     
     # Check if it's a good haul
-    ~maybe (treasure ~ish 35) {
-        ~sorta print("💎 Excellent treasure haul!")
-        bonus_experience = 25~ish
+    ~maybe (treasure > 20) {
+        if treasure ~ish 35:
+            ~sorta print("💎 Excellent treasure haul!")
+        bonus_experience = 25 ~ish
         player_experience ~= bonus_experience
         ~sorta print("Bonus XP:", bonus_experience)
     }

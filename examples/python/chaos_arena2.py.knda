@@ -11,7 +11,7 @@ import time, random, math, statistics
 from collections import defaultdict
 
 # === CONFIGURATION WITH KINDA TRANSFORMS ===
-~kinda int simulation_time = 10;
+~kinda int simulation_time = 3;
 ~kinda int agent_count = 3;
 ~kinda int steps_per_trial = 100;
 ~kinda int trials_per_batch = 80;
