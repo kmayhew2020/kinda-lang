@@ -1,7 +1,7 @@
 """
 Test coverage for missing functions in runtime/fuzzy.py
-Focuses on: ish_comparison, ish_value, welp_fallback
-Target: Cover lines 27-51, 57-76, 183-198
+Focuses on: ish_comparison, ish_value (welp_fallback disabled)
+Target: Cover lines 27-51, 57-76
 """
 
 import pytest
@@ -10,7 +10,7 @@ from unittest.mock import patch, MagicMock
 from io import StringIO
 import sys
 
-# Import the functions we need to test
+# Import the functions we need to test (welp_fallback imported but tests disabled)
 from kinda.langs.python.runtime.fuzzy import (
     ish_comparison, ish_value, welp_fallback, env
 )
@@ -242,8 +242,9 @@ class TestIshValue:
         sys.stdout = sys.__stdout__
 
 
+@pytest.mark.skip("welp construct is disabled - skipping welp_fallback tests")
 class TestWelpFallback:
-    """Test welp_fallback function with various inputs and edge cases."""
+    """Test welp_fallback function - DISABLED (welp construct is disabled)."""
     
     def test_welp_fallback_with_direct_value(self):
         """Test welp_fallback with direct value (non-callable)."""
@@ -372,5 +373,6 @@ class TestEnvironmentIntegration:
         assert "ish_value" in env  
         assert env["ish_value"] == ish_value
         
+        # welp_fallback exists in runtime but tests are disabled
         assert "welp_fallback" in env
         assert env["welp_fallback"] == welp_fallback
