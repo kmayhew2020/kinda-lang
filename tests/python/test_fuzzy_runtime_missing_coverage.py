@@ -9,6 +9,12 @@ import random
 from unittest.mock import patch, MagicMock
 from io import StringIO
 import sys
+from pathlib import Path
+
+# Ensure runtime is generated before importing
+from kinda.langs.python.runtime_gen import generate_runtime
+runtime_dir = Path("kinda/langs/python/runtime")
+generate_runtime(runtime_dir)
 
 # Import the functions we need to test (welp_fallback imported but tests disabled)
 from kinda.langs.python.runtime.fuzzy import (
