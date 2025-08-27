@@ -377,7 +377,7 @@ def transform(input_path: Path, out_dir: Path) -> List[Path]:
 
                 output_file_path = out_dir / relative_path.with_name(new_name)
                 output_file_path.parent.mkdir(parents=True, exist_ok=True)
-                output_file_path.write_text(output_code)
+                output_file_path.write_text(output_code, encoding='utf-8')
                 output_paths.append(output_file_path)
             except KindaParseError:
                 # Re-raise parse errors to be handled by CLI
@@ -396,7 +396,7 @@ def transform(input_path: Path, out_dir: Path) -> List[Path]:
                 new_name = input_path.stem + ".py"
             output_file_path = out_dir / new_name
             output_file_path.parent.mkdir(parents=True, exist_ok=True)
-            output_file_path.write_text(output_code)
+            output_file_path.write_text(output_code, encoding='utf-8')
             output_paths.append(output_file_path)
         except KindaParseError:
             # Re-raise parse errors to be handled by CLI
