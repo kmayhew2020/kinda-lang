@@ -47,10 +47,9 @@ enemy_health = enemy_health - damage
 ~sorta print("Player deals ~", damage, "damage")
 ~sorta print("Enemy health:", enemy_health)
 
-# Check if enemy is badly hurt using ish comparison
-~maybe (enemy_health > 30) {
-    if enemy_health ~ish 50:
-        ~sorta print("💀 Enemy is badly wounded!")
+# Check if enemy is badly hurt using ish comparison (now with direct ~ish integration!)
+~maybe (enemy_health ~ish 50) {
+    ~sorta print("💀 Enemy is badly wounded!")
     
     # Enemy might flee
     ~kinda binary enemy_flees ~ probabilities(0.6, 0.2, 0.2)

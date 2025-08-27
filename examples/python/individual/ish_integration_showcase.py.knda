@@ -1,0 +1,45 @@
+# ~ish Integration Showcase - Now Working!
+# This demonstrates syntax that was previously broken but now works
+
+import random
+
+# Test data
+score = 85
+target_score = 90
+health = 75
+max_health = 100
+
+~sorta print("=== ~ish Integration Showcase ===")
+
+# Simple ~ish integration with ~maybe
+~maybe (score ~ish target_score) {
+    ~sorta print("🎯 Score is approximately on target!")
+}
+
+# Simple ~ish integration with ~sometimes  
+~sometimes (health ~ish max_health) {
+    ~sorta print("💪 Health is nearly maxed out!")
+}
+
+# Complex conditions with ~ish and logical operators
+~maybe (health ~ish max_health and score > 80) {
+    ~sorta print("🏆 Both health and score are excellent!")
+}
+
+~sometimes (score ~ish target_score or health ~ish 50) {
+    ~sorta print("⚠️  Either score is close to target OR health is getting low")
+}
+
+# Nested ~ish comparisons with different values
+threshold_low = 60
+threshold_high = 95
+
+~maybe (score ~ish threshold_low or score ~ish threshold_high) {
+    ~sorta print("📊 Score is either low-ish or high-ish")
+}
+
+# Show that workarounds are no longer needed
+~sorta print("✅ All the above syntax now works directly!")
+~sorta print("🚫 No more nested if statements required!")
+
+~sorta print("=== End Showcase ===")

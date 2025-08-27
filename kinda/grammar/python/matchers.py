@@ -67,9 +67,85 @@ def _parse_sorta_print_arguments(line: str):
         return content
 
 
+def _parse_balanced_parentheses(line: str, start_pos: int) -> tuple:
+    """
+    Parse balanced parentheses starting from start_pos.
+    Returns (content, is_balanced) - content inside parentheses and whether they were balanced.
+    """
+    if start_pos >= len(line) or line[start_pos] != '(':
+        return None, False
+    
+    paren_count = 0
+    in_string = False
+    string_char = None
+    escaped = False
+    end_pos = start_pos
+    
+    for i in range(start_pos, len(line)):
+        char = line[i]
+        
+        if escaped:
+            escaped = False
+            continue
+            
+        if char == '\\' and in_string:
+            escaped = True
+            continue
+            
+        if not in_string:
+            if char in '"\'':
+                in_string = True
+                string_char = char
+            elif char == '(':
+                paren_count += 1
+            elif char == ')':
+                paren_count -= 1
+                if paren_count == 0:
+                    end_pos = i
+                    break
+        else:
+            # We're inside a string
+            if char == string_char:
+                in_string = False
+                string_char = None
+    
+    if paren_count == 0:  # Found matching parenthesis
+        content = line[start_pos + 1:end_pos]
+        return content, True
+    else:
+        # Unbalanced parentheses
+        content = line[start_pos + 1:]
+        return content, False
+
+
+def _parse_conditional_arguments(line: str, construct_name: str):
+    """
+    Parse conditional constructs (~maybe, ~sometimes) with balanced parentheses support.
+    Maintains compatibility with existing behavior and tests.
+    """
+    import re
+    
+    # Maintain original behavior: NO leading whitespace allowed (consistent with tests)
+    pattern = re.compile(f'^~{construct_name}\\s*\\(')
+    match = pattern.match(line)
+    if not match:
+        return None
+    
+    # Find the opening parenthesis
+    start_idx = match.end() - 1  # -1 to include the opening paren
+    content, is_balanced = _parse_balanced_parentheses(line, start_idx)
+    
+    # Only return content if parentheses are properly balanced
+    # This maintains original error handling for invalid syntax
+    if content is not None and is_balanced:
+        return content
+    
+    return None
+
+
 def match_python_construct(line: str):
     """
-    Enhanced Python construct matcher with robust ~sorta print parsing.
+    Enhanced Python construct matcher with robust parsing for all constructs.
     """
     # Clean matching - no debug spam
     for key, data in KindaPythonConstructs.items():
@@ -78,6 +154,11 @@ def match_python_construct(line: str):
             content = _parse_sorta_print_arguments(line)
             if content is not None:
                 return "sorta_print", (content,)
+        elif key in ["maybe", "sometimes"]:
+            # Use enhanced conditional parsing with balanced parentheses
+            content = _parse_conditional_arguments(line, key)
+            if content is not None:
+                return key, (content,)
         else:
             pattern = data["pattern"]
             match = pattern.match(line)
