@@ -6,6 +6,7 @@
 - **All Core Constructs**: `~kinda int`, `~sorta print`, `~sometimes`, `~maybe`, `~ish`, `~kinda binary`
 - **~welp Construct**: Implemented but temporarily disabled (tests skipped)
 - **CLI Pipeline**: Full `kinda run`, `kinda interpret`, `kinda examples`, `kinda syntax` 
+- **Enhanced CLI Error Messages**: Snarky, helpful error guidance with kinda personality ✅ NEW
 - **CI Pipeline**: Passing on Ubuntu/macOS/Windows, Python 3.8-3.12
 - **Test Coverage**: 76% overall (target: 75%+ ✅ ACHIEVED)
 
@@ -23,10 +24,11 @@
 **Coverage Conclusion:** 76% overall exceeds 75% target ✅
 
 **Next Priority Options:**
-1. **Enhanced CLI/UX** - Better error messages, examples
-2. **Performance optimizations** - Profiling and speed improvements  
-3. **New constructs** - `~yolo`, `~oops`, `~meh` (when ready)
-4. **Personality profiles** - Optimist/cynic/trickster modes
+1. ✅ **Enhanced CLI/UX** - Better error messages ✅ COMPLETED
+2. **More comprehensive examples** - Show all constructs in action
+3. **Performance optimizations** - Profiling and speed improvements  
+4. **New constructs** - `~yolo`, `~oops`, `~meh` (when ready)
+5. **Personality profiles** - Optimist/cynic/trickster modes
 
 ### 🚀 Next Features (After 85% Coverage)
 
@@ -50,4 +52,4 @@
 - [ ] Issue #38: Complete test coverage for existing constructs → Close when 85% achieved
 
 ---
-*Last Updated: 2025-08-27 by Claude Code*
+*Last Updated: 2025-08-27 by Claude Code - Enhanced CLI Error Messages Completed*

@@ -290,7 +290,26 @@ def main(argv=None) -> int:
                 safe_print("[tip] Fix the syntax error above and try again")
             else:
                 safe_print(f"💥 Transform failed: {e}")
-                safe_print("[tip] Check your .knda file for syntax issues")
+                
+                # Provide snarky but helpful suggestions based on error type
+                error_str = str(e).lower()
+                if "encoding" in error_str or "unicode" in error_str:
+                    safe_print("[?] Your file has encoding issues. Fancy characters causing trouble?")
+                    safe_print("   • Save as UTF-8 (like a civilized person)")
+                    safe_print("   • Those emojis might be breaking things 😅")
+                elif "permission" in error_str or "access" in error_str:
+                    safe_print("[shrug] Permission denied. The file system doesn't trust you:")
+                    safe_print("   • Close the file if it's open elsewhere (multitasking gone wrong)")
+                    safe_print("   • Check file permissions (maybe you don't own it?)")
+                elif "no such file" in error_str or "not found" in error_str:
+                    safe_print("[?] File not found. Did you type that path correctly?")
+                    safe_print("   • Double-check the path (typos are embarrassing)")
+                    safe_print("   • Make sure it ends with .knda (kinda important)")
+                else:
+                    safe_print("[shrug] Transform failed for mysterious reasons. Try:")
+                    safe_print("   • Fix any obvious syntax errors in your .knda file")
+                    safe_print("   • Remember: ~ before kinda constructs (seriously)")
+                    safe_print("   • Start with something simple first")
             return 1
 
     if args.command == "run":
@@ -335,6 +354,26 @@ def main(argv=None) -> int:
                 except Exception as e:
                     safe_print(f"💥 Runtime error: {e}")
                     safe_print("[?] Your code transformed fine but crashed during execution")
+                    
+                    # Provide snarky but helpful suggestions based on error type
+                    error_str = str(e).lower()
+                    if "invalid syntax" in error_str:
+                        safe_print("[shrug] Well, that's syntactically questionable. Common kinda fails:")
+                        safe_print("   • Forgot the ~ tilde? maybe should be ~maybe (kinda important)")
+                        safe_print("   • Mixing Python in .knda? That's... ambitious")
+                        safe_print("   • Missing semicolons? Some constructs are picky like that")
+                    elif "name" in error_str and "not defined" in error_str:
+                        safe_print("[?] That variable doesn't exist. Awkward. Try:")
+                        safe_print("   • ~kinda int x = 42 to declare fuzzy variables (the ~ matters)")
+                        safe_print("   • Double-check your spelling (typos happen to the best of us)")
+                    elif "module" in error_str and "not found" in error_str:
+                        safe_print("[?] Python can't find that module. Oops:")
+                        safe_print("   • Don't import kinda stuff in regular Python (that won't work)")
+                        safe_print("   • Make sure all your dependencies are installed")
+                    else:
+                        safe_print("[shrug] Something's broken. The usual suspects:")
+                        safe_print("   • Missing ~ before kinda constructs (very important)")
+                        safe_print("   • General syntax weirdness")
                     return 1
                 return 0
             safe_print(f"😅 I can transform {lang} but can't run it. Try 'transform' instead?")
