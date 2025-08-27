@@ -1,0 +1,28 @@
+# ~kinda int - Fuzzy Integer Assignment
+# Demonstrates fuzzy integer values with ±1 variance
+
+~sorta print("=== Kinda Int Examples ===")
+
+# Basic kinda int assignment
+~kinda int x = 42
+~sorta print("x =", x, "(expected: 41, 42, or 43)")
+
+# Fuzzy reassignment 
+x ~= 10
+~sorta print("x after fuzzy reassign:", x, "(expected: 9, 10, or 11)")
+
+# Multiple kinda ints
+~kinda int score = 85
+~kinda int bonus = 15
+~sorta print("score =", score, "bonus =", bonus)
+
+# Arithmetic with kinda ints
+total = score + bonus
+~sorta print("total score:", total, "(fuzzy math!)")
+
+# Edge cases
+~kinda int zero = 0
+~kinda int negative = -5
+~sorta print("zero =", zero, "negative =", negative)
+
+~sorta print("=== End of Kinda Int Demo ===")

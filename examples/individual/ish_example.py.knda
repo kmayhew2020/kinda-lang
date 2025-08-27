@@ -1,0 +1,71 @@
+# ~ish - Fuzzy Values and Comparisons
+# Demonstrates fuzzy values with variance and approximate comparisons
+
+~sorta print("=== Ish Examples ===")
+
+# Fuzzy values with default ±2 variance
+~sorta print("Creating fuzzy values:")
+x = 42~ish
+y = 100~ish  
+z = 3.14~ish
+
+~sorta print("x =", x, "(expected: ~40-44)")
+~sorta print("y =", y, "(expected: ~98-102)")  
+~sorta print("z =", z, "(expected: ~1.14-5.14)")
+
+# Fuzzy comparisons with ±2 tolerance
+~sorta print("Fuzzy comparisons:")
+score = 98
+target = 100
+
+# Basic ish comparison
+if score ~ish target:
+    ~sorta print("Score", score, "is ~ish equal to target", target)
+else:
+    ~sorta print("Score is not close to target")
+
+# More advanced ish comparisons
+value1 = 42~ish
+value2 = 40
+
+if value1 ~ish value2:
+    ~sorta print("42~ish is approximately equal to 40")
+
+# Using ish in maybe blocks (works better than sometimes + ish)
+temperature = 72
+ideal_temp = 70
+
+~maybe (temperature > ideal_temp) {
+    if temperature ~ish ideal_temp:
+        ~sorta print("Temperature is close enough to ideal!")
+}
+
+# Complex ish expressions
+base_result = 42~ish
+if base_result ~ish 40:
+    final_result = base_result + 10~ish
+    ~sorta print("Complex ish calculation:", final_result)
+
+# Demonstrate ish with arithmetic
+left_side = 50~ish
+right_side = 48
+
+if left_side ~ish right_side:
+    ~sorta print("Fuzzy math with fuzzy logic!")
+    combined = left_side + right_side
+    ~sorta print("Combined fuzzy result:", combined)
+
+# Show ish tolerance in action
+close_value = 102
+reference = 100
+
+if close_value ~ish reference:
+    ~sorta print("102 is close to 100 (within ±2 tolerance)")
+
+far_value = 106
+if far_value ~ish reference:
+    ~sorta print("This shouldn't print - 106 is too far from 100")
+else:
+    ~sorta print("106 is NOT close to 100 (outside ±2 tolerance)")
+
+~sorta print("=== End of Ish Demo ===")

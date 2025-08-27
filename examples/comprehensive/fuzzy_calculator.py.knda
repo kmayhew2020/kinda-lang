@@ -1,0 +1,102 @@
+# Fuzzy Calculator - All Constructs Working Together
+# Demonstrates a realistic calculator with fuzzy logic
+
+~sorta print("🧮 Welcome to the Fuzzy Calculator!")
+~sorta print("Where math is more of a suggestion than a rule...")
+
+# Initialize fuzzy numbers
+~kinda int num1 = 10
+~kinda int num2 = 5
+
+~sorta print("\nStarting numbers:")
+~sorta print("num1 =", num1, "(fuzzy)")
+~sorta print("num2 =", num2, "(fuzzy)")
+
+# Fuzzy arithmetic
+addition_result = num1 + num2  
+subtraction_result = num1 - num2
+multiplication_result = num1 * 2
+
+~sorta print("\n--- Fuzzy Arithmetic ---")
+~sorta print("num1 + num2 =", addition_result)
+~sorta print("num1 - num2 =", subtraction_result) 
+~sorta print("num1 * 2 =", multiplication_result)
+
+# Use ish comparisons to check results
+expected_sum = 15
+~maybe (addition_result > 10) {
+    if addition_result ~ish expected_sum:
+        ~sorta print("✅ Addition result is approximately correct!")
+}
+
+# Binary decision making
+~kinda binary user_wants_more
+~sorta print("\nUser decision:", user_wants_more)
+
+~sometimes (user_wants_more == 1) {
+    ~sorta print("🎯 User wants more calculations!")
+    
+    # Advanced fuzzy math
+    ~kinda int advanced_num = 50
+    advanced_fuzzy = advanced_num + (3~ish)
+    result = advanced_fuzzy + multiplication_result
+    ~sorta print("Advanced calculation:", result)
+    
+    # Check if result is reasonable
+    ~maybe (result > 50) {
+        if result ~ish 100:
+            ~sorta print("📊 Result looks reasonable-ish")
+    }
+}
+
+~sometimes (user_wants_more == -1) {
+    ~sorta print("🛑 User says no more math!")
+}
+
+~sometimes (user_wants_more == 0) {
+    ~sorta print("🤷 User is undecided about more math")
+    
+    # Do something anyway, because chaos
+    ~maybe (True) {
+        bonus_calc = 7~ish * 3
+        ~sorta print("Bonus calculation anyway:", bonus_calc)
+    }
+}
+
+# Fuzzy accuracy check
+~kinda int accuracy_score = 85
+~sorta print("\n🎯 Calculator accuracy:", accuracy_score, "%")
+
+~sometimes (accuracy_score > 80) {
+    if accuracy_score ~ish 90:
+        ~sorta print("📈 Pretty accurate for fuzzy math!")
+}
+
+~sometimes (accuracy_score < 60) {
+    if accuracy_score ~ish 50:
+        ~sorta print("📉 Well, it's fuzzy... what do you expect?")
+}
+
+# Final chaos - everything together
+comparison_val = num2 * 2
+~maybe (num1 > 5) {
+    if num1 ~ish comparison_val:
+        ~kinda binary final_decision ~ probabilities(0.3, 0.3, 0.4)
+        
+        ~sometimes (final_decision != 0) {
+            ~sorta print("🎪 Final chaos calculation!")
+            chaos_base1 = num1 + (2~ish)
+            chaos_base2 = num2 + (1~ish)  
+            chaos_result = (chaos_base1 + chaos_base2) * final_decision
+            ~sorta print("Chaos result:", chaos_result)
+            
+            ~maybe (chaos_result < 5) {
+                if chaos_result ~ish 0:
+                    ~sorta print("🌟 Surprisingly close to zero!")
+            }
+        }
+}
+
+~sorta print("\n🎉 Thanks for using Fuzzy Calculator!")
+~sorta print("Remember: In fuzzy math, there are no wrong answers...")
+~sorta print("...just approximate ones! 😄")

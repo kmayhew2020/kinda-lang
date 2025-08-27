@@ -1,0 +1,52 @@
+# ~sometimes - 50% Conditional Execution
+# Demonstrates probabilistic control flow
+
+~sorta print("=== Sometimes Examples ===")
+
+# Basic sometimes block (50% chance to execute)
+~sometimes (True) {
+    ~sorta print("This sometimes block executed!")
+    ~kinda int counter = 1
+}
+
+# Sometimes with real conditions
+~kinda int user_age = 25
+~sometimes (user_age > 18) {
+    ~sorta print("User is an adult (sometimes logic)")
+}
+
+# Multiple sometimes blocks
+~sorta print("--- Multiple sometimes blocks ---")
+~sometimes (True) {
+    ~sorta print("Sometimes block 1")
+}
+~sometimes (True) {
+    ~sorta print("Sometimes block 2") 
+}
+~sometimes (True) {
+    ~sorta print("Sometimes block 3")
+}
+
+# Nested sometimes
+~sometimes (True) {
+    ~sorta print("Outer sometimes block")
+    ~sometimes (True) {
+        ~sorta print("Nested sometimes - double uncertainty!")
+    }
+}
+
+# Sometimes with False condition (still has 50% chance)
+~sometimes (False) {
+    ~sorta print("Even false conditions sometimes execute!")
+}
+
+# Complex conditions
+~kinda int x = 10
+~kinda int y = 20
+~sometimes (x < y) {
+    ~sorta print("x is less than y (probably)")
+    x ~= 5
+}
+
+~sorta print("Final x:", x)
+~sorta print("=== End of Sometimes Demo ===")

@@ -1,0 +1,73 @@
+# Simple Chaos Battle - Demo of How Chaos Arenas Work
+# Shows ALL constructs in a simple, working battle simulation
+
+~sorta print("⚔️  SIMPLE CHAOS BATTLE!")
+
+# Initialize combatants with fuzzy stats
+~kinda int player_hp = 100
+~kinda int enemy_hp = 90  
+~kinda int player_attack = 20
+~kinda int enemy_attack = 18
+
+~sorta print("🛡️  BATTLE SETUP")
+~sorta print("Player HP:", player_hp)
+~sorta print("Enemy HP:", enemy_hp)
+
+# Battle strategy using kinda binary
+~kinda binary player_strategy
+~sorta print("Player strategy roll:", player_strategy)
+
+~sometimes (player_strategy == 1) {
+    ~sorta print("⚡ AGGRESSIVE! Attack boost!")
+    player_attack ~= 5
+}
+
+~sometimes (player_strategy == -1) {
+    ~sorta print("🛡️  DEFENSIVE! HP boost!")  
+    player_hp ~= 10
+}
+
+~sometimes (player_strategy == 0) {
+    ~sorta print("🤔 CONFUSED! Random effect!")
+    player_attack ~= -2
+}
+
+# Combat rounds
+~sorta print("⚔️  ROUND 1 - Player attacks!")
+base_damage = 15
+fuzzy_bonus = 5
+total_damage = base_damage + fuzzy_bonus
+enemy_hp = enemy_hp - total_damage
+
+~sorta print("Player deals", total_damage, "damage")
+~sorta print("Enemy HP:", enemy_hp)
+
+# Enemy counter-attack (maybe)
+~maybe (enemy_hp > 30) {
+    ~sorta print("🔥 ROUND 2 - Enemy strikes back!")
+    enemy_damage = enemy_attack + 3
+    player_hp = player_hp - enemy_damage
+    
+    ~sorta print("Enemy deals", enemy_damage, "damage")
+    ~sorta print("Player HP:", player_hp)
+}
+
+# Victory determination
+~sorta print("🏆 BATTLE RESULTS")
+~sorta print("Final Player HP:", player_hp)  
+~sorta print("Final Enemy HP:", enemy_hp)
+
+~maybe (player_hp > enemy_hp) {
+    ~sorta print("🎉 PLAYER VICTORY!")
+    ~kinda binary celebration
+    ~sometimes (celebration == 1) {
+        ~sorta print("🎊 Victory dance!")
+    }
+}
+
+~maybe (enemy_hp > player_hp) {
+    ~sorta print("💀 ENEMY VICTORY!")
+}
+
+~sorta print("🎲 This shows how constructs work together!")
+~sorta print("Every run is different due to fuzzy randomness!")

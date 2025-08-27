@@ -1,0 +1,34 @@
+# ~sorta print - Probabilistic Output
+# Demonstrates fuzzy printing with 80% probability
+
+~sorta print("=== Sorta Print Examples ===")
+
+# Basic sorta print (80% chance to print)
+~sorta print("This message has 80% chance to appear")
+~sorta print("So does this one")
+~sorta print("And this one too")
+
+# Multiple attempts show the randomness
+~sorta print("--- Multiple attempts ---")
+~sorta print("Attempt 1")
+~sorta print("Attempt 2") 
+~sorta print("Attempt 3")
+~sorta print("Attempt 4")
+~sorta print("Attempt 5")
+
+# Sorta print with variables
+message = "Hello from a variable"
+~sorta print(message)
+
+~kinda int x = 42
+~sorta print("x is", x)
+
+# Mixed with regular print for comparison
+print("This always prints (regular print)")
+~sorta print("This might not print (sorta print)")
+print("This always prints again")
+
+# Empty sorta print
+~sorta print()
+
+~sorta print("=== End of Sorta Print Demo ===")
