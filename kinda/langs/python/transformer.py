@@ -175,11 +175,13 @@ def transform_line(line: str) -> List[str]:
     original_line = line
     stripped = line.strip()
 
+    # Fast path for empty lines and comments
     if not stripped:
         return [""]
     if stripped.startswith("#"):
         return [original_line]
 
+    # Check for inline constructs in a single pass for efficiency
     # First check for inline ~ish constructs
     ish_transformed_line = _transform_ish_constructs(line)
     
