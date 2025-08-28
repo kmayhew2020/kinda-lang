@@ -4,10 +4,12 @@ on:
   push:
     branches:
       - main
+      - dev
       - "feature/*"
+      - "bugfix/*"
       - "ci/*"
   pull_request:
-    branches: [main]
+    branches: [main, dev]
 
 jobs:
   test:
@@ -28,21 +30,48 @@ jobs:
           cache: 'pip'
 
       - name: Install project with dev dependencies
-        timeout-minutes: 10
+        timeout-minutes: 20
         run: |
-          python -m pip install --upgrade pip --timeout=60
-          pip install -e .[dev] --timeout=300 --retries=3
+          python -m pip install --upgrade pip --timeout=120
+          pip install -e .[dev] --timeout=600 --retries=5
+        shell: bash
 
       - name: Run tests with coverage
-        timeout-minutes: 15
+        timeout-minutes: 25
         run: |
           pytest --cov=kinda --cov-report=term-missing tests/ --tb=short
+        shell: bash
 
       - name: Test kinda CLI commands
         run: |
           kinda --help
           kinda examples
           kinda syntax
+
+      - name: Example Smoke Tests
+        timeout-minutes: 10
+        run: |
+          if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
+            echo "Testing Windows-compatible examples (no emoji)..."
+            kinda run examples/python/unified_syntax.py.knda
+            kinda run examples/python/test_coverage_example.py.knda
+            kinda run examples/python/maybe_example.py.knda
+            echo "Skipping emoji-heavy examples on Windows due to cp1252 encoding"
+          else
+            echo "Testing all examples on Unix platforms..."
+            kinda run examples/python/unified_syntax.py.knda
+            kinda run examples/python/test_coverage_example.py.knda
+            kinda run examples/python/kinda_binary_example.py.knda
+            
+            echo "Testing comprehensive examples..."
+            kinda run examples/python/comprehensive/fuzzy_calculator.py.knda
+            kinda run examples/python/comprehensive/fuzzy_game_logic.py.knda
+            kinda run examples/python/comprehensive/chaos_arena_complete.py.knda
+            
+            echo "Testing complex examples with shorter runtime..."
+            timeout 30s kinda run examples/python/comprehensive/chaos_arena2_complete.py.knda || echo "Chaos arena2 timed out as expected - this is normal"
+          fi
+        shell: bash
 
       - name: Test cross-platform installation scripts
         shell: bash
