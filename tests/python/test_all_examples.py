@@ -140,7 +140,8 @@ class TestExampleIntegration:
             ["python", "-m", "kinda.cli", "run", "examples/python/individual/welp_example.py.knda"],
             capture_output=True,
             text=True,
-            timeout=10
+            timeout=10,
+            cwd=Path(__file__).parent.parent.parent  # Ensure we're in project root
         )
         
         # Should complete successfully
