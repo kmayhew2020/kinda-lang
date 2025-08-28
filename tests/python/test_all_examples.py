@@ -146,7 +146,14 @@ class TestExampleIntegration:
             cwd=project_root  # Ensure we're in project root
         )
         
-        # Should complete successfully
+        # Should complete successfully  
+        if result.returncode != 0:
+            print(f"DEBUG - Command: {result.args}")
+            print(f"DEBUG - stdout: {result.stdout}")
+            print(f"DEBUG - stderr: {result.stderr}")
+            print(f"DEBUG - working directory: {project_root}")
+            print(f"DEBUG - example path exists: {example_path.exists()}")
+            
         assert result.returncode == 0, f"welp_example run failed: {result.stderr}"
         
         # Check for expected welp behavior in output
