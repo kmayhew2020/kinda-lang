@@ -5,7 +5,7 @@ from kinda.grammar.python.constructs import KindaPythonConstructs
 
 # Compiled regex patterns for performance optimization
 _SORTA_PRINT_PATTERN = re.compile(r'^\s*~sorta\s+print\s*\(')
-_ISH_VALUE_PATTERN = re.compile(r'(\d+(?:\.\d+)?)~ish')
+_ISH_VALUE_PATTERN = re.compile(r'(\d+(?:\.\d+)?)\s*~ish')
 _ISH_COMPARISON_PATTERN = re.compile(r'(\w+)\s*~ish\s+(\w+)')
 _WELP_PATTERN = re.compile(r'([^~"\']*)\s*~welp\s+([^\n]+)')
 _STRING_DELIMITERS = re.compile(r'["\']{1,3}')

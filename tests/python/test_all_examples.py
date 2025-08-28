@@ -119,7 +119,7 @@ class TestExampleIntegration:
         build_file = Path("build/chaos_arena_complete.py")
         assert build_file.exists(), "chaos_arena_complete build file not created"
         
-        content = build_file.read_text()
+        content = build_file.read_text(encoding='utf-8')
         # Only check for constructs that are actually used in this specific file
         expected_imports = [
             "from kinda.langs.python.runtime.fuzzy import",
