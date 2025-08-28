@@ -136,12 +136,14 @@ class TestExampleIntegration:
     
     def test_welp_example_runs_successfully(self):
         """Test that welp_example runs without issues."""
+        project_root = Path(__file__).parent.parent.parent
+        example_path = project_root / "examples" / "python" / "individual" / "welp_example.py.knda"
         result = subprocess.run(
-            ["python", "-m", "kinda.cli", "run", "examples/python/individual/welp_example.py.knda"],
+            ["python", "-m", "kinda.cli", "run", str(example_path)],
             capture_output=True,
             text=True,
             timeout=10,
-            cwd=Path(__file__).parent.parent.parent  # Ensure we're in project root
+            cwd=project_root  # Ensure we're in project root
         )
         
         # Should complete successfully
