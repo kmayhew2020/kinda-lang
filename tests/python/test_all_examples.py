@@ -149,4 +149,4 @@ class TestExampleIntegration:
         # Check for expected welp behavior in output
         output = result.stdout + result.stderr
         assert "=== ~welp Construct Demo ===" in output
-        assert "✅ ~welp provides graceful fallbacks" in output
+        assert "~welp provides graceful fallbacks" in output
