@@ -37,13 +37,13 @@ def safe_print(text: str) -> None:
                    .replace("🌪️", "~")  # tornado -> tilde
                    .replace("🤨", "?")  # raised eyebrow -> question mark
                    .replace("💥", "!")  # explosion -> exclamation mark
+                   .replace("✅", "+")  # check mark -> plus sign
         )
         try:
             print(fallback)
         except UnicodeEncodeError:
-            # Final fallback: encode to ASCII and ignore remaining unicode chars
-            ascii_text = fallback.encode('ascii', errors='ignore').decode('ascii')
-            print(ascii_text)
+            # Final fallback: encode with errors='replace' to handle any remaining Unicode issues
+            print(fallback.encode('ascii', errors='replace').decode('ascii'))
 
 
 def safe_read_file(file_path: Path) -> str:

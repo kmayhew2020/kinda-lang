@@ -6,8 +6,7 @@ from kinda.grammar.python.constructs import KindaPythonConstructs
 # Compiled regex patterns for performance optimization
 _SORTA_PRINT_PATTERN = re.compile(r'^\s*~sorta\s+print\s*\(')
 _ISH_VALUE_PATTERN = re.compile(r'\b(\d+(?:\.\d+)?)\s*~ish')
-_ISH_VARIABLE_VALUE_PATTERN = re.compile(r'\b([a-zA-Z_][a-zA-Z0-9_]*)\s*~ish(?!\s+\w)')
-_ISH_COMPARISON_PATTERN = re.compile(r'(\w+)\s*~ish\s+([-+]?[\d.]+|[\w]+)')
+_ISH_COMPARISON_PATTERN = re.compile(r'(\w+)\s*~ish\s+(\w+)')
 _WELP_PATTERN = re.compile(r'([^~"\']*)\s*~welp\s+([^\n]+)')
 _STRING_DELIMITERS = re.compile(r'["\']{1,3}')
 
@@ -225,13 +224,6 @@ def find_ish_constructs(line: str):
     
     # Find all ish_value patterns (e.g., "42~ish") - using pre-compiled pattern
     for match in _ISH_VALUE_PATTERN.finditer(line):
-        # Skip if inside string literal
-        if _is_inside_string_literal(line, match.start()):
-            continue
-        constructs.append(("ish_value", match, match.start(), match.end()))
-    
-    # Find variable ish_value patterns (e.g., "player_level~ish")
-    for match in _ISH_VARIABLE_VALUE_PATTERN.finditer(line):
         # Skip if inside string literal
         if _is_inside_string_literal(line, match.start()):
             continue
