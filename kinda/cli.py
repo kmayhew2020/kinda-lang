@@ -36,6 +36,7 @@ def safe_print(text: str) -> None:
                    .replace("🔮", "*")  # crystal ball -> asterisk
                    .replace("🌪️", "~")  # tornado -> tilde
                    .replace("🤨", "?")  # raised eyebrow -> question mark
+                   .replace("💥", "!")  # explosion -> exclamation mark
         )
         print(fallback)
 
