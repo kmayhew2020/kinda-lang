@@ -78,7 +78,7 @@
     ~sorta print("💪 You choose to fight!")
     
     # Player attack with level bonus  
-    attack_power = player_level~ish * 8 + player_luck~ish
+    attack_power = (player_level~ish) * 8 + (player_luck~ish)
     ~sorta print("Your attack power:", attack_power)
     
     monster_health = monster_health - attack_power
