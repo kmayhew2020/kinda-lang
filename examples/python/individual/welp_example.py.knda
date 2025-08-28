@@ -62,4 +62,4 @@ preferences = get_user_preferences() ~welp ["default_setting"]
 ~sorta print("User preferences:", preferences)
 
 ~sorta print("=== End Demo ===")
-~sorta print("✅ ~welp provides graceful fallbacks for unreliable operations!")
+~sorta print("[+] ~welp provides graceful fallbacks for unreliable operations!")
