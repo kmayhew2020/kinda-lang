@@ -24,10 +24,12 @@ def get_all_example_files():
 @pytest.mark.parametrize("example_file", get_all_example_files())
 def test_example_transforms_successfully(example_file):
     """Test that each example file transforms without errors."""
+    project_root = Path(__file__).parent.parent.parent
     result = subprocess.run(
         ["python", "-m", "kinda.cli", "transform", str(example_file)],
         capture_output=True,
-        text=True
+        text=True,
+        cwd=project_root  # Ensure consistent working directory
     )
     
     assert result.returncode == 0, (
@@ -53,11 +55,13 @@ def test_example_runs_without_crash(example_file):
     if example_file.name in skip_files:
         pytest.skip(f"Skipping {example_file.name} - known issue")
     
+    project_root = Path(__file__).parent.parent.parent
     result = subprocess.run(
         ["python", "-m", "kinda.cli", "run", str(example_file)],
         capture_output=True,
         text=True,
-        timeout=30  # 30 second timeout to avoid hanging
+        timeout=30,  # 30 second timeout to avoid hanging
+        cwd=project_root  # Ensure consistent working directory
     )
     
     # We expect successful execution (returncode 0) or at most warnings/fuzzy behavior
@@ -107,10 +111,12 @@ class TestExampleIntegration:
     
     def test_chaos_arena_complete_transforms(self):
         """Test that chaos_arena_complete specifically transforms correctly."""
+        project_root = Path(__file__).parent.parent.parent
         result = subprocess.run(
             ["python", "-m", "kinda.cli", "transform", "examples/python/comprehensive/chaos_arena_complete.py.knda"],
             capture_output=True,
-            text=True
+            text=True,
+            cwd=project_root  # Ensure consistent working directory
         )
         
         assert result.returncode == 0, f"chaos_arena_complete transformation failed: {result.stderr}"
