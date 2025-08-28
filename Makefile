@@ -1,6 +1,6 @@
 # Kinda Makefile - for people who like shortcuts
 
-.PHONY: install test clean dev help examples
+.PHONY: install test clean dev help examples docs
 
 # Install kinda
 install:
@@ -34,6 +34,12 @@ examples:
 	@echo "🎲 Running kinda examples..."
 	kinda examples
 
+# Build documentation
+docs:
+	@echo "📚 Building documentation..."
+	cd docs && sphinx-build -M html source build
+	@echo "✨ Docs built! Open docs/build/html/index.html"
+
 # Quick help
 help:
 	@echo "🤷 Kinda Makefile commands:"
@@ -42,6 +48,7 @@ help:
 	@echo "  make test     - Run tests"
 	@echo "  make clean    - Clean build artifacts"
 	@echo "  make examples - Show kinda examples"
+	@echo "  make docs     - Build documentation"
 	@echo ""
 	@echo "After install, try:"
 	@echo "  kinda --help"

@@ -1,0 +1,160 @@
+# Chaos Arena - Complete Edition
+# Demonstrates ALL kinda-lang constructs in an epic battle simulation
+# Features: ~kinda int, ~sorta print, ~sometimes, ~maybe, ~ish, ~kinda binary
+
+~sorta print("⚔️  WELCOME TO THE CHAOS ARENA - COMPLETE EDITION ⚔️")
+~sorta print("Where battles are fought with fuzzy logic!")
+
+# Initialize fuzzy warriors
+~kinda int player_health = 100
+~kinda int enemy_health = 95
+~kinda int player_attack = 25
+~kinda int enemy_attack = 20
+
+~sorta print("\n🛡️  BATTLE SETUP")
+~sorta print("Player health:", player_health)
+~sorta print("Enemy health:", enemy_health)
+~sorta print("Player attack:", player_attack)
+~sorta print("Enemy attack:", enemy_attack)
+
+# Battle decision system using kinda binary
+~kinda binary battle_strategy ~ probabilities(0.4, 0.3, 0.3)
+~sorta print("\n🎲 Battle strategy roll:", battle_strategy)
+
+~sometimes (battle_strategy == 1) {
+    ~sorta print("⚡ AGGRESSIVE STRATEGY!")
+    player_attack ~= 10  # boost attack fuzzily
+}
+
+~sometimes (battle_strategy == -1) {
+    ~sorta print("🛡️  DEFENSIVE STRATEGY!")
+    player_health ~= 15  # boost health fuzzily  
+}
+
+~sometimes (battle_strategy == 0) {
+    ~sorta print("🤔 CONFUSED STRATEGY!")
+    # Do something random
+    ~maybe (True) {
+        player_attack ~= -5
+        ~sorta print("Wait... that might have made us weaker?")
+    }
+}
+
+# Battle round 1 - Player attacks
+~sorta print("⚔️  ROUND 1 - Player attacks!")
+damage = player_attack + ish_value(5)  # fuzzy damage
+enemy_health = enemy_health - damage
+~sorta print("Player deals ~", damage, "damage")
+~sorta print("Enemy health:", enemy_health)
+
+# Check if enemy is badly hurt using ish comparison (now with direct ~ish integration!)
+~maybe (enemy_health ~ish 50) {
+    ~sorta print("💀 Enemy is badly wounded!")
+    
+    # Enemy might flee
+    ~kinda binary enemy_flees ~ probabilities(0.6, 0.2, 0.2)
+    
+    ~sometimes (enemy_flees == 1) {
+        ~sorta print("🏃 Enemy attempts to flee!")
+        
+        # But sometimes fails
+        ~sometimes (False) {  # 50% chance even on false
+            ~sorta print("...but trips over their own feet!")
+        }
+    }
+}
+
+# Battle round 2 - Enemy counter-attacks (maybe)
+~maybe (enemy_health > 20) {
+    ~sorta print("\n🔥 ROUND 2 - Enemy counter-attacks!")
+    enemy_damage = enemy_attack + (3~ish)
+    player_health = player_health - enemy_damage
+    ~sorta print("Enemy deals ~", enemy_damage, "damage")  
+    ~sorta print("Player health:", player_health)
+    
+    # Check if player needs healing
+    ~sometimes (player_health ~ish 60) {
+        ~sorta print("💊 Player needs healing!")
+        
+        # Fuzzy healing
+        healing = 20 + (5~ish)
+        player_health ~= healing
+        ~sorta print("Player heals for ~", healing)
+    }
+}
+
+# Critical health checks using ish comparisons
+~sorta print("\n🏥 HEALTH STATUS")
+~maybe (player_health ~ish 30) {
+    ~sorta print("⚠️  PLAYER CRITICAL!")
+    
+    # Last stand boost
+    ~kinda binary last_stand_boost ~ probabilities(0.7, 0.1, 0.2)
+    ~sometimes (last_stand_boost == 1) {
+        player_attack ~= 20
+        ~sorta print("🔥 LAST STAND! Attack boost!")
+    }
+}
+
+~maybe (enemy_health ~ish 25) {
+    ~sorta print("💀 ENEMY NEARLY DEFEATED!")
+}
+
+# Final battle phase - chaos unleashed
+~sorta print("\n🌪️  FINAL CHAOS PHASE")
+~maybe (player_health > enemy_health) {
+    ~sorta print("😤 Player has advantage!")
+    
+    # Unleash everything
+    final_attack = ((player_attack + (3~ish)) * 2)
+    ~sometimes (final_attack ~ish 60) {
+        ~sorta print("🎆 MASSIVE FINAL BLOW!")
+        enemy_health = enemy_health - final_attack
+        ~sorta print("Final attack damage:", final_attack)
+    }
+}
+
+# Victory conditions with fuzzy logic
+~sorta print("\n🏆 BATTLE RESULTS")
+~sorta print("Final player health:", player_health)
+~sorta print("Final enemy health:", enemy_health)
+
+# Multiple victory conditions - all fuzzy!
+~maybe (player_health > enemy_health) {
+    ~sorta print("🎉 PLAYER VICTORY!")
+    
+    # Victory celebration
+    ~kinda binary celebration ~ probabilities(0.8, 0.1, 0.1)
+    ~sometimes (celebration == 1) {
+        ~sorta print("🎊 Epic victory dance!")
+    }
+    ~sometimes (celebration == 0) {
+        ~sorta print("😐 Modest nod of acknowledgment")
+    }
+}
+
+~maybe (enemy_health > player_health) {
+    ~sorta print("💀 ENEMY VICTORY!")
+    ~sorta print("Better luck next time, warrior...")
+}
+
+~maybe (player_health ~ish enemy_health) {
+    ~sorta print("⚖️  FUZZY DRAW!")
+    ~sorta print("In fuzzy battles, everyone kinda wins?")
+}
+
+# Random chaos finale
+~sometimes (True) {
+    ~sorta print("\n🎪 CHAOS FINALE!")
+    chaos_factor = 42 + (8~ish)
+    ~sorta print("Final chaos factor:", chaos_factor)
+    
+    ~maybe (chaos_factor ~ish 40) {
+        ~sorta print("🌟 The arena itself applauds!")
+        ~sorta print("Such magnificent fuzzy combat!")
+    }
+}
+
+~sorta print("\n⚔️  THANKS FOR PLAYING CHAOS ARENA!")  
+~sorta print("🎲 Remember: In fuzzy battles, skill is optional!")
+~sorta print("💫 But chaos is guaranteed!")

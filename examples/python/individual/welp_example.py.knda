@@ -1,0 +1,65 @@
+# ~welp Construct Example - Graceful Fallbacks
+# The ~welp construct provides graceful fallbacks when operations might fail
+
+import random
+
+~sorta print("=== ~welp Construct Demo ===")
+
+# Basic welp usage - provide fallback for risky operations
+def risky_network_call():
+    if random.random() < 0.3:
+        raise Exception("Network timeout!")
+    return "Data received successfully"
+
+result = risky_network_call() ~welp "Using cached data"
+~sorta print("Network result:", result)
+
+# Welp with expressions that might return None
+def maybe_get_user_setting(key):
+    settings = {"theme": "dark", "language": None}
+    return settings.get(key)
+
+theme = maybe_get_user_setting("theme") ~welp "light"
+language = maybe_get_user_setting("language") ~welp "english"
+
+~sorta print("Theme:", theme)
+~sorta print("Language:", language)
+
+# Welp with mathematical operations
+def divide_safely(a, b):
+    if b == 0:
+        return None
+    return a / b
+
+calculation = divide_safely(10, 0) ~welp "undefined"
+~sorta print("10 / 0 =", calculation)
+
+# Welp with file operations (simulated)
+def read_config_file():
+    if random.random() < 0.5:
+        raise FileNotFoundError("Config file missing")
+    return {"port": 8080, "debug": True}
+
+config = read_config_file() ~welp {"port": 3000, "debug": False}
+~sorta print("Server config:", config)
+
+# Complex welp usage with ~ish integration
+def get_score():
+    if random.random() < 0.4:
+        return None
+    return random.randint(70, 100)
+
+final_score = get_score() ~welp (50 + (5 ~ish))
+~sorta print("Final score:", final_score)
+
+# Welp with list operations
+def get_user_preferences():
+    if random.random() < 0.6:
+        return ["setting1", "setting2"]
+    return None
+
+preferences = get_user_preferences() ~welp ["default_setting"]
+~sorta print("User preferences:", preferences)
+
+~sorta print("=== End Demo ===")
+~sorta print("[+] ~welp provides graceful fallbacks for unreliable operations!")

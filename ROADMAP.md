@@ -1,85 +1,56 @@
-# Kinda Language – Roadmap
+# Kinda-Lang Development Roadmap
 
-## 🔮 Vision
+## Current Status (2025-08-27)
 
-Kinda is a chaotic, satirical meta-layer that injects *fuzzy logic, randomness, and personality* into existing programming languages. Rather than being a new language, Kinda **wraps or modifies code you've already written** in your language of choice — Python, C, Java, etc. — and adds a layer of personality-driven unpredictability.
+### ✅ Completed (v0.3.0 Ready)
+- **All Core Constructs**: `~kinda int`, `~sorta print`, `~sometimes`, `~maybe`, `~ish`, `~kinda binary`, `~welp`
+- **~welp Construct**: Fully implemented and re-enabled ✅ NEW
+- **CLI Pipeline**: Full `kinda run`, `kinda interpret`, `kinda examples`, `kinda syntax` 
+- **Enhanced CLI Error Messages**: Snarky, helpful error guidance with kinda personality ✅
+- **Comprehensive Examples**: 12 examples showcasing all constructs ✅ NEW
+- **Documentation Infrastructure**: GitHub Pages hosting, updated content, CI/CD ✅ NEW
+- **CI Pipeline**: Passing on Ubuntu/macOS/Windows, Python 3.8-3.12
+- **Test Coverage**: 75% overall (target: 75%+ ✅ ACHIEVED)
 
----
+### 🚀 Next Version Roadmap
 
-## 🛠️ How It Works
+**v0.3.0 - Core Completion (Current):**
+- ✅ All 7 core constructs implemented and fully enabled
+- ✅ Comprehensive examples and documentation  
+- ✅ Enhanced CLI with personality
+- ✅ Address ~ish integration syntax issues (Issue #59) - COMPLETED
+- ✅ Re-enable ~welp construct - COMPLETED ✅ NEW
+- 🔄 Performance optimizations
 
-- Write code in your preferred language
-- Replace constructs (e.g. `int`, `print`, `if`) with Kinda equivalents (`kinda int`, `sorta print`, `sometimes`)
-- Kinda parses your code, augments it with fuzzy logic libraries, and generates a runnable output
-- The final result runs like your original program... *sorta*
+**v0.3.1 - Polish & Enhancement:**
+- Enhanced chaos constructs (`~yolo`, `~oops`, `~meh`)
+- Personality profile system (optimist, cynic, trickster modes)
+- Statistical analysis and debugging tools
 
----
+**v0.4.0 - Multi-Language Foundation:**
+- C language support
+- JavaScript support
+- Universal .kinda-config format
 
-## ✅ Core Principles
+### 📋 Recently Completed Issues
+- ✅ Issue #41: Test coverage goal achieved (75% target) - CLOSED
+- ✅ Issue #38: Complete test coverage for existing constructs - CLOSED  
+- ✅ Issue #56: Enhanced CLI Error Messages with Kinda Personality - CLOSED
+- ✅ Issue #58: Comprehensive Examples Showcase - All Constructs in Action - CLOSED
+- ✅ Issue #63: Documentation Infrastructure and Content Improvements - CLOSED
+- ✅ Issue #59: ~ish Integration Syntax Fix with ~maybe/~sometimes - CLOSED ✅ NEW
 
-- **Inject Chaos:** Bring fuzziness to deterministic code
-- **Be Portable:** Work across Mac, Windows, Linux
-- **Be Fun:** Embrace satire, weirdness, snarky behavior
-- **Be Pluggable:** Allow custom random functions and personalities
-- **Be Respectful:** Don’t break CI pipelines, IDEs, or toolchains
-- **Be Effortless:** Let users paste in normal code and get "Kinda-fied" results instantly
+### 🎯 Next Logical Priority Options
 
----
+**v0.3.0 Polish & Completion:**
+1. **Performance Optimizations**: Profiling and speed improvements
 
-## 📈 Roadmap
+**v0.3.1 New Features:**  
+2. **Enhanced Chaos Constructs**: `~yolo`, `~oops`, `~meh` (Epic #35)
+3. **Personality Profile System**: Optimist/cynic/trickster modes (Epic #34)
+4. **Python Implementation Completion**: Additional tooling (Epic #36)
 
-### ✅ MVP Milestones (in progress)
-- [x] `kinda int`, `sorta print`, `sometimes`, `maybe` logic
-- [x] Basic CLI interface for parsing and augmenting code
-- [x] Test mode (low chaos) vs. production mode (max chaos)
-- [x] Support for Python augmentation
-- [x] Fuzz layer with optional seed for reproducibility
-
----
-
-### 🧠 Near-Term Priorities
-- [ ] **Personality Profiles**  
-  Inject personality-driven behavior into how fuzzy logic is applied (e.g., "chaotic good" vs "passive-aggressive").
-- [ ] **C/C++ Augmentation Support**  
-  Header injection and macro generation for Kinda-enhanced C code.
-- [ ] **Scaffold Generators**  
-  Auto-generate helper libraries and hooks for supported languages.
-- [ ] **Zero-Effort Mode**  
-  Drop in existing code, auto-detect language, replace all supported constructs with Kinda versions.
-- [ ] **Statistical Chaos Testing**  
-  Analyze variability of outputs over multiple runs.
-- [ ] **Golden Path Onboarding**  
-  Clear examples, docs, and “Hello, Kinda World” projects for new users.
-
----
-
-### 🧪 Experimental & Stretch Goals
-- [ ] **Personality-Driven Error Messages**
-- [ ] **Custom Fuzz Functions via Plugin System**
-- [ ] **Multi-language Project Support**  
-  Cross-language consistency for shared logic (e.g., Python backend + C frontend).
-- [ ] **IDE Extensions / Syntax Highlighting**
-- [ ] **"Kinda AI Copilot"** that makes your code *worse* on purpose
+**Priority Recommendation**: Performance optimizations - with all core constructs now fully enabled, focus on speed and efficiency improvements.
 
 ---
-
-## 🔍 In Progress
-
-- Python: fuzzy assign, print, and conditional logic
-- CLI: parse, transform, and run code with chaos
-- GitHub CI: basic unit test harness
-
----
-
-## 🧵 Threads to Explore
-
-- Should Kinda have its own `.kinda` config file per project?
-- What does “personality injection” *actually* affect: randomness, verbosity, logic, variable naming?
-- How do we let users *debug* fuzzy behavior while keeping the chaos?
-
----
-
-## 🧑‍💻 Contributors
-
-Kinda is chaos. Kinda is community. Join the madness.
-
+*Last Updated: 2025-08-27 by Claude Code - ~welp Construct Re-enabled and Completed*

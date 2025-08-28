@@ -1,0 +1,2 @@
+# This file keeps the _static directory in git
+# Sphinx requires this directory to exist even if empty

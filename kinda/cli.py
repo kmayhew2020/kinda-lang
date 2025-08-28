@@ -36,8 +36,14 @@ def safe_print(text: str) -> None:
                    .replace("🔮", "*")  # crystal ball -> asterisk
                    .replace("🌪️", "~")  # tornado -> tilde
                    .replace("🤨", "?")  # raised eyebrow -> question mark
+                   .replace("💥", "!")  # explosion -> exclamation mark
+                   .replace("✅", "+")  # check mark -> plus sign
         )
-        print(fallback)
+        try:
+            print(fallback)
+        except UnicodeEncodeError:
+            # Final fallback: encode with errors='replace' to handle any remaining Unicode issues
+            print(fallback.encode('ascii', errors='replace').decode('ascii'))
 
 
 def safe_read_file(file_path: Path) -> str:
@@ -118,9 +124,24 @@ def show_examples():
     print()
     
     examples = [
-        ("Hello World", "examples/hello.py.knda", "The classic, but fuzzy"),
-        ("Chaos Greeter", "examples/unified_syntax.py.knda", "Variables that kinda work"),
-        ("Maybe Math", "examples/python/maybe_example.py.knda", "Fuzzy conditionals with ~sometimes and ~maybe"),
+        # Basic examples
+        ("Hello World", "examples/python/hello.py.knda", "The classic, but fuzzy"),
+        ("Chaos Greeter", "examples/python/unified_syntax.py.knda", "Variables that kinda work"),
+        
+        # Individual construct examples
+        ("Kinda Int Demo", "examples/python/individual/kinda_int_example.py.knda", "Fuzzy integers with ±1 variance"),
+        ("Sorta Print Demo", "examples/python/individual/sorta_print_example.py.knda", "Probabilistic output (80% chance)"),
+        ("Sometimes Demo", "examples/python/individual/sometimes_example.py.knda", "50% conditional execution"),
+        ("Ish Demo", "examples/python/individual/ish_example.py.knda", "Fuzzy values and comparisons"),
+        ("Welp Fallbacks", "examples/python/individual/welp_example.py.knda", "Graceful fallbacks for risky operations"),
+        ("Maybe Math", "examples/python/maybe_example.py.knda", "60% conditional execution"),
+        ("Binary Logic", "examples/python/kinda_binary_example.py.knda", "Ternary logic: yes/no/maybe"),
+        
+        # Comprehensive examples
+        ("Fuzzy Calculator", "examples/python/comprehensive/fuzzy_calculator.py.knda", "All constructs in realistic calculator"),
+        ("Chaos Arena Complete", "examples/python/comprehensive/chaos_arena_complete.py.knda", "Epic battle with all constructs"),
+        ("Fuzzy Game Quest", "examples/python/comprehensive/fuzzy_game_logic.py.knda", "Adventure game with fuzzy decisions"),
+        ("Advanced Chaos Arena", "examples/python/comprehensive/chaos_arena2_complete.py.knda", "Multi-agent simulation with ALL constructs"),
     ]
     
     for title, filename, description in examples:
@@ -290,7 +311,26 @@ def main(argv=None) -> int:
                 safe_print("[tip] Fix the syntax error above and try again")
             else:
                 safe_print(f"💥 Transform failed: {e}")
-                safe_print("[tip] Check your .knda file for syntax issues")
+                
+                # Provide snarky but helpful suggestions based on error type
+                error_str = str(e).lower()
+                if "encoding" in error_str or "unicode" in error_str:
+                    safe_print("[?] Your file has encoding issues. Fancy characters causing trouble?")
+                    safe_print("   • Save as UTF-8 (like a civilized person)")
+                    safe_print("   • Those emojis might be breaking things 😅")
+                elif "permission" in error_str or "access" in error_str:
+                    safe_print("[shrug] Permission denied. The file system doesn't trust you:")
+                    safe_print("   • Close the file if it's open elsewhere (multitasking gone wrong)")
+                    safe_print("   • Check file permissions (maybe you don't own it?)")
+                elif "no such file" in error_str or "not found" in error_str:
+                    safe_print("[?] File not found. Did you type that path correctly?")
+                    safe_print("   • Double-check the path (typos are embarrassing)")
+                    safe_print("   • Make sure it ends with .knda (kinda important)")
+                else:
+                    safe_print("[shrug] Transform failed for mysterious reasons. Try:")
+                    safe_print("   • Fix any obvious syntax errors in your .knda file")
+                    safe_print("   • Remember: ~ before kinda constructs (seriously)")
+                    safe_print("   • Start with something simple first")
             return 1
 
     if args.command == "run":
@@ -335,6 +375,26 @@ def main(argv=None) -> int:
                 except Exception as e:
                     safe_print(f"💥 Runtime error: {e}")
                     safe_print("[?] Your code transformed fine but crashed during execution")
+                    
+                    # Provide snarky but helpful suggestions based on error type
+                    error_str = str(e).lower()
+                    if "invalid syntax" in error_str:
+                        safe_print("[shrug] Well, that's syntactically questionable. Common kinda fails:")
+                        safe_print("   • Forgot the ~ tilde? maybe should be ~maybe (kinda important)")
+                        safe_print("   • Mixing Python in .knda? That's... ambitious")
+                        safe_print("   • Missing semicolons? Some constructs are picky like that")
+                    elif "name" in error_str and "not defined" in error_str:
+                        safe_print("[?] That variable doesn't exist. Awkward. Try:")
+                        safe_print("   • ~kinda int x = 42 to declare fuzzy variables (the ~ matters)")
+                        safe_print("   • Double-check your spelling (typos happen to the best of us)")
+                    elif "module" in error_str and "not found" in error_str:
+                        safe_print("[?] Python can't find that module. Oops:")
+                        safe_print("   • Don't import kinda stuff in regular Python (that won't work)")
+                        safe_print("   • Make sure all your dependencies are installed")
+                    else:
+                        safe_print("[shrug] Something's broken. The usual suspects:")
+                        safe_print("   • Missing ~ before kinda constructs (very important)")
+                        safe_print("   • General syntax weirdness")
                     return 1
                 return 0
             safe_print(f"😅 I can transform {lang} but can't run it. Try 'transform' instead?")

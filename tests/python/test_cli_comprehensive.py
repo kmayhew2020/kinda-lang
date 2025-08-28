@@ -115,7 +115,7 @@ class TestShowExamples:
             # Should contain example descriptions when files are missing
             assert "The classic, but fuzzy" in printed_text
             assert "Variables that kinda work" in printed_text
-            assert "Fuzzy conditionals" in printed_text
+            assert "60% conditional execution" in printed_text
 
 
 class TestTransformCommandErrorHandling:
@@ -178,7 +178,7 @@ class TestTransformCommandErrorHandling:
                     assert result == 1
                     calls = [call.args[0] for call in mock_print.call_args_list]
                     assert any("Transform failed: Generic error" in call for call in calls)
-                    assert any("Check your .knda file for syntax issues" in call for call in calls)
+                    assert any("Fix any obvious syntax errors in your .knda file" in call for call in calls)
         finally:
             os.unlink(temp_path)
 

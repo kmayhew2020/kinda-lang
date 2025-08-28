@@ -1,8 +1,23 @@
-# Kinda Language Docs
+# Kinda Language Documentation
 
-Welcome to the Kinda Language documentation.
+Welcome to **Kinda** - a programming language for people who aren't totally sure! 
 
-## Contents
+Kinda augments existing programming languages with personality, randomness, and human-like imperfection through fuzzy constructs that embrace uncertainty.
 
-- [Getting Started](getting_started.md)
-- [Architecture](architecture.md)
+```{toctree}
+:maxdepth: 2
+:caption: User Guide
+
+getting_started
+features
+usage
+```
+
+```{toctree}
+:maxdepth: 2
+:caption: Development
+
+architecture
+contributing
+dev
+```

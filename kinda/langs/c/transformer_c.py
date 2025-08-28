@@ -212,7 +212,7 @@ def transform(input_path: Path, out_dir: Path) -> List[Path]:
                 new_name = file.name.replace(".c.knda", ".c")
                 output_file_path = out_dir / relative_path.with_name(new_name)
                 output_file_path.parent.mkdir(parents=True, exist_ok=True)
-                output_file_path.write_text(output_code)
+                output_file_path.write_text(output_code, encoding='utf-8')
                 output_paths.append(output_file_path)
     else:
         output_code = transform_file(input_path)
@@ -222,7 +222,7 @@ def transform(input_path: Path, out_dir: Path) -> List[Path]:
             new_name = input_path.stem + ".c"
         output_file_path = out_dir / new_name
         output_file_path.parent.mkdir(parents=True, exist_ok=True)
-        output_file_path.write_text(output_code)
+        output_file_path.write_text(output_code, encoding='utf-8')
         output_paths.append(output_file_path)
 
     return output_paths

@@ -1,0 +1,7 @@
+# Simple ~ish demo
+x = 42~ish
+print("x =", x)
+
+score = 98
+if score ~ish 100:
+    print("Close enough!")
