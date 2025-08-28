@@ -27,26 +27,16 @@
     ~sorta print("🗝️  You boldly open the chest!")
     
     # Fuzzy treasure amount
-<<<<<<< HEAD
-    treasure = 30 ~ish
-=======
     treasure = 30 + (5 ~ish)
->>>>>>> origin/main
     player_gold ~= treasure
     ~sorta print("Found", treasure, "gold!")
     
     # Check if it's a good haul
     ~maybe (treasure > 20) {
-<<<<<<< HEAD
-        if treasure ~ish 35:
-            ~sorta print("💎 Excellent treasure haul!")
-        bonus_experience = 25 ~ish
-=======
         ~maybe (treasure ~ish 35) {
             ~sorta print("💎 Excellent treasure haul!")
         }
         bonus_experience = 25 + (3 ~ish)
->>>>>>> origin/main
         player_experience ~= bonus_experience
         ~sorta print("Bonus XP:", bonus_experience)
     }
@@ -88,13 +78,8 @@
 ~sometimes (combat_choice == 1) {
     ~sorta print("💪 You choose to fight!")
     
-<<<<<<< HEAD
-    # Player attack with level bonus  
-    attack_power = (player_level~ish) * 8 + (player_luck~ish)
-=======
     # Player attack with level bonus
     attack_power = (player_level + (1 ~ish)) * 8 + (player_luck + (2 ~ish))
->>>>>>> origin/main
     ~sorta print("Your attack power:", attack_power)
     
     monster_health = monster_health - attack_power
@@ -103,13 +88,8 @@
     # Check if monster is defeated
     ~maybe (monster_health ~ish 0) {
         ~sorta print("🏆 Monster defeated!")
-<<<<<<< HEAD
-        victory_gold = 25~ish
-        victory_xp = 40~ish
-=======
         victory_gold = 25 + (5 ~ish)
         victory_xp = 40 + (8 ~ish)
->>>>>>> origin/main
         
         player_gold ~= victory_gold
         player_experience ~= victory_xp
@@ -138,11 +118,7 @@
     # But sometimes you don't escape
     ~sometimes (player_luck ~ish 30) {  
         ~sorta print("💥 Failed to escape! Monster attacks!")
-<<<<<<< HEAD
-        flee_damage = monster_attack~ish
-=======
         flee_damage = monster_attack + (2 ~ish)
->>>>>>> origin/main
         player_experience = player_experience - flee_damage
         ~sorta print("Lost", flee_damage, "XP from hasty retreat!")
     }
@@ -154,11 +130,7 @@
     # Negotiation outcomes
     ~maybe (player_gold ~ish 40) {
         ~sorta print("💰 You bribe the monster with gold!")
-<<<<<<< HEAD
-        bribe_amount = 20~ish
-=======
         bribe_amount = 20 + (3 ~ish)
->>>>>>> origin/main
         player_gold = player_gold - bribe_amount
         ~sorta print("Paid", bribe_amount, "gold for safe passage")
         
@@ -183,11 +155,7 @@ experience_threshold = 150
     # Level up bonus
     ~sometimes (player_level ~ish 6) {
         ~sorta print("🎁 Level 6 milestone bonus!")
-<<<<<<< HEAD
-        milestone_bonus = 50~ish  
-=======
-        milestone_bonus = 50 + (10 ~ish)  
->>>>>>> origin/main
+        milestone_bonus = 50 + (10 ~ish)
         player_gold ~= milestone_bonus
         ~sorta print("Milestone gold:", milestone_bonus)
     }

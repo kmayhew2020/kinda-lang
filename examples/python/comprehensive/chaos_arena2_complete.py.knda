@@ -15,16 +15,6 @@ import time, random, math, statistics
 from collections import defaultdict
 
 # === CONFIGURATION WITH KINDA TRANSFORMS ===
-<<<<<<< HEAD
-~kinda int simulation_time = 8
-~kinda int agent_count = 3
-~kinda int steps_per_trial = 80
-~kinda int trials_per_batch = 60
-
-~sorta print("=== CHAOS ARENA 2 COMPLETE - ALL CONSTRUCTS EDITION ===")
-~sorta print("Simulation time:", simulation_time, "seconds")
-~sorta print("Agents:", agent_count)
-=======
 ~kinda int simulation_time = 8;
 ~kinda int agent_count = 3;
 ~kinda int steps_per_trial = 80;
@@ -33,7 +23,6 @@ from collections import defaultdict
 ~sorta print("=== CHAOS ARENA 2 COMPLETE - ALL CONSTRUCTS EDITION ===");
 ~sorta print("Simulation time:", simulation_time, "seconds");
 ~sorta print("Agents:", agent_count);
->>>>>>> origin/main
 
 # Enhanced agent definitions with fuzzy parameters
 AGENTS = [
@@ -73,47 +62,27 @@ def run_agent_trial(agent, steps):
     step_moods = []
     
     ~maybe (agent_mood != 0) {
-<<<<<<< HEAD
-        ~sorta print("Agent", agent["name"], "starting with mood:", agent_mood)
-=======
         ~sorta print("Agent", agent["name"], "starting with mood:", agent_mood);
->>>>>>> origin/main
     }
     
     for step in range(steps):
         # Basic movement with enhanced fuzziness
         movement = chaos_step()  # Already fuzzy from chaos_step()
-<<<<<<< HEAD
-        position ~= position + movement
-        
-        # Energy management with ish comparisons
-        energy ~= energy - 1
-=======
         position ~= position + movement;
         
         # Energy management with ish comparisons
         energy ~= energy - 1;
->>>>>>> origin/main
         
         # NEW: Mood-influenced behavior
         mood_influence = agent_mood * agent["mood_variance"]
         
         ~maybe (mood_influence ~ish 0.2) {
-<<<<<<< HEAD
-            ~sorta print("Positive mood boost for", agent["name"])
-=======
             ~sorta print("Positive mood boost for", agent["name"]);
->>>>>>> origin/main
             energy ~= 3  # Mood boost
             maybe_events += 1
         }
         
-<<<<<<< HEAD
-        negative_threshold = -0.2
-        ~maybe (mood_influence ~ish negative_threshold) {
-=======
         ~maybe (mood_influence ~ish -0.2) {
->>>>>>> origin/main
             # Negative mood impact
             energy ~= -2
             maybe_events += 1
@@ -128,21 +97,6 @@ def run_agent_trial(agent, steps):
             
             # Enhanced boost calculation with fuzzy logic
             base_boost = agent["boost_power"]
-<<<<<<< HEAD
-            ~kinda int fuzzy_boost = base_boost * chaos_step()
-            
-            # Use ish comparison for boost effectiveness
-            boost_magnitude = abs(fuzzy_boost)
-            boost_power = agent["boost_power"]
-            ~maybe (boost_magnitude ~ish boost_power) {
-                boost_applications += 1
-                total_boost_magnitude += abs(fuzzy_boost)
-                position ~= position + fuzzy_boost
-                energy ~= energy + 3
-                chaos_level ~= chaos_level + 1
-                
-                ~sorta print("Effective boost for", agent["name"], "magnitude:", fuzzy_boost)
-=======
             ~kinda int fuzzy_boost = base_boost * chaos_step();
             
             # Use ish comparison for boost effectiveness
@@ -154,7 +108,6 @@ def run_agent_trial(agent, steps):
                 chaos_level ~= chaos_level + 1;
                 
                 ~sorta print("Effective boost for", agent["name"], "magnitude:", fuzzy_boost);
->>>>>>> origin/main
             }
         }
         
@@ -163,13 +116,8 @@ def run_agent_trial(agent, steps):
         ~maybe (energy ~ish low_energy_threshold) {
             energy_restorations += 1
             restore_amount = 25~ish  # Fuzzy energy restore
-<<<<<<< HEAD
-            energy ~= restore_amount
-            ~sorta print("Energy restoration for", agent["name"], "amount:", restore_amount)
-=======
             energy ~= restore_amount;
             ~sorta print("Energy restoration for", agent["name"], "amount:", restore_amount);
->>>>>>> origin/main
         }
         
         # Enhanced extreme events with kinda binary decisions
@@ -182,93 +130,46 @@ def run_agent_trial(agent, steps):
             
             ~maybe (extreme_type == 1) {
                 # Positive extreme event
-<<<<<<< HEAD
-                extreme_jump_base = random.randint(20, 40)
-                extreme_jump = extreme_jump_base~ish
-                position ~= position + extreme_jump
-                chaos_level ~= chaos_level + 2
-                ~sorta print("POSITIVE EXTREME:", agent["name"], "jump:", extreme_jump)
-=======
                 extreme_jump = random.randint(20, 40)~ish
                 position ~= position + extreme_jump;
                 chaos_level ~= chaos_level + 2;
                 ~sorta print("POSITIVE EXTREME:", agent["name"], "jump:", extreme_jump);
->>>>>>> origin/main
             }
             
             ~maybe (extreme_type == -1) {
                 # Negative extreme event  
-<<<<<<< HEAD
-                extreme_fall_base = random.randint(15, 35)
-                extreme_fall = extreme_fall_base~ish
-                position ~= position - extreme_fall
-                energy ~= -5
-                ~sorta print("NEGATIVE EXTREME:", agent["name"], "fall:", extreme_fall)
-=======
                 extreme_fall = random.randint(15, 35)~ish
                 position ~= position - extreme_fall;
                 energy ~= -5
                 ~sorta print("NEGATIVE EXTREME:", agent["name"], "fall:", extreme_fall);
->>>>>>> origin/main
             }
             
             ~maybe (extreme_type == 0) {
                 # Neutral/weird extreme event
-<<<<<<< HEAD
-                chaos_level ~= chaos_level + 3
-                ~sorta print("CHAOTIC EXTREME:", agent["name"], "pure chaos!")
-=======
                 chaos_level ~= chaos_level + 3;
                 ~sorta print("CHAOTIC EXTREME:", agent["name"], "pure chaos!");
->>>>>>> origin/main
             }
         }
         
         # Position limits with enhanced fuzzy boundaries
         position_limit = 200~ish
-<<<<<<< HEAD
-        position_magnitude = abs(position)
-        ~maybe (position_magnitude ~ish position_limit) {
-            position_dampings += 1
-            damping_factor_base = random.uniform(0.3, 0.7)
-            damping_factor = damping_factor_base~ish
-            position ~= position * damping_factor
-            fuzzy_comparisons_triggered += 1
-            ~sorta print("Position damping for", agent["name"], "factor:", damping_factor)
-=======
         ~maybe (abs(position) ~ish position_limit) {
             position_dampings += 1
             damping_factor = random.uniform(0.3, 0.7)~ish
             position ~= position * damping_factor;
             fuzzy_comparisons_triggered += 1
             ~sorta print("Position damping for", agent["name"], "factor:", damping_factor);
->>>>>>> origin/main
         }
         
         # Dynamic mood shifts
         mood_shift_chance = random.random() < 0.05
         ~sometimes (mood_shift_chance) {
             old_mood = agent_mood
-<<<<<<< HEAD
-            # Generate new mood randomly
-            mood_rand = random.random()
-            if mood_rand < 0.4:
-                agent_mood = 1
-            elif mood_rand < 0.7:
-                agent_mood = -1
-            else:
-                agent_mood = 0
-            
-            ~maybe (agent_mood != old_mood) {
-                mood_shifts += 1
-                ~sorta print("Mood shift for", agent["name"], "from", old_mood, "to", agent_mood)
-=======
             ~kinda binary agent_mood ~ probabilities(0.4, 0.3, 0.3)  # New mood
             
             ~maybe (agent_mood != old_mood) {
                 mood_shifts += 1
                 ~sorta print("Mood shift for", agent["name"], "from", old_mood, "to", agent_mood);
->>>>>>> origin/main
             }
         }
         
@@ -320,11 +221,7 @@ def run_agent_trial(agent, steps):
 def run_batch_simulation(agent, steps, trials):
     batch_results = []
     
-<<<<<<< HEAD
-    ~sorta print("Running batch for", agent["name"], "with", trials, "trials")
-=======
     ~sorta print("Running batch for", agent["name"], "with", trials, "trials");
->>>>>>> origin/main
     
     for trial in range(trials):
         result = run_agent_trial(agent, steps)
@@ -406,22 +303,6 @@ def main():
     for agent in AGENTS[:agent_count]:
         all_agent_data[agent["name"]] = []
     
-<<<<<<< HEAD
-    ~kinda int batch_number = 0
-    ~kinda int total_trials_run = 0
-    
-    ~sorta print("Beginning COMPLETE chaos simulation with ALL constructs...")
-    
-    # Main enhanced simulation loop
-    while time.time() < end_time:
-        batch_number ~= batch_number + 1
-        
-        ~maybe (batch_number ~ish 1) {
-            ~sorta print("🎪 First batch - initializing complete chaos!")
-        }
-        
-        ~sorta print("Running enhanced batch", batch_number)
-=======
     ~kinda int batch_number = 0;
     ~kinda int total_trials_run = 0;
     
@@ -436,7 +317,6 @@ def main():
         }
         
         ~sorta print("Running enhanced batch", batch_number);
->>>>>>> origin/main
         
         # Run simulation for each agent with enhanced tracking
         for agent in AGENTS[:agent_count]:
@@ -445,11 +325,7 @@ def main():
             batch_results = run_batch_simulation(agent, steps_per_trial, current_trials)
             all_agent_data[agent["name"]].extend(batch_results)
             
-<<<<<<< HEAD
-            total_trials_run ~= total_trials_run + current_trials
-=======
             total_trials_run ~= total_trials_run + current_trials;
->>>>>>> origin/main
             
             # Enhanced batch analysis
             positions = [r["position"] for r in batch_results]
@@ -462,31 +338,19 @@ def main():
             
             # Real-time fuzzy construct effectiveness tracking
             ~maybe (batch_maybe_rate ~ish 0.1) {
-<<<<<<< HEAD
-                ~sorta print("HIGH MAYBE ACTIVITY:", agent["name"], "rate:", f"{batch_maybe_rate:.3f}")
-            }
-            
-            ~maybe (batch_sometimes_rate ~ish 0.08) {
-                ~sorta print("HIGH SOMETIMES ACTIVITY:", agent["name"], "rate:", f"{batch_sometimes_rate:.3f}")
-=======
                 ~sorta print("HIGH MAYBE ACTIVITY:", agent["name"], "rate:", f"{batch_maybe_rate:.3f}");
             }
             
             ~maybe (batch_sometimes_rate ~ish 0.08) {
                 ~sorta print("HIGH SOMETIMES ACTIVITY:", agent["name"], "rate:", f"{batch_sometimes_rate:.3f}");
->>>>>>> origin/main
             }
             
             # Enhanced probabilistic progress reporting
             ~kinda binary should_report ~ probabilities(0.4, 0.2, 0.4)
             ~maybe (should_report != 0) {
-<<<<<<< HEAD
-                ~sorta print("Agent", agent["name"], "batch mean:", f"{batch_mean:.1f}", "maybe_rate:", f"{batch_maybe_rate:.3f}", "sometimes_rate:", f"{batch_sometimes_rate:.3f}")
-=======
                 ~sorta print("Agent", agent["name"], "batch mean:", f"{batch_mean:.1f}", 
                            "maybe_rate:", f"{batch_maybe_rate:.3f}", 
                            "sometimes_rate:", f"{batch_sometimes_rate:.3f}");
->>>>>>> origin/main
             }
     
     # === ENHANCED FINAL ANALYSIS ===
@@ -564,11 +428,7 @@ def main():
 
 ~kinda binary simulation_confidence ~ probabilities(0.7, 0.2, 0.1)
 ~maybe (simulation_confidence == 1) {
-<<<<<<< HEAD
-    ~sorta print("🎯 High confidence in complete simulation!")
-=======
     ~sorta print("🎯 High confidence in complete simulation!");
->>>>>>> origin/main
 }
 
 if __name__ == "__main__":
@@ -581,10 +441,6 @@ if __name__ == "__main__":
 ~sometimes (True) {
     final_chaos_level = 100~ish
     ~maybe (final_chaos_level ~ish 100) {
-<<<<<<< HEAD
-        ~sorta print("🎪 Post-simulation chaos level: MAXIMUM COMPLETE!")
-=======
         ~sorta print("🎪 Post-simulation chaos level: MAXIMUM COMPLETE!");
->>>>>>> origin/main
     }
 }
