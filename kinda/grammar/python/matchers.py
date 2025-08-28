@@ -3,17 +3,22 @@
 import re
 from kinda.grammar.python.constructs import KindaPythonConstructs
 
+# Compiled regex patterns for performance optimization
+_SORTA_PRINT_PATTERN = re.compile(r'^\s*~sorta\s+print\s*\(')
+_ISH_VALUE_PATTERN = re.compile(r'\b(\d+(?:\.\d+)?)\s*~ish')
+_ISH_VARIABLE_VALUE_PATTERN = re.compile(r'\b([a-zA-Z_][a-zA-Z0-9_]*)\s*~ish(?!\s+\w)')
+_ISH_COMPARISON_PATTERN = re.compile(r'(\w+)\s*~ish\s+(\w+)')
+_WELP_PATTERN = re.compile(r'([^~"\']*)\s*~welp\s+([^\n]+)')
+_STRING_DELIMITERS = re.compile(r'["\']{1,3}')
+
 
 def _parse_sorta_print_arguments(line: str):
     """
     Robust parsing of ~sorta print arguments with string-aware parentheses matching.
     Handles nested function calls, complex expressions, and string literals.
     """
-    import re
-    
-    # Flexible regex to handle whitespace variations
-    sorta_pattern = re.compile(r'^\s*~sorta\s+print\s*\(')
-    match = sorta_pattern.match(line)
+    # Use pre-compiled pattern for better performance
+    match = _SORTA_PRINT_PATTERN.match(line)
     if not match:
         return None
     
@@ -170,13 +175,22 @@ def match_python_construct(line: str):
 
 def _is_inside_string_literal(line: str, position: int) -> bool:
     """Check if a position is inside a string literal (single or double quoted)."""
+    # Early return for common cases
+    if position >= len(line) or position < 0:
+        return False
+        
+    # Quick check: if no quotes before position, not in string
+    line_before_pos = line[:position]
+    if not ('"' in line_before_pos or "'" in line_before_pos):
+        return False
+    
     in_string = False
     string_char = None
     escaped = False
     
-    for i, char in enumerate(line):
-        if i >= position:
-            return in_string
+    # Only iterate up to position for efficiency
+    for i in range(position):
+        char = line[i]
             
         if escaped:
             escaped = False
@@ -209,18 +223,23 @@ def find_ish_constructs(line: str):
     
     # Strategy: find all individual ~ish tokens and classify them based on context
     
-    # Find all ish_value patterns (e.g., "42~ish")
-    ish_value_pattern = re.compile(r'(\d+(?:\.\d+)?)~ish')
-    for match in ish_value_pattern.finditer(line):
+    # Find all ish_value patterns (e.g., "42~ish") - using pre-compiled pattern
+    for match in _ISH_VALUE_PATTERN.finditer(line):
         # Skip if inside string literal
         if _is_inside_string_literal(line, match.start()):
             continue
         constructs.append(("ish_value", match, match.start(), match.end()))
     
-    # Find ish_comparison patterns (e.g., "score ~ish 100")
+    # Find variable ish_value patterns (e.g., "player_level~ish")
+    for match in _ISH_VARIABLE_VALUE_PATTERN.finditer(line):
+        # Skip if inside string literal
+        if _is_inside_string_literal(line, match.start()):
+            continue
+        constructs.append(("ish_value", match, match.start(), match.end()))
+    
+    # Find ish_comparison patterns (e.g., "score ~ish 100") - using pre-compiled pattern
     # Look for variable followed by ~ish followed by a number (but don't overlap with ish_value)
-    ish_comparison_pattern = re.compile(r'(\w+)\s*~ish\s+(\w+)')
-    for match in ish_comparison_pattern.finditer(line):
+    for match in _ISH_COMPARISON_PATTERN.finditer(line):
         # Skip if inside string literal
         if _is_inside_string_literal(line, match.start()):
             continue
