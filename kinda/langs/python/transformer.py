@@ -3,6 +3,7 @@ from typing import List
 from kinda.langs.python.runtime_gen import generate_runtime_helpers, generate_runtime
 from kinda.grammar.python.constructs import KindaPythonConstructs
 from kinda.grammar.python.matchers import match_python_construct, find_ish_constructs, find_welp_constructs
+from kinda.cli import safe_read_file
 
 used_helpers = set()
 
@@ -175,11 +176,13 @@ def transform_line(line: str) -> List[str]:
     original_line = line
     stripped = line.strip()
 
+    # Fast path for empty lines and comments
     if not stripped:
         return [""]
     if stripped.startswith("#"):
         return [original_line]
 
+    # Check for inline constructs in a single pass for efficiency
     # First check for inline ~ish constructs
     ish_transformed_line = _transform_ish_constructs(line)
     
@@ -264,7 +267,9 @@ class KindaParseError(Exception):
 def transform_file(path: Path, target_language="python") -> str:
     """Transform a .knda file with enhanced error reporting"""
     try:
-        lines = path.read_text().splitlines()
+        # Use safe encoding-aware file reading for Windows compatibility
+        content = safe_read_file(path)
+        lines = content.splitlines()
     except UnicodeDecodeError as e:
         raise KindaParseError(
             f"File encoding issue - try saving as UTF-8: {e}",
@@ -372,7 +377,7 @@ def transform(input_path: Path, out_dir: Path) -> List[Path]:
 
                 output_file_path = out_dir / relative_path.with_name(new_name)
                 output_file_path.parent.mkdir(parents=True, exist_ok=True)
-                output_file_path.write_text(output_code)
+                output_file_path.write_text(output_code, encoding='utf-8')
                 output_paths.append(output_file_path)
             except KindaParseError:
                 # Re-raise parse errors to be handled by CLI
@@ -391,7 +396,7 @@ def transform(input_path: Path, out_dir: Path) -> List[Path]:
                 new_name = input_path.stem + ".py"
             output_file_path = out_dir / new_name
             output_file_path.parent.mkdir(parents=True, exist_ok=True)
-            output_file_path.write_text(output_code)
+            output_file_path.write_text(output_code, encoding='utf-8')
             output_paths.append(output_file_path)
         except KindaParseError:
             # Re-raise parse errors to be handled by CLI
