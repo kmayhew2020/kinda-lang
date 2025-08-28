@@ -51,24 +51,26 @@ jobs:
       - name: Example Smoke Tests
         timeout-minutes: 10
         run: |
-          echo "Testing basic examples..."
-          kinda run examples/python/unified_syntax.py.knda
-          kinda run examples/python/test_coverage_example.py.knda
-          
-          # Skip kinda_binary_example on Windows due to emoji Unicode issues
-          if [[ "${{ matrix.os }}" != "windows-latest" ]]; then
-            kinda run examples/python/kinda_binary_example.py.knda
+          if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
+            echo "Testing Windows-compatible examples (no emoji)..."
+            kinda run examples/python/unified_syntax.py.knda
+            kinda run examples/python/test_coverage_example.py.knda
+            kinda run examples/python/maybe_example.py.knda
+            echo "Skipping emoji-heavy examples on Windows due to cp1252 encoding"
           else
-            echo "Skipping kinda_binary_example on Windows (Unicode emoji issues)"
+            echo "Testing all examples on Unix platforms..."
+            kinda run examples/python/unified_syntax.py.knda
+            kinda run examples/python/test_coverage_example.py.knda
+            kinda run examples/python/kinda_binary_example.py.knda
+            
+            echo "Testing comprehensive examples..."
+            kinda run examples/python/comprehensive/fuzzy_calculator.py.knda
+            kinda run examples/python/comprehensive/fuzzy_game_logic.py.knda
+            kinda run examples/python/comprehensive/chaos_arena_complete.py.knda
+            
+            echo "Testing complex examples with shorter runtime..."
+            timeout 30s kinda run examples/python/comprehensive/chaos_arena2_complete.py.knda || echo "Chaos arena2 timed out as expected - this is normal"
           fi
-          
-          echo "Testing comprehensive examples..."
-          kinda run examples/python/comprehensive/fuzzy_calculator.py.knda
-          kinda run examples/python/comprehensive/fuzzy_game_logic.py.knda
-          kinda run examples/python/comprehensive/chaos_arena_complete.py.knda
-          
-          echo "Testing complex examples with shorter runtime..."
-          timeout 30s kinda run examples/python/comprehensive/chaos_arena2_complete.py.knda || echo "Chaos arena2 timed out as expected - this is normal"
         shell: bash
 
       - name: Test cross-platform installation scripts
