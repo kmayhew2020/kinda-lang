@@ -50,15 +50,41 @@ RANDOM_MANIPULATION_PATTERNS = [
 def is_condition_dangerous(condition: Any) -> Tuple[bool, str]:
     """
     Check if a condition contains dangerous patterns.
-    Uses case-insensitive matching to prevent bypasses.
+    Uses case-insensitive matching and regex patterns to prevent bypasses.
 
     Returns:
         tuple: (is_dangerous, reason)
     """
+    import re
     condition_str = str(condition).lower()  # Convert to lowercase for case-insensitive matching
 
-    # Check for dangerous code injection patterns
-    for pattern in DANGEROUS_PATTERNS:
+    # Check for dangerous code injection patterns with regex to handle whitespace bypasses
+    dangerous_function_patterns = [
+        (r"\b__import__\s*\(", "__import__("),
+        (r"\bexec\s*\(", "exec("),
+        (r"\beval\s*\(", "eval("),
+        (r"\bopen\s*\(", "open("),
+        (r"\bcompile\s*\(", "compile("),
+        (r"\bvars\s*\(", "vars("),
+        (r"\bdir\s*\(", "dir("),
+        (r"\bgetattr\s*\(", "getattr("),
+    ]
+    
+    # Check regex-based patterns for function calls with flexible whitespace
+    for regex_pattern, display_name in dangerous_function_patterns:
+        if re.search(regex_pattern, condition_str, re.IGNORECASE):
+            return True, f"dangerous pattern detected: {display_name}"
+    
+    # Check simple string patterns that don't need regex
+    simple_dangerous_patterns = [
+        "subprocess",
+        "globals()",
+        "locals()",
+        "vars()",
+        "dir()",
+    ]
+    
+    for pattern in simple_dangerous_patterns:
         if pattern.lower() in condition_str:
             return True, f"dangerous pattern detected: {pattern}"
 
@@ -68,18 +94,16 @@ def is_condition_dangerous(condition: Any) -> Tuple[bool, str]:
         if pattern_lower == "import random":
             # More precise matching for "import random" to avoid false positives
             # Issue #12: Improved regex handling for whitespace-obfuscated imports
-            import re
-
-            # Match "import random" with flexible whitespace and case insensitive
             if re.search(r"\bimport\s+random\b", condition_str, re.IGNORECASE):
                 return True, f"random manipulation attempt: {pattern}"
         elif pattern_lower == "from random import":
             # Issue #12: Improved regex for "from random import" with flexible whitespace
-            import re
-
-            # Match "from random import" with flexible whitespace and case insensitive
             if re.search(r"\bfrom\s+random\s+import\b", condition_str, re.IGNORECASE):
                 return True, f"random manipulation attempt: {pattern}"
+        elif pattern_lower == "getattr(":
+            # Use regex for getattr to handle whitespace
+            if re.search(r"\bgetattr\s*\(", condition_str, re.IGNORECASE):
+                return True, f"random manipulation attempt: getattr("
         else:
             if pattern_lower in condition_str:
                 return True, f"random manipulation attempt: {pattern}"
@@ -129,7 +153,7 @@ def safe_bool_eval(condition: Any, timeout_seconds: int = 1) -> bool:
 def secure_condition_check(condition: Any, construct_name: str) -> Tuple[bool, bool]:
     """
     Perform a secure check of a condition with all protections.
-    Uses case-insensitive pattern matching to prevent bypasses.
+    Uses case-insensitive pattern matching and regex patterns to prevent bypasses.
 
     Args:
         condition: The condition to check
@@ -140,10 +164,37 @@ def secure_condition_check(condition: Any, construct_name: str) -> Tuple[bool, b
                should_proceed: False if security blocked
                condition_result: The boolean result if allowed
     """
+    import re
     condition_str = str(condition).lower()  # Case-insensitive matching
 
-    # Check for dangerous code injection patterns first
-    for pattern in DANGEROUS_PATTERNS:
+    # Check for dangerous code injection patterns with regex to handle whitespace bypasses
+    dangerous_function_patterns = [
+        (r"\b__import__\s*\(", "__import__("),
+        (r"\bexec\s*\(", "exec("),
+        (r"\beval\s*\(", "eval("),
+        (r"\bopen\s*\(", "open("),
+        (r"\bcompile\s*\(", "compile("),
+        (r"\bvars\s*\(", "vars("),
+        (r"\bdir\s*\(", "dir("),
+        (r"\bgetattr\s*\(", "getattr("),
+    ]
+    
+    # Check regex-based patterns for function calls with flexible whitespace
+    for regex_pattern, display_name in dangerous_function_patterns:
+        if re.search(regex_pattern, condition_str, re.IGNORECASE):
+            print(f"[security] {construct_name} blocked dangerous condition - nice try though")
+            return False, False
+    
+    # Check simple string patterns that don't need regex
+    simple_dangerous_patterns = [
+        "subprocess",
+        "globals()",
+        "locals()",
+        "vars()",
+        "dir()",
+    ]
+    
+    for pattern in simple_dangerous_patterns:
         if pattern.lower() in condition_str:
             print(f"[security] {construct_name} blocked dangerous condition - nice try though")
             return False, False
@@ -154,9 +205,6 @@ def secure_condition_check(condition: Any, construct_name: str) -> Tuple[bool, b
         if pattern_lower == "import random":
             # More precise matching for "import random" to avoid false positives
             # Issue #12: Improved regex handling for whitespace-obfuscated imports
-            import re
-
-            # Match "import random" with flexible whitespace and case insensitive
             if re.search(r"\bimport\s+random\b", condition_str, re.IGNORECASE):
                 print(
                     f"[security] {construct_name} won't let you break the chaos - that's not kinda"
@@ -164,10 +212,14 @@ def secure_condition_check(condition: Any, construct_name: str) -> Tuple[bool, b
                 return False, False
         elif pattern_lower == "from random import":
             # Issue #12: Improved regex for "from random import" with flexible whitespace
-            import re
-
-            # Match "from random import" with flexible whitespace and case insensitive
             if re.search(r"\bfrom\s+random\s+import\b", condition_str, re.IGNORECASE):
+                print(
+                    f"[security] {construct_name} won't let you break the chaos - that's not kinda"
+                )
+                return False, False
+        elif pattern_lower == "getattr(":
+            # Use regex for getattr to handle whitespace
+            if re.search(r"\bgetattr\s*\(", condition_str, re.IGNORECASE):
                 print(
                     f"[security] {construct_name} won't let you break the chaos - that's not kinda"
                 )
