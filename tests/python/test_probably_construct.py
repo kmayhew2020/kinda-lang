@@ -216,38 +216,45 @@ class TestProbablyRuntimeBehavior:
             try:
                 # Reset personality context to ensure consistent test environment
                 from kinda.personality import PersonalityContext
-                PersonalityContext.set_mood('playful')  # Default mood
-                
+
+                PersonalityContext.set_mood("playful")  # Default mood
+
                 # Clear module cache if it exists
-                if 'fuzzy' in sys.modules:
-                    del sys.modules['fuzzy']
-                
+                if "fuzzy" in sys.modules:
+                    del sys.modules["fuzzy"]
+
                 from fuzzy import probably
-                
+
                 # Test that function returns boolean values (basic functionality)
                 result1 = probably(True)
                 result2 = probably(False)
-                assert isinstance(result1, bool), f"probably(True) should return bool, got {type(result1)}"
-                assert isinstance(result2, bool), f"probably(False) should return bool, got {type(result2)}"
-                
+                assert isinstance(
+                    result1, bool
+                ), f"probably(True) should return bool, got {type(result1)}"
+                assert isinstance(
+                    result2, bool
+                ), f"probably(False) should return bool, got {type(result2)}"
+
                 # probably(False) should always return False regardless of random
-                assert result2 == False, f"probably(False) should always return False, got {result2}"
-                
+                assert (
+                    result2 == False
+                ), f"probably(False) should always return False, got {result2}"
+
                 # Test with multiple iterations to verify probabilistic behavior
                 # Since we can't reliably mock in the full test suite, test statistical behavior
                 true_results = []
                 for _ in range(50):  # Small sample size for quick testing
                     result = probably(True)
                     true_results.append(result)
-                
+
                 # At least some should be True and some should be False (probabilistic)
                 true_count = sum(true_results)
                 false_count = len(true_results) - true_count
-                
+
                 # With 70% probability, we expect some variation
                 assert true_count > 0, "Some calls to probably(True) should return True"
                 # Don't assert false_count > 0 as with small sample size and 70% prob, all could be True
-                
+
             finally:
                 sys.path.remove(str(temp_path))
 
@@ -271,28 +278,31 @@ class TestProbablyRuntimeBehavior:
             try:
                 # Reset personality context to ensure consistent test environment
                 from kinda.personality import PersonalityContext
-                PersonalityContext.set_mood('playful')  # Default mood
-                
+
+                PersonalityContext.set_mood("playful")  # Default mood
+
                 # Clear module cache if it exists
-                if 'fuzzy' in sys.modules:
-                    del sys.modules['fuzzy']
-                
+                if "fuzzy" in sys.modules:
+                    del sys.modules["fuzzy"]
+
                 from fuzzy import probably
-                
+
                 # Test statistical behavior over multiple calls
                 # With 70% probability, we should get a mix of True/False
                 results = []
                 for _ in range(100):
                     result = probably(True)
                     results.append(result)
-                
+
                 true_count = sum(results)
                 true_ratio = true_count / len(results)
-                
+
                 # Should be roughly around 70% with some tolerance
                 # Allow wide tolerance since this is a small sample
-                assert 0.4 <= true_ratio <= 1.0, f"Expected roughly 70% true ratio, got {true_ratio:.2f}"
-                
+                assert (
+                    0.4 <= true_ratio <= 1.0
+                ), f"Expected roughly 70% true ratio, got {true_ratio:.2f}"
+
             finally:
                 sys.path.remove(str(temp_path))
 
@@ -316,20 +326,23 @@ class TestProbablyRuntimeBehavior:
             try:
                 # Reset personality context to ensure consistent test environment
                 from kinda.personality import PersonalityContext
-                PersonalityContext.set_mood('playful')  # Default mood
-                
+
+                PersonalityContext.set_mood("playful")  # Default mood
+
                 # Clear module cache if it exists
-                if 'fuzzy' in sys.modules:
-                    del sys.modules['fuzzy']
-                
+                if "fuzzy" in sys.modules:
+                    del sys.modules["fuzzy"]
+
                 from fuzzy import probably
-                
+
                 # Test that False condition always returns False
                 # Run multiple times to ensure consistency
                 for _ in range(10):
                     result = probably(False)
-                    assert result == False, f"probably(False) should always return False, got {result}"
-                    
+                    assert (
+                        result == False
+                    ), f"probably(False) should always return False, got {result}"
+
             finally:
                 sys.path.remove(str(temp_path))
 
