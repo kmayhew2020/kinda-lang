@@ -66,9 +66,10 @@ def safe_bool_eval(condition: Any, timeout_seconds: int = 1) -> bool:
     Raises:
         TimeoutError: If evaluation takes too long
     """
-    
+
     # Check if SIGALRM is available (Unix-only)
-    if hasattr(signal, 'SIGALRM'):
+    if hasattr(signal, "SIGALRM"):
+
         def timeout_handler(signum, frame):
             raise TimeoutError("Condition evaluation timed out")
 
