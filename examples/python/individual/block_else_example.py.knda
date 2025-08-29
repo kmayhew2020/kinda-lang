@@ -1,0 +1,78 @@
+# Block Else Syntax - New Feature Demo
+# Demonstrates the } { else syntax for kinda conditionals
+
+~sorta print("=== Block Else Syntax Examples ===")
+
+# Basic sometimes with else block
+~sometimes (True) {
+    ~sorta print("Sometimes block executed!")
+    ~kinda int lucky_number = 7
+} {
+    ~sorta print("Sometimes block didn't execute - using else!")
+    lucky_number = 13
+}
+
+~sorta print("Lucky number:", lucky_number)
+
+# Maybe construct with else block
+~kinda int score = 85
+~maybe (score > 90) {
+    ~sorta print("High score! You're amazing!")
+    ~kinda int bonus = 100
+} {
+    ~sorta print("Good effort! Here's a consolation prize")
+    bonus = 50
+}
+
+~sorta print("Bonus points:", bonus)
+
+# Nested conditionals with else blocks
+~sorta print("--- Nested Else Examples ---")
+~sometimes (True) {
+    ~sorta print("Outer condition succeeded")
+    ~maybe (False) {
+        ~sorta print("Inner maybe worked")
+    } {
+        ~sorta print("Inner maybe didn't work, but that's fine")
+    }
+} {
+    ~sorta print("Outer condition failed")
+    ~sorta print("But we still have this else block!")
+}
+
+# Complex real-world example
+~kinda int health = 75
+~kinda int mana = 30
+
+~sorta print("--- Game Logic Example ---")
+~sometimes (health > 50) {
+    ~sorta print("Player is healthy - can take risky actions")
+    ~maybe (mana > 25) {
+        ~sorta print("Cast powerful spell!")
+        mana ~= -20
+    } {
+        ~sorta print("Not enough mana for spell, use basic attack")
+        ~kinda int damage = 10
+    }
+} {
+    ~sorta print("Player is injured - playing defensively") 
+    ~sometimes (mana > 15) {
+        ~sorta print("Cast healing spell")
+        health ~= 25
+        mana ~= -15
+    } {
+        ~sorta print("No mana for healing - just rest")
+        health ~= 5
+    }
+}
+
+~sorta print("Final stats - Health:", health, "Mana:", mana)
+
+# Empty else block (still valid)
+~maybe (42~ish == 42) {
+    ~sorta print("Numbers are kinda close!")
+} {
+    # This else block is empty, but that's okay
+}
+
+~sorta print("=== End of Block Else Demo ===")
