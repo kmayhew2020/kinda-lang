@@ -65,7 +65,11 @@ def _process_conditional_block(
 
         try:
             # Handle nested conditional constructs
-            if stripped.startswith("~sometimes") or stripped.startswith("~maybe") or stripped.startswith("~probably"):
+            if (
+                stripped.startswith("~sometimes")
+                or stripped.startswith("~maybe")
+                or stripped.startswith("~probably")
+            ):
                 if not _validate_conditional_syntax(stripped, line_number, file_path):
                     i += 1
                     continue
@@ -367,7 +371,11 @@ def transform_file(path: Path, target_language="python") -> str:
         line_number = i + 1  # 1-based line numbers
 
         try:
-            if stripped.startswith("~sometimes") or stripped.startswith("~maybe") or stripped.startswith("~probably"):
+            if (
+                stripped.startswith("~sometimes")
+                or stripped.startswith("~maybe")
+                or stripped.startswith("~probably")
+            ):
                 # Validate conditional syntax
                 if not _validate_conditional_syntax(stripped, line_number, str(path)):
                     i += 1
