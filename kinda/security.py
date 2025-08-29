@@ -31,7 +31,7 @@ DANGEROUS_PATTERNS = [
     "vars()",
     "vars(",  # Issue #8: vars() without parentheses bypass
     "dir()",
-    "dir(",   # Issue #9: dir() without parentheses bypass  
+    "dir(",  # Issue #9: dir() without parentheses bypass
     "getattr(",  # Issue #10: getattr() method bypass
 ]
 
@@ -76,7 +76,7 @@ def is_condition_dangerous(condition: Any) -> Tuple[bool, str]:
         elif pattern_lower == "from random import":
             # Issue #12: Improved regex for "from random import" with flexible whitespace
             import re
-            
+
             # Match "from random import" with flexible whitespace and case insensitive
             if re.search(r"\bfrom\s+random\s+import\b", condition_str, re.IGNORECASE):
                 return True, f"random manipulation attempt: {pattern}"
@@ -165,7 +165,7 @@ def secure_condition_check(condition: Any, construct_name: str) -> Tuple[bool, b
         elif pattern_lower == "from random import":
             # Issue #12: Improved regex for "from random import" with flexible whitespace
             import re
-            
+
             # Match "from random import" with flexible whitespace and case insensitive
             if re.search(r"\bfrom\s+random\s+import\b", condition_str, re.IGNORECASE):
                 print(

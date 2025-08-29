@@ -455,8 +455,10 @@ class TestCriticalSecurityBypassesPR103:
             assert is_dangerous, f"Should block getattr random manipulation: {attempt}"
             # getattr is in both DANGEROUS_PATTERNS and RANDOM_MANIPULATION_PATTERNS
             # It will be caught by dangerous patterns first (which is correct)
-            assert ("dangerous pattern detected:" in reason.lower() or 
-                    "random manipulation attempt:" in reason.lower())
+            assert (
+                "dangerous pattern detected:" in reason.lower()
+                or "random manipulation attempt:" in reason.lower()
+            )
 
     def test_issue_12_regex_whitespace_handling(self):
         """Issue #12: Test improved regex whitespace handling for imports"""
@@ -515,7 +517,7 @@ class TestCriticalSecurityBypassesPR103:
             # Issue #8: vars( bypass
             "vars(",
             "vars(random",
-            # Issue #9: dir( bypass  
+            # Issue #9: dir( bypass
             "dir(",
             "dir(random",
             # Issue #10: getattr bypass
@@ -561,7 +563,7 @@ class TestDocumentationAndErrorMessages:
         # Should include original dangerous patterns
         assert "vars()" in DANGEROUS_PATTERNS
         assert "dir()" in DANGEROUS_PATTERNS
-        
+
         # Should include new bypass patterns for Issue #8, #9, #10
         assert "vars(" in DANGEROUS_PATTERNS
         assert "dir(" in DANGEROUS_PATTERNS
@@ -580,9 +582,11 @@ class TestDocumentationAndErrorMessages:
 
         # Should have expected total counts
         expected_dangerous_count = 13  # Updated count with new patterns
-        assert len(DANGEROUS_PATTERNS) == expected_dangerous_count, \
-            f"Expected {expected_dangerous_count} dangerous patterns, got {len(DANGEROUS_PATTERNS)}: {DANGEROUS_PATTERNS}"
+        assert (
+            len(DANGEROUS_PATTERNS) == expected_dangerous_count
+        ), f"Expected {expected_dangerous_count} dangerous patterns, got {len(DANGEROUS_PATTERNS)}: {DANGEROUS_PATTERNS}"
 
-        expected_random_count = 7  # Updated count with new patterns  
-        assert len(RANDOM_MANIPULATION_PATTERNS) == expected_random_count, \
-            f"Expected {expected_random_count} random manipulation patterns, got {len(RANDOM_MANIPULATION_PATTERNS)}: {RANDOM_MANIPULATION_PATTERNS}"
+        expected_random_count = 7  # Updated count with new patterns
+        assert (
+            len(RANDOM_MANIPULATION_PATTERNS) == expected_random_count
+        ), f"Expected {expected_random_count} random manipulation patterns, got {len(RANDOM_MANIPULATION_PATTERNS)}: {RANDOM_MANIPULATION_PATTERNS}"
