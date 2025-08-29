@@ -489,11 +489,13 @@ class TestSortaPrint:
         sys.stdout = sys.__stdout__
     
     def test_sorta_print_no_args_no_output(self):
-        """Test sorta_print with no arguments when random > 0.5."""
+        """Test sorta_print with no arguments when random > personality threshold."""
         captured_output = StringIO()
         sys.stdout = captured_output
         
-        with patch('random.random', return_value=0.7):
+        # Mock personality system to return predictable probability
+        with patch('random.random', return_value=0.9), \
+             patch('kinda.personality.chaos_probability', return_value=0.8):
             sorta_print()
             output = captured_output.getvalue()
             assert output == ""
