@@ -490,3 +490,154 @@ class TestProbablyPersonalityIntegration:
         # Should have proper chaos state tracking
         assert "update_chaos_state(failed=True)" in probably_body
         assert "update_chaos_state(failed=not result)" in probably_body
+
+
+class TestProbablySecurityProtection:
+    """Test security protections in ~probably construct against critical vulnerabilities"""
+
+    def test_code_injection_protection(self):
+        """Test ~probably blocks dangerous code injection attempts"""
+        from kinda.grammar.python.constructs import KindaPythonConstructs
+        import random
+
+        # Get the probably function
+        probably_construct = KindaPythonConstructs["probably"]
+        probably_code = probably_construct["body"]
+
+        # Execute the probably function definition
+        exec(probably_code, globals())
+
+        # Test dangerous imports are blocked
+        dangerous_conditions = [
+            "__import__('os').system('echo \"SECURITY_BREACH_TEST\"')",
+            "exec('print(\"pwned\")')",
+            "eval('1+1')",
+            "open('/etc/passwd')",
+            "subprocess.call(['ls'])",
+            "compile('print(1)', '<string>', 'exec')",
+            "globals()",
+            "locals()",
+            "vars()",
+            "dir()",
+        ]
+
+        for dangerous_condition in dangerous_conditions:
+            result = probably(dangerous_condition)
+            assert result is False, f"Should block dangerous condition: {dangerous_condition}"
+
+    def test_deterministic_subversion_protection(self):
+        """Test ~probably blocks attempts to manipulate random number generation"""
+        from kinda.grammar.python.constructs import KindaPythonConstructs
+
+        # Get the probably function
+        probably_construct = KindaPythonConstructs["probably"]
+        probably_code = probably_construct["body"]
+
+        # Execute the probably function definition
+        exec(probably_code, globals())
+
+        # Test random manipulation attempts are blocked
+        random_manipulation_conditions = [
+            "random.seed(42)",
+            "random.random()",
+            "setattr(random, 'random', lambda: 0.5)",
+        ]
+
+        for condition in random_manipulation_conditions:
+            result = probably(condition)
+            assert result is False, f"Should block random manipulation: {condition}"
+
+    def test_resource_exhaustion_protection(self):
+        """Test ~probably blocks conditions that could cause resource exhaustion"""
+        from kinda.grammar.python.constructs import KindaPythonConstructs
+        import time
+
+        # Get the probably function
+        probably_construct = KindaPythonConstructs["probably"]
+        probably_code = probably_construct["body"]
+
+        # Execute the probably function definition
+        exec(probably_code, globals())
+
+        # Create a condition that would normally take a very long time to evaluate
+        class SlowCondition:
+            def __bool__(self):
+                time.sleep(2)  # Sleep for 2 seconds, should be timed out
+                return True
+
+        slow_condition = SlowCondition()
+
+        # Test that timeout protection works
+        start_time = time.time()
+        result = probably(slow_condition)
+        elapsed_time = time.time() - start_time
+
+        # Should return False due to timeout and complete quickly (within 1.5 seconds)
+        assert result is False, "Should block slow condition evaluation"
+        assert elapsed_time < 1.5, f"Should timeout quickly, took {elapsed_time} seconds"
+
+    def test_security_messages_displayed(self, capsys):
+        """Test that appropriate security messages are displayed when blocking attacks"""
+        from kinda.grammar.python.constructs import KindaPythonConstructs
+
+        # Get the probably function
+        probably_construct = KindaPythonConstructs["probably"]
+        probably_code = probably_construct["body"]
+
+        # Execute the probably function definition
+        exec(probably_code, globals())
+
+        # Test code injection security message
+        probably("__import__('os')")
+        captured = capsys.readouterr()
+        assert "[security] Probably blocked dangerous condition - nice try though" in captured.out
+
+        # Test random manipulation security message
+        probably("random.seed(42)")
+        captured = capsys.readouterr()
+        assert "[security] Probably won't let you break the chaos - that's not kinda" in captured.out
+
+        # Test timeout security message with a slow condition that doesn't trigger pattern matching
+        import time
+        
+        class SlowCondition:
+            def __bool__(self):
+                time.sleep(2)  # This will be timed out
+                return True
+        
+        # Create instance to avoid triggering import detection in str representation
+        slow_obj = SlowCondition()
+        probably(slow_obj)
+        captured = capsys.readouterr()
+        assert "[security] Probably blocked slow condition evaluation - keeping it snappy" in captured.out
+
+    def test_legitimate_conditions_still_work(self):
+        """Test that legitimate conditions still work after security fixes"""
+        from kinda.grammar.python.constructs import KindaPythonConstructs
+        import unittest.mock
+
+        # Get the probably function
+        probably_construct = KindaPythonConstructs["probably"]
+        probably_code = probably_construct["body"]
+
+        # Execute the probably function definition
+        exec(probably_code, globals())
+
+        # Test legitimate conditions
+        legitimate_conditions = [
+            True,
+            False,
+            1 == 1,
+            "hello" == "hello",
+            5 > 3,
+            [1, 2, 3],  # Non-empty list
+            "",  # Empty string
+        ]
+
+        for condition in legitimate_conditions:
+            # Mock random to ensure deterministic testing
+            with unittest.mock.patch('random.random', return_value=0.5):
+                with unittest.mock.patch('kinda.personality.chaos_probability', return_value=0.8):
+                    result = probably(condition)
+                    # Should either return True or False based on condition truthiness and probability
+                    assert isinstance(result, bool), f"Should return boolean for condition: {condition}"
