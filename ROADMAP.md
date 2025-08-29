@@ -56,6 +56,7 @@
 - 🔴 **Issue #81**: Constructs inside function arguments not transformed - HIGH PRIORITY
 - 🟠 **Issue #82**: `~ish` returns value instead of modifying in-place - MEDIUM PRIORITY
 - 🔴 **Issue #83**: `~ish` transformer uses wrong function (ish_comparison vs ish_value) - CRITICAL
+- 🟡 **Issue #84**: Documentation: `~ish` construct usage patterns need clarification - MEDIUM
 
 ### 🎯 Current Priorities (v0.4.0)
 
@@ -77,9 +78,10 @@
 - **Interactive Personality Modes**: User prompts during execution
 
 **URGENT**: Critical transformer bugs discovered through stress testing must be addressed immediately:
-- Issue #83 (ish transformer) and #81 (nested constructs) break core language functionality
+- Issue #83 (ish transformer) and #81 (nested constructs) break core language functionality  
+- Issue #84 highlights documentation gaps that led to implementation confusion
 - These bugs affect all programs using `~ish` or complex expressions
-- **Priority Recommendation**: Fix Issues #79, #81, #83 before continuing Epic #35
+- **Priority Recommendation**: Fix Issues #79, #81, #83 and clarify documentation (#84) before Epic #35
 
 ### 📊 Stress Testing Results Summary
 **Comprehensive testing revealed**:
