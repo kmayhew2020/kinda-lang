@@ -365,24 +365,20 @@ base_val ~= 5
             temp_path.unlink()
 
     def test_maybe_probability_difference_from_sometimes(self):
-        """Test that ~maybe has different probability behavior than ~sometimes with personality system"""
-        # This test verifies that both constructs use personality system but with different keys
+        """Test that ~maybe has different probability than ~sometimes"""
+        # This is more of a specification test to ensure the probabilities are different
         maybe_construct = KindaPythonConstructs["maybe"]
         sometimes_construct = KindaPythonConstructs["sometimes"]
         
-        # Extract function bodies
+        # Extract probability values from the function bodies
         maybe_body = maybe_construct["body"]
         sometimes_body = sometimes_construct["body"]
         
-        # Both should use personality system
-        assert "chaos_probability" in maybe_body
-        assert "chaos_probability" in sometimes_body
+        # ~maybe should use 0.6 probability
+        assert "0.6" in maybe_body
         
-        # ~maybe should call chaos_probability with 'maybe' key
-        assert "chaos_probability('maybe'" in maybe_body
+        # ~sometimes should use 0.5 probability  
+        assert "0.5" in sometimes_body
         
-        # ~sometimes should call chaos_probability with 'sometimes' key  
-        assert "chaos_probability('sometimes'" in sometimes_body
-        
-        # They should be different constructs
+        # They should be different
         assert maybe_body != sometimes_body

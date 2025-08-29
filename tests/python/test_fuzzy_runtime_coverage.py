@@ -144,19 +144,17 @@ class TestSortaPrintErrorHandling:
     def test_sorta_print_no_args_shrug_response(self):
         """Test sorta_print with no args and shrug response"""
         # Test the path where no args are provided and random choice is to not print
-        with patch('random.random', return_value=0.9), \
-             patch('kinda.personality.chaos_probability', return_value=0.8):  # random > prob, should not print
+        with patch('random.random', return_value=0.6):  # > 0.5, should not print shrug
             with patch('builtins.print') as mock_print:
                 sorta_print()
                 
-                # Should not print anything when random > personality threshold and no args
+                # Should not print anything when random > 0.5 and no args
                 mock_print.assert_not_called()
     
     def test_sorta_print_no_args_with_shrug_message(self):
         """Test sorta_print with no args but shows shrug message"""
         # Test the path where no args are provided and random choice is to print shrug
-        with patch('random.random', return_value=0.3), \
-             patch('kinda.personality.chaos_probability', return_value=0.8):  # random < prob, should print shrug
+        with patch('random.random', return_value=0.3):  # < 0.5, should print shrug
             with patch('builtins.print') as mock_print:
                 sorta_print()
                 

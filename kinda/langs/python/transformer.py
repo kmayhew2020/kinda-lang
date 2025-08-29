@@ -1,4 +1,3 @@
-import re
 from pathlib import Path
 from typing import List
 from kinda.langs.python.runtime_gen import generate_runtime_helpers, generate_runtime
@@ -133,42 +132,10 @@ def _transform_ish_constructs(line: str) -> str:
             value = match.group(1)
             replacement = f"ish_value({value})"
         elif construct_type == "ish_comparison":
+            used_helpers.add("ish_comparison")
             left_val = match.group(1)
             right_val = match.group(2)
-            
-            # CRITICAL FIX: Detect assignment vs comparison context
-            stripped_line = line.strip()
-            
-            # Check if this is a standalone assignment statement
-            # Pattern: variable_name ~ish value (with optional whitespace)
-            is_standalone_assignment = (
-                # Must be a simple statement (not part of expression)
-                not any(op in stripped_line for op in ['+', '-', '*', '/', '=', '(', ')', '[', ']', ',']) or
-                # OR starts with variable name followed by ~ish (variable assignment pattern)
-                re.match(rf'^\s*{re.escape(left_val)}\s*~ish\s+{re.escape(right_val)}\s*$', stripped_line)
-            )
-            
-            # Check if this is in a conditional/comparison context
-            is_in_conditional = (
-                stripped_line.startswith('if ') or 
-                stripped_line.startswith('elif ') or
-                stripped_line.startswith('while ') or
-                ' if ' in stripped_line or
-                ' and ' in stripped_line or 
-                ' or ' in stripped_line or
-                # Also check if it's part of a larger expression
-                any(op in stripped_line for op in ['+', '-', '*', '/', '==', '!=', '<', '>', '<=', '>='])
-            )
-            
-            if is_standalone_assignment and not is_in_conditional:
-                # This is a variable modification context
-                used_helpers.add("ish_value")
-                replacement = f"{left_val} = ish_value({left_val}, {right_val})"
-            else:
-                # This is a comparison context
-                used_helpers.add("ish_comparison")
-                replacement = f"ish_comparison({left_val}, {right_val})"
-                
+            replacement = f"ish_comparison({left_val}, {right_val})"
         elif construct_type == "ish_comparison_with_ish_value":
             used_helpers.add("ish_comparison")
             used_helpers.add("ish_value")
