@@ -52,23 +52,34 @@
 
 ### 🐛 Active Bug Fixes (v0.4.0)
 - 🔴 **Issue #79**: Block else syntax (`} {`) doesn't transform correctly - HIGH PRIORITY
-- 🟠 **Issue #80**: `~ish` operator doesn't assign result back to variable - MEDIUM PRIORITY  
-- 🔴 **Issue #81**: Constructs inside function arguments not transformed - HIGH PRIORITY
-- 🟠 **Issue #82**: `~ish` returns value instead of modifying in-place - MEDIUM PRIORITY
-- 🔴 **Issue #83**: `~ish` transformer uses wrong function (ish_comparison vs ish_value) - CRITICAL
+- ✅ **Issue #80**: `~ish` operator doesn't assign result back to variable - **FIXED in PR #85**
+- 🔴 **Issue #81**: Constructs inside function arguments not transformed - HIGH PRIORITY **[CONFIRMED via play testing]**
+- ✅ **Issue #82**: `~ish` returns value instead of modifying in-place - **FIXED in PR #85**
+- ✅ **Issue #83**: `~ish` transformer uses wrong function (ish_comparison vs ish_value) - **FIXED in PR #85**
 - 🟡 **Issue #84**: Documentation: `~ish` construct usage patterns need clarification - MEDIUM
+
+### 🔍 New Issues from Expert Analysis & Play Testing
+- 🟡 **Issue #86**: Feature: Add determinism controls (--seed, --chaos flags) - MEDIUM
+- 🟡 **Issue #87**: Docs: Create comprehensive ~ish usage guide - MEDIUM  
+- 🟠 **Issue #88**: Feature: Single-source spec.yaml → docs + CLI to prevent drift - MEDIUM-HIGH
+- 🟠 **Issue #89**: DX: Add source maps for error reporting (.knda line/col in stack traces) - MEDIUM
 
 ### 🎯 Current Priorities (v0.4.0)
 
 **Active Development:**
-1. **Bug Fixes**: Address transformation issues found during personality testing (Issues #79, #80)
-2. **Time-based Variable Drift**: Variables get fuzzier over program lifetime (Issue #74) 
+1. **Critical Bug Fixes**: Address remaining transformer issues (Issues #79, #81)
+2. **Documentation Completion**: Address documentation gaps (#84, #87) 
 3. **Enhanced Chaos Constructs**: New fuzzy constructs and behaviors (Epic #35)
-4. **Documentation Enhancement**: Complex usage patterns, real-world examples (Epic #76)
+4. **Time-based Variable Drift**: Variables get fuzzier over program lifetime (Issue #74)
 5. **C Language Support**: Complete C transpiler pipeline (Epic #19)
 
+**New v0.4.0 Enhancements (Expert-Driven):**
+6. **Determinism Controls**: --seed and --chaos flags for reproducibility (#86)
+7. **Single-Source Spec**: Prevent docs/code drift with spec.yaml (#88)
+8. **Enhanced DX**: Source maps for better error reporting (#89)
+
 **Future Planning (v0.5.0):**
-6. **10 Personality Expansion**: Expand personality system to 10 distinct modes (Issue #77)
+9. **10 Personality Expansion**: Expand personality system to 10 distinct modes (Issue #77)
 
 ### 💡 Enhancement Ideas from Personality Analysis
 - **Personality Intensity Levels**: `--mood chaotic-extreme`, `--mood reliable-strict`
@@ -77,11 +88,18 @@
 - **Personality Memory**: Recent execution history influences future probability
 - **Interactive Personality Modes**: User prompts during execution
 
-**URGENT**: Critical transformer bugs discovered through stress testing must be addressed immediately:
-- Issue #83 (ish transformer) and #81 (nested constructs) break core language functionality  
-- Issue #84 highlights documentation gaps that led to implementation confusion
-- These bugs affect all programs using `~ish` or complex expressions
-- **Priority Recommendation**: Fix Issues #79, #81, #83 and clarify documentation (#84) before Epic #35
+**PROGRESS UPDATE**: Major bug fixes completed, expert analysis integrated:
+- ✅ **Issue #83 RESOLVED**: Critical ~ish transformer bug fixed (PR #85)
+- 🔴 **Issue #81 CONFIRMED**: Nested constructs in function args still broken (play testing)  
+- 🔍 **Expert Analysis**: 4 new enhancement issues identified (#86-89)
+- 📋 **Documentation**: Comprehensive ~ish guide needed (#87) 
+- **Priority Recommendation**: Complete remaining critical bugs (#79, #81) before Epic #35
+
+### 🏆 Recent Accomplishments  
+- ✅ **Personality System**: Complete integration with all 9 constructs
+- ✅ **Critical ~ish Fix**: Variable modification now works correctly
+- ✅ **Process Enhancement**: Mandatory documentation review prevents bugs
+- ✅ **Expert Validation**: Comprehensive analysis confirms solid foundation
 
 ### 📊 Stress Testing Results Summary
 **Comprehensive testing revealed**:
@@ -91,4 +109,4 @@
 - 🎯 Language expressiveness significantly limited by parsing issues
 
 ---
-*Last Updated: 2025-08-29 by Claude Code - Personality Integration Complete & 10-Mode Expansion Planned*
+*Last Updated: 2025-08-29 by Claude Code - Expert Analysis Integrated, Critical ~ish Bug Fixed, 4 New Enhancement Issues Created (#86-89)*
