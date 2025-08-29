@@ -12,6 +12,9 @@ try:
 except ImportError:
     HAS_CHARDET = False
 
+# Import personality system
+from kinda.personality import PersonalityContext, PERSONALITY_PROFILES
+
 
 def safe_print(text: str) -> None:
     """Print text with Windows-safe encoding fallbacks"""
@@ -200,6 +203,20 @@ def get_transformer(lang: str):
         raise ValueError(f"Unsupported language: {lang}. Currently only 'python' is supported.")
 
 
+def setup_personality(mood: str) -> None:
+    """Initialize personality system with specified mood."""
+    if mood and mood.lower() not in PERSONALITY_PROFILES:
+        available_moods = ", ".join(PERSONALITY_PROFILES.keys())
+        safe_print(f"[?] Unknown mood '{mood}'. Available moods: {available_moods}")
+        safe_print("[tip] Defaulting to 'playful' mood")
+        mood = "playful"
+    
+    PersonalityContext.set_mood(mood or "playful")
+    
+    if mood:
+        safe_print(f"🎭 Setting kinda mood to '{mood}'")
+
+
 def detect_language(path: Path, forced: Union[str, None]) -> str:
     """
     Detect target language from file extension or --lang override.
@@ -246,14 +263,17 @@ def main(argv=None) -> int:
         "--out", default="build", help="Where to dump the results (default: build)"
     )
     p_transform.add_argument("--lang", default=None, help="Target language (currently: 'python' only)")
+    p_transform.add_argument("--mood", default=None, help="Personality/chaos level: reliable, cautious, playful, chaotic")
 
     p_run = sub.add_parser("run", help="Transform then execute (living dangerously, I see)")
     p_run.add_argument("input", help="The .knda file you want to run")
     p_run.add_argument("--lang", default=None, help="Target language (currently: 'python' only)")
+    p_run.add_argument("--mood", default=None, help="Personality/chaos level: reliable, cautious, playful, chaotic")
 
     p_interpret = sub.add_parser("interpret", help="Run directly in fuzzy runtime (maximum chaos mode)")
     p_interpret.add_argument("input", help="Your questionable life choices in .knda form")
     p_interpret.add_argument("--lang", default=None, help="Target language (currently: 'python' only)")
+    p_interpret.add_argument("--mood", default=None, help="Personality/chaos level: reliable, cautious, playful, chaotic")
 
     p_examples = sub.add_parser("examples", help="Show example kinda programs (for inspiration)")
     
@@ -262,6 +282,9 @@ def main(argv=None) -> int:
     args = parser.parse_args(argv)
 
     if args.command == "transform":
+        # Setup personality for transform
+        setup_personality(getattr(args, 'mood', None))
+        
         input_path = Path(args.input)
         if not input_path.exists():
             safe_print(f"[?] '{args.input}' doesn't exist. Are you sure you typed that right?")
@@ -334,6 +357,9 @@ def main(argv=None) -> int:
             return 1
 
     if args.command == "run":
+        # Setup personality for run
+        setup_personality(getattr(args, 'mood', None))
+        
         input_path = Path(args.input)
         if not input_path.exists():
             safe_print(f"[shrug]‍♂️ Can't find '{args.input}'. Did you make that up?")
@@ -410,6 +436,9 @@ def main(argv=None) -> int:
             return 1
 
     if args.command == "interpret":
+        # Setup personality for interpret
+        setup_personality(getattr(args, 'mood', None))
+        
         input_path = Path(args.input)
         if not input_path.exists():
             safe_print(f"🙃 '{args.input}' is nowhere to be found. Try again?")
