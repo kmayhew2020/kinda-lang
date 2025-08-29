@@ -22,12 +22,32 @@ def _process_conditional_block(lines: List[str], start_index: int, output_lines:
         stripped = line.strip()
         line_number = i + 1
 
-        # Stop at closing brace
+        # Handle closing brace and potential else block
         if stripped == "}":
             brace_count -= 1
             if brace_count == 0:
-                i += 1  # Skip the closing brace
-                break
+                i += 1  # Move past the closing brace
+                # Check for else block syntax: } {
+                if i < len(lines) and lines[i].strip() == "{":
+                    # Found else block - add Python else syntax
+                    output_lines.append(indent[:-4] + "else:")  # Remove one level of indent for else
+                    i += 1  # Skip the opening brace of else block
+                    # Continue processing the else block content
+                    brace_count = 1  # Reset for else block processing
+                    continue
+                else:
+                    break  # End of conditional block
+        
+        # Handle same-line else syntax: } {
+        elif stripped == "} {":
+            brace_count -= 1
+            if brace_count == 0:
+                # Add Python else syntax
+                output_lines.append(indent[:-4] + "else:")  # Remove one level of indent for else
+                i += 1  # Move to next line
+                # Continue processing the else block content
+                brace_count = 1  # Reset for else block processing
+                continue
         
         # Empty lines or comments - pass through with indentation
         if not stripped or stripped.startswith("#"):
