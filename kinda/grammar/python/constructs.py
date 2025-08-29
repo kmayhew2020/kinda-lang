@@ -5,11 +5,11 @@ import re
 KindaPythonConstructs = {
     "kinda_int": {
         "type": "declaration",
-        "pattern": re.compile(r'~kinda int (\w+)\s*[~=]+\s*([^#;]+?)(?:\s*#.*)?(?:;|$)'),
+        "pattern": re.compile(r"~kinda int (\w+)\s*[~=]+\s*([^#;]+?)(?:\s*#.*)?(?:;|$)"),
         "description": "Fuzzy integer declaration with personality-adjusted noise",
         "body": (
             "def kinda_int(val):\n"
-            "    \"\"\"Fuzzy integer with personality-adjusted fuzz and chaos tracking\"\"\"\n"
+            '    """Fuzzy integer with personality-adjusted fuzz and chaos tracking"""\n'
             "    from kinda.personality import chaos_fuzz_range, update_chaos_state\n"
             "    import random\n"
             "    try:\n"
@@ -18,8 +18,8 @@ KindaPythonConstructs = {
             "            try:\n"
             "                val = float(val)\n"
             "            except (ValueError, TypeError):\n"
-            "                print(f\"[?] kinda int got something weird: {repr(val)}\")\n"
-            "                print(f\"[tip] Expected a number but got {type(val).__name__}\")\n"
+            '                print(f"[?] kinda int got something weird: {repr(val)}")\n'
+            '                print(f"[tip] Expected a number but got {type(val).__name__}")\n'
             "                update_chaos_state(failed=True)\n"
             "                return random.randint(0, 10)\n"
             "        \n"
@@ -29,19 +29,19 @@ KindaPythonConstructs = {
             "        update_chaos_state(failed=False)\n"
             "        return result\n"
             "    except Exception as e:\n"
-            "        print(f\"[shrug] Kinda int got kinda confused: {e}\")\n"
-            "        print(f\"[tip] Just picking a random number instead\")\n"
+            '        print(f"[shrug] Kinda int got kinda confused: {e}")\n'
+            '        print(f"[tip] Just picking a random number instead")\n'
             "        update_chaos_state(failed=True)\n"
             "        return random.randint(0, 10)"
         ),
     },
     "sorta_print": {
         "type": "print",
-        "pattern": re.compile(r'~sorta print\s*\((.*)\)\s*(?:;|$)'),
+        "pattern": re.compile(r"~sorta print\s*\((.*)\)\s*(?:;|$)"),
         "description": "Print with personality-adjusted probability",
         "body": (
             "def sorta_print(*args):\n"
-            "    \"\"\"Sorta prints with personality-adjusted probability and chaos tracking\"\"\"\n"
+            '    """Sorta prints with personality-adjusted probability and chaos tracking"""\n'
             "    from kinda.personality import chaos_probability, update_chaos_state\n"
             "    import random\n"
             "    try:\n"
@@ -57,7 +57,7 @@ KindaPythonConstructs = {
             "            print('[print]', *args)\n"
             "            update_chaos_state(failed=False)\n"
             "        else:\n"
-            "            # Add some personality to the \"shrug\" responses\n"
+            '            # Add some personality to the "shrug" responses\n'
             "            shrug_responses = [\n"
             "                '[shrug] Meh...',\n"
             "                '[shrug] Not feeling it right now',\n"
@@ -76,16 +76,16 @@ KindaPythonConstructs = {
     },
     "sometimes": {
         "type": "conditional",
-        "pattern": re.compile(r'~sometimes\s*\(([^)]*)\)\s*\{?'),
+        "pattern": re.compile(r"~sometimes\s*\(([^)]*)\)\s*\{?"),
         "description": "Fuzzy conditional trigger with personality-adjusted probability",
         "body": (
             "def sometimes(condition=True):\n"
-            "    \"\"\"Sometimes evaluates a condition with personality-adjusted probability\"\"\"\n"
+            '    """Sometimes evaluates a condition with personality-adjusted probability"""\n'
             "    from kinda.personality import chaos_probability, update_chaos_state\n"
             "    import random\n"
             "    try:\n"
             "        if condition is None:\n"
-            "            print(\"[?] Sometimes got None as condition - treating as False\")\n"
+            '            print("[?] Sometimes got None as condition - treating as False")\n'
             "            update_chaos_state(failed=True)\n"
             "            return False\n"
             "        \n"
@@ -94,24 +94,24 @@ KindaPythonConstructs = {
             "        update_chaos_state(failed=not result)\n"
             "        return result\n"
             "    except Exception as e:\n"
-            "        print(f\"[shrug] Sometimes got confused: {e}\")\n"
-            "        print(\"[tip] Flipping a coin instead\")\n"
+            '        print(f"[shrug] Sometimes got confused: {e}")\n'
+            '        print("[tip] Flipping a coin instead")\n'
             "        update_chaos_state(failed=True)\n"
             "        return random.choice([True, False])"
         ),
     },
     "maybe": {
         "type": "conditional",
-        "pattern": re.compile(r'~maybe\s*\(([^)]*)\)\s*\{?'),
+        "pattern": re.compile(r"~maybe\s*\(([^)]*)\)\s*\{?"),
         "description": "Fuzzy conditional trigger with personality-adjusted probability",
         "body": (
             "def maybe(condition=True):\n"
-            "    \"\"\"Maybe evaluates a condition with personality-adjusted probability\"\"\"\n"
+            '    """Maybe evaluates a condition with personality-adjusted probability"""\n'
             "    from kinda.personality import chaos_probability, update_chaos_state\n"
             "    import random\n"
             "    try:\n"
             "        if condition is None:\n"
-            "            print(\"[?] Maybe got None as condition - treating as False\")\n"
+            '            print("[?] Maybe got None as condition - treating as False")\n'
             "            update_chaos_state(failed=True)\n"
             "            return False\n"
             "        \n"
@@ -120,19 +120,19 @@ KindaPythonConstructs = {
             "        update_chaos_state(failed=not result)\n"
             "        return result\n"
             "    except Exception as e:\n"
-            "        print(f\"[shrug] Maybe couldn't decide: {e}\")\n"
-            "        print(\"[tip] Defaulting to random choice\")\n"
+            '        print(f"[shrug] Maybe couldn\'t decide: {e}")\n'
+            '        print("[tip] Defaulting to random choice")\n'
             "        update_chaos_state(failed=True)\n"
             "        return random.choice([True, False])"
         ),
     },
     "fuzzy_reassign": {
         "type": "reassignment",
-        "pattern": re.compile(r'(\w+)\s*~=\s*([^#;]+?)(?:\s*#.*)?(?:;|$)'),
+        "pattern": re.compile(r"(\w+)\s*~=\s*([^#;]+?)(?:\s*#.*)?(?:;|$)"),
         "description": "Fuzzy reassignment with personality-adjusted noise",
         "body": (
             "def fuzzy_assign(var_name, value):\n"
-            "    \"\"\"Fuzzy assignment with personality-adjusted fuzz and chaos tracking\"\"\"\n"
+            '    """Fuzzy assignment with personality-adjusted fuzz and chaos tracking"""\n'
             "    from kinda.personality import chaos_fuzz_range, update_chaos_state\n"
             "    import random\n"
             "    try:\n"
@@ -141,8 +141,8 @@ KindaPythonConstructs = {
             "            try:\n"
             "                value = float(value)\n"
             "            except (ValueError, TypeError):\n"
-            "                print(f\"[?] fuzzy assignment got something weird: {repr(value)}\")\n"
-            "                print(f\"[tip] Expected a number but got {type(value).__name__}\")\n"
+            '                print(f"[?] fuzzy assignment got something weird: {repr(value)}")\n'
+            '                print(f"[tip] Expected a number but got {type(value).__name__}")\n'
             "                update_chaos_state(failed=True)\n"
             "                return random.randint(0, 10)\n"
             "        \n"
@@ -152,19 +152,21 @@ KindaPythonConstructs = {
             "        update_chaos_state(failed=False)\n"
             "        return result\n"
             "    except Exception as e:\n"
-            "        print(f\"[shrug] Fuzzy assignment kinda failed: {e}\")\n"
-            "        print(f\"[tip] Returning a random number because why not?\")\n"
+            '        print(f"[shrug] Fuzzy assignment kinda failed: {e}")\n'
+            '        print(f"[tip] Returning a random number because why not?")\n'
             "        update_chaos_state(failed=True)\n"
             "        return random.randint(0, 10)"
         ),
     },
     "kinda_binary": {
         "type": "declaration",
-        "pattern": re.compile(r'~kinda\s+binary\s+(\w+)(?:\s*~\s*probabilities\s*\(([^)]+)\))?(?:;|$)'),
+        "pattern": re.compile(
+            r"~kinda\s+binary\s+(\w+)(?:\s*~\s*probabilities\s*\(([^)]+)\))?(?:;|$)"
+        ),
         "description": "Three-state binary with personality-adjusted probabilities",
         "body": (
             "def kinda_binary(pos_prob=None, neg_prob=None, neutral_prob=None):\n"
-            "    \"\"\"Returns 1 (positive), -1 (negative), or 0 (neutral) with personality-adjusted probabilities.\"\"\"\n"
+            '    """Returns 1 (positive), -1 (negative), or 0 (neutral) with personality-adjusted probabilities."""\n'
             "    from kinda.personality import chaos_binary_probabilities, update_chaos_state\n"
             "    import random\n"
             "    try:\n"
@@ -175,8 +177,8 @@ KindaPythonConstructs = {
             "        # Validate probabilities\n"
             "        total_prob = pos_prob + neg_prob + neutral_prob\n"
             "        if abs(total_prob - 1.0) > 0.01:  # Allow small floating point errors\n"
-            "            print(f\"[?] Binary probabilities don't add up to 1.0 (got {total_prob:.3f})\")\n"
-            "            print(f\"[tip] Normalizing: pos={pos_prob:.3f}, neg={neg_prob:.3f}, neutral={neutral_prob:.3f}\")\n"
+            '            print(f"[?] Binary probabilities don\'t add up to 1.0 (got {total_prob:.3f})")\n'
+            '            print(f"[tip] Normalizing: pos={pos_prob:.3f}, neg={neg_prob:.3f}, neutral={neutral_prob:.3f}")\n'
             "            # Normalize probabilities\n"
             "            pos_prob /= total_prob\n"
             "            neg_prob /= total_prob\n"
@@ -193,19 +195,19 @@ KindaPythonConstructs = {
             "        update_chaos_state(failed=False)\n"
             "        return result\n"
             "    except Exception as e:\n"
-            "        print(f\"[shrug] Binary choice kinda broke: {e}\")\n"
-            "        print(f\"[tip] Defaulting to random choice between -1, 0, 1\")\n"
+            '        print(f"[shrug] Binary choice kinda broke: {e}")\n'
+            '        print(f"[tip] Defaulting to random choice between -1, 0, 1")\n'
             "        update_chaos_state(failed=True)\n"
             "        return random.choice([-1, 0, 1])"
         ),
     },
     "ish_value": {
         "type": "value",
-        "pattern": re.compile(r'(\d+(?:\.\d+)?)~ish'),
+        "pattern": re.compile(r"(\d+(?:\.\d+)?)~ish"),
         "description": "Fuzzy value with personality-adjusted variance",
         "body": (
             "def ish_value(val, variance=None):\n"
-            "    \"\"\"Create a fuzzy value with personality-adjusted variance\"\"\"\n"
+            '    """Create a fuzzy value with personality-adjusted variance"""\n'
             "    from kinda.personality import chaos_variance, update_chaos_state\n"
             "    import random\n"
             "    try:\n"
@@ -218,8 +220,8 @@ KindaPythonConstructs = {
             "            try:\n"
             "                val = float(val)\n"
             "            except (ValueError, TypeError):\n"
-            "                print(f\"[?] ish value got something weird: {repr(val)}\")\n"
-            "                print(f\"[tip] Expected a number but got {type(val).__name__}\")\n"
+            '                print(f"[?] ish value got something weird: {repr(val)}")\n'
+            '                print(f"[tip] Expected a number but got {type(val).__name__}")\n'
             "                update_chaos_state(failed=True)\n"
             "                return random.uniform(-variance, variance)\n"
             "        \n"
@@ -231,19 +233,19 @@ KindaPythonConstructs = {
             "        # Return integer if input was integer, float otherwise\n"
             "        return int(result) if isinstance(val, int) else result\n"
             "    except Exception as e:\n"
-            "        print(f\"[shrug] Ish value kinda confused: {e}\")\n"
-            "        print(f\"[tip] Returning random value with variance +/-{variance}\")\n"
+            '        print(f"[shrug] Ish value kinda confused: {e}")\n'
+            '        print(f"[tip] Returning random value with variance +/-{variance}")\n'
             "        update_chaos_state(failed=True)\n"
             "        return random.uniform(-variance, variance)"
         ),
     },
     "ish_comparison": {
         "type": "comparison",
-        "pattern": re.compile(r'(\w+)\s*~ish\s*([^#;\s]+)'),
+        "pattern": re.compile(r"(\w+)\s*~ish\s*([^#;\s]+)"),
         "description": "Fuzzy comparison with personality-adjusted tolerance",
         "body": (
             "def ish_comparison(left_val, right_val, tolerance=None):\n"
-            "    \"\"\"Check if values are approximately equal within personality-adjusted tolerance\"\"\"\n"
+            '    """Check if values are approximately equal within personality-adjusted tolerance"""\n'
             "    from kinda.personality import chaos_tolerance, update_chaos_state\n"
             "    import random\n"
             "    try:\n"
@@ -256,8 +258,8 @@ KindaPythonConstructs = {
             "            try:\n"
             "                left_val = float(left_val)\n"
             "            except (ValueError, TypeError):\n"
-            "                print(f\"[?] ish comparison got weird left value: {repr(left_val)}\")\n"
-            "                print(f\"[tip] Expected a number but got {type(left_val).__name__}\")\n"
+            '                print(f"[?] ish comparison got weird left value: {repr(left_val)}")\n'
+            '                print(f"[tip] Expected a number but got {type(left_val).__name__}")\n'
             "                update_chaos_state(failed=True)\n"
             "                return random.choice([True, False])\n"
             "        \n"
@@ -265,8 +267,8 @@ KindaPythonConstructs = {
             "            try:\n"
             "                right_val = float(right_val)\n"
             "            except (ValueError, TypeError):\n"
-            "                print(f\"[?] ish comparison got weird right value: {repr(right_val)}\")\n"
-            "                print(f\"[tip] Expected a number but got {type(right_val).__name__}\")\n"
+            '                print(f"[?] ish comparison got weird right value: {repr(right_val)}")\n'
+            '                print(f"[tip] Expected a number but got {type(right_val).__name__}")\n'
             "                update_chaos_state(failed=True)\n"
             "                return random.choice([True, False])\n"
             "        \n"
@@ -276,19 +278,19 @@ KindaPythonConstructs = {
             "        update_chaos_state(failed=False)\n"
             "        return result\n"
             "    except Exception as e:\n"
-            "        print(f\"[shrug] Ish comparison kinda broke: {e}\")\n"
-            "        print(f\"[tip] Flipping a coin instead\")\n"
+            '        print(f"[shrug] Ish comparison kinda broke: {e}")\n'
+            '        print(f"[tip] Flipping a coin instead")\n'
             "        update_chaos_state(failed=True)\n"
             "        return random.choice([True, False])"
         ),
     },
     "welp": {
         "type": "fallback",
-        "pattern": re.compile(r'(.+)\s*~welp\s*(.+)'),
+        "pattern": re.compile(r"(.+)\s*~welp\s*(.+)"),
         "description": "Graceful fallback with personality-aware error messages",
         "body": (
             "def welp_fallback(primary_expr, fallback_value):\n"
-            "    \"\"\"Execute primary expression with graceful fallback and chaos tracking\"\"\"\n"
+            '    """Execute primary expression with graceful fallback and chaos tracking"""\n'
             "    from kinda.personality import update_chaos_state, get_personality\n"
             "    try:\n"
             "        # If primary_expr is a callable, call it\n"
@@ -304,13 +306,13 @@ KindaPythonConstructs = {
             "            style = personality.get_error_message_style()\n"
             "            \n"
             "            if style == 'professional':\n"
-            "                print(f\"[welp] Expression returned None, using fallback: {repr(fallback_value)}\")\n"
+            '                print(f"[welp] Expression returned None, using fallback: {repr(fallback_value)}")\n'
             "            elif style == 'friendly':\n"
-            "                print(f\"[welp] Got nothing there, trying fallback: {repr(fallback_value)}\")\n"
+            '                print(f"[welp] Got nothing there, trying fallback: {repr(fallback_value)}")\n'
             "            elif style == 'snarky':\n"
-            "                print(f\"[welp] Well that was useless, falling back to: {repr(fallback_value)}\")\n"
+            '                print(f"[welp] Well that was useless, falling back to: {repr(fallback_value)}")\n'
             "            else:  # chaotic\n"
-            "                print(f\"[welp] *shrugs* That didn't work, whatever: {repr(fallback_value)}\")\n"
+            '                print(f"[welp] *shrugs* That didn\'t work, whatever: {repr(fallback_value)}")\n'
             "            \n"
             "            update_chaos_state(failed=True)\n"
             "            return fallback_value\n"
@@ -323,13 +325,13 @@ KindaPythonConstructs = {
             "        style = personality.get_error_message_style()\n"
             "        \n"
             "        if style == 'professional':\n"
-            "            print(f\"[welp] Operation failed ({type(e).__name__}: {e}), using fallback: {repr(fallback_value)}\")\n"
+            '            print(f"[welp] Operation failed ({type(e).__name__}: {e}), using fallback: {repr(fallback_value)}")\n'
             "        elif style == 'friendly':\n"
-            "            print(f\"[welp] Oops, that didn't work ({e}), trying: {repr(fallback_value)}\")\n"
+            '            print(f"[welp] Oops, that didn\'t work ({e}), trying: {repr(fallback_value)}")\n'
             "        elif style == 'snarky':\n"
-            "            print(f\"[welp] Predictably failed with {type(e).__name__}, fine: {repr(fallback_value)}\")\n"
+            '            print(f"[welp] Predictably failed with {type(e).__name__}, fine: {repr(fallback_value)}")\n'
             "        else:  # chaotic\n"
-            "            print(f\"[welp] BOOM! {e} 💥 Whatever, here's: {repr(fallback_value)}\")\n"
+            '            print(f"[welp] BOOM! {e} 💥 Whatever, here\'s: {repr(fallback_value)}")\n'
             "        \n"
             "        update_chaos_state(failed=True)\n"
             "        return fallback_value"

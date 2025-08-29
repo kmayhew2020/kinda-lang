@@ -10,6 +10,7 @@ SRC_DIRS = ["tests/python/input", "tests"]
 BUILD_DIR = Path("build/python")
 RUNTIME_OUT = Path("kinda/langs/python/runtime")
 
+
 def generate_runtime():
     # Clean old runtime
     if RUNTIME_OUT.exists():
@@ -18,6 +19,7 @@ def generate_runtime():
 
     # Run Python runtime generation directly
     generate_runtime_code(RUNTIME_OUT)
+
 
 @pytest.fixture(scope="session", autouse=True)
 def regenerate_build():
@@ -32,16 +34,26 @@ def regenerate_build():
     # Step 3: Run transformer on all .knda files in each src dir
     for src_dir in SRC_DIRS:
         # Only use Python language since C support is disabled in v0.3.0
-        lang = "python"  
+        lang = "python"
         result1 = subprocess.run(
-            ["python", "-m", "kinda", "transform", src_dir, "--out", str(BUILD_DIR), "--lang", lang],
+            [
+                "python",
+                "-m",
+                "kinda",
+                "transform",
+                src_dir,
+                "--out",
+                str(BUILD_DIR),
+                "--lang",
+                lang,
+            ],
             capture_output=True,
-            text=True
+            text=True,
         )
         result2 = subprocess.run(
             ["kinda", "transform", src_dir, "--out", str(BUILD_DIR), "--lang", lang],
             capture_output=True,
-            text=True
+            text=True,
         )
         if result1.returncode != 0:
             print("Transformer failed:")

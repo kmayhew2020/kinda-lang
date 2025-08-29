@@ -1,5 +1,6 @@
 from pathlib import Path
 
+
 def test_runtime_python_exists():
     runtime_dir = Path("kinda/langs/python/runtime")
     assert runtime_dir.exists(), "Expected runtime directory was not generated."
