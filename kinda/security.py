@@ -5,7 +5,7 @@ Security protections for kinda-lang constructs
 
 This module provides security utilities to protect against:
 1. Code injection vulnerabilities
-2. Deterministic subversion (random manipulation)  
+2. Deterministic subversion (random manipulation)
 3. Resource exhaustion attacks
 
 Security features include:
@@ -34,11 +34,11 @@ DANGEROUS_PATTERNS = [
 
 # Patterns that could manipulate random number generation
 RANDOM_MANIPULATION_PATTERNS = [
-    "random.seed", 
-    "random.random", 
+    "random.seed",
+    "random.random",
     "setattr",
     "from random import",
-    "import random"
+    "import random",
 ]
 
 
@@ -63,8 +63,9 @@ def is_condition_dangerous(condition: Any) -> Tuple[bool, str]:
         if pattern_lower == "import random":
             # More precise matching for "import random" to avoid false positives
             import re
+
             # Match "import random" as a complete statement (word boundaries)
-            if re.search(r'\bimport\s+random\b', condition_str):
+            if re.search(r"\bimport\s+random\b", condition_str):
                 return True, f"random manipulation attempt: {pattern}"
         else:
             if pattern_lower in condition_str:
@@ -140,13 +141,18 @@ def secure_condition_check(condition: Any, construct_name: str) -> Tuple[bool, b
         if pattern_lower == "import random":
             # More precise matching for "import random" to avoid false positives
             import re
+
             # Match "import random" as a complete statement (word boundaries)
-            if re.search(r'\bimport\s+random\b', condition_str):
-                print(f"[security] {construct_name} won't let you break the chaos - that's not kinda")
+            if re.search(r"\bimport\s+random\b", condition_str):
+                print(
+                    f"[security] {construct_name} won't let you break the chaos - that's not kinda"
+                )
                 return False, False
         else:
             if pattern_lower in condition_str:
-                print(f"[security] {construct_name} won't let you break the chaos - that's not kinda")
+                print(
+                    f"[security] {construct_name} won't let you break the chaos - that's not kinda"
+                )
                 return False, False
 
     # Safely evaluate the condition with timeout
