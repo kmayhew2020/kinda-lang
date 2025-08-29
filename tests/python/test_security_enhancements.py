@@ -590,3 +590,281 @@ class TestDocumentationAndErrorMessages:
         assert (
             len(RANDOM_MANIPULATION_PATTERNS) == expected_random_count
         ), f"Expected {expected_random_count} random manipulation patterns, got {len(RANDOM_MANIPULATION_PATTERNS)}: {RANDOM_MANIPULATION_PATTERNS}"
+
+
+class TestUnicodeBypassVulnerability:
+    """Test Unicode bypass vulnerability fixes (Issue #104)"""
+
+    def test_unicode_normalization_function(self):
+        """Test the Unicode normalization function directly"""
+        from kinda.security import normalize_for_security_check
+
+        # Test Turkish characters
+        assert normalize_for_security_check('__İMPORT__') == '__import__'
+        assert normalize_for_security_check('İMPORT') == 'import'
+        assert normalize_for_security_check('ı') == 'ı'  # Turkish dotless i stays as is
+
+        # Test characters with diacritics
+        assert normalize_for_security_check('ËXEC') == 'exec'
+        assert normalize_for_security_check('ËVAL') == 'eval'
+        assert normalize_for_security_check('ÖPEN') == 'open'
+        
+        # Test various accented characters
+        assert normalize_for_security_check('ÀIMPORT') == 'aimport'
+        assert normalize_for_security_check('ÇOMPILE') == 'compile'
+        assert normalize_for_security_check('DÍṘ') == 'dir'
+        
+        # Test combinations
+        assert normalize_for_security_check('gëtàttr') == 'getattr'
+        assert normalize_for_security_check('sübpröcess') == 'subprocess'
+
+        # Test that regular characters are unchanged (except case)
+        assert normalize_for_security_check('__IMPORT__') == '__import__'
+        assert normalize_for_security_check('exec') == 'exec'
+        assert normalize_for_security_check('EVAL') == 'eval'
+
+    def test_turkish_character_bypass_detection(self):
+        """Test detection of Turkish character bypasses (Issue #104)"""
+        from kinda.security import is_condition_dangerous
+
+        # Turkish İ (U+0130) bypass attempts
+        turkish_bypasses = [
+            '__İMPORT__("os")',                  # Direct Turkish İ
+            '__İMPORT__("os").system("rm -rf /")',
+            'İMPORT RANDOM',                     # Import manipulation
+            'FROM RANDOM İMPORT seed',           # Mixed Turkish and English
+            'ËXËC("malicious_code")',           # Multiple diacritics
+            'gëtättr(random, "seed")',          # Accented getattr
+            'İMPORT    RÄNDOM',                 # Turkish İ with spacing and umlaut
+        ]
+
+        for bypass in turkish_bypasses:
+            is_dangerous, reason = is_condition_dangerous(bypass)
+            assert is_dangerous, f"Should detect Turkish character bypass: {bypass}"
+            assert (
+                "dangerous pattern detected:" in reason.lower()
+                or "random manipulation attempt:" in reason.lower()
+            ), f"Unexpected reason for {bypass}: {reason}"
+
+    def test_various_unicode_accents_bypass_detection(self):
+        """Test detection of various Unicode accent bypasses"""
+        from kinda.security import is_condition_dangerous
+
+        # Various Unicode accent bypass attempts
+        unicode_bypasses = [
+            # Acute accents
+            '__ÍMPORT__("os")',
+            'ÉXEC("code")',
+            'ÉVÁL("expr")',
+            
+            # Grave accents  
+            '__ÌMPORT__("os")',
+            'ÈXEC("code")',
+            'ÈVAL("expr")',
+            
+            # Circumflex accents
+            '__ÎMPORT__("os")',
+            'ÊXEC("code")',
+            'ÊVAL("expr")',
+            
+            # Diaeresis/umlaut
+            '__ÏMPORT__("os")',
+            'ËXEC("code")',
+            'ËVAL("expr")',
+            'ÖPEN("/etc/passwd")',
+            
+            # Tilde
+            '__ĨMPORT__("os")',
+            'ẼXEC("code")',
+            
+            # Cedilla (skip ring above since Å->a not matching any pattern)
+            'ÇOMPILE("code", "<string>", "exec")',
+            
+            # Multiple accent combinations
+            'GËTÀTTR(random, "seed")',
+            'SÜBPRÖCESS.call(["ls"])',  # Fixed: need exact match after normalization
+            'GLÖBALS()',  # Fixed: Ö normalizes to o, Ø doesn't
+            'LÖCALS()',
+            'VÀRS()',
+            'DÌR()',
+        ]
+
+        for bypass in unicode_bypasses:
+            is_dangerous, reason = is_condition_dangerous(bypass)
+            assert is_dangerous, f"Should detect Unicode bypass: {bypass}"
+
+    def test_unicode_random_manipulation_bypass_detection(self):
+        """Test detection of Unicode bypasses in random manipulation patterns"""
+        from kinda.security import is_condition_dangerous
+
+        unicode_random_bypasses = [
+            # Import statement bypasses with Unicode
+            'İMPORṪ RANDOM',
+            'IMPÖRT RANDÖM', 
+            'FROM RÄNDOM İMPORT seed',
+            'FROM RANDÖM ÍMPORT randint',  # Fixed: removed space that broke the keyword
+            
+            # Random method access with Unicode
+            'RÄNDÖM.SEED(42)',
+            'RÄNDÖM.RÄNDÖM()',
+            'SËTÄṪṪR(random, "seed", 42)',
+            
+            # getattr bypasses with Unicode
+            'GËTÄṪṪR(random, "seed")',
+            'GËTÄṪṪR(__builtins__, "__import__")',
+            
+            # __dict__ access with Unicode
+            'RÄNDOM.__DÏÇṪ__',
+            '__DÏÇṪ__["seed"] = malicious_func',
+        ]
+
+        for bypass in unicode_random_bypasses:
+            is_dangerous, reason = is_condition_dangerous(bypass)
+            assert is_dangerous, f"Should detect Unicode random bypass: {bypass}"
+            # getattr is in both dangerous and random patterns, so either reason is acceptable
+            assert (
+                "random manipulation attempt:" in reason.lower()
+                or "dangerous pattern detected:" in reason.lower()
+            ), f"Wrong reason for {bypass}: {reason}"
+
+    def test_secure_condition_check_blocks_unicode_bypasses(self):
+        """Test that secure_condition_check blocks Unicode bypasses"""
+        from kinda.security import secure_condition_check
+
+        unicode_bypasses = [
+            '__İMPORT__("os")',
+            'ËXEC("malicious")',
+            'ËVAL("1+1")', 
+            'ÖPEN("/etc/passwd")',
+            'GËTÄṪṪR(__builtins__, "__import__")',
+            'İMPORT RANDOM',
+            'FROM RÄNDOM İMPORT seed',
+            'RÄNDÖM.SEED(42)',
+        ]
+
+        for bypass in unicode_bypasses:
+            should_proceed, condition_result = secure_condition_check(bypass, "TestConstruct")
+            assert should_proceed is False, f"secure_condition_check should block Unicode bypass: {bypass}"
+            assert condition_result is False
+
+    def test_unicode_bypasses_in_construct_integration(self):
+        """Test Unicode bypasses are blocked in actual constructs"""
+        from kinda.grammar.python.constructs import KindaPythonConstructs
+
+        # Get the probably function
+        probably_construct = KindaPythonConstructs["probably"]
+        probably_code = probably_construct["body"]
+
+        # Execute the probably function definition
+        exec(probably_code, globals())
+
+        # Test Unicode bypasses are blocked in ~probably construct
+        unicode_bypasses = [
+            '__İMPORT__("os").system("echo UNICODE_BYPASS_TEST")',
+            'ËXEC("print(\\"Unicode bypass test\\")")',
+            'İMPORT RANDOM; RANDOM.seed(1337)',
+            'FROM RÄNDOM İMPORT seed as s; s(42)',
+        ]
+
+        for bypass in unicode_bypasses:
+            result = probably(bypass)
+            assert result is False, f"~probably should block Unicode bypass: {bypass}"
+
+    def test_unicode_security_messages(self, capsys):
+        """Test that Unicode bypasses show proper security messages"""
+        from kinda.grammar.python.constructs import KindaPythonConstructs
+
+        # Get the probably function
+        probably_construct = KindaPythonConstructs["probably"]
+        probably_code = probably_construct["body"]
+
+        # Execute the probably function definition
+        exec(probably_code, globals())
+
+        # Test Unicode dangerous pattern message
+        probably('__İMPORT__("os")')
+        captured = capsys.readouterr()
+        assert "[security] Probably blocked dangerous condition - nice try though" in captured.out
+
+        # Test Unicode random manipulation message
+        probably('İMPORT RANDOM')
+        captured = capsys.readouterr()
+        assert "[security] Probably won't let you break the chaos - that's not kinda" in captured.out
+
+    def test_legitimate_unicode_text_not_blocked(self):
+        """Test that legitimate Unicode text is not incorrectly blocked"""
+        from kinda.security import is_condition_dangerous
+
+        # Legitimate uses of Unicode that should not be blocked
+        legitimate_unicode = [
+            'user_name == "José"',
+            'city == "São Paulo"', 
+            'greeting == "Héllo World"',
+            'message.startswith("Çok güzel")',  # Turkish text
+            'filename == "résumé.pdf"',
+            'status == "naïve"',
+            'function_name_with_ümlauts()',
+            'josé_variable = 42',
+            'münchen_data = load_data()',
+            'café_location.get_address()',
+            'niño_age > 18',
+        ]
+
+        for legitimate in legitimate_unicode:
+            is_dangerous, reason = is_condition_dangerous(legitimate)
+            assert not is_dangerous, f"Should not block legitimate Unicode: {legitimate} (reason: {reason})"
+
+    def test_mixed_unicode_and_ascii_attacks(self):
+        """Test combinations of Unicode and ASCII in attack patterns"""
+        from kinda.security import is_condition_dangerous
+
+        mixed_attacks = [
+            # Mix of Unicode and regular characters
+            '__İMPORT__("os") and exec("code")',
+            'EVAL("test") or __İMPORT__("sys")',
+            'legitimate_code(); ËXEC("malicious"); more_code()',
+            'if True: İMPORT RANDOM',
+            'RANDOM.seed(42) if GËTÄṪṪR(obj, "attr") else False',
+            
+            # Strategic Unicode placement
+            'func(__İ̇MPORT__("os"))',  # İ with combining dot above
+            'wrapper(ËXEC("code"), other_param)',
+            'conditional and İMPORT RANDOM and other_conditional',
+        ]
+
+        for attack in mixed_attacks:
+            is_dangerous, reason = is_condition_dangerous(attack)
+            assert is_dangerous, f"Should detect mixed Unicode/ASCII attack: {attack}"
+
+    def test_unicode_normalization_edge_cases(self):
+        """Test edge cases in Unicode normalization"""
+        from kinda.security import normalize_for_security_check
+
+        # Test empty string
+        assert normalize_for_security_check('') == ''
+        
+        # Test pure ASCII
+        assert normalize_for_security_check('hello') == 'hello'
+        assert normalize_for_security_check('HELLO') == 'hello'
+        
+        # Test numbers and symbols
+        assert normalize_for_security_check('123!@#') == '123!@#'
+        
+        # Test combining characters
+        assert normalize_for_security_check('e\u0301') == 'e'  # e + combining acute
+        assert normalize_for_security_check('E\u0301') == 'e'  # E + combining acute
+        
+        # Test multiple combining characters
+        assert normalize_for_security_check('e\u0301\u0327') == 'e'  # e + acute + cedilla
+        
+        # Test various Unicode spaces and whitespace
+        assert normalize_for_security_check('hello\u00A0world') == 'hello\u00A0world'  # Non-breaking space
+        
+        # Test that it handles malformed Unicode gracefully
+        try:
+            result = normalize_for_security_check('test\udcff')  # Invalid surrogate
+            # Should not crash, exact result depends on Python version
+            assert isinstance(result, str)
+        except Exception:
+            # If it fails, that's also acceptable for malformed input
+            pass

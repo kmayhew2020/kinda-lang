@@ -16,6 +16,7 @@ Security features include:
 """
 
 import signal
+import unicodedata
 from typing import Any, List, Tuple
 
 # Dangerous patterns that could enable code injection
@@ -47,17 +48,46 @@ RANDOM_MANIPULATION_PATTERNS = [
 ]
 
 
+def normalize_for_security_check(text: str) -> str:
+    """
+    Normalize Unicode text for security pattern matching.
+    
+    This function:
+    1. Normalizes Unicode to NFD (decomposed form) to handle characters like İ
+    2. Removes combining characters (accents, diacritics)  
+    3. Converts to lowercase for case-insensitive matching
+    4. Prevents Unicode-based case bypass vulnerabilities
+    
+    Args:
+        text: The input text to normalize
+        
+    Returns:
+        str: Normalized text ready for security pattern matching
+        
+    Examples:
+        >>> normalize_for_security_check('__İMPORT__')
+        '__import__'
+        >>> normalize_for_security_check('ËXEC')
+        'exec'
+    """
+    # Normalize Unicode to NFD (canonical decomposition)
+    normalized = unicodedata.normalize('NFD', text)
+    # Remove combining characters (category 'Mn' = nonspacing marks like accents)
+    no_accents = ''.join(c for c in normalized if unicodedata.category(c) != 'Mn')
+    return no_accents.lower()
+
+
 def is_condition_dangerous(condition: Any) -> Tuple[bool, str]:
     """
     Check if a condition contains dangerous patterns.
-    Uses case-insensitive matching and regex patterns to prevent bypasses.
+    Uses Unicode normalization and case-insensitive matching to prevent bypasses.
 
     Returns:
         tuple: (is_dangerous, reason)
     """
     import re
 
-    condition_str = str(condition).lower()  # Convert to lowercase for case-insensitive matching
+    condition_str = normalize_for_security_check(str(condition))  # Unicode-safe normalization
 
     # Check for dangerous code injection patterns with regex to handle whitespace bypasses
     dangerous_function_patterns = [
@@ -154,7 +184,7 @@ def safe_bool_eval(condition: Any, timeout_seconds: int = 1) -> bool:
 def secure_condition_check(condition: Any, construct_name: str) -> Tuple[bool, bool]:
     """
     Perform a secure check of a condition with all protections.
-    Uses case-insensitive pattern matching and regex patterns to prevent bypasses.
+    Uses Unicode normalization and case-insensitive matching to prevent bypasses.
 
     Args:
         condition: The condition to check
@@ -167,7 +197,7 @@ def secure_condition_check(condition: Any, construct_name: str) -> Tuple[bool, b
     """
     import re
 
-    condition_str = str(condition).lower()  # Case-insensitive matching
+    condition_str = normalize_for_security_check(str(condition))  # Unicode-safe normalization
 
     # Check for dangerous code injection patterns with regex to handle whitespace bypasses
     dangerous_function_patterns = [
