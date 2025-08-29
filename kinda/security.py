@@ -10,7 +10,7 @@ This module provides security utilities to protect against:
 """
 
 import signal
-from typing import Any, List
+from typing import Any, List, Tuple
 
 # Dangerous patterns that could enable code injection
 DANGEROUS_PATTERNS = [
@@ -30,7 +30,7 @@ DANGEROUS_PATTERNS = [
 RANDOM_MANIPULATION_PATTERNS = ["random.seed", "random.random", "setattr"]
 
 
-def is_condition_dangerous(condition: Any) -> tuple[bool, str]:
+def is_condition_dangerous(condition: Any) -> Tuple[bool, str]:
     """
     Check if a condition contains dangerous patterns.
 
@@ -83,7 +83,7 @@ def safe_bool_eval(condition: Any, timeout_seconds: int = 1) -> bool:
         signal.signal(signal.SIGALRM, old_handler)
 
 
-def secure_condition_check(condition: Any, construct_name: str) -> tuple[bool, bool]:
+def secure_condition_check(condition: Any, construct_name: str) -> Tuple[bool, bool]:
     """
     Perform a secure check of a condition with all protections.
 
