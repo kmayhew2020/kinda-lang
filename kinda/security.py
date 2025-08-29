@@ -56,6 +56,7 @@ def is_condition_dangerous(condition: Any) -> Tuple[bool, str]:
         tuple: (is_dangerous, reason)
     """
     import re
+
     condition_str = str(condition).lower()  # Convert to lowercase for case-insensitive matching
 
     # Check for dangerous code injection patterns with regex to handle whitespace bypasses
@@ -69,12 +70,12 @@ def is_condition_dangerous(condition: Any) -> Tuple[bool, str]:
         (r"\bdir\s*\(", "dir("),
         (r"\bgetattr\s*\(", "getattr("),
     ]
-    
+
     # Check regex-based patterns for function calls with flexible whitespace
     for regex_pattern, display_name in dangerous_function_patterns:
         if re.search(regex_pattern, condition_str, re.IGNORECASE):
             return True, f"dangerous pattern detected: {display_name}"
-    
+
     # Check simple string patterns that don't need regex
     simple_dangerous_patterns = [
         "subprocess",
@@ -83,7 +84,7 @@ def is_condition_dangerous(condition: Any) -> Tuple[bool, str]:
         "vars()",
         "dir()",
     ]
-    
+
     for pattern in simple_dangerous_patterns:
         if pattern.lower() in condition_str:
             return True, f"dangerous pattern detected: {pattern}"
@@ -165,6 +166,7 @@ def secure_condition_check(condition: Any, construct_name: str) -> Tuple[bool, b
                condition_result: The boolean result if allowed
     """
     import re
+
     condition_str = str(condition).lower()  # Case-insensitive matching
 
     # Check for dangerous code injection patterns with regex to handle whitespace bypasses
@@ -178,13 +180,13 @@ def secure_condition_check(condition: Any, construct_name: str) -> Tuple[bool, b
         (r"\bdir\s*\(", "dir("),
         (r"\bgetattr\s*\(", "getattr("),
     ]
-    
+
     # Check regex-based patterns for function calls with flexible whitespace
     for regex_pattern, display_name in dangerous_function_patterns:
         if re.search(regex_pattern, condition_str, re.IGNORECASE):
             print(f"[security] {construct_name} blocked dangerous condition - nice try though")
             return False, False
-    
+
     # Check simple string patterns that don't need regex
     simple_dangerous_patterns = [
         "subprocess",
@@ -193,7 +195,7 @@ def secure_condition_check(condition: Any, construct_name: str) -> Tuple[bool, b
         "vars()",
         "dir()",
     ]
-    
+
     for pattern in simple_dangerous_patterns:
         if pattern.lower() in condition_str:
             print(f"[security] {construct_name} blocked dangerous condition - nice try though")
