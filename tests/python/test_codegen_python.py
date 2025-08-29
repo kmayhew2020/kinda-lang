@@ -4,7 +4,8 @@ from pathlib import Path
 import pytest
 from kinda.langs.python.runtime_gen import generate_runtime
 
-#@pytest.mark.skip(reason="Python runtime not needed for current C slice")
+
+# @pytest.mark.skip(reason="Python runtime not needed for current C slice")
 def test_generate_python_runtime(tmp_path):
     output_dir = tmp_path / "runtime"
     generate_runtime(output_dir)

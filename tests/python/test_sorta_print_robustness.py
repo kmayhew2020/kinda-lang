@@ -14,7 +14,7 @@ class TestSortaPrintWhitespaceRobustness:
         """Test ~sorta print with multiple spaces"""
         line = '~sorta  print("hello")'
         construct_type, groups = match_python_construct(line)
-        
+
         assert construct_type == "sorta_print"
         assert groups[0] == '"hello"'
 
@@ -22,7 +22,7 @@ class TestSortaPrintWhitespaceRobustness:
         """Test ~sorta print with leading whitespace"""
         line = '   ~sorta print("hello")'
         construct_type, groups = match_python_construct(line)
-        
+
         assert construct_type == "sorta_print"
         assert groups[0] == '"hello"'
 
@@ -30,7 +30,7 @@ class TestSortaPrintWhitespaceRobustness:
         """Test ~sorta print with spaces around parentheses"""
         line = '~sorta print ( "hello" )'
         construct_type, groups = match_python_construct(line)
-        
+
         assert construct_type == "sorta_print"
         assert groups[0] == ' "hello" '
 
@@ -42,7 +42,7 @@ class TestSortaPrintStringLiterals:
         """Test strings containing parentheses"""
         line = '~sorta print("text (with parens)", "more (nested) text")'
         construct_type, groups = match_python_construct(line)
-        
+
         assert construct_type == "sorta_print"
         assert groups[0] == '"text (with parens)", "more (nested) text"'
 
@@ -50,15 +50,15 @@ class TestSortaPrintStringLiterals:
         """Test single-quoted strings"""
         line = "~sorta print('single quotes', 'with (parens)')"
         construct_type, groups = match_python_construct(line)
-        
+
         assert construct_type == "sorta_print"
         assert groups[0] == "'single quotes', 'with (parens)'"
 
     def test_mixed_quote_types(self):
         """Test mixed single and double quotes"""
-        line = '''~sorta print("double", 'single', "with (parens)")'''
+        line = """~sorta print("double", 'single', "with (parens)")"""
         construct_type, groups = match_python_construct(line)
-        
+
         assert construct_type == "sorta_print"
         assert groups[0] == '''"double", 'single', "with (parens)"'''
 
@@ -66,7 +66,7 @@ class TestSortaPrintStringLiterals:
         """Test strings with escaped quotes - simpler case"""
         line = r'~sorta print("escaped \"quote\"")'
         construct_type, groups = match_python_construct(line)
-        
+
         assert construct_type == "sorta_print"
         assert groups[0] == r'"escaped \"quote\""'
 
@@ -76,17 +76,17 @@ class TestSortaPrintNestedExpressions:
 
     def test_nested_function_calls(self):
         """Test nested function calls"""
-        line = '~sorta print(func(a, b), other_func(1, 2, 3))'
+        line = "~sorta print(func(a, b), other_func(1, 2, 3))"
         construct_type, groups = match_python_construct(line)
-        
+
         assert construct_type == "sorta_print"
         assert groups[0] == "func(a, b), other_func(1, 2, 3)"
 
     def test_deeply_nested_functions(self):
         """Test deeply nested function calls"""
-        line = '~sorta print(outer(middle(inner(x, y)), z))'
+        line = "~sorta print(outer(middle(inner(x, y)), z))"
         construct_type, groups = match_python_construct(line)
-        
+
         assert construct_type == "sorta_print"
         assert groups[0] == "outer(middle(inner(x, y)), z)"
 
@@ -94,19 +94,19 @@ class TestSortaPrintNestedExpressions:
         """Test list and dictionary literals"""
         line = '~sorta print([1, 2, 3], {"key": "value"}, (a, b, c))'
         construct_type, groups = match_python_construct(line)
-        
+
         assert construct_type == "sorta_print"
         assert groups[0] == '[1, 2, 3], {"key": "value"}, (a, b, c)'
 
     def test_complex_expressions(self):
         """Test complex Python expressions"""
         test_cases = [
-            '~sorta print(x if y else z)',
-            '~sorta print([i for i in range(10)])',
-            '~sorta print(lambda x: x + 1)',
-            '~sorta print({"key": value for key, value in items})'
+            "~sorta print(x if y else z)",
+            "~sorta print([i for i in range(10)])",
+            "~sorta print(lambda x: x + 1)",
+            '~sorta print({"key": value for key, value in items})',
         ]
-        
+
         for line in test_cases:
             construct_type, groups = match_python_construct(line)
             assert construct_type == "sorta_print", f"Failed for: {line}"
@@ -120,7 +120,7 @@ class TestSortaPrintErrorHandling:
         """Test handling of unclosed parentheses"""
         line = '~sorta print("hello"'
         construct_type, groups = match_python_construct(line)
-        
+
         # Should still parse and return partial content
         assert construct_type == "sorta_print"
         assert groups[0] == '"hello"'
@@ -129,16 +129,16 @@ class TestSortaPrintErrorHandling:
         """Test handling of unclosed strings"""
         line = '~sorta print("unclosed string'
         construct_type, groups = match_python_construct(line)
-        
+
         # Should still parse and return partial content
         assert construct_type == "sorta_print"
         assert groups[0] == '"unclosed string'
 
     def test_empty_arguments(self):
         """Test empty arguments"""
-        line = '~sorta print()'
+        line = "~sorta print()"
         construct_type, groups = match_python_construct(line)
-        
+
         assert construct_type == "sorta_print"
         assert groups[0] == ""
 
@@ -147,9 +147,9 @@ class TestSortaPrintErrorHandling:
         malformed_lines = [
             "~sorta_print('wrong syntax')",
             "~sortaprint('no space')",
-            "~sorta  print_extra('too much')"
+            "~sorta  print_extra('too much')",
         ]
-        
+
         for line in malformed_lines:
             construct_type, groups = match_python_construct(line)
             # Should not match sorta_print
@@ -163,20 +163,20 @@ class TestSortaPrintPerformance:
         """Test parsing performance with very long lines"""
         # Create a line with many nested function calls
         nested_calls = "func(" * 50 + "x" + ")" * 50
-        line = f'~sorta print({nested_calls})'
-        
+        line = f"~sorta print({nested_calls})"
+
         construct_type, groups = match_python_construct(line)
-        
+
         assert construct_type == "sorta_print"
         assert groups[0] == nested_calls
 
     def test_many_string_arguments(self):
         """Test parsing many string arguments"""
-        args = ', '.join([f'"arg{i}"' for i in range(100)])
-        line = f'~sorta print({args})'
-        
+        args = ", ".join([f'"arg{i}"' for i in range(100)])
+        line = f"~sorta print({args})"
+
         construct_type, groups = match_python_construct(line)
-        
+
         assert construct_type == "sorta_print"
         assert groups[0] == args
 
@@ -188,11 +188,11 @@ class TestBackwardCompatibility:
         """Test that simple existing cases still work"""
         simple_cases = [
             '~sorta print("hello")',
-            '~sorta print(x, y, z)',
-            '~sorta print(42)',
-            '~sorta print("hello", world)'
+            "~sorta print(x, y, z)",
+            "~sorta print(42)",
+            '~sorta print("hello", world)',
         ]
-        
+
         for line in simple_cases:
             construct_type, groups = match_python_construct(line)
             assert construct_type == "sorta_print", f"Failed for: {line}"
@@ -200,8 +200,8 @@ class TestBackwardCompatibility:
 
     def test_edge_cases_from_existing_tests(self):
         """Test edge cases that were in existing test suite"""
-        line = '~sorta print(func(a, b), other_func(1, 2, 3))'
+        line = "~sorta print(func(a, b), other_func(1, 2, 3))"
         construct_type, groups = match_python_construct(line)
-        
+
         assert construct_type == "sorta_print"
         assert groups[0] == "func(a, b), other_func(1, 2, 3)"

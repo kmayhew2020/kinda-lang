@@ -78,16 +78,14 @@ def generate_runtime(output_dir: Path):
         )
         lines.append("env['sorta_print'] = sorta_print\n\n")
     if "sometimes" not in already_added:
-        lines.append(
-            "def sometimes():\n"
-            "    return random.random() < 0.5\n"
-        )
+        lines.append("def sometimes():\n" "    return random.random() < 0.5\n")
         lines.append("env['sometimes'] = sometimes\n\n")
 
     # Write full runtime file
     runtime_file = output_dir / "fuzzy.py"
     # Generate runtime silently - no debug spam
-    runtime_file.write_text("".join(lines), encoding='utf-8')
+    runtime_file.write_text("".join(lines), encoding="utf-8")
+
 
 if __name__ == "__main__":
     import argparse

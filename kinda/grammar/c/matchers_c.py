@@ -3,6 +3,7 @@
 import re
 from .constructs_c import KindaCConstructs
 
+
 def match_c_construct(line):
     """Match C kinda-lang constructs in the given line."""
     for key, meta in KindaCConstructs.items():

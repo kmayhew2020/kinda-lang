@@ -4,6 +4,7 @@ import subprocess
 import os
 from pathlib import Path
 
+
 def execute(input_path, out_dir="build", transformer=None):
     """
     Transforms a .knda file and runs the resulting .py file.
@@ -30,15 +31,10 @@ def execute(input_path, out_dir="build", transformer=None):
 
     # Force the repo root (where kinda/ lives) into the path
     project_root = Path(__file__).resolve().parent.parent
-    pythonpath = os.pathsep.join([
-        str(project_root),
-        env.get("PYTHONPATH", "")
-    ]).strip(os.pathsep)
+    pythonpath = os.pathsep.join([str(project_root), env.get("PYTHONPATH", "")]).strip(os.pathsep)
 
     env["PYTHONPATH"] = pythonpath
 
     print(f"[debug] PYTHONPATH for subprocess: {env['PYTHONPATH']}")
-
-
 
     subprocess.run(["python", str(output_path)], env=env)

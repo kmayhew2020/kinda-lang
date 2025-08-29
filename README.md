@@ -27,11 +27,15 @@ timeout = 5~ish          # Fuzzy value (4-6 seconds, ±2 variance)
 ~sometimes (x > 40) {    # Random conditional (50% chance)
     ~sorta print("Probably big!")
     x ~= x + 1           # Fuzzy reassignment
+} {                      # Else block - runs when condition fails
+    ~sorta print("Not so big...")
 }
 ~maybe (x > 39) {        # More likely conditional (60% chance)
     if score ~ish 100 {  # Fuzzy comparison (98-102 tolerance)
         ~sorta print("Close enough!")
     }
+} {                      # Else block for ~maybe too
+    ~sorta print("Not close enough...")
 }
 ```
 
@@ -77,8 +81,8 @@ kinda examples  # Try some examples
 | `score ~ish 100` | Fuzzy comparison (±2 tolerance) | True if score is 98-102 |
 | `~kinda binary decision` | Three-state binary | Returns 1 (yes), -1 (no), or 0 (undecided) |
 | `~sorta print(msg)` | Maybe prints (80% chance) | Sometimes prints, sometimes `[shrug]` |
-| `~sometimes (cond) {}` | Random conditional (50%) | Block runs if both random AND condition |
-| `~maybe (cond) {}` | Less random conditional (60%) | More likely than ~sometimes but still fuzzy |
+| `~sometimes (cond) {} {}` | Random conditional (50%) | Block runs if both random AND condition, optional else |
+| `~maybe (cond) {} {}` | Less random conditional (60%) | More likely than ~sometimes but still fuzzy, optional else |
 | `x ~= x + 1` | Fuzzy assignment | Adds 1 ± random noise |
 
 ## 🎯 Why Use Kinda?
