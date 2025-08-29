@@ -645,7 +645,9 @@ class TestProbablySecurityProtection:
         if hasattr(signal, "SIGALRM"):
             # Unix systems: should return False due to timeout and complete quickly
             assert result is False, "Should block slow condition evaluation on Unix"
-            assert elapsed_time < 1.5, f"Should timeout quickly on Unix, took {elapsed_time} seconds"
+            assert (
+                elapsed_time < 1.5
+            ), f"Should timeout quickly on Unix, took {elapsed_time} seconds"
         else:
             # Windows: no timeout protection, condition will be evaluated fully
             assert isinstance(result, bool), "Should return boolean even without timeout protection"
@@ -687,7 +689,7 @@ class TestProbablySecurityProtection:
         slow_obj = SlowCondition()
         probably(slow_obj)
         captured = capsys.readouterr()
-        
+
         # Only test timeout message on Unix systems that support SIGALRM
         if hasattr(signal, "SIGALRM"):
             assert (
