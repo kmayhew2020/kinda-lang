@@ -1,0 +1,34 @@
+# Simple ~probably Construct Showcase
+# Demonstrates 70% execution probability - the confident probabilistic construct
+
+~kinda int score = 75;
+
+~sorta print("=== ~probably Construct Demo ===");
+~sorta print("Execution probability: 70% (higher confidence than ~maybe)");
+
+# Basic usage
+~probably (score > 50) {
+    ~sorta print("Score is good - probably celebrating!");
+}
+
+# Unconditional probability
+~probably () {
+    ~sorta print("Probably doing something...");
+}
+
+# Comparison with other constructs
+~sorta print("\nProbability comparison:");
+
+~sometimes (True) {
+    ~sorta print("Sometimes (50%): Lower chance");
+}
+
+~maybe (True) {
+    ~sorta print("Maybe (60%): Medium chance"); 
+}
+
+~probably (True) {
+    ~sorta print("Probably (70%): High confidence!");
+}
+
+~sorta print("Done! Each construct has different execution probabilities.");

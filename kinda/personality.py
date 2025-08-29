@@ -19,6 +19,7 @@ class ChaosProfile:
     # Probability modifiers for conditional constructs
     sometimes_base: float = 0.5  # Base probability for ~sometimes
     maybe_base: float = 0.6  # Base probability for ~maybe
+    probably_base: float = 0.7  # Base probability for ~probably
     sorta_print_base: float = 0.8  # Base probability for ~sorta print
 
     # Variance modifiers for numeric constructs
@@ -45,6 +46,7 @@ PERSONALITY_PROFILES: Dict[str, ChaosProfile] = {
     "reliable": ChaosProfile(
         sometimes_base=0.95,  # Almost always execute
         maybe_base=0.95,  # Almost always execute
+        probably_base=0.95,  # Almost always execute
         sorta_print_base=0.95,  # Almost always print
         int_fuzz_range=(0, 0),  # No fuzz on integers
         ish_variance=0.5,  # Minimal variance
@@ -60,6 +62,7 @@ PERSONALITY_PROFILES: Dict[str, ChaosProfile] = {
     "cautious": ChaosProfile(
         sometimes_base=0.7,  # Conservative execution
         maybe_base=0.75,  # Slightly more likely
+        probably_base=0.8,  # Conservative but reliable
         sorta_print_base=0.85,  # Usually prints
         int_fuzz_range=(-1, 1),  # Standard fuzz
         ish_variance=1.5,  # Reduced variance
@@ -75,6 +78,7 @@ PERSONALITY_PROFILES: Dict[str, ChaosProfile] = {
     "playful": ChaosProfile(
         sometimes_base=0.5,  # Standard randomness
         maybe_base=0.6,  # Standard maybe
+        probably_base=0.7,  # Standard probably (default)
         sorta_print_base=0.8,  # Standard print rate
         int_fuzz_range=(-2, 2),  # More fuzz
         ish_variance=2.5,  # Standard variance
@@ -90,6 +94,7 @@ PERSONALITY_PROFILES: Dict[str, ChaosProfile] = {
     "chaotic": ChaosProfile(
         sometimes_base=0.3,  # More unpredictable
         maybe_base=0.4,  # Less reliable
+        probably_base=0.5,  # Chaotic probably (reduced reliability)
         sorta_print_base=0.6,  # Often skips printing
         int_fuzz_range=(-5, 5),  # High fuzz
         ish_variance=5.0,  # High variance

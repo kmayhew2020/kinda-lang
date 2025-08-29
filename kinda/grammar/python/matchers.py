@@ -160,7 +160,7 @@ def match_python_construct(line: str):
             content = _parse_sorta_print_arguments(line)
             if content is not None:
                 return "sorta_print", (content,)
-        elif key in ["maybe", "sometimes"]:
+        elif key in ["maybe", "sometimes", "probably"]:
             # Use enhanced conditional parsing with balanced parentheses
             content = _parse_conditional_arguments(line, key)
             if content is not None:

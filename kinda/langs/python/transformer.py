@@ -17,7 +17,7 @@ def _process_conditional_block(
     lines: List[str], start_index: int, output_lines: List[str], indent: str, file_path: str = None
 ) -> int:
     """
-    Process a conditional block (~sometimes or ~maybe) with proper nesting support.
+    Process a conditional block (~sometimes, ~maybe, or ~probably) with proper nesting support.
     Returns the index after processing the block.
     """
     i = start_index
@@ -65,7 +65,7 @@ def _process_conditional_block(
 
         try:
             # Handle nested conditional constructs
-            if stripped.startswith("~sometimes") or stripped.startswith("~maybe"):
+            if stripped.startswith("~sometimes") or stripped.startswith("~maybe") or stripped.startswith("~probably"):
                 if not _validate_conditional_syntax(stripped, line_number, file_path):
                     i += 1
                     continue
@@ -113,7 +113,7 @@ def _process_python_indented_block(
     file_path: str = None,
 ) -> int:
     """
-    Process a Python-style indented block after a conditional (~sometimes or ~maybe).
+    Process a Python-style indented block after a conditional (~sometimes, ~maybe, or ~probably).
     Returns the index after processing the block.
     """
     i = start_index
@@ -306,6 +306,11 @@ def transform_line(line: str) -> List[str]:
         cond = groups[0].strip() if groups and groups[0] else ""
         transformed_code = f"if maybe({cond}):" if cond else "if maybe():"
 
+    elif key == "probably":
+        used_helpers.add("probably")
+        cond = groups[0].strip() if groups and groups[0] else ""
+        transformed_code = f"if probably({cond}):" if cond else "if probably():"
+
     elif key == "fuzzy_reassign":
         var, val = groups
         used_helpers.add("fuzzy_assign")
@@ -362,7 +367,7 @@ def transform_file(path: Path, target_language="python") -> str:
         line_number = i + 1  # 1-based line numbers
 
         try:
-            if stripped.startswith("~sometimes") or stripped.startswith("~maybe"):
+            if stripped.startswith("~sometimes") or stripped.startswith("~maybe") or stripped.startswith("~probably"):
                 # Validate conditional syntax
                 if not _validate_conditional_syntax(stripped, line_number, str(path)):
                     i += 1
@@ -397,7 +402,7 @@ def transform_file(path: Path, target_language="python") -> str:
 
 
 def _validate_conditional_syntax(line: str, line_number: int, file_path: str) -> bool:
-    """Validate ~sometimes and ~maybe syntax with helpful error messages"""
+    """Validate ~sometimes, ~maybe, and ~probably syntax with helpful error messages"""
     if line.startswith("~sometimes"):
         if "(" not in line:
             raise KindaParseError(
@@ -410,6 +415,14 @@ def _validate_conditional_syntax(line: str, line_number: int, file_path: str) ->
         if "(" not in line:
             raise KindaParseError(
                 "~maybe needs parentheses. Try: ~maybe() or ~maybe(condition)",
+                line_number,
+                line,
+                file_path,
+            )
+    elif line.startswith("~probably"):
+        if "(" not in line:
+            raise KindaParseError(
+                "~probably needs parentheses. Try: ~probably() or ~probably(condition)",
                 line_number,
                 line,
                 file_path,
