@@ -1,0 +1,10 @@
+# Simple Block Else Demo
+~sorta print("Testing block else syntax")
+
+~sometimes (True) {
+    ~sorta print("if block")
+} {
+    ~sorta print("else block")
+}
+
+~sorta print("Done")
