@@ -64,22 +64,28 @@
 - 🟠 **Issue #88**: Feature: Single-source spec.yaml → docs + CLI to prevent drift - MEDIUM-HIGH
 - 🟠 **Issue #89**: DX: Add source maps for error reporting (.knda line/col in stack traces) - MEDIUM
 
-### 🎯 Current Priorities (v0.4.0)
+### 🎯 Current Priorities (v0.4.0) - PRIORITY SYSTEM ESTABLISHED
 
-**Active Development:**
-1. ✅ **Critical Bug Fixes**: All transformer issues resolved (Issues #79, #81) - **COMPLETED**
-2. **Documentation Completion**: Address documentation gaps (#84, #87) 
-3. **Enhanced Chaos Constructs**: New fuzzy constructs and behaviors (Epic #35)
-4. **Time-based Variable Drift**: Variables get fuzzier over program lifetime (Issue #74)
-5. **C Language Support**: Complete C transpiler pipeline (Epic #19)
+**✅ COMPLETED:**
+1. **Critical Bug Fixes**: All transformer issues resolved (Issues #79, #81) - **COMPLETED**
+2. **Priority System**: GitHub labels created and all issues properly prioritized
 
-**New v0.4.0 Enhancements (Expert-Driven):**
-6. **Determinism Controls**: --seed and --chaos flags for reproducibility (#86)
-7. **Single-Source Spec**: Prevent docs/code drift with spec.yaml (#88)
-8. **Enhanced DX**: Source maps for better error reporting (#89)
+**🔴 HIGH PRIORITY (Active Development):**
+1. **Epic #35**: 🎲 Enhanced Chaos Constructs - New fuzzy constructs and behaviors
+2. **Issue #74**: ⏰ Time-based Variable Drift - Variables get fuzzier over program lifetime
 
-**Future Planning (v0.5.0):**
-9. **10 Personality Expansion**: Expand personality system to 10 distinct modes (Issue #77)
+**🟡 MEDIUM PRIORITY (Documentation & Features):**
+3. **Issue #84**: 📖 Documentation: ~ish construct usage patterns need clarification  
+4. **Issue #87**: 📘 Docs: Create comprehensive ~ish usage guide
+5. **Issue #86**: ⚙️ Feature: Add determinism controls (--seed, --chaos flags)
+6. **Epic #19**: 🔧 C Language Support - Complete C transpiler pipeline
+
+**🟢 LOW PRIORITY (Future Enhancement):**
+7. **Issue #88**: 🔧 Feature: Single-source spec.yaml → docs + CLI to prevent drift
+8. **Issue #89**: 🛠️ DX: Add source maps for error reporting (.knda line/col in stack traces)
+
+**🔮 FUTURE PLANNING (v0.5.0):**
+9. **Issue #77**: 🎭 10 Personality Expansion - Expand from 4 to 10 distinct personality modes
 
 ### 💡 Enhancement Ideas from Personality Analysis
 - **Personality Intensity Levels**: `--mood chaotic-extreme`, `--mood reliable-strict`

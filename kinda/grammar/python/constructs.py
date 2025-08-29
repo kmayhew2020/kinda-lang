@@ -89,8 +89,15 @@ KindaPythonConstructs = {
             "            update_chaos_state(failed=True)\n"
             "            return False\n"
             "        \n"
-            "        prob = chaos_probability('sometimes', condition)\n"
-            "        result = random.random() < prob and bool(condition)\n"
+            "        # SECURITY: Use secure condition checking\n"
+            "        from kinda.security import secure_condition_check\n"
+            "        should_proceed, condition_result = secure_condition_check(condition, 'Sometimes')\n"
+            "        if not should_proceed:\n"
+            "            update_chaos_state(failed=True)\n"
+            "            return False\n"
+            "        \n"
+            "        prob = chaos_probability('sometimes')\n"
+            "        result = random.random() < prob and condition_result\n"
             "        update_chaos_state(failed=not result)\n"
             "        return result\n"
             "    except Exception as e:\n"
@@ -115,12 +122,52 @@ KindaPythonConstructs = {
             "            update_chaos_state(failed=True)\n"
             "            return False\n"
             "        \n"
-            "        prob = chaos_probability('maybe', condition)\n"
-            "        result = random.random() < prob and bool(condition)\n"
+            "        # SECURITY: Use secure condition checking\n"
+            "        from kinda.security import secure_condition_check\n"
+            "        should_proceed, condition_result = secure_condition_check(condition, 'Maybe')\n"
+            "        if not should_proceed:\n"
+            "            update_chaos_state(failed=True)\n"
+            "            return False\n"
+            "        \n"
+            "        prob = chaos_probability('maybe')\n"
+            "        result = random.random() < prob and condition_result\n"
             "        update_chaos_state(failed=not result)\n"
             "        return result\n"
             "    except Exception as e:\n"
             '        print(f"[shrug] Maybe couldn\'t decide: {e}")\n'
+            '        print("[tip] Defaulting to random choice")\n'
+            "        update_chaos_state(failed=True)\n"
+            "        return random.choice([True, False])"
+        ),
+    },
+    "probably": {
+        "type": "conditional",
+        "pattern": re.compile(r"~probably\s*\(([^)]*)\)\s*\{?"),
+        "description": "Fuzzy conditional trigger with 70% base probability and personality adjustment",
+        "body": (
+            "def probably(condition=True):\n"
+            '    """Probably evaluates a condition with 70% base probability and personality adjustment"""\n'
+            "    from kinda.personality import chaos_probability, update_chaos_state\n"
+            "    import random\n"
+            "    try:\n"
+            "        if condition is None:\n"
+            '            print("[?] Probably got None as condition - treating as False")\n'
+            "            update_chaos_state(failed=True)\n"
+            "            return False\n"
+            "        \n"
+            "        # SECURITY: Use secure condition checking\n"
+            "        from kinda.security import secure_condition_check\n"
+            "        should_proceed, condition_result = secure_condition_check(condition, 'Probably')\n"
+            "        if not should_proceed:\n"
+            "            update_chaos_state(failed=True)\n"
+            "            return False\n"
+            "        \n"
+            "        prob = chaos_probability('probably')\n"
+            "        result = random.random() < prob and condition_result\n"
+            "        update_chaos_state(failed=not result)\n"
+            "        return result\n"
+            "    except Exception as e:\n"
+            '        print(f"[shrug] Probably got confused: {e}")\n'
             '        print("[tip] Defaulting to random choice")\n'
             "        update_chaos_state(failed=True)\n"
             "        return random.choice([True, False])"

@@ -1,0 +1,95 @@
+# ~probably Construct Example (70% execution probability)
+# Demonstrates confident probabilistic execution - more reliable than ~maybe (60%) but less than ~sorta print (80%)
+
+~kinda int confidence_score = 85;
+~kinda int min_threshold = 50;
+
+~sorta print("Starting probably example - demonstrating 70% execution probability...");
+
+# Basic ~probably usage - 70% chance to execute when condition is true
+~probably (confidence_score > min_threshold) {
+    ~sorta print("High confidence detected! Probably proceeding...");
+    confidence_score ~= 5;
+}
+
+# ~probably with no condition - 70% chance to execute unconditionally  
+~probably () {
+    ~sorta print("Probably saying hello with 70% confidence!");
+}
+
+# Nested constructs - ~probably containing other probabilistic constructs
+~probably (confidence_score > 70) {
+    ~sorta print("Entering high-confidence zone...");
+    
+    # Show probability hierarchy: sometimes (50%) < maybe (60%) < probably (70%) < sorta_print (80%)
+    ~sometimes (True) {
+        ~sorta print("Sometimes nested in probably - lower probability (50%)");
+    }
+    
+    ~maybe (True) {
+        ~sorta print("Maybe nested in probably - medium probability (60%)");
+    }
+    
+    ~probably (True) {
+        ~sorta print("Probably nested in probably - same probability (70%)");
+        ~kinda int bonus_confidence = 15;
+        confidence_score ~= bonus_confidence;
+    }
+}
+
+# Demonstrate probability differences in practice
+~sorta print("Comparing probabilistic constructs:");
+
+~sometimes (True) {
+    ~sorta print("  Sometimes executes (50% chance)");
+}
+
+~maybe (True) {
+    ~sorta print("  Maybe executes (60% chance)");
+}
+
+~probably (True) {
+    ~sorta print("  Probably executes (70% chance) - THIS ONE!");
+}
+
+# Real-world usage example - confident decision making
+~kinda int task_complexity = 7;
+~kinda int skill_level = 8;
+
+~probably (skill_level > task_complexity) {
+    ~sorta print("Skill exceeds complexity - probably attempting task...");
+    
+    ~probably (task_complexity < 5) {
+        ~sorta print("Low complexity task - probably finishing quickly!");
+        task_complexity ~= -2;
+    }
+    
+    ~maybe (skill_level > 9) {
+        ~sorta print("Expert level detected - maybe adding bonus features...");
+        skill_level ~= 1;
+    }
+}
+
+# Edge cases and conditions
+~probably (confidence_score > 0) {
+    ~sorta print("Positive confidence - probably continuing...");
+}
+
+~probably (False) {
+    ~sorta print("This should never execute (condition is False)");
+}
+
+# Personality system integration example
+~sorta print("=== Personality Integration Demo ===");
+~sorta print("Run with --mood to see different behaviors:");
+~sorta print("  --mood reliable  : ~probably becomes 95% (almost certain)");
+~sorta print("  --mood cautious  : ~probably becomes 80% (conservative)");
+~sorta print("  --mood playful   : ~probably stays 70% (default)");  
+~sorta print("  --mood chaotic   : ~probably becomes 50% (unpredictable)");
+
+~probably (True) {
+    ~sorta print("This execution depends on your --mood setting!");
+}
+
+~sorta print("Final confidence score:", confidence_score);
+~sorta print("Probably example completed!");
