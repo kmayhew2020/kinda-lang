@@ -2,7 +2,7 @@
 
 ## Current Status (2025-08-29)
 
-### ✅ Completed (v0.3.0 RELEASED)
+### ✅ Completed (v0.3.1 RELEASED)
 - **All Core Constructs**: `~kinda int`, `~sorta print`, `~sometimes`, `~maybe`, `~ish`, `~kinda binary`, `~welp`
 - **CLI Pipeline**: Full `kinda run`, `kinda interpret`, `kinda examples`, `kinda syntax` 
 - **Enhanced CLI Error Messages**: Snarky, helpful error guidance with kinda personality
@@ -42,7 +42,7 @@
   - Playful: Moderate chaos, whimsical messages
   - Cautious: Conservative approach, careful messaging
 
-### 📋 Previously Completed Issues (v0.3.0)
+### 📋 Previously Completed Issues (v0.3.0-v0.3.1)
 - ✅ Issue #59: ~ish Integration Syntax Fix with ~maybe/~sometimes - CLOSED
 - ✅ Issue #63: Documentation Infrastructure and Content Improvements - CLOSED
 - ✅ Issue #58: Comprehensive Examples Showcase - All Constructs in Action - CLOSED
