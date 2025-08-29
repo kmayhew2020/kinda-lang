@@ -51,9 +51,9 @@
 - ✅ Issue #38: Complete test coverage for existing constructs - CLOSED
 
 ### 🐛 Active Bug Fixes (v0.4.0)
-- 🔴 **Issue #79**: Block else syntax (`} {`) doesn't transform correctly - HIGH PRIORITY
+- ✅ **Issue #79**: Block else syntax (`} {`) doesn't transform correctly - **FIXED in PR #95**
 - ✅ **Issue #80**: `~ish` operator doesn't assign result back to variable - **FIXED in PR #85**
-- 🔴 **Issue #81**: Constructs inside function arguments not transformed - HIGH PRIORITY **[CONFIRMED via play testing]**
+- ✅ **Issue #81**: Constructs inside function arguments not transformed - **FIXED in PR #95**
 - ✅ **Issue #82**: `~ish` returns value instead of modifying in-place - **FIXED in PR #85**
 - ✅ **Issue #83**: `~ish` transformer uses wrong function (ish_comparison vs ish_value) - **FIXED in PR #85**
 - 🟡 **Issue #84**: Documentation: `~ish` construct usage patterns need clarification - MEDIUM
@@ -67,7 +67,7 @@
 ### 🎯 Current Priorities (v0.4.0)
 
 **Active Development:**
-1. **Critical Bug Fixes**: Address remaining transformer issues (Issues #79, #81)
+1. ✅ **Critical Bug Fixes**: All transformer issues resolved (Issues #79, #81) - **COMPLETED**
 2. **Documentation Completion**: Address documentation gaps (#84, #87) 
 3. **Enhanced Chaos Constructs**: New fuzzy constructs and behaviors (Epic #35)
 4. **Time-based Variable Drift**: Variables get fuzzier over program lifetime (Issue #74)
@@ -88,16 +88,19 @@
 - **Personality Memory**: Recent execution history influences future probability
 - **Interactive Personality Modes**: User prompts during execution
 
-**PROGRESS UPDATE**: Major bug fixes completed, expert analysis integrated:
+**PROGRESS UPDATE**: All critical transformer bugs resolved, ready for feature development:
 - ✅ **Issue #83 RESOLVED**: Critical ~ish transformer bug fixed (PR #85)
-- 🔴 **Issue #81 CONFIRMED**: Nested constructs in function args still broken (play testing)  
+- ✅ **Issue #79 RESOLVED**: Block else syntax now working (PR #95)
+- ✅ **Issue #81 RESOLVED**: Nested constructs in function args fixed (PR #95)
 - 🔍 **Expert Analysis**: 4 new enhancement issues identified (#86-89)
 - 📋 **Documentation**: Comprehensive ~ish guide needed (#87) 
-- **Priority Recommendation**: Complete remaining critical bugs (#79, #81) before Epic #35
+- ✅ **Priority Completed**: All critical bugs resolved - ready for Epic #35
 
 ### 🏆 Recent Accomplishments  
 - ✅ **Personality System**: Complete integration with all 9 constructs
-- ✅ **Critical ~ish Fix**: Variable modification now works correctly
+- ✅ **Critical ~ish Fix**: Variable modification now works correctly (PR #85)
+- ✅ **Block Else Syntax**: `} {` constructs now work perfectly (PR #95)
+- ✅ **Nested Constructs**: Complex expressions in function arguments fixed (PR #95)
 - ✅ **Process Enhancement**: Mandatory documentation review prevents bugs
 - ✅ **Expert Validation**: Comprehensive analysis confirms solid foundation
 
@@ -109,4 +112,4 @@
 - 🎯 Language expressiveness significantly limited by parsing issues
 
 ---
-*Last Updated: 2025-08-29 by Claude Code - Expert Analysis Integrated, Critical ~ish Bug Fixed, 4 New Enhancement Issues Created (#86-89)*
+*Last Updated: 2025-08-29 by Claude Code - All Critical Bugs Resolved (Issues #79, #81), Ready for Epic #35 Development*
