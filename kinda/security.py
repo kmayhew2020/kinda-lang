@@ -29,7 +29,10 @@ DANGEROUS_PATTERNS = [
     "globals()",
     "locals()",
     "vars()",
+    "vars(",  # Issue #8: vars() without parentheses bypass
     "dir()",
+    "dir(",   # Issue #9: dir() without parentheses bypass  
+    "getattr(",  # Issue #10: getattr() method bypass
 ]
 
 # Patterns that could manipulate random number generation
@@ -39,6 +42,8 @@ RANDOM_MANIPULATION_PATTERNS = [
     "setattr",
     "from random import",
     "import random",
+    "getattr(",  # Issue #11: getattr() random manipulation
+    "__dict__",  # Issue #13: Direct __dict__ access bypass
 ]
 
 
@@ -62,10 +67,18 @@ def is_condition_dangerous(condition: Any) -> Tuple[bool, str]:
         pattern_lower = pattern.lower()
         if pattern_lower == "import random":
             # More precise matching for "import random" to avoid false positives
+            # Issue #12: Improved regex handling for whitespace-obfuscated imports
             import re
 
-            # Match "import random" as a complete statement (word boundaries)
-            if re.search(r"\bimport\s+random\b", condition_str):
+            # Match "import random" with flexible whitespace and case insensitive
+            if re.search(r"\bimport\s+random\b", condition_str, re.IGNORECASE):
+                return True, f"random manipulation attempt: {pattern}"
+        elif pattern_lower == "from random import":
+            # Issue #12: Improved regex for "from random import" with flexible whitespace
+            import re
+            
+            # Match "from random import" with flexible whitespace and case insensitive
+            if re.search(r"\bfrom\s+random\s+import\b", condition_str, re.IGNORECASE):
                 return True, f"random manipulation attempt: {pattern}"
         else:
             if pattern_lower in condition_str:
@@ -140,10 +153,21 @@ def secure_condition_check(condition: Any, construct_name: str) -> Tuple[bool, b
         pattern_lower = pattern.lower()
         if pattern_lower == "import random":
             # More precise matching for "import random" to avoid false positives
+            # Issue #12: Improved regex handling for whitespace-obfuscated imports
             import re
 
-            # Match "import random" as a complete statement (word boundaries)
-            if re.search(r"\bimport\s+random\b", condition_str):
+            # Match "import random" with flexible whitespace and case insensitive
+            if re.search(r"\bimport\s+random\b", condition_str, re.IGNORECASE):
+                print(
+                    f"[security] {construct_name} won't let you break the chaos - that's not kinda"
+                )
+                return False, False
+        elif pattern_lower == "from random import":
+            # Issue #12: Improved regex for "from random import" with flexible whitespace
+            import re
+            
+            # Match "from random import" with flexible whitespace and case insensitive
+            if re.search(r"\bfrom\s+random\s+import\b", condition_str, re.IGNORECASE):
                 print(
                     f"[security] {construct_name} won't let you break the chaos - that's not kinda"
                 )

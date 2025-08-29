@@ -387,6 +387,155 @@ class TestBackwardCompatibility:
             assert should_proceed is True, f"secure_condition_check should allow: {condition}"
 
 
+class TestCriticalSecurityBypassesPR103:
+    """Test for critical security bypasses found in PR #103 review"""
+
+    def test_issue_8_vars_without_parentheses_bypass(self):
+        """Issue #8: Test that vars( without closing parentheses is blocked"""
+        bypass_attempts = [
+            "vars(",
+            "VARS(",
+            "Vars(",
+            "vArS(",
+            "vars(self",
+            "vars(obj",
+            "vars(random",
+        ]
+
+        for attempt in bypass_attempts:
+            is_dangerous, reason = is_condition_dangerous(attempt)
+            assert is_dangerous, f"Should block vars( bypass: {attempt}"
+            assert "dangerous pattern detected:" in reason.lower()
+
+    def test_issue_9_dir_without_parentheses_bypass(self):
+        """Issue #9: Test that dir( without closing parentheses is blocked"""
+        bypass_attempts = [
+            "dir(",
+            "DIR(",
+            "Dir(",
+            "dIr(",
+            "dir(self",
+            "dir(obj",
+            "dir(random",
+        ]
+
+        for attempt in bypass_attempts:
+            is_dangerous, reason = is_condition_dangerous(attempt)
+            assert is_dangerous, f"Should block dir( bypass: {attempt}"
+            assert "dangerous pattern detected:" in reason.lower()
+
+    def test_issue_10_getattr_method_bypass(self):
+        """Issue #10: Test that getattr() method is blocked"""
+        bypass_attempts = [
+            "getattr(",
+            "GETATTR(",
+            "GetAttr(",
+            "gEtAtTr(",
+            "getattr(random, 'seed')",
+            "getattr(obj, 'dangerous_method')",
+            "getattr(__builtins__, '__import__')",
+        ]
+
+        for attempt in bypass_attempts:
+            is_dangerous, reason = is_condition_dangerous(attempt)
+            assert is_dangerous, f"Should block getattr bypass: {attempt}"
+            assert "dangerous pattern detected:" in reason.lower()
+
+    def test_issue_11_getattr_random_manipulation(self):
+        """Issue #11: Test that getattr for random manipulation is blocked"""
+        bypass_attempts = [
+            "getattr(random, 'seed')",
+            "getattr(random, 'random')",
+            "GETATTR(random, 'setstate')",
+            "GetAttr(random, 'getstate')",
+        ]
+
+        for attempt in bypass_attempts:
+            is_dangerous, reason = is_condition_dangerous(attempt)
+            assert is_dangerous, f"Should block getattr random manipulation: {attempt}"
+            # getattr is in both DANGEROUS_PATTERNS and RANDOM_MANIPULATION_PATTERNS
+            # It will be caught by dangerous patterns first (which is correct)
+            assert ("dangerous pattern detected:" in reason.lower() or 
+                    "random manipulation attempt:" in reason.lower())
+
+    def test_issue_12_regex_whitespace_handling(self):
+        """Issue #12: Test improved regex whitespace handling for imports"""
+        whitespace_bypass_attempts = [
+            "import    random",  # Multiple spaces
+            "from    random    import    seed",  # Multiple spaces
+            "import\trandom",  # Tab characters
+            "from\trandom\timport\tseed",  # Tab characters
+            "import\nrandom",  # Newline (unlikely but test anyway)
+            "from\nrandom\nimport\nseed",  # Newlines
+            "IMPORT    RANDOM",  # Case insensitive with spaces
+            "FROM    RANDOM    IMPORT    SEED",  # Case insensitive with spaces
+        ]
+
+        for attempt in whitespace_bypass_attempts:
+            is_dangerous, reason = is_condition_dangerous(attempt)
+            assert is_dangerous, f"Should block whitespace-obfuscated import: {repr(attempt)}"
+            assert "random manipulation attempt:" in reason.lower()
+
+    def test_issue_13_direct_dict_access_bypass(self):
+        """Issue #13: Test that direct __dict__ access is blocked"""
+        bypass_attempts = [
+            "__dict__",
+            "__DICT__",
+            "__Dict__",
+            "__dIcT__",
+            "obj.__dict__",
+            "random.__dict__",
+            "self.__dict__",
+            "__dict__['seed'] = malicious_func",
+        ]
+
+        for attempt in bypass_attempts:
+            is_dangerous, reason = is_condition_dangerous(attempt)
+            assert is_dangerous, f"Should block __dict__ access: {attempt}"
+            assert "random manipulation attempt:" in reason.lower()
+
+    def test_combined_bypass_attempts(self):
+        """Test combinations of bypass methods that were found"""
+        combined_attempts = [
+            "getattr(__dict__, 'random')",
+            "vars()[random] = malicious",
+            "dir(random.__dict__)",
+            "getattr(vars(), '__import__')",
+            "import random; vars(random)",
+            "from random import seed; dir()",
+        ]
+
+        for attempt in combined_attempts:
+            is_dangerous, reason = is_condition_dangerous(attempt)
+            assert is_dangerous, f"Should block combined bypass: {attempt}"
+
+    def test_secure_condition_check_blocks_all_bypasses(self):
+        """Test that secure_condition_check blocks all discovered bypasses"""
+        all_bypasses = [
+            # Issue #8: vars( bypass
+            "vars(",
+            "vars(random",
+            # Issue #9: dir( bypass  
+            "dir(",
+            "dir(random",
+            # Issue #10: getattr bypass
+            "getattr(__builtins__, '__import__')",
+            # Issue #11: getattr random manipulation
+            "getattr(random, 'seed')",
+            # Issue #12: whitespace-obfuscated imports
+            "import    random",
+            "from    random    import    seed",
+            # Issue #13: __dict__ access
+            "random.__dict__",
+            "__dict__['seed']",
+        ]
+
+        for bypass in all_bypasses:
+            should_proceed, condition_result = secure_condition_check(bypass, "TestConstruct")
+            assert should_proceed is False, f"secure_condition_check should block: {bypass}"
+            assert condition_result is False
+
+
 class TestDocumentationAndErrorMessages:
     """Test that documentation and error messages are updated appropriately"""
 
@@ -406,19 +555,34 @@ class TestDocumentationAndErrorMessages:
         ), "secure_condition_check docstring should mention case-insensitive matching"
 
     def test_extended_patterns_in_constants(self):
-        """Test that RANDOM_MANIPULATION_PATTERNS includes new patterns"""
-        from kinda.security import RANDOM_MANIPULATION_PATTERNS
+        """Test that DANGEROUS_PATTERNS and RANDOM_MANIPULATION_PATTERNS include new patterns"""
+        from kinda.security import DANGEROUS_PATTERNS, RANDOM_MANIPULATION_PATTERNS
 
-        # Should include original patterns
+        # Should include original dangerous patterns
+        assert "vars()" in DANGEROUS_PATTERNS
+        assert "dir()" in DANGEROUS_PATTERNS
+        
+        # Should include new bypass patterns for Issue #8, #9, #10
+        assert "vars(" in DANGEROUS_PATTERNS
+        assert "dir(" in DANGEROUS_PATTERNS
+        assert "getattr(" in DANGEROUS_PATTERNS
+
+        # Should include original random manipulation patterns
         assert "random.seed" in RANDOM_MANIPULATION_PATTERNS
         assert "random.random" in RANDOM_MANIPULATION_PATTERNS
         assert "setattr" in RANDOM_MANIPULATION_PATTERNS
-
-        # Should include new import patterns
         assert "from random import" in RANDOM_MANIPULATION_PATTERNS
         assert "import random" in RANDOM_MANIPULATION_PATTERNS
 
-        # Should have expected total count
-        assert (
-            len(RANDOM_MANIPULATION_PATTERNS) == 5
-        ), f"Expected 5 patterns, got {len(RANDOM_MANIPULATION_PATTERNS)}: {RANDOM_MANIPULATION_PATTERNS}"
+        # Should include new patterns for Issue #11 and #13
+        assert "getattr(" in RANDOM_MANIPULATION_PATTERNS
+        assert "__dict__" in RANDOM_MANIPULATION_PATTERNS
+
+        # Should have expected total counts
+        expected_dangerous_count = 13  # Updated count with new patterns
+        assert len(DANGEROUS_PATTERNS) == expected_dangerous_count, \
+            f"Expected {expected_dangerous_count} dangerous patterns, got {len(DANGEROUS_PATTERNS)}: {DANGEROUS_PATTERNS}"
+
+        expected_random_count = 7  # Updated count with new patterns  
+        assert len(RANDOM_MANIPULATION_PATTERNS) == expected_random_count, \
+            f"Expected {expected_random_count} random manipulation patterns, got {len(RANDOM_MANIPULATION_PATTERNS)}: {RANDOM_MANIPULATION_PATTERNS}"
