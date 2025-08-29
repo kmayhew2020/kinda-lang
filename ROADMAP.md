@@ -36,6 +36,11 @@
 - ✅ Issue #73: Chaos-Personality Integration - Complete personality system with 4 modes - MERGED
 - ✅ All 9 constructs now personality-aware with --mood flag support
 - ✅ Cascade failure tracking and instability system implemented
+- 🎭 **Personality System Analysis Complete**: Confirmed dramatic behavioral differences between modes
+  - Reliable: High consistency, professional messaging
+  - Chaotic: High variance, dismissive messages, extreme fuzzing
+  - Playful: Moderate chaos, whimsical messages
+  - Cautious: Conservative approach, careful messaging
 
 ### 📋 Previously Completed Issues (v0.3.0)
 - ✅ Issue #59: ~ish Integration Syntax Fix with ~maybe/~sometimes - CLOSED
@@ -45,18 +50,45 @@
 - ✅ Issue #41: Test coverage goal achieved (75% target) - CLOSED
 - ✅ Issue #38: Complete test coverage for existing constructs - CLOSED
 
+### 🐛 Active Bug Fixes (v0.4.0)
+- 🔴 **Issue #79**: Block else syntax (`} {`) doesn't transform correctly - HIGH PRIORITY
+- 🟠 **Issue #80**: `~ish` operator doesn't assign result back to variable - MEDIUM PRIORITY  
+- 🔴 **Issue #81**: Constructs inside function arguments not transformed - HIGH PRIORITY
+- 🟠 **Issue #82**: `~ish` returns value instead of modifying in-place - MEDIUM PRIORITY
+- 🔴 **Issue #83**: `~ish` transformer uses wrong function (ish_comparison vs ish_value) - CRITICAL
+- 🟡 **Issue #84**: Documentation: `~ish` construct usage patterns need clarification - MEDIUM
+
 ### 🎯 Current Priorities (v0.4.0)
 
 **Active Development:**
-1. **Time-based Variable Drift**: Variables get fuzzier over program lifetime (Issue #74)
-2. **Enhanced Chaos Constructs**: New fuzzy constructs and behaviors (Epic #35)
-3. **Documentation Enhancement**: Complex usage patterns, real-world examples (Epic #76)
-4. **C Language Support**: Complete C transpiler pipeline (Epic #19)
+1. **Bug Fixes**: Address transformation issues found during personality testing (Issues #79, #80)
+2. **Time-based Variable Drift**: Variables get fuzzier over program lifetime (Issue #74) 
+3. **Enhanced Chaos Constructs**: New fuzzy constructs and behaviors (Epic #35)
+4. **Documentation Enhancement**: Complex usage patterns, real-world examples (Epic #76)
+5. **C Language Support**: Complete C transpiler pipeline (Epic #19)
 
 **Future Planning (v0.5.0):**
-5. **10 Personality Expansion**: Expand personality system to 10 distinct modes (Issue #77)
+6. **10 Personality Expansion**: Expand personality system to 10 distinct modes (Issue #77)
 
-**Priority Recommendation**: Continue Epic #35 (Enhanced Chaos Constructs) to build on the personality foundation.
+### 💡 Enhancement Ideas from Personality Analysis
+- **Personality Intensity Levels**: `--mood chaotic-extreme`, `--mood reliable-strict`
+- **Dynamic Personality Shifts**: Personality changes during execution based on success/failure
+- **Construct-Specific Tuning**: Different personalities for different constructs
+- **Personality Memory**: Recent execution history influences future probability
+- **Interactive Personality Modes**: User prompts during execution
+
+**URGENT**: Critical transformer bugs discovered through stress testing must be addressed immediately:
+- Issue #83 (ish transformer) and #81 (nested constructs) break core language functionality  
+- Issue #84 highlights documentation gaps that led to implementation confusion
+- These bugs affect all programs using `~ish` or complex expressions
+- **Priority Recommendation**: Fix Issues #79, #81, #83 and clarify documentation (#84) before Epic #35
+
+### 📊 Stress Testing Results Summary
+**Comprehensive testing revealed**:
+- ✅ Personality system works perfectly with dramatic behavioral differences
+- ✅ CLI `--mood` integration seamless and effective  
+- 🚨 5 critical transformer bugs affecting core constructs
+- 🎯 Language expressiveness significantly limited by parsing issues
 
 ---
 *Last Updated: 2025-08-29 by Claude Code - Personality Integration Complete & 10-Mode Expansion Planned*
