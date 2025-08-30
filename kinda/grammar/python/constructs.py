@@ -173,6 +173,39 @@ KindaPythonConstructs = {
             "        return random.choice([True, False])"
         ),
     },
+    "rarely": {
+        "type": "conditional",
+        "pattern": re.compile(r"~rarely\s*\(([^)]*)\)\s*\{?"),
+        "description": "Fuzzy conditional trigger with 15% base probability and personality adjustment",
+        "body": (
+            "def rarely(condition=True):\n"
+            '    """Rarely evaluates a condition with 15% base probability and personality adjustment"""\n'
+            "    from kinda.personality import chaos_probability, update_chaos_state\n"
+            "    import random\n"
+            "    try:\n"
+            "        if condition is None:\n"
+            '            print("[?] Rarely got None as condition - treating as False")\n'
+            "            update_chaos_state(failed=True)\n"
+            "            return False\n"
+            "        \n"
+            "        # SECURITY: Use secure condition checking\n"
+            "        from kinda.security import secure_condition_check\n"
+            "        should_proceed, condition_result = secure_condition_check(condition, 'Rarely')\n"
+            "        if not should_proceed:\n"
+            "            update_chaos_state(failed=True)\n"
+            "            return False\n"
+            "        \n"
+            "        prob = chaos_probability('rarely')\n"
+            "        result = random.random() < prob and condition_result\n"
+            "        update_chaos_state(failed=not result)\n"
+            "        return result\n"
+            "    except Exception as e:\n"
+            '        print(f"[shrug] Rarely got confused: {e}")\n'
+            '        print("[tip] Defaulting to random choice")\n'
+            "        update_chaos_state(failed=True)\n"
+            "        return random.choice([True, False])"
+        ),
+    },
     "fuzzy_reassign": {
         "type": "reassignment",
         "pattern": re.compile(r"(\w+)\s*~=\s*([^#;]+?)(?:\s*#.*)?(?:;|$)"),

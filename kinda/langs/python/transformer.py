@@ -69,6 +69,7 @@ def _process_conditional_block(
                 stripped.startswith("~sometimes")
                 or stripped.startswith("~maybe")
                 or stripped.startswith("~probably")
+                or stripped.startswith("~rarely")
             ):
                 if not _validate_conditional_syntax(stripped, line_number, file_path):
                     i += 1
@@ -309,6 +310,11 @@ def transform_line(line: str) -> List[str]:
         cond = groups[0].strip() if groups and groups[0] else ""
         transformed_code = f"if probably({cond}):" if cond else "if probably():"
 
+    elif key == "rarely":
+        used_helpers.add("rarely")
+        cond = groups[0].strip() if groups and groups[0] else ""
+        transformed_code = f"if rarely({cond}):" if cond else "if rarely():"
+
     elif key == "fuzzy_reassign":
         var, val = groups
         used_helpers.add("fuzzy_assign")
@@ -369,6 +375,7 @@ def transform_file(path: Path, target_language="python") -> str:
                 stripped.startswith("~sometimes")
                 or stripped.startswith("~maybe")
                 or stripped.startswith("~probably")
+                or stripped.startswith("~rarely")
             ):
                 # Validate conditional syntax
                 if not _validate_conditional_syntax(stripped, line_number, str(path)):
@@ -404,7 +411,7 @@ def transform_file(path: Path, target_language="python") -> str:
 
 
 def _validate_conditional_syntax(line: str, line_number: int, file_path: str) -> bool:
-    """Validate ~sometimes, ~maybe, and ~probably syntax with helpful error messages"""
+    """Validate ~sometimes, ~maybe, ~probably, and ~rarely syntax with helpful error messages"""
     if line.startswith("~sometimes"):
         if "(" not in line:
             raise KindaParseError(
@@ -425,6 +432,14 @@ def _validate_conditional_syntax(line: str, line_number: int, file_path: str) ->
         if "(" not in line:
             raise KindaParseError(
                 "~probably needs parentheses. Try: ~probably() or ~probably(condition)",
+                line_number,
+                line,
+                file_path,
+            )
+    elif line.startswith("~rarely"):
+        if "(" not in line:
+            raise KindaParseError(
+                "~rarely needs parentheses. Try: ~rarely() or ~rarely(condition)",
                 line_number,
                 line,
                 file_path,
