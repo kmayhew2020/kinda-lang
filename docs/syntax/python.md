@@ -42,3 +42,84 @@ This file defines all supported Kinda constructs in Python-like syntax. This ver
 ```python
 if sometimes(x > 5):
     sorta print("yes")
+```
+
+- 50% probability execution.
+- Condition must evaluate to True AND random chance succeeds.
+- Works with any boolean expression.
+
+### `if maybe(condition):`
+
+```python
+if maybe(user.authenticated):
+    sorta print("Welcome back")
+```
+
+- 60% probability execution.
+- Higher chance than `sometimes` but still fuzzy.
+- Good for "likely but not certain" scenarios.
+
+### `if probably(condition):`
+
+```python  
+if probably(connection.stable):
+    sorta print("Connection looks good")
+```
+
+- 70% probability execution.
+- High confidence conditional - executes most of the time.
+- Use when operation should usually succeed.
+
+### `if rarely(condition):`
+
+```python
+if rarely(debug_mode_enabled):
+    sorta print("Debug info: rare execution")
+```
+
+- 15% probability execution.
+- Lowest probability of all conditionals.
+- Perfect for debug statements, exceptional cases, or easter eggs.
+- Executes infrequently even when condition is True.
+
+---
+
+## ✅ Fuzzy Values
+
+### `value~ish`
+
+```python
+fuzzy_number = 100~ish
+```
+
+- Creates fuzzy value with ±2 variance.
+- `100~ish` returns value between ~98-102.
+
+### `x ~ish target`
+
+```python
+if score ~ish 100:
+    sorta print("Close enough!")
+```
+
+- Fuzzy comparison with ±2 tolerance.
+- Returns True if values are within tolerance range.
+
+---
+
+## ✅ Binary Logic
+
+### `kinda binary variable`
+
+```python
+decision: kinda binary = decision
+if decision == 1:
+    sorta print("Yes")
+elif decision == -1:
+    sorta print("No")  
+else:
+    sorta print("Maybe")
+```
+
+- Three-state logic: 1 (positive), 0 (neutral), -1 (negative).
+- Default probabilities: 40% positive, 40% negative, 20% neutral.

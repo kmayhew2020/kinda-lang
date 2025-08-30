@@ -37,6 +37,22 @@ Similar to `~sometimes` but with higher probability:
 }
 ```
 
+### `~probably` - 70% Conditional Execution
+High-confidence conditional that executes most of the time:
+```python
+~probably (user.is_authenticated()) {
+    ~sorta print("Access granted (usually)")
+}
+```
+
+### `~rarely` - 15% Conditional Execution  
+Low-probability conditional that executes infrequently:
+```python
+~rarely (error_occurred) {
+    ~sorta print("This happens rarely - debug mode?")
+}
+```
+
 ### `~ish` - Fuzzy Values and Comparisons
 Creates fuzzy values and approximate comparisons:
 ```python
