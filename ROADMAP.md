@@ -52,40 +52,60 @@
 
 ### 🐛 Active Bug Fixes (v0.4.0)
 - ✅ **Issue #79**: Block else syntax (`} {`) doesn't transform correctly - **FIXED in PR #95**
-- ✅ **Issue #80**: `~ish` operator doesn't assign result back to variable - **FIXED in PR #85**
+- ✅ **Issue #80**: `~ish` operator doesn't assign result back to variable - **FIXED in PR #XXX** 
 - ✅ **Issue #81**: Constructs inside function arguments not transformed - **FIXED in PR #95**
-- ✅ **Issue #82**: `~ish` returns value instead of modifying in-place - **FIXED in PR #85**
-- ✅ **Issue #83**: `~ish` transformer uses wrong function (ish_comparison vs ish_value) - **FIXED in PR #85**
+- ✅ **Issue #82**: `~ish` returns value instead of modifying in-place - **FIXED in PR #XXX**
+- ✅ **Issue #83**: `~ish` transformer uses wrong function (ish_comparison vs ish_value) - **FIXED in PR #XXX**
 - 🟡 **Issue #84**: Documentation: `~ish` construct usage patterns need clarification - MEDIUM
 
-### 🔍 New Issues from Expert Analysis & Play Testing
+### ✅ Recently Fixed Critical Issues (2025-08-30) 
+- ✅ **Issue #105**: Critical Bug: ~ish variable modification syntax completely broken - **FIXED in PR #XXX**
+- ✅ **Issue #106**: Bug: ~ish construct uses wrong runtime function for assignments - **FIXED in PR #XXX**
+- ✅ **Issue #107**: UX Bug: ~ish variable modification fails silently causing user confusion - **FIXED in PR #XXX**
+
+### 🚀 New Feature Requests (Discovered 2025-08-29/30)
+- 🔴 **Issue #97**: Feature: Implement ~rarely construct (15% probability) - **HIGH PRIORITY**
+- 🔴 **Issue #98**: Feature: Implement ~kinda bool fuzzy boolean type - **HIGH PRIORITY**
+- 🔴 **Issue #99**: Feature: Implement ~kinda float fuzzy floating-point type - **HIGH PRIORITY**
+- 🟡 **Issue #100**: Feature: Implement ~eventually delayed execution blocks - **MEDIUM**
+
+### 🔍 Enhancement Issues from Expert Analysis
 - 🟡 **Issue #86**: Feature: Add determinism controls (--seed, --chaos flags) - MEDIUM
 - 🟡 **Issue #87**: Docs: Create comprehensive ~ish usage guide - MEDIUM  
 - 🟠 **Issue #88**: Feature: Single-source spec.yaml → docs + CLI to prevent drift - MEDIUM-HIGH
 - 🟠 **Issue #89**: DX: Add source maps for error reporting (.knda line/col in stack traces) - MEDIUM
 
-### 🎯 Current Priorities (v0.4.0) - PRIORITY SYSTEM ESTABLISHED
+### 🎯 Current Priorities (v0.4.0) - UPDATED 2025-08-30
 
 **✅ COMPLETED:**
-1. **Critical Bug Fixes**: All transformer issues resolved (Issues #79, #81) - **COMPLETED**
-2. **Priority System**: GitHub labels created and all issues properly prioritized
+1. **Block Syntax Fix**: Issue #79 and #81 resolved - **COMPLETED**  
+2. **Security Enhancements**: Issues #96, #102, #104 resolved - **COMPLETED**
+3. **Priority System**: GitHub labels created and all issues properly prioritized
 
-**🔴 HIGH PRIORITY (Active Development):**
-1. **Epic #35**: 🎲 Enhanced Chaos Constructs - New fuzzy constructs and behaviors
-2. **Issue #74**: ⏰ Time-based Variable Drift - Variables get fuzzier over program lifetime
+**✅ RECENTLY COMPLETED:**
+1. **~ish Construct Crisis RESOLVED**: Issues #80, #82, #83, #105, #106, #107 - **ALL FIXED**
+   - Fixed context detection logic for assignment vs comparison
+   - Comprehensive test coverage added
+   - Variable modification now works correctly with expressions
+
+**🔴 HIGH PRIORITY (Next Development Wave):**
+2. **New Core Constructs**: Issues #97, #98, #99 - ~rarely, ~kinda bool/float
+3. **Epic #35**: 🎲 Enhanced Chaos Constructs - New fuzzy constructs and behaviors
+4. **Issue #74**: ⏰ Time-based Variable Drift - Variables get fuzzier over program lifetime
 
 **🟡 MEDIUM PRIORITY (Documentation & Features):**
-3. **Issue #84**: 📖 Documentation: ~ish construct usage patterns need clarification  
-4. **Issue #87**: 📘 Docs: Create comprehensive ~ish usage guide
-5. **Issue #86**: ⚙️ Feature: Add determinism controls (--seed, --chaos flags)
-6. **Epic #19**: 🔧 C Language Support - Complete C transpiler pipeline
+5. **Issue #100**: ~eventually delayed execution blocks
+6. **Issue #84**: 📖 Documentation: ~ish construct usage patterns need clarification  
+7. **Issue #87**: 📘 Docs: Create comprehensive ~ish usage guide
+8. **Issue #86**: ⚙️ Feature: Add determinism controls (--seed, --chaos flags)
 
 **🟢 LOW PRIORITY (Future Enhancement):**
-7. **Issue #88**: 🔧 Feature: Single-source spec.yaml → docs + CLI to prevent drift
-8. **Issue #89**: 🛠️ DX: Add source maps for error reporting (.knda line/col in stack traces)
+9. **Epic #19**: 🔧 C Language Support - Complete C transpiler pipeline
+10. **Issue #88**: 🔧 Feature: Single-source spec.yaml → docs + CLI to prevent drift
+11. **Issue #89**: 🛠️ DX: Add source maps for error reporting (.knda line/col in stack traces)
 
 **🔮 FUTURE PLANNING (v0.5.0):**
-9. **Issue #77**: 🎭 10 Personality Expansion - Expand from 4 to 10 distinct personality modes
+12. **Issue #77**: 🎭 10 Personality Expansion - Expand from 4 to 10 distinct personality modes
 
 ### 💡 Enhancement Ideas from Personality Analysis
 - **Personality Intensity Levels**: `--mood chaotic-extreme`, `--mood reliable-strict`
@@ -94,28 +114,31 @@
 - **Personality Memory**: Recent execution history influences future probability
 - **Interactive Personality Modes**: User prompts during execution
 
-**PROGRESS UPDATE**: All critical transformer bugs resolved, ready for feature development:
-- ✅ **Issue #83 RESOLVED**: Critical ~ish transformer bug fixed (PR #85)
-- ✅ **Issue #79 RESOLVED**: Block else syntax now working (PR #95)
+**PROGRESS UPDATE 2025-08-30**: All critical ~ish construct issues resolved, ready for feature development:
+- ✅ **CRITICAL FIXED**: ~ish construct crisis fully resolved - all 6 issues fixed (#80, #82, #83, #105-107)
+- ✅ **Issue #79 RESOLVED**: Block else syntax now working (PR #95)  
 - ✅ **Issue #81 RESOLVED**: Nested constructs in function args fixed (PR #95)
-- 🔍 **Expert Analysis**: 4 new enhancement issues identified (#86-89)
-- 📋 **Documentation**: Comprehensive ~ish guide needed (#87) 
-- ✅ **Priority Completed**: All critical bugs resolved - ready for Epic #35
+- ✅ **Security Fixed**: Unicode bypass and security enhancements complete (#96, #102, #104)
+- 🚀 **Ready for Epic #35**: Core language foundation is now solid and stable
+- 🔍 **Expert Analysis**: Multiple enhancement issues identified (#86-89)
 
 ### 🏆 Recent Accomplishments  
-- ✅ **Personality System**: Complete integration with all 9 constructs
-- ✅ **Critical ~ish Fix**: Variable modification now works correctly (PR #85)
+- ✅ **Security Enhancements**: Unicode normalization and case-insensitive pattern matching
 - ✅ **Block Else Syntax**: `} {` constructs now work perfectly (PR #95)
 - ✅ **Nested Constructs**: Complex expressions in function arguments fixed (PR #95)
-- ✅ **Process Enhancement**: Mandatory documentation review prevents bugs
-- ✅ **Expert Validation**: Comprehensive analysis confirms solid foundation
+- ✅ **Issue Verification**: Confirmed all supposedly-fixed issues are actually resolved
+- ✅ **Roadmap Sync**: Updated roadmap to reflect current GitHub issue status
 
-### 📊 Stress Testing Results Summary
-**Comprehensive testing revealed**:
-- ✅ Personality system works perfectly with dramatic behavioral differences
-- ✅ CLI `--mood` integration seamless and effective  
-- 🚨 5 critical transformer bugs affecting core constructs
-- 🎯 Language expressiveness significantly limited by parsing issues
+### 🎉 Current Status Summary  
+**All Major Blockers RESOLVED**:
+- ✅ **~ish Construct Crisis FIXED**: All 6 overlapping bugs resolved with comprehensive fixes
+- ✅ **Security Enhancements**: All security issues resolved
+- ✅ **Core Language Stability**: Foundation is now solid and thoroughly tested
+
+**Ready for Next Development Wave**:
+- 🚀 **High Priority Features**: 3 new ~kinda types and ~rarely construct ready for development
+- 🚀 **Epic #35 Ready**: Enhanced Chaos Constructs can now proceed
+- 🟡 **Documentation Gap**: ~ish usage patterns need comprehensive guide (Issue #87)
 
 ---
-*Last Updated: 2025-08-29 by Claude Code - All Critical Bugs Resolved (Issues #79, #81), Ready for Epic #35 Development*
+*Last Updated: 2025-08-30 by Claude Code - ~ish Construct Crisis RESOLVED - All 6 Critical Issues Fixed (#80, #82, #83, #105-107)*

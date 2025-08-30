@@ -176,37 +176,34 @@ def _transform_ish_constructs(line: str) -> str:
             # CRITICAL FIX: Detect assignment vs comparison context
             stripped_line = line.strip()
 
-            # Check if this is a standalone assignment statement
-            # Pattern: variable_name ~ish value (with optional whitespace)
-            is_standalone_assignment = (
-                # Must be a simple statement (not part of expression)
-                not any(
-                    op in stripped_line for op in ["+", "-", "*", "/", "=", "(", ")", "[", "]", ","]
-                )
-                or
-                # OR starts with variable name followed by ~ish (variable assignment pattern)
-                re.match(
-                    rf"^\s*{re.escape(left_val)}\s*~ish\s+{re.escape(right_val)}\s*$", stripped_line
-                )
-            )
-
-            # Check if this is in a conditional/comparison context
+            # Check if this is in a conditional/comparison context first
             is_in_conditional = (
                 stripped_line.startswith("if ")
                 or stripped_line.startswith("elif ")
                 or stripped_line.startswith("while ")
+                or stripped_line.startswith("assert ")
                 or " if " in stripped_line
                 or " and " in stripped_line
                 or " or " in stripped_line
-                or
-                # Also check if it's part of a larger expression
-                any(
-                    op in stripped_line
-                    for op in ["+", "-", "*", "/", "==", "!=", "<", ">", "<=", ">="]
+                or stripped_line.startswith("return ")
+                # Check if ~ish is inside parentheses, brackets, or after assignment
+                or (
+                    "=" in stripped_line 
+                    and stripped_line.find("=") < stripped_line.find("~ish")
                 )
+                or "(" in stripped_line.split("~ish")[0]  # Function call context
+                or "[" in stripped_line  # List/dict context
+                or "{" in stripped_line  # Dict context
             )
 
-            if is_standalone_assignment and not is_in_conditional:
+            # Check if this is a standalone variable assignment
+            # Pattern: line starts with variable_name ~ish (possibly with whitespace)
+            is_variable_assignment = (
+                re.match(rf"^\s*{re.escape(left_val)}\s*~ish\s+", stripped_line)
+                and not is_in_conditional
+            )
+
+            if is_variable_assignment:
                 # This is a variable modification context
                 used_helpers.add("ish_value")
                 replacement = f"{left_val} = ish_value({left_val}, {right_val})"
