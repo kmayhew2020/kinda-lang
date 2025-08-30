@@ -236,9 +236,7 @@ class TestRarelyRuntimeBehavior:
                 ), f"rarely(False) should return bool, got {type(result2)}"
 
                 # rarely(False) should always return False regardless of random
-                assert (
-                    result2 == False
-                ), f"rarely(False) should always return False, got {result2}"
+                assert result2 == False, f"rarely(False) should always return False, got {result2}"
 
                 # Test with multiple iterations to verify probabilistic behavior
                 # Since we can't reliably mock in the full test suite, test statistical behavior
@@ -685,9 +683,7 @@ class TestRarelySecurityProtection:
         # Test random manipulation security message
         rarely("random.seed(42)")
         captured = capsys.readouterr()
-        assert (
-            "[security] Rarely won't let you break the chaos - that's not kinda" in captured.out
-        )
+        assert "[security] Rarely won't let you break the chaos - that's not kinda" in captured.out
 
         # Test timeout security message with a slow condition that doesn't trigger pattern matching
         import signal
