@@ -21,7 +21,7 @@ class TestIshVariableAssignmentContexts:
             ("x ~ish 5", "x = ish_value(x, 5)"),
             ("score ~ish target", "score = ish_value(score, target)"),
         ]
-        
+
         for input_line, expected_output in test_cases:
             result = transform_line(input_line)
             assert len(result) == 1
@@ -37,7 +37,7 @@ class TestIshVariableAssignmentContexts:
             ("score ~ish base_value // 10", "score = ish_value(score, base_value // 10)"),
             ("temp ~ish max_temp - min_temp", "temp = ish_value(temp, max_temp - min_temp)"),
         ]
-        
+
         for input_line, expected_output in test_cases:
             result = transform_line(input_line)
             assert len(result) == 1
@@ -53,7 +53,7 @@ class TestIshVariableAssignmentContexts:
             ("elif score ~ish 100:", "elif ish_comparison(score, 100):"),
             ("assert value ~ish expected", "assert ish_comparison(value, expected)"),
         ]
-        
+
         for input_line, expected_output in test_cases:
             result = transform_line(input_line)
             assert len(result) == 1
@@ -65,9 +65,12 @@ class TestIshVariableAssignmentContexts:
         test_cases = [
             ("result = x + value ~ish 10", "result = x + ish_comparison(value, 10)"),
             ("y = score ~ish 100 + bonus", "y = ish_comparison(score, 100 + bonus)"),
-            ("total = base + (score ~ish target)", "total = base + (ish_comparison(score, target))"),
+            (
+                "total = base + (score ~ish target)",
+                "total = base + (ish_comparison(score, target))",
+            ),
         ]
-        
+
         for input_line, expected_output in test_cases:
             result = transform_line(input_line)
             assert len(result) == 1
@@ -81,7 +84,7 @@ class TestIshVariableAssignmentContexts:
             ("value ~ish 10 or backup", "ish_comparison(value, 10) or backup"),
             ("not value ~ish threshold", "not ish_comparison(value, threshold)"),
         ]
-        
+
         for input_line, expected_output in test_cases:
             result = transform_line(input_line)
             assert len(result) == 1
@@ -92,10 +95,13 @@ class TestIshVariableAssignmentContexts:
         """Test ~ish inside function calls - should use ish_comparison"""
         test_cases = [
             ("print(value ~ish 10)", "print(ish_comparison(value, 10))"),
-            ("max(score ~ish 100, other)", "ish_comparison(score, 100"),  # Pattern matcher may have issues with commas
+            (
+                "max(score ~ish 100, other)",
+                "ish_comparison(score, 100",
+            ),  # Pattern matcher may have issues with commas
             ("func(x, value ~ish target, z)", "ish_comparison(value, target"),
         ]
-        
+
         for input_line, expected_output in test_cases:
             result = transform_line(input_line)
             assert len(result) == 1
@@ -105,11 +111,14 @@ class TestIshVariableAssignmentContexts:
     def test_container_context(self):
         """Test ~ish inside lists, dicts, tuples - should use ish_comparison"""
         test_cases = [
-            ("items = [value ~ish 10, other]", "ish_comparison(value, 10"),  # Pattern matcher may group differently
+            (
+                "items = [value ~ish 10, other]",
+                "ish_comparison(value, 10",
+            ),  # Pattern matcher may group differently
             ("data = {'key': value ~ish 10}", "ish_comparison(value, 10"),
             ("coords = (x ~ish target_x, y)", "ish_comparison(x, target_x"),
         ]
-        
+
         for input_line, expected_output in test_cases:
             result = transform_line(input_line)
             assert len(result) == 1
@@ -151,7 +160,7 @@ class TestIshRegressionPrevention:
         assert len(result) == 1
         assert "ish_value" in result[0]
         assert "ish_comparison" not in result[0]
-        
+
         # Conditional should use ish_comparison
         result = transform_line("if health ~ish max_health:")
         assert len(result) == 1
@@ -170,7 +179,7 @@ class TestIshRegressionPrevention:
         # Assignments should use ish_value
         assignment_result = transform_line("balance ~ish fluctuation")
         assert "ish_value" in assignment_result[0]
-        
+
         # Comparisons should use ish_comparison
         comparison_result = transform_line("if balance ~ish target_balance:")
         assert "ish_comparison" in comparison_result[0]
@@ -182,7 +191,7 @@ class TestIshRegressionPrevention:
         result = transform_line("points ~ish bonus_points")
         assert len(result) == 1
         transformed_line = result[0]
-        
+
         # Must have assignment syntax
         assert " = " in transformed_line
         # Must use the correct function
@@ -219,11 +228,11 @@ result = value + (score ~ish 50)
 
         try:
             result = transform_file(temp_path)
-            
+
             # Should contain both ish_value and ish_comparison imports
             assert "ish_value" in result
             assert "ish_comparison" in result
-            
+
             # Check specific transformations
             assert "value = ish_value(value, 20)" in result
             assert "score = ish_value(score, base_score * 0.1)" in result
@@ -253,19 +262,23 @@ value4 ~ish max(10, base // 5)
 
         try:
             result = transform_file(temp_path)
-            
+
             # All should use ish_value with assignment
             assert "value1 = ish_value(value1, base + 50)" in result
             assert "value2 = ish_value(value2, base * multiplier" in result  # May have extra spaces
             assert "value3 = ish_value(value3, (base + 20)" in result  # Pattern may be different
             assert "value4 = ish_value(value4, max(10, base // 5))" in result
-            
+
             # Should not use ish_comparison for any of these
-            lines = result.split('\n')
-            assignment_lines = [line for line in lines if 'value' in line and '~ish' not in line and 'import' not in line]
+            lines = result.split("\n")
+            assignment_lines = [
+                line
+                for line in lines
+                if "value" in line and "~ish" not in line and "import" not in line
+            ]
             for line in assignment_lines:
-                if 'ish_' in line:
-                    assert 'ish_comparison' not in line, f"Wrong function in: {line}"
+                if "ish_" in line:
+                    assert "ish_comparison" not in line, f"Wrong function in: {line}"
 
         finally:
             temp_path.unlink()
@@ -279,7 +292,10 @@ class TestIshEdgeCases:
         # This is a single line but tests complex parsing
         result = transform_line("value ~ish (base_value + adjustment_factor * random_multiplier)")
         assert len(result) == 1
-        assert "value = ish_value(value, (base_value + adjustment_factor * random_multiplier))" in result[0]
+        assert (
+            "value = ish_value(value, (base_value + adjustment_factor * random_multiplier))"
+            in result[0]
+        )
 
     def test_whitespace_handling(self):
         """Test various whitespace scenarios"""
@@ -288,7 +304,7 @@ class TestIshEdgeCases:
             ("value ~ish  10", "value = ish_value(value, 10"),  # Extra spaces - may preserve some
             ("  value ~ish 10  ", "value = ish_value(value, 10"),  # Leading/trailing - may preserve
         ]
-        
+
         for input_line, expected in test_cases:
             result = transform_line(input_line)
             assert len(result) == 1
@@ -302,7 +318,7 @@ class TestIshEdgeCases:
             ("value_2 ~ish threshold_max", "value_2 = ish_value(value_2, threshold_max)"),
             ("_private_var ~ish 50", "_private_var = ish_value(_private_var, 50)"),
         ]
-        
+
         for input_line, expected in test_cases:
             result = transform_line(input_line)
             assert len(result) == 1
@@ -316,7 +332,7 @@ class TestIshEdgeCases:
             ("value ~ish 2**3", "value = ish_value(value, 2**3)"),
             ("value ~ish int(3.7)", "value = ish_value(value, int(3.7))"),
         ]
-        
+
         for input_line, expected in test_cases:
             result = transform_line(input_line)
             assert len(result) == 1

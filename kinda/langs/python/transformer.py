@@ -187,10 +187,7 @@ def _transform_ish_constructs(line: str) -> str:
                 or " or " in stripped_line
                 or stripped_line.startswith("return ")
                 # Check if ~ish is inside parentheses, brackets, or after assignment
-                or (
-                    "=" in stripped_line 
-                    and stripped_line.find("=") < stripped_line.find("~ish")
-                )
+                or ("=" in stripped_line and stripped_line.find("=") < stripped_line.find("~ish"))
                 or "(" in stripped_line.split("~ish")[0]  # Function call context
                 or "[" in stripped_line  # List/dict context
                 or "{" in stripped_line  # Dict context
