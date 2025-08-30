@@ -1,6 +1,6 @@
 # Kinda-Lang Development Roadmap
 
-## Current Status (2025-08-29)
+## Current Status (2025-08-30)
 
 ### ✅ Completed (v0.3.0 RELEASED)
 - **All Core Constructs**: `~kinda int`, `~sorta print`, `~sometimes`, `~maybe`, `~ish`, `~kinda binary`, `~welp`
@@ -52,16 +52,16 @@
 
 ### 🐛 Active Bug Fixes (v0.4.0)
 - ✅ **Issue #79**: Block else syntax (`} {`) doesn't transform correctly - **FIXED in PR #95**
-- ✅ **Issue #80**: `~ish` operator doesn't assign result back to variable - **FIXED in PR #XXX** 
+- ✅ **Issue #80**: `~ish` operator doesn't assign result back to variable - **FIXED in PR #108** 
 - ✅ **Issue #81**: Constructs inside function arguments not transformed - **FIXED in PR #95**
-- ✅ **Issue #82**: `~ish` returns value instead of modifying in-place - **FIXED in PR #XXX**
-- ✅ **Issue #83**: `~ish` transformer uses wrong function (ish_comparison vs ish_value) - **FIXED in PR #XXX**
+- ✅ **Issue #82**: `~ish` returns value instead of modifying in-place - **FIXED in PR #108**
+- ✅ **Issue #83**: `~ish` transformer uses wrong function (ish_comparison vs ish_value) - **FIXED in PR #108**
 - 🟡 **Issue #84**: Documentation: `~ish` construct usage patterns need clarification - MEDIUM
 
 ### ✅ Recently Fixed Critical Issues (2025-08-30) 
-- ✅ **Issue #105**: Critical Bug: ~ish variable modification syntax completely broken - **FIXED in PR #XXX**
-- ✅ **Issue #106**: Bug: ~ish construct uses wrong runtime function for assignments - **FIXED in PR #XXX**
-- ✅ **Issue #107**: UX Bug: ~ish variable modification fails silently causing user confusion - **FIXED in PR #XXX**
+- ✅ **Issue #105**: Critical Bug: ~ish variable modification syntax completely broken - **FIXED in PR #108**
+- ✅ **Issue #106**: Bug: ~ish construct uses wrong runtime function for assignments - **FIXED in PR #108**
+- ✅ **Issue #107**: UX Bug: ~ish variable modification fails silently causing user confusion - **FIXED in PR #108**
 
 ### 🚀 New Feature Requests (Discovered 2025-08-29/30)
 - 🔴 **Issue #97**: Feature: Implement ~rarely construct (15% probability) - **HIGH PRIORITY**
@@ -141,4 +141,4 @@
 - 🟡 **Documentation Gap**: ~ish usage patterns need comprehensive guide (Issue #87)
 
 ---
-*Last Updated: 2025-08-30 by Claude Code - ~ish Construct Crisis RESOLVED - All 6 Critical Issues Fixed (#80, #82, #83, #105-107)*
+*Last Updated: 2025-08-30 by Kinda-Lang Project Manager - ~ish Construct Crisis RESOLVED - All 6 Critical Issues Fixed & Closed via PR #108*

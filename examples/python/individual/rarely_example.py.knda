@@ -1,0 +1,40 @@
+# Example demonstrating the ~rarely construct
+# ~rarely executes with only 15% probability (low chance)
+
+~kinda int counter = 0
+
+print("Testing ~rarely construct - should execute infrequently")
+
+# Basic ~rarely usage
+~rarely (True) {
+    ~sorta print("This happens rarely (15% chance)")
+    counter ~= 1
+}
+
+# ~rarely with condition
+~kinda int value = 10
+~rarely (value > 5) {
+    ~sorta print("Value is greater than 5, but this still rarely executes")
+}
+
+# ~rarely vs other constructs comparison
+print("\nComparing probabilities:")
+
+~sometimes (True) {
+    ~sorta print("Sometimes: 50% chance")
+}
+
+~maybe (True) {
+    ~sorta print("Maybe: 60% chance")
+}
+
+~probably (True) {
+    ~sorta print("Probably: 70% chance")
+}
+
+~rarely (True) {
+    ~sorta print("Rarely: 15% chance")
+}
+
+print(f"\nFinal counter value: {counter}")
+print("Run multiple times to see the probabilistic behavior!")

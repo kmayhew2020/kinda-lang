@@ -84,6 +84,7 @@ kinda examples  # Try some examples
 | `~sometimes (cond) {} {}` | Random conditional (50%) | Block runs if both random AND condition, optional else |
 | `~maybe (cond) {} {}` | Less random conditional (60%) | More likely than ~sometimes but still fuzzy, optional else |
 | `~probably (cond) {} {}` | Confident conditional (70%) | Higher confidence than ~maybe, optional else |
+| `~rarely (cond) {} {}` | Low-probability conditional (15%) | Executes infrequently, lowest chance of all conditionals |
 | `x ~= x + 1` | Fuzzy assignment | Adds 1 ± random noise |
 
 ## 🎯 Why Use Kinda?

@@ -32,7 +32,8 @@
     ~sorta print("Outer condition succeeded")
     ~maybe (False) {
         ~sorta print("Inner maybe worked")
-    } {
+    }
+    ~maybe (not False) {
         ~sorta print("Inner maybe didn't work, but that's fine")
     }
 } {
@@ -50,17 +51,19 @@
     ~maybe (mana > 25) {
         ~sorta print("Cast powerful spell!")
         mana ~= -20
-    } {
+    }
+    ~maybe (mana <= 25) {
         ~sorta print("Not enough mana for spell, use basic attack")
         ~kinda int damage = 10
     }
 } {
-    ~sorta print("Player is injured - playing defensively") 
+    ~sorta print("Player is injured - playing defensively")
     ~sometimes (mana > 15) {
         ~sorta print("Cast healing spell")
         health ~= 25
         mana ~= -15
-    } {
+    }
+    ~sometimes (mana <= 15) {
         ~sorta print("No mana for healing - just rest")
         health ~= 5
     }
@@ -73,6 +76,7 @@
     ~sorta print("Numbers are kinda close!")
 } {
     # This else block is empty, but that's okay
+    pass
 }
 
 ~sorta print("=== End of Block Else Demo ===")

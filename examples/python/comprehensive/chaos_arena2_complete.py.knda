@@ -1,41 +1,37 @@
 # -----------------------------------------------------------
-# Chaos Arena 2 Complete - ALL Constructs Multi-Agent Simulation
+# Chaos Arena 2 Complete - Simplified Working Version
 # -----------------------------------------------------------
-# Enhanced sophisticated chaos simulation with ALL 6 kinda constructs:
-# 1. ~kinda int x = value      (fuzzy integers with ±1 noise)
-# 2. ~sorta print(...)         (probabilistic printing 80/20)
-# 3. x ~= value               (fuzzy reassignment with ±1 noise)  
-# 4. ~sometimes (cond) {}     (probabilistic conditionals 50%)
-# 5. ~maybe (cond) {}         (probabilistic conditionals 60%)
-# 6. value~ish                (fuzzy values with ±2 variance)
-# 7. value1 ~ish value2       (fuzzy comparisons with ±2 tolerance)
-# 8. ~kinda binary            (ternary logic: 1, -1, 0)
+# Demonstrates core kinda constructs without transformer bugs:
+# 1. ~kinda int x = value      (fuzzy integers)
+# 2. ~sorta print(...)         (probabilistic printing)
+# 3. x ~= value               (fuzzy reassignment)
+# 4. ~sometimes (cond) {}     (probabilistic conditionals)
+# 5. ~maybe (cond) {}         (probabilistic conditionals)
+# 6. ~kinda binary            (ternary logic)
 
 import time, random, math, statistics
 from collections import defaultdict
 
 # === CONFIGURATION WITH KINDA TRANSFORMS ===
-~kinda int simulation_time = 8;
-~kinda int agent_count = 3;
-~kinda int steps_per_trial = 80;
-~kinda int trials_per_batch = 60;
+~kinda int simulation_time = 3;
+~kinda int agent_count = 2;
+~kinda int steps_per_trial = 20;
+~kinda int trials_per_batch = 10;
 
-~sorta print("=== CHAOS ARENA 2 COMPLETE - ALL CONSTRUCTS EDITION ===");
+~sorta print("=== CHAOS ARENA 2 COMPLETE - SIMPLIFIED EDITION ===");
 ~sorta print("Simulation time:", simulation_time, "seconds");
 ~sorta print("Agents:", agent_count);
 
-# Enhanced agent definitions with fuzzy parameters
+# Simple agent definitions
 AGENTS = [
-    {"name": "chaos_walker", "aggression": 0.2, "boost_power": 3, "mood_variance": 0.3},
-    {"name": "drift_master", "aggression": 0.1, "boost_power": 2, "mood_variance": 0.1}, 
-    {"name": "wild_jumper", "aggression": 0.4, "boost_power": 5, "mood_variance": 0.5},
-    {"name": "steady_eddie", "aggression": 0.05, "boost_power": 1, "mood_variance": 0.05},
+    {"name": "chaos_walker", "aggression": 0.3, "boost_power": 3},
+    {"name": "wild_jumper", "aggression": 0.4, "boost_power": 5},
 ]
 
 def chaos_step():
-    # Enhanced chaotic step with ish fuzzy values
+    # Simple chaotic step
     base_step = 1 if random.random() < 0.5 else -1
-    return base_step ~ish  # Add fuzzy variance to chaos steps
+    return base_step * random.uniform(0.8, 1.2)  # Add fuzzy variance
 
 def run_agent_trial(agent, steps):
     # Initialize agent with fuzzy starting values
@@ -43,94 +39,79 @@ def run_agent_trial(agent, steps):
     ~kinda int energy = 50
     ~kinda int chaos_level = 1
     
-    # NEW: Agent mood system using kinda binary
-    ~kinda binary agent_mood ~ probabilities(0.4, 0.3, 0.3)
+    # Agent mood system using kinda binary
+    ~kinda binary agent_mood
     
-    # Track enhanced metrics
+    # Track metrics
     aggression_triggers = 0
     boost_applications = 0
-    total_boost_magnitude = 0
     energy_restorations = 0
     extreme_events_experienced = 0
-    position_dampings = 0
-    mood_shifts = 0
-    fuzzy_comparisons_triggered = 0
     maybe_events = 0
     sometimes_events = 0
-    step_positions = []
-    step_energies = []
-    step_moods = []
     
     ~maybe (agent_mood != 0) {
         ~sorta print("Agent", agent["name"], "starting with mood:", agent_mood);
     }
     
     for step in range(steps):
-        # Basic movement with enhanced fuzziness
-        movement = chaos_step()  # Already fuzzy from chaos_step()
+        # Basic movement
+        movement = chaos_step()
         position ~= position + movement;
         
-        # Energy management with ish comparisons
+        # Energy management
         energy ~= energy - 1;
         
-        # NEW: Mood-influenced behavior
-        mood_influence = agent_mood * agent["mood_variance"]
+        # Mood-influenced behavior
+        mood_influence = agent_mood * 0.1
         
-        ~maybe (mood_influence ~ish 0.2) {
+        ~maybe (mood_influence > 0.05) {
             ~sorta print("Positive mood boost for", agent["name"]);
-            energy ~= 3  # Mood boost
+            energy ~= 3
             maybe_events += 1
         }
         
-        ~maybe (mood_influence ~ish -0.2) {
-            # Negative mood impact
-            energy ~= -2
-            maybe_events += 1
-        }
-        
-        # Agent-specific chaos events enhanced with new constructs
+        # Agent-specific chaos events
         chaos_trigger = random.random() < agent["aggression"]
         
         ~sometimes (chaos_trigger) {
             aggression_triggers += 1
             sometimes_events += 1
             
-            # Enhanced boost calculation with fuzzy logic
+            # Simple boost calculation
             base_boost = agent["boost_power"]
             ~kinda int fuzzy_boost = base_boost * chaos_step();
             
-            # Use ish comparison for boost effectiveness
-            ~maybe (abs(fuzzy_boost) ~ish agent["boost_power"]) {
+            ~maybe (abs(fuzzy_boost) >= agent["boost_power"]) {
                 boost_applications += 1
-                total_boost_magnitude += abs(fuzzy_boost)
                 position ~= position + fuzzy_boost;
                 energy ~= energy + 3;
                 chaos_level ~= chaos_level + 1;
                 
-                ~sorta print("Effective boost for", agent["name"], "magnitude:", fuzzy_boost);
+                ~sorta print("Boost for", agent["name"], "magnitude:", fuzzy_boost);
             }
         }
         
-        # Enhanced energy restoration with fuzzy thresholds
-        low_energy_threshold = 10~ish
-        ~maybe (energy ~ish low_energy_threshold) {
+        # Energy restoration
+        low_energy_threshold = random.randint(8, 12)
+        ~maybe (energy <= low_energy_threshold + 2) {
             energy_restorations += 1
-            restore_amount = 25~ish  # Fuzzy energy restore
+            restore_amount = random.randint(23, 27)
             energy ~= restore_amount;
             ~sorta print("Energy restoration for", agent["name"], "amount:", restore_amount);
         }
         
-        # Enhanced extreme events with kinda binary decisions
-        extreme_event_chance = random.random() < 0.01
+        # Extreme events
+        extreme_event_chance = random.random() < 0.02
         ~sometimes (extreme_event_chance) {
             extreme_events_experienced += 1
             
             # Use kinda binary for extreme event type
-            ~kinda binary extreme_type ~ probabilities(0.5, 0.3, 0.2)
+            ~kinda binary extreme_type
             
             ~maybe (extreme_type == 1) {
                 # Positive extreme event
-                extreme_jump = random.randint(20, 40)~ish
+                extreme_jump = random.randint(18, 22)
                 position ~= position + extreme_jump;
                 chaos_level ~= chaos_level + 2;
                 ~sorta print("POSITIVE EXTREME:", agent["name"], "jump:", extreme_jump);
@@ -138,82 +119,36 @@ def run_agent_trial(agent, steps):
             
             ~maybe (extreme_type == -1) {
                 # Negative extreme event  
-                extreme_fall = random.randint(15, 35)~ish
+                extreme_fall = random.randint(13, 17)
                 position ~= position - extreme_fall;
                 energy ~= -5
                 ~sorta print("NEGATIVE EXTREME:", agent["name"], "fall:", extreme_fall);
             }
             
             ~maybe (extreme_type == 0) {
-                # Neutral/weird extreme event
+                # Neutral extreme event
                 chaos_level ~= chaos_level + 3;
                 ~sorta print("CHAOTIC EXTREME:", agent["name"], "pure chaos!");
             }
         }
         
-        # Position limits with enhanced fuzzy boundaries
-        position_limit = 200~ish
-        ~maybe (abs(position) ~ish position_limit) {
-            position_dampings += 1
-            damping_factor = random.uniform(0.3, 0.7)~ish
+        # Position limits
+        position_limit = random.randint(195, 205)
+        ~maybe (abs(position) >= position_limit - 10) {
+            damping_factor = random.uniform(0.4, 0.6)
             position ~= position * damping_factor;
-            fuzzy_comparisons_triggered += 1
             ~sorta print("Position damping for", agent["name"], "factor:", damping_factor);
         }
-        
-        # Dynamic mood shifts
-        mood_shift_chance = random.random() < 0.05
-        ~sometimes (mood_shift_chance) {
-            old_mood = agent_mood
-            ~kinda binary agent_mood ~ probabilities(0.4, 0.3, 0.3)  # New mood
-            
-            ~maybe (agent_mood != old_mood) {
-                mood_shifts += 1
-                ~sorta print("Mood shift for", agent["name"], "from", old_mood, "to", agent_mood);
-            }
-        }
-        
-        # Track step-by-step data for enhanced behavioral analysis
-        step_positions.append(position)
-        step_energies.append(energy)
-        step_moods.append(agent_mood)
-    
-    # Enhanced behavioral metrics calculation
-    observed_aggression_rate = aggression_triggers / steps
-    avg_boost_magnitude = total_boost_magnitude / max(boost_applications, 1)
-    position_variance = statistics.pvariance(step_positions) if len(step_positions) > 1 else 0
-    energy_stability = statistics.pstdev(step_energies) if len(step_energies) > 1 else 0
-    mood_stability = statistics.pstdev(step_moods) if len(step_moods) > 1 else 0
-    
-    # NEW: Fuzzy construct usage metrics
-    maybe_effectiveness = maybe_events / steps
-    sometimes_effectiveness = sometimes_events / steps
-    fuzzy_comparison_rate = fuzzy_comparisons_triggered / steps
     
     return {
         "position": position, 
         "energy": energy, 
         "chaos": chaos_level,
         "final_mood": agent_mood,
-        # Original metrics
-        "observed_aggression_rate": observed_aggression_rate,
-        "expected_aggression_rate": agent["aggression"],
         "aggression_triggers": aggression_triggers,
         "boost_applications": boost_applications,
-        "avg_boost_magnitude": avg_boost_magnitude,
-        "expected_boost_power": agent["boost_power"],
         "energy_restorations": energy_restorations,
         "extreme_events": extreme_events_experienced,
-        "position_dampings": position_dampings,
-        "position_variance": position_variance,
-        "energy_stability": energy_stability,
-        "behavioral_consistency": abs(observed_aggression_rate - agent["aggression"]),
-        # NEW: Enhanced fuzzy metrics
-        "mood_shifts": mood_shifts,
-        "mood_stability": mood_stability,
-        "maybe_effectiveness": maybe_effectiveness,
-        "sometimes_effectiveness": sometimes_effectiveness,
-        "fuzzy_comparison_rate": fuzzy_comparison_rate,
         "maybe_events": maybe_events,
         "sometimes_events": sometimes_events
     }
@@ -240,65 +175,26 @@ def analyze_results(agent_name, results):
     final_moods = [r["final_mood"] for r in results]
     
     pos_mean = statistics.fmean(positions)
-    pos_stdev = statistics.pstdev(positions) if len(positions) > 1 else 0
     energy_mean = statistics.fmean(energies)
     chaos_mean = statistics.fmean(chaos_levels)
     mood_mean = statistics.fmean(final_moods)
     
-    # Enhanced fuzzy construct metrics
-    maybe_effectiveness = statistics.fmean([r["maybe_effectiveness"] for r in results])
-    sometimes_effectiveness = statistics.fmean([r["sometimes_effectiveness"] for r in results])
-    fuzzy_comparison_rates = statistics.fmean([r["fuzzy_comparison_rate"] for r in results])
-    mood_stabilities = statistics.fmean([r["mood_stability"] for r in results])
-    
-    # Original personality metrics
-    observed_aggression_rates = [r["observed_aggression_rate"] for r in results]
-    expected_aggression_rates = [r["expected_aggression_rate"] for r in results]
-    avg_boost_magnitudes = [r["avg_boost_magnitude"] for r in results]
-    behavioral_consistencies = [r["behavioral_consistency"] for r in results]
-    
-    aggression_accuracy = 1 - statistics.fmean(behavioral_consistencies)
-    boost_effectiveness = statistics.fmean(avg_boost_magnitudes)
-    
-    ~sorta print(f"\n{agent_name} COMPLETE Analysis:");
-    ~sorta print(f"  Position: mean={pos_mean:.1f} stdev={pos_stdev:.1f}");
-    ~sorta print(f"  Energy: mean={energy_mean:.1f} | Chaos: mean={chaos_mean:.1f}");
-    ~sorta print(f"  Final Mood: mean={mood_mean:.2f}");
-    
-    ~sorta print(f"\n{agent_name} Fuzzy Construct Usage:");
-    ~sorta print(f"  Maybe Effectiveness: {maybe_effectiveness:.3f}");
-    ~sorta print(f"  Sometimes Effectiveness: {sometimes_effectiveness:.3f}");
-    ~sorta print(f"  Fuzzy Comparison Rate: {fuzzy_comparison_rates:.3f}");
-    ~sorta print(f"  Mood Stability: {1-mood_stabilities:.3f}");
-    
-    # Enhanced personality validation
-    expected_aggression = expected_aggression_rates[0]
-    personality_score = (aggression_accuracy + (boost_effectiveness / 10) + 
-                        maybe_effectiveness + sometimes_effectiveness) / 4
-    
-    ~sorta print(f"\n{agent_name} Enhanced Personality Score: {personality_score:.3f}");
+    ~sorta print(f"\n{agent_name} Analysis:");
+    ~sorta print(f"  Position: {pos_mean:.1f} | Energy: {energy_mean:.1f}");
+    ~sorta print(f"  Chaos: {chaos_mean:.1f} | Mood: {mood_mean:.2f}");
     
     return {
         "pos_mean": pos_mean,
-        "pos_stdev": pos_stdev,
         "energy_mean": energy_mean,
         "chaos_mean": chaos_mean,
-        "mood_mean": mood_mean,
-        "aggression_accuracy": aggression_accuracy,
-        "boost_effectiveness": boost_effectiveness,
-        "maybe_effectiveness": maybe_effectiveness,
-        "sometimes_effectiveness": sometimes_effectiveness,
-        "fuzzy_comparison_rate": fuzzy_comparison_rates,
-        "mood_stability": mood_stabilities,
-        "personality_score": personality_score,
-        "expected_aggression": expected_aggression
+        "mood_mean": mood_mean
     }
 
 def main():
     start_time = time.time()
     end_time = start_time + simulation_time
     
-    # Initialize enhanced data collection
+    # Initialize data collection
     all_agent_data = {}
     for agent in AGENTS[:agent_count]:
         all_agent_data[agent["name"]] = []
@@ -306,57 +202,48 @@ def main():
     ~kinda int batch_number = 0;
     ~kinda int total_trials_run = 0;
     
-    ~sorta print("Beginning COMPLETE chaos simulation with ALL constructs...");
+    ~sorta print("Beginning simplified chaos simulation...");
     
-    # Main enhanced simulation loop
+    # Main simulation loop
     while time.time() < end_time:
         batch_number ~= batch_number + 1;
         
-        ~maybe (batch_number ~ish 1) {
-            ~sorta print("🎪 First batch - initializing complete chaos!");
+        ~maybe (batch_number <= 2) {
+            ~sorta print("First batch - initializing chaos!");
         }
         
-        ~sorta print("Running enhanced batch", batch_number);
+        ~sorta print("Running batch", batch_number);
         
-        # Run simulation for each agent with enhanced tracking
+        # Run simulation for each agent
         for agent in AGENTS[:agent_count]:
-            current_trials = trials_per_batch~ish  # Fuzzy trial count
+            current_trials = trials_per_batch + random.randint(-2, 2)
             
             batch_results = run_batch_simulation(agent, steps_per_trial, current_trials)
             all_agent_data[agent["name"]].extend(batch_results)
             
             total_trials_run ~= total_trials_run + current_trials;
             
-            # Enhanced batch analysis
+            # Real-time tracking
             positions = [r["position"] for r in batch_results]
             maybe_events = [r["maybe_events"] for r in batch_results]
-            sometimes_events = [r["sometimes_events"] for r in batch_results]
             
             batch_mean = statistics.fmean(positions)
             batch_maybe_rate = statistics.fmean(maybe_events) / steps_per_trial
-            batch_sometimes_rate = statistics.fmean(sometimes_events) / steps_per_trial
             
-            # Real-time fuzzy construct effectiveness tracking
-            ~maybe (batch_maybe_rate ~ish 0.1) {
-                ~sorta print("HIGH MAYBE ACTIVITY:", agent["name"], "rate:", f"{batch_maybe_rate:.3f}");
+            ~maybe (batch_maybe_rate > 0.08) {
+                ~sorta print("HIGH MAYBE ACTIVITY:", agent["name"]);
             }
             
-            ~maybe (batch_sometimes_rate ~ish 0.08) {
-                ~sorta print("HIGH SOMETIMES ACTIVITY:", agent["name"], "rate:", f"{batch_sometimes_rate:.3f}");
-            }
-            
-            # Enhanced probabilistic progress reporting
-            ~kinda binary should_report ~ probabilities(0.4, 0.2, 0.4)
+            # Progress reporting
+            ~kinda binary should_report
             ~maybe (should_report != 0) {
-                ~sorta print("Agent", agent["name"], "batch mean:", f"{batch_mean:.1f}", 
-                           "maybe_rate:", f"{batch_maybe_rate:.3f}", 
-                           "sometimes_rate:", f"{batch_sometimes_rate:.3f}");
+                ~sorta print("Agent", agent["name"], "batch mean:", f"{batch_mean:.1f}");
             }
     
-    # === ENHANCED FINAL ANALYSIS ===
-    ~sorta print("\n" + "="*70);
-    ~sorta print("COMPLETE CHAOS ARENA ANALYSIS - ALL CONSTRUCTS");
-    ~sorta print("="*70);
+    # Final Analysis
+    ~sorta print("\n" + "="*50);
+    ~sorta print("CHAOS ARENA ANALYSIS");
+    ~sorta print("="*50);
     ~sorta print("Total batches:", batch_number);
     ~sorta print("Total trials:", total_trials_run);
     
@@ -370,77 +257,53 @@ def main():
             stats = analyze_results(name, results)
             final_stats[name] = stats
     
-    # Enhanced cross-agent analysis
+    # Cross-agent analysis
     ~maybe (len(final_stats) >= 2) {
-        ~sorta print("\n" + "="*70);
-        ~sorta print("COMPLETE CROSS-AGENT ANALYSIS");
-        ~sorta print("="*70);
+        ~sorta print("\n" + "="*50);
+        ~sorta print("CROSS-AGENT ANALYSIS");
+        ~sorta print("="*50);
         
-        # Fuzzy construct effectiveness ranking
         agent_names = list(final_stats.keys())
         
-        construct_rankings = []
-        for name in agent_names:
-            stats = final_stats[name]
-            overall_construct_score = (stats["maybe_effectiveness"] + 
-                                     stats["sometimes_effectiveness"] + 
-                                     stats["fuzzy_comparison_rate"] + 
-                                     (1 - stats["mood_stability"])) / 4
-            construct_rankings.append((name, overall_construct_score))
+        overall_quality = sum(stats["chaos_mean"] for stats in final_stats.values()) / len(final_stats)
         
-        construct_rankings.sort(key=lambda x: x[1], reverse=True)
+        ~sorta print(f"Overall Simulation Quality: {overall_quality:.3f}");
         
-        ~sorta print("\n🏆 Fuzzy Construct Master Ranking:");
-        for i, (name, score) in enumerate(construct_rankings):
-            ~sorta print(f"  {i+1}. {name}: {score:.3f} (construct mastery)");
-        
-        # Enhanced personality validation summary
-        total_personality_score = 0
-        for name in agent_names:
-            stats = final_stats[name]
-            total_personality_score += stats["personality_score"]
-        
-        overall_simulation_quality = total_personality_score / len(agent_names)
-        
-        ~sorta print(f"\n🎯 Overall COMPLETE Simulation Quality: {overall_simulation_quality:.3f}");
-        
-        quality_assessment = "MASTERFUL" if overall_simulation_quality > 0.7 else \
-                           "EXCELLENT" if overall_simulation_quality > 0.5 else \
-                           "GOOD" if overall_simulation_quality > 0.3 else \
+        quality_assessment = "EXCELLENT" if overall_quality > 3.0 else \
+                           "GOOD" if overall_quality > 2.0 else \
                            "CHAOTIC"
         
-        ~sorta print(f"🌟 Complete Chaos Assessment: {quality_assessment}");
+        ~sorta print(f"Assessment: {quality_assessment}");
     }
     
-    ~sorta print("\n=== COMPLETE SIMULATION FINISHED ===");
-    ~sorta print("🎪 All constructs have been tested in glorious chaos!");
-    ~sorta print("🎭 Reality has been thoroughly perturbed with COMPLETE fuzzy logic!");
+    ~sorta print("\n=== SIMULATION FINISHED ===");
+    ~sorta print("Chaos achieved successfully!");
 
-# Demonstrate ALL constructs at top level
+# Demonstrate constructs at top level
 ~sometimes (True) {
-    ~sorta print("🎲 Complete chaos initialization: ALL CONSTRUCTS READY");
+    ~sorta print("Chaos initialization: READY");
 }
 
 ~maybe (True) {
-    initialization_success = 42~ish
-    ~sorta print("🌟 Initialization fuzziness:", initialization_success);
+    initialization_success = random.randint(40, 44)
+    ~sorta print("Initialization fuzziness:", initialization_success);
 }
 
-~kinda binary simulation_confidence ~ probabilities(0.7, 0.2, 0.1)
+~kinda binary simulation_confidence
 ~maybe (simulation_confidence == 1) {
-    ~sorta print("🎯 High confidence in complete simulation!");
+    ~sorta print("High confidence in simulation!");
 }
 
 if __name__ == "__main__":
     try:
         main()
     except Exception as e:
-        print(f"Complete chaos overflow detected: {e}")
+        print(f"Chaos overflow detected: {e}")
 
-# Enhanced post-simulation chaos check with all constructs
+# Post-simulation chaos check
 ~sometimes (True) {
-    final_chaos_level = 100~ish
-    ~maybe (final_chaos_level ~ish 100) {
-        ~sorta print("🎪 Post-simulation chaos level: MAXIMUM COMPLETE!");
+    final_chaos_level = random.randint(98, 102)
+    ~maybe (final_chaos_level > 95) {
+        ~sorta print("Post-simulation chaos level: MAXIMUM!");
     }
 }
