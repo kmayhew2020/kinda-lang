@@ -280,6 +280,11 @@ def transform_line(line: str) -> List[str]:
         used_helpers.add("kinda_int")
         transformed_code = f"{var} = kinda_int({val})"
 
+    elif key == "kinda_bool":
+        var, val = groups
+        used_helpers.add("kinda_bool")
+        transformed_code = f"{var} = kinda_bool({val})"
+
     elif key == "kinda_binary":
         if len(groups) == 2 and groups[1]:  # Custom probabilities provided
             var, probs = groups

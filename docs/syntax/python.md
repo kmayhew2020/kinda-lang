@@ -12,6 +12,14 @@ This file defines all supported Kinda constructs in Python-like syntax. This ver
 - Adds random noise: value becomes `5 ± 1`.
 - Stored in the environment under name `x`.
 
+### `flag: kinda bool = True`
+
+- Declares a fuzzy boolean with personality-adjusted uncertainty.
+- Value has a chance to flip based on current personality mode.
+- Supports string values: `"true"`, `"false"`, `"yes"`, `"no"`, etc.
+- Supports integer values: `1` (truthy), `0` (falsy).
+- Uncertainty varies by personality: reliable (<5%), chaotic (>20%).
+
 ---
 
 ## ✅ Reassignments

@@ -1,0 +1,10 @@
+# Simple Fuzzy Boolean Example
+
+~kinda bool flag ~= True;
+~sorta print("The flag is:", flag);
+
+~sometimes (flag) {
+    ~sorta print("Flag is true (or we think it is)!");
+} {
+    ~sorta print("Flag is false (or uncertainty struck)!");
+}

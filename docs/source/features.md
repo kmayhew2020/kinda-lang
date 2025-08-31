@@ -61,6 +61,18 @@ if score ~ish target:   # Within ±2 tolerance
     ~sorta print("Close enough!")
 ```
 
+### `~kinda bool` - Fuzzy Boolean
+Declares fuzzy booleans with personality-adjusted uncertainty that can flip values:
+```python
+~kinda bool ready ~= True      # Might flip to False sometimes
+~kinda bool active = "yes"     # String values converted to booleans
+~kinda bool enabled = 1        # Integer values treated as booleans
+
+# Uncertainty varies by personality:
+# reliable: <5% chance of flipping
+# chaotic: >20% chance of flipping
+```
+
 ### `~kinda binary` - Three-State Logic
 Returns 1 (positive), 0 (neutral), or -1 (negative):
 ```python

@@ -1,0 +1,38 @@
+# Kinda Bool - Fuzzy Boolean Example
+#
+# The ~kinda bool construct creates fuzzy booleans that have
+# personality-adjusted uncertainty - they might flip their values sometimes!
+
+~sorta print("=== Kinda Bool Demo ===");
+
+# Basic fuzzy boolean declarations
+~kinda bool is_ready = True;     # Might flip to False sometimes
+~kinda bool has_error ~= False;  # Might flip to True sometimes
+
+~sorta print("Basic declarations:");
+~sorta print("is_ready:", is_ready);
+~sorta print("has_error:", has_error);
+
+# Using with different value types
+~kinda bool from_int = 1;        # Integer -> boolean
+~kinda bool from_string ~= "yes"; # String -> boolean
+~kinda bool from_zero = 0;       # Zero -> False (but might flip)
+
+~sorta print("\nDifferent value types:");
+~sorta print("from_int (1):", from_int);
+~sorta print("from_string ('yes'):", from_string);
+~sorta print("from_zero (0):", from_zero);
+
+# Using in conditional logic
+~sometimes (is_ready and not has_error) {
+    ~sorta print("\nSystem appears ready!");
+} {
+    ~sorta print("\nSystem not ready or uncertainty kicked in");
+}
+
+# Personality affects uncertainty level:
+# - reliable: very low chance of flipping
+# - chaotic: much higher chance of flipping
+~sorta print("\nRun with different moods to see uncertainty:");
+~sorta print("kinda run --mood reliable kinda_bool_example.py.knda");
+~sorta print("kinda run --mood chaotic kinda_bool_example.py.knda");

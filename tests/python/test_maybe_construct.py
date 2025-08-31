@@ -197,10 +197,12 @@ class TestMaybeRuntimeBehavior:
     """Test ~maybe runtime behavior and probability"""
 
     @patch("random.random")
-    def test_maybe_probability_execution(self, mock_random):
+    @patch("kinda.personality.chaos_probability")
+    def test_maybe_probability_execution(self, mock_chaos_prob, mock_random):
         """Test ~maybe executes with 60% probability"""
-        # Test execution when random < 0.6
+        # Test execution when random < probability threshold
         mock_random.return_value = 0.5  # Should execute
+        mock_chaos_prob.return_value = 0.6  # Probability threshold
 
         # Generate complete runtime to get the maybe function
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -221,15 +223,19 @@ class TestMaybeRuntimeBehavior:
                 from fuzzy import maybe
 
                 result = maybe(True)
-                assert result == True  # Should execute when condition is True and random < 0.6
+                assert (
+                    result == True
+                )  # Should execute when condition is True and random < probability
             finally:
                 sys.path.remove(str(temp_path))
 
     @patch("random.random")
-    def test_maybe_probability_no_execution(self, mock_random):
+    @patch("kinda.personality.chaos_probability")
+    def test_maybe_probability_no_execution(self, mock_chaos_prob, mock_random):
         """Test ~maybe doesn't execute when probability fails"""
-        # Test no execution when random >= 0.6
+        # Test no execution when random >= probability threshold
         mock_random.return_value = 0.7  # Should not execute
+        mock_chaos_prob.return_value = 0.6  # Probability threshold
 
         # Generate complete runtime to get the maybe function
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -255,9 +261,11 @@ class TestMaybeRuntimeBehavior:
                 sys.path.remove(str(temp_path))
 
     @patch("random.random")
-    def test_maybe_condition_false(self, mock_random):
+    @patch("kinda.personality.chaos_probability")
+    def test_maybe_condition_false(self, mock_chaos_prob, mock_random):
         """Test ~maybe doesn't execute when condition is False"""
         mock_random.return_value = 0.3  # Would normally execute
+        mock_chaos_prob.return_value = 0.6  # Probability threshold
 
         # Generate complete runtime to get the maybe function
         with tempfile.TemporaryDirectory() as temp_dir:

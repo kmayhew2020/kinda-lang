@@ -22,6 +22,7 @@ Kinda introduces **uncertainty as a first-class concept** with the `~` (tilde) p
 
 ```kinda
 ~kinda int x ~= 42       # Fuzzy integer (adds ±1 noise)
+~kinda bool ready ~= True # Fuzzy boolean (might flip to False)
 timeout = 5~ish          # Fuzzy value (4-6 seconds, ±2 variance)
 ~sorta print("Hello!")   # Maybe prints (80% chance)  
 ~sometimes (x > 40) {    # Random conditional (50% chance)
@@ -30,12 +31,12 @@ timeout = 5~ish          # Fuzzy value (4-6 seconds, ±2 variance)
 } {                      # Else block - runs when condition fails
     ~sorta print("Not so big...")
 }
-~probably (x > 39) {     # Confident conditional (70% chance)
+~probably (ready) {      # Use the fuzzy boolean
     if score ~ish 100 {  # Fuzzy comparison (98-102 tolerance)
         ~sorta print("Close enough!")
     }
 } {                      # Else block for ~probably too
-    ~sorta print("Not close enough...")
+    ~sorta print("Not ready yet...")
 }
 ```
 
@@ -77,6 +78,7 @@ kinda examples  # Try some examples
 | Kinda Construct | What It Does | Example |
 |-----------------|--------------|---------|
 | `~kinda int x ~= 42` | Fuzzy integer (±1 noise) | `x` might be 41, 42, or 43 |
+| `~kinda bool flag ~= True` | Fuzzy boolean (uncertainty flip) | Sometimes flips True/False based on personality |
 | `42~ish` | Fuzzy value (±2 variance) | Returns 40-44 randomly |  
 | `score ~ish 100` | Fuzzy comparison (±2 tolerance) | True if score is 98-102 |
 | `~kinda binary decision` | Three-state binary | Returns 1 (yes), -1 (no), or 0 (undecided) |

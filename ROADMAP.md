@@ -63,8 +63,10 @@
 - ✅ **Issue #106**: Bug: ~ish construct uses wrong runtime function for assignments - **FIXED in PR #108**
 - ✅ **Issue #107**: UX Bug: ~ish variable modification fails silently causing user confusion - **FIXED in PR #108**
 
+### ✅ Recently Completed Features (2025-08-30)
+- ✅ **Issue #97**: Feature: Implement ~rarely construct (15% probability) - **COMPLETED in PR #109**
+
 ### 🚀 New Feature Requests (Discovered 2025-08-29/30)
-- 🔴 **Issue #97**: Feature: Implement ~rarely construct (15% probability) - **HIGH PRIORITY**
 - 🔴 **Issue #98**: Feature: Implement ~kinda bool fuzzy boolean type - **HIGH PRIORITY**
 - 🔴 **Issue #99**: Feature: Implement ~kinda float fuzzy floating-point type - **HIGH PRIORITY**
 - 🟡 **Issue #100**: Feature: Implement ~eventually delayed execution blocks - **MEDIUM**
@@ -89,7 +91,7 @@
    - Variable modification now works correctly with expressions
 
 **🔴 HIGH PRIORITY (Next Development Wave):**
-2. **New Core Constructs**: Issues #97, #98, #99 - ~rarely, ~kinda bool/float
+2. **New Core Constructs**: Issues #98, #99 - ~kinda bool/float (Issue #97 ~rarely COMPLETED ✅)
 3. **Epic #35**: 🎲 Enhanced Chaos Constructs - New fuzzy constructs and behaviors
 4. **Issue #74**: ⏰ Time-based Variable Drift - Variables get fuzzier over program lifetime
 
@@ -141,4 +143,4 @@
 - 🟡 **Documentation Gap**: ~ish usage patterns need comprehensive guide (Issue #87)
 
 ---
-*Last Updated: 2025-08-30 by Kinda-Lang Project Manager - ~ish Construct Crisis RESOLVED - All 6 Critical Issues Fixed & Closed via PR #108*
+*Last Updated: 2025-08-30 by Kinda-Lang Project Manager - ~rarely Construct Implementation COMPLETED (Issue #97, PR #109) - Ready for ~kinda bool/float Development*
