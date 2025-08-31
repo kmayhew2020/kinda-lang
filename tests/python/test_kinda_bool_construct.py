@@ -27,7 +27,7 @@ class TestKindaBoolConstructParsing:
             "~kinda bool active = 1;",
             "~kinda bool enabled ~= 0;",
         ]
-        
+
         for line in test_cases:
             construct_type, groups = match_python_construct(line)
             assert construct_type == "kinda_bool", f"Failed to parse: {line}"
@@ -37,11 +37,11 @@ class TestKindaBoolConstructParsing:
         """Test various variable naming patterns"""
         test_cases = [
             ("~kinda bool x = True;", "x", "True"),
-            ("~kinda bool is_active = False;", "is_active", "False"),  
+            ("~kinda bool is_active = False;", "is_active", "False"),
             ("~kinda bool flag123 ~= 1;", "flag123", "1"),
             ("~kinda bool _private = yes;", "_private", "yes"),
         ]
-        
+
         for line, expected_var, expected_val in test_cases:
             construct_type, groups = match_python_construct(line)
             assert construct_type == "kinda_bool"
@@ -61,7 +61,7 @@ class TestKindaBoolConstructParsing:
             "~kinda bool flag = some_variable;",
             "~kinda bool flag = func_call();",
         ]
-        
+
         for line in test_cases:
             construct_type, groups = match_python_construct(line)
             assert construct_type == "kinda_bool", f"Failed to parse: {line}"
@@ -70,7 +70,7 @@ class TestKindaBoolConstructParsing:
         """Test ~kinda bool with comments"""
         line = "~kinda bool flag = True; # This is a comment"
         construct_type, groups = match_python_construct(line)
-        
+
         assert construct_type == "kinda_bool"
         var, val = groups
         assert var == "flag"
@@ -84,7 +84,7 @@ class TestKindaBoolConstructParsing:
             ("~kinda bool flag == True;", "flag", "True"),
             ("~kinda bool flag ~== True;", "flag", "True"),
         ]
-        
+
         for line, expected_var, expected_val in test_cases:
             construct_type, groups = match_python_construct(line)
             assert construct_type == "kinda_bool"
@@ -100,7 +100,7 @@ class TestKindaBoolTransformation:
         """Test basic transformation of ~kinda bool"""
         line = "~kinda bool flag = True;"
         result = transform_line(line)
-        
+
         assert len(result) == 1
         assert "flag = kinda_bool(True)" in result[0]
 
@@ -108,7 +108,7 @@ class TestKindaBoolTransformation:
         """Test transformation with fuzzy assignment operator"""
         line = "~kinda bool active ~= False;"
         result = transform_line(line)
-        
+
         assert len(result) == 1
         assert "active = kinda_bool(False)" in result[0]
 
@@ -119,7 +119,7 @@ class TestKindaBoolTransformation:
             ("~kinda bool status = 'yes';", "status = kinda_bool('yes')"),
             ("~kinda bool ready = some_var;", "ready = kinda_bool(some_var)"),
         ]
-        
+
         for input_line, expected_output in test_cases:
             result = transform_line(input_line)
             assert len(result) == 1
@@ -127,18 +127,18 @@ class TestKindaBoolTransformation:
 
     def test_file_transformation_includes_helpers(self):
         """Test that file transformation includes kinda_bool helper"""
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.kinda', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".kinda", delete=False) as f:
             f.write("~kinda bool active = True;\n")
             f.write("~sorta print(active);\n")
             temp_file = f.name
 
         try:
             result = transform_file(temp_file)
-            
+
             # Should import kinda_bool helper
             assert "kinda_bool" in result
             assert "active = kinda_bool(True)" in result
-            
+
         finally:
             Path(temp_file).unlink()
 
@@ -156,17 +156,17 @@ class TestKindaBoolRuntime:
         # Create namespace and execute function definition
         test_namespace = {}
         exec(KindaPythonConstructs["kinda_bool"]["body"], test_namespace)
-        kinda_bool = test_namespace['kinda_bool']
-        
+        kinda_bool = test_namespace["kinda_bool"]
+
         # Test with True
-        with patch('random.random', return_value=0.9):  # No uncertainty flip
-            with patch('kinda.personality.chaos_bool_uncertainty', return_value=0.1):
+        with patch("random.random", return_value=0.9):  # No uncertainty flip
+            with patch("kinda.personality.chaos_bool_uncertainty", return_value=0.1):
                 result = kinda_bool(True)
                 assert isinstance(result, bool)
-        
-        # Test with False  
-        with patch('random.random', return_value=0.9):  # No uncertainty flip
-            with patch('kinda.personality.chaos_bool_uncertainty', return_value=0.1):
+
+        # Test with False
+        with patch("random.random", return_value=0.9):  # No uncertainty flip
+            with patch("kinda.personality.chaos_bool_uncertainty", return_value=0.1):
                 result = kinda_bool(False)
                 assert isinstance(result, bool)
 
@@ -174,17 +174,17 @@ class TestKindaBoolRuntime:
         """Test kinda_bool with integer values"""
         test_namespace = {}
         exec(KindaPythonConstructs["kinda_bool"]["body"], test_namespace)
-        kinda_bool = test_namespace['kinda_bool']
-        
+        kinda_bool = test_namespace["kinda_bool"]
+
         # Test with 1 (truthy)
-        with patch('random.random', return_value=0.9):  # No uncertainty flip
-            with patch('kinda.personality.chaos_bool_uncertainty', return_value=0.1):
+        with patch("random.random", return_value=0.9):  # No uncertainty flip
+            with patch("kinda.personality.chaos_bool_uncertainty", return_value=0.1):
                 result = kinda_bool(1)
                 assert result is True
-            
+
         # Test with 0 (falsy)
-        with patch('random.random', return_value=0.9):  # No uncertainty flip
-            with patch('kinda.personality.chaos_bool_uncertainty', return_value=0.1):
+        with patch("random.random", return_value=0.9):  # No uncertainty flip
+            with patch("kinda.personality.chaos_bool_uncertainty", return_value=0.1):
                 result = kinda_bool(0)
                 assert result is False
 
@@ -192,21 +192,21 @@ class TestKindaBoolRuntime:
         """Test kinda_bool with various string values"""
         test_namespace = {}
         exec(KindaPythonConstructs["kinda_bool"]["body"], test_namespace)
-        kinda_bool = test_namespace['kinda_bool']
-        
+        kinda_bool = test_namespace["kinda_bool"]
+
         # Test truthy strings
-        truthy_strings = ['true', 'TRUE', '1', 'yes', 'YES', 'on', 'y']
+        truthy_strings = ["true", "TRUE", "1", "yes", "YES", "on", "y"]
         for val in truthy_strings:
-            with patch('random.random', return_value=0.9):  # No uncertainty flip
-                with patch('kinda.personality.chaos_bool_uncertainty', return_value=0.1):
+            with patch("random.random", return_value=0.9):  # No uncertainty flip
+                with patch("kinda.personality.chaos_bool_uncertainty", return_value=0.1):
                     result = kinda_bool(val)
                     assert result is True, f"Expected True for '{val}'"
-        
-        # Test falsy strings  
-        falsy_strings = ['false', 'FALSE', '0', 'no', 'NO', 'off', 'n']
+
+        # Test falsy strings
+        falsy_strings = ["false", "FALSE", "0", "no", "NO", "off", "n"]
         for val in falsy_strings:
-            with patch('random.random', return_value=0.9):  # No uncertainty flip
-                with patch('kinda.personality.chaos_bool_uncertainty', return_value=0.1):
+            with patch("random.random", return_value=0.9):  # No uncertainty flip
+                with patch("kinda.personality.chaos_bool_uncertainty", return_value=0.1):
                     result = kinda_bool(val)
                     assert result is False, f"Expected False for '{val}'"
 
@@ -214,16 +214,16 @@ class TestKindaBoolRuntime:
         """Test kinda_bool with None value"""
         test_namespace = {}
         exec(KindaPythonConstructs["kinda_bool"]["body"], test_namespace)
-        kinda_bool = test_namespace['kinda_bool']
-        
+        kinda_bool = test_namespace["kinda_bool"]
+
         # With None, should return random boolean
-        with patch('random.choice', return_value=True):
-            with patch('kinda.personality.chaos_bool_uncertainty', return_value=0.1):
+        with patch("random.choice", return_value=True):
+            with patch("kinda.personality.chaos_bool_uncertainty", return_value=0.1):
                 result = kinda_bool(None)
                 assert result is True
-            
-        with patch('random.choice', return_value=False):
-            with patch('kinda.personality.chaos_bool_uncertainty', return_value=0.1):
+
+        with patch("random.choice", return_value=False):
+            with patch("kinda.personality.chaos_bool_uncertainty", return_value=0.1):
                 result = kinda_bool(None)
                 assert result is False
 
@@ -231,14 +231,14 @@ class TestKindaBoolRuntime:
         """Test uncertainty causing boolean flip"""
         test_namespace = {}
         exec(KindaPythonConstructs["kinda_bool"]["body"], test_namespace)
-        kinda_bool = test_namespace['kinda_bool']
-        
+        kinda_bool = test_namespace["kinda_bool"]
+
         # High uncertainty should cause flip
-        with patch('random.random', return_value=0.05):  # Triggers uncertainty
-            with patch('kinda.personality.chaos_bool_uncertainty', return_value=0.1):
+        with patch("random.random", return_value=0.05):  # Triggers uncertainty
+            with patch("kinda.personality.chaos_bool_uncertainty", return_value=0.1):
                 result = kinda_bool(True)
                 assert result is False  # Should be flipped
-                
+
                 result = kinda_bool(False)
                 assert result is True  # Should be flipped
 
@@ -246,11 +246,11 @@ class TestKindaBoolRuntime:
         """Test error handling in kinda_bool"""
         test_namespace = {}
         exec(KindaPythonConstructs["kinda_bool"]["body"], test_namespace)
-        kinda_bool = test_namespace['kinda_bool']
-        
+        kinda_bool = test_namespace["kinda_bool"]
+
         # Test with problematic value that causes exception
-        with patch('kinda.personality.chaos_bool_uncertainty', side_effect=Exception("Test error")):
-            with patch('random.choice', return_value=True):
+        with patch("kinda.personality.chaos_bool_uncertainty", side_effect=Exception("Test error")):
+            with patch("random.choice", return_value=True):
                 result = kinda_bool("test")
                 assert isinstance(result, bool)
 
@@ -270,38 +270,48 @@ class TestKindaBoolPersonalityIntegration:
         """Test reliable personality has low boolean uncertainty"""
         PersonalityContext.set_mood("reliable")
         personality = PersonalityContext.get_instance()
-        
+
         uncertainty = personality.get_bool_uncertainty()
-        assert uncertainty <= 0.05, f"Reliable personality should have low uncertainty, got {uncertainty}"
+        assert (
+            uncertainty <= 0.05
+        ), f"Reliable personality should have low uncertainty, got {uncertainty}"
 
     def test_chaotic_personality_high_uncertainty(self):
         """Test chaotic personality has high boolean uncertainty"""
         PersonalityContext.set_mood("chaotic")
         personality = PersonalityContext.get_instance()
-        
+
         uncertainty = personality.get_bool_uncertainty()
-        assert uncertainty >= 0.2, f"Chaotic personality should have high uncertainty, got {uncertainty}"
+        assert (
+            uncertainty >= 0.2
+        ), f"Chaotic personality should have high uncertainty, got {uncertainty}"
 
     def test_uncertainty_with_instability(self):
         """Test that instability affects boolean uncertainty"""
         PersonalityContext.set_mood("playful")
         personality = PersonalityContext.get_instance()
-        
+
         # Start with base uncertainty
         base_uncertainty = personality.get_bool_uncertainty()
-        
-        # Add instability 
+
+        # Add instability
         personality.instability_level = 0.5
         unstable_uncertainty = personality.get_bool_uncertainty()
-        
+
         assert unstable_uncertainty > base_uncertainty, "Instability should increase uncertainty"
 
     def test_personality_profiles_have_bool_uncertainty(self):
         """Test that all personality profiles define bool_uncertainty"""
         for profile_name, profile in PERSONALITY_PROFILES.items():
-            assert hasattr(profile, 'bool_uncertainty'), f"Profile '{profile_name}' missing bool_uncertainty"
-            assert isinstance(profile.bool_uncertainty, (int, float)), f"Profile '{profile_name}' bool_uncertainty not numeric"
-            assert 0.0 <= profile.bool_uncertainty <= 1.0, f"Profile '{profile_name}' bool_uncertainty out of range"
+            assert hasattr(
+                profile, "bool_uncertainty"
+            ), f"Profile '{profile_name}' missing bool_uncertainty"
+            assert isinstance(
+                profile.bool_uncertainty, (int, float)
+            ), f"Profile '{profile_name}' bool_uncertainty not numeric"
+            assert (
+                0.0 <= profile.bool_uncertainty <= 1.0
+            ), f"Profile '{profile_name}' bool_uncertainty out of range"
 
 
 class TestKindaBoolIntegrationWithOtherConstructs:
@@ -309,7 +319,7 @@ class TestKindaBoolIntegrationWithOtherConstructs:
 
     def test_kinda_bool_with_ish_comparison(self):
         """Test kinda bool works with ~ish comparisons"""
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.kinda', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".kinda", delete=False) as f:
             f.write("~kinda bool flag = True;\n")
             f.write("result = flag ~ish True;\n")
             temp_file = f.name
@@ -323,7 +333,7 @@ class TestKindaBoolIntegrationWithOtherConstructs:
 
     def test_kinda_bool_with_conditional_constructs(self):
         """Test kinda bool with ~sometimes, ~maybe, ~probably"""
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.kinda', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".kinda", delete=False) as f:
             f.write("~kinda bool active = True;\n")
             f.write("~sometimes (active) {\n")
             f.write("    ~sorta print('active is true');\n")
@@ -339,7 +349,7 @@ class TestKindaBoolIntegrationWithOtherConstructs:
 
     def test_kinda_bool_with_welp_fallback(self):
         """Test kinda bool with ~welp fallback"""
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.kinda', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".kinda", delete=False) as f:
             f.write("~kinda bool status = might_fail() ~welp False;\n")
             temp_file = f.name
 
@@ -358,11 +368,11 @@ class TestKindaBoolEdgeCases:
         """Test kinda_bool with empty string"""
         test_namespace = {}
         exec(KindaPythonConstructs["kinda_bool"]["body"], test_namespace)
-        kinda_bool = test_namespace['kinda_bool']
-        
+        kinda_bool = test_namespace["kinda_bool"]
+
         # Empty string should be falsy
-        with patch('random.random', return_value=0.9):  # No uncertainty flip
-            with patch('kinda.personality.chaos_bool_uncertainty', return_value=0.1):
+        with patch("random.random", return_value=0.9):  # No uncertainty flip
+            with patch("kinda.personality.chaos_bool_uncertainty", return_value=0.1):
                 result = kinda_bool("")
                 assert result is False
 
@@ -370,18 +380,18 @@ class TestKindaBoolEdgeCases:
         """Test kinda_bool with whitespace strings"""
         test_namespace = {}
         exec(KindaPythonConstructs["kinda_bool"]["body"], test_namespace)
-        kinda_bool = test_namespace['kinda_bool']
-        
+        kinda_bool = test_namespace["kinda_bool"]
+
         test_cases = [
             (" true ", True),
-            (" FALSE ", False), 
+            (" FALSE ", False),
             ("  yes  ", True),
             ("   no   ", False),
         ]
-        
+
         for input_val, expected in test_cases:
-            with patch('random.random', return_value=0.9):  # No uncertainty flip
-                with patch('kinda.personality.chaos_bool_uncertainty', return_value=0.1):
+            with patch("random.random", return_value=0.9):  # No uncertainty flip
+                with patch("kinda.personality.chaos_bool_uncertainty", return_value=0.1):
                     result = kinda_bool(input_val)
                     assert result is expected, f"Expected {expected} for '{input_val}'"
 
@@ -389,14 +399,14 @@ class TestKindaBoolEdgeCases:
         """Test kinda_bool with ambiguous string values"""
         test_namespace = {}
         exec(KindaPythonConstructs["kinda_bool"]["body"], test_namespace)
-        kinda_bool = test_namespace['kinda_bool']
-        
+        kinda_bool = test_namespace["kinda_bool"]
+
         # Non-empty but ambiguous strings should be truthy (like standard Python)
         ambiguous_values = ["maybe", "kinda", "hello", "123abc"]
-        
+
         for val in ambiguous_values:
-            with patch('random.random', return_value=0.9):  # No uncertainty flip
-                with patch('kinda.personality.chaos_bool_uncertainty', return_value=0.1):
+            with patch("random.random", return_value=0.9):  # No uncertainty flip
+                with patch("kinda.personality.chaos_bool_uncertainty", return_value=0.1):
                     result = kinda_bool(val)
                     assert result is True, f"Ambiguous string '{val}' should be truthy"
 
@@ -404,18 +414,18 @@ class TestKindaBoolEdgeCases:
         """Test kinda_bool with edge case numeric values"""
         test_namespace = {}
         exec(KindaPythonConstructs["kinda_bool"]["body"], test_namespace)
-        kinda_bool = test_namespace['kinda_bool']
-        
+        kinda_bool = test_namespace["kinda_bool"]
+
         test_cases = [
-            (-1, True),    # Negative numbers are truthy
+            (-1, True),  # Negative numbers are truthy
             (0.0, False),  # Zero float is falsy
-            (0.1, True),   # Small positive float is truthy
+            (0.1, True),  # Small positive float is truthy
             (-0.1, True),  # Small negative float is truthy
         ]
-        
+
         for input_val, expected in test_cases:
-            with patch('random.random', return_value=0.9):  # No uncertainty flip
-                with patch('kinda.personality.chaos_bool_uncertainty', return_value=0.1):
+            with patch("random.random", return_value=0.9):  # No uncertainty flip
+                with patch("kinda.personality.chaos_bool_uncertainty", return_value=0.1):
                     result = kinda_bool(input_val)
                     assert result is expected, f"Expected {expected} for {input_val}"
 
@@ -428,7 +438,7 @@ class TestKindaBoolEdgeCases:
             "~kinda bool = True;",  # Missing variable name
             "~kinda boolean flag = True;",  # Wrong keyword
         ]
-        
+
         for pattern in invalid_patterns:
             construct_type, groups = match_python_construct(pattern)
             assert construct_type != "kinda_bool", f"Should not match: {pattern}"
@@ -436,16 +446,16 @@ class TestKindaBoolEdgeCases:
     def test_kinda_bool_uncertainty_bounds(self):
         """Test uncertainty is properly bounded"""
         from kinda.personality import PersonalityContext
-        
+
         PersonalityContext._instance = None
         personality = PersonalityContext.get_instance()
-        
+
         # Test maximum bounds
         personality.profile.bool_uncertainty = 2.0  # Way too high
         personality.profile.chaos_amplifier = 2.0
         uncertainty = personality.get_bool_uncertainty()
         assert uncertainty <= 0.5, f"Uncertainty should be capped at 0.5, got {uncertainty}"
-        
+
         # Test minimum bounds
         personality.profile.bool_uncertainty = -0.5  # Negative
         uncertainty = personality.get_bool_uncertainty()

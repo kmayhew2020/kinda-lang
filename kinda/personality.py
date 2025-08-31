@@ -27,7 +27,7 @@ class ChaosProfile:
     int_fuzz_range: Tuple[int, int] = (-1, 1)  # Range for kinda int fuzz
     ish_variance: float = 2.0  # Variance for ~ish values
     ish_tolerance: float = 2.0  # Tolerance for ~ish comparisons
-    
+
     # Boolean construct uncertainty
     bool_uncertainty: float = 0.1  # Probability of flipping boolean result
 
@@ -199,11 +199,11 @@ class PersonalityContext:
     def get_bool_uncertainty(self) -> float:
         """Get personality-adjusted boolean uncertainty."""
         uncertainty = self.profile.bool_uncertainty * self.profile.chaos_amplifier
-        
+
         # Add instability effects
         if self.instability_level > 0.1:
             uncertainty += self.instability_level * 0.1
-            
+
         # Keep uncertainty within reasonable bounds
         return max(0.0, min(0.5, uncertainty))
 
