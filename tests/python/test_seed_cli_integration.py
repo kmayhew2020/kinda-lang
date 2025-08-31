@@ -345,7 +345,7 @@ class TestSeedCLIIntegration(unittest.TestCase):
         self.assertEqual(personality.seed, MAX_SEED)  # Should be clamped
         
         # Should show validation warning
-        mock_print.assert_any_call(f"[?] Seed value {MAX_SEED + 1000} is outside safe range {-(2**31)} to {MAX_SEED})")
+        mock_print.assert_any_call(f"[?] Seed value {MAX_SEED + 1000} is outside safe range ({-(2**31)} to {MAX_SEED})")
 
     def test_invalid_seed_type_handling(self):
         """Test handling of invalid seed types from environment"""
