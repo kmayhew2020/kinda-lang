@@ -26,7 +26,12 @@
   - `var~drift` - Access variables with accumulated drift applied
   - Advanced multi-factor drift algorithm (age, usage, recency, personality)
   - 36 comprehensive tests, full backward compatibility
-- 🔄 **Documentation Enhancement**: Complex usage patterns, domain examples (Epic #76)
+- 🔄 **Documentation Enhancement**: Epic #76 broken down into 5 specific tasks:
+  - Issue #114: Advanced Usage Patterns Documentation (HIGH)
+  - Issue #115: Personality System Integration Guide (HIGH) 
+  - Issue #116: Real-world Application Examples (MEDIUM)
+  - Issue #117: Performance and Debugging Guide (MEDIUM)
+  - Issue #118: Migration Guide for Existing Projects (LOW)
 
 **v0.5.0 "The Multi-Language Release" (PLANNED):**
 - 🔧 **C Language Support**: Complete C transpiler pipeline (Epic #19)
@@ -116,15 +121,19 @@
 2. **Issue #74**: ⏰ Time-based Variable Drift - **COMPLETED via PR #113** - Comprehensive implementation with 3 new constructs
 
 **🔴 HIGH PRIORITY (Next Development Wave):**
-1. **Epic #76**: 📚 Documentation Enhancement - Complex usage patterns and comprehensive guides
+1. **Issue #114**: 📖 Advanced Usage Patterns Documentation (Epic #76.1) - Complex construct combinations and edge cases
+2. **Issue #115**: 🎭 Personality System Integration Guide (Epic #76.2) - Complete personality system documentation
 
 **🟡 MEDIUM PRIORITY (Documentation & Features):**
+3. **Issue #116**: 🌍 Real-world Application Examples (Epic #76.3) - IoT, distributed systems, chaos engineering examples
+4. **Issue #117**: 🔧 Performance and Debugging Guide (Epic #76.4) - Performance characteristics and debugging strategies  
 5. **Issue #87**: 📘 Docs: Create comprehensive ~ish usage guide
 6. **Issue #86**: ⚙️ Feature: Add determinism controls (--seed, --chaos flags)
 
 **🟢 LOW PRIORITY (Future Enhancement):**
-7. **Issue #88**: 🔧 Feature: Single-source spec.yaml → docs + CLI to prevent drift
-8. **Issue #89**: 🛠️ DX: Add source maps for error reporting (.knda line/col in stack traces)
+7. **Issue #118**: 🔄 Migration Guide for Existing Projects (Epic #76.5) - Integration patterns and adoption strategies
+8. **Issue #88**: 🔧 Feature: Single-source spec.yaml → docs + CLI to prevent drift
+9. **Issue #89**: 🛠️ DX: Add source maps for error reporting (.knda line/col in stack traces)
 
 **🔮 FUTURE PLANNING (v0.5.0):**
 - **Epic #19**: 🔧 C Language Support - Complete C transpiler pipeline (moved to v0.5.0)
@@ -166,4 +175,4 @@
 - 🟡 **Documentation Gap**: ~ish usage patterns need comprehensive guide (Issue #87)
 
 ---
-*Last Updated: 2025-08-31 by Kinda-Lang Project Manager - Issue #74 Time-based Variable Drift COMPLETED (PR #113) - v0.4.0 "Fuzzy Types Release" nearly complete with 6 major features delivered*
+*Last Updated: 2025-08-31 by Kinda-Lang Project Manager - Epic #76 Documentation Enhancement broken down into 5 actionable tasks (Issues #114-118) - Next priority: Issue #114 Advanced Usage Patterns Documentation*
