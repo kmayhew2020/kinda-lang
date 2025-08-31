@@ -296,7 +296,9 @@ class TestKindaFloatRuntime:
         kinda_float = test_namespace["kinda_float"]
 
         # Test with problematic value that causes exception
-        with patch("kinda.personality.chaos_float_drift_range", side_effect=Exception("Test error")):
+        with patch(
+            "kinda.personality.chaos_float_drift_range", side_effect=Exception("Test error")
+        ):
             with patch("random.uniform", return_value=5.0):
                 result = kinda_float(3.14)
                 assert isinstance(result, float)
@@ -320,8 +322,12 @@ class TestKindaFloatPersonalityIntegration:
         personality = PersonalityContext.get_instance()
 
         drift_min, drift_max = personality.get_float_drift_range()
-        assert drift_min >= -0.1, f"Reliable personality should have minimal drift, got min={drift_min}"
-        assert drift_max <= 0.1, f"Reliable personality should have minimal drift, got max={drift_max}"
+        assert (
+            drift_min >= -0.1
+        ), f"Reliable personality should have minimal drift, got min={drift_min}"
+        assert (
+            drift_max <= 0.1
+        ), f"Reliable personality should have minimal drift, got max={drift_max}"
 
     def test_chaotic_personality_high_drift(self):
         """Test chaotic personality has high float drift"""
@@ -359,11 +365,19 @@ class TestKindaFloatPersonalityIntegration:
             assert isinstance(
                 profile.float_drift_range, tuple
             ), f"Profile '{profile_name}' float_drift_range not tuple"
-            assert len(profile.float_drift_range) == 2, f"Profile '{profile_name}' float_drift_range not length 2"
+            assert (
+                len(profile.float_drift_range) == 2
+            ), f"Profile '{profile_name}' float_drift_range not length 2"
             min_val, max_val = profile.float_drift_range
-            assert isinstance(min_val, (int, float)), f"Profile '{profile_name}' drift min not numeric"
-            assert isinstance(max_val, (int, float)), f"Profile '{profile_name}' drift max not numeric"
-            assert min_val <= max_val, f"Profile '{profile_name}' drift range invalid: {profile.float_drift_range}"
+            assert isinstance(
+                min_val, (int, float)
+            ), f"Profile '{profile_name}' drift min not numeric"
+            assert isinstance(
+                max_val, (int, float)
+            ), f"Profile '{profile_name}' drift max not numeric"
+            assert (
+                min_val <= max_val
+            ), f"Profile '{profile_name}' drift range invalid: {profile.float_drift_range}"
 
 
 class TestKindaFloatIntegrationWithOtherConstructs:
@@ -442,13 +456,13 @@ class TestKindaFloatEdgeCases:
         # Test with positive infinity
         with patch("random.uniform", return_value=0.0):
             with patch("kinda.personality.chaos_float_drift_range", return_value=(-0.5, 0.5)):
-                result = kinda_float(float('inf'))
+                result = kinda_float(float("inf"))
                 assert math.isinf(result)
 
         # Test with negative infinity
         with patch("random.uniform", return_value=0.0):
             with patch("kinda.personality.chaos_float_drift_range", return_value=(-0.5, 0.5)):
-                result = kinda_float(float('-inf'))
+                result = kinda_float(float("-inf"))
                 assert math.isinf(result)
 
     def test_kinda_float_with_nan(self):
@@ -460,7 +474,7 @@ class TestKindaFloatEdgeCases:
         # Test with NaN - should handle gracefully
         with patch("random.uniform", return_value=0.0):
             with patch("kinda.personality.chaos_float_drift_range", return_value=(-0.5, 0.5)):
-                result = kinda_float(float('nan'))
+                result = kinda_float(float("nan"))
                 # NaN + anything is still NaN
                 assert math.isnan(result)
 
