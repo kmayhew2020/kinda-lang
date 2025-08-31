@@ -58,7 +58,7 @@
 - ✅ **Issue #81**: Constructs inside function arguments not transformed - **FIXED in PR #95**
 - ✅ **Issue #82**: `~ish` returns value instead of modifying in-place - **FIXED in PR #108**
 - ✅ **Issue #83**: `~ish` transformer uses wrong function (ish_comparison vs ish_value) - **FIXED in PR #108**
-- 🟡 **Issue #84**: Documentation: `~ish` construct usage patterns need clarification - MEDIUM
+- ✅ **Issue #84**: Documentation: `~ish` construct usage patterns need clarification - **COMPLETED in PR #112**
 
 ### ✅ Recently Fixed Critical Issues (2025-08-30) 
 - ✅ **Issue #105**: Critical Bug: ~ish variable modification syntax completely broken - **FIXED in PR #108**
@@ -105,7 +105,6 @@
 **🔴 HIGH PRIORITY (Next Development Wave):**
 2. **Issue #74**: ⏰ Time-based Variable Drift - Evaluate feasibility and implementation scope for v0.4.0
 3. **Epic #76**: 📚 Documentation Enhancement - Complex usage patterns and comprehensive guides
-4. **Issue #84**: 📖 Documentation: ~ish construct usage patterns clarification
 
 **🟡 MEDIUM PRIORITY (Documentation & Features):**
 5. **Issue #87**: 📘 Docs: Create comprehensive ~ish usage guide
@@ -155,4 +154,4 @@
 - 🟡 **Documentation Gap**: ~ish usage patterns need comprehensive guide (Issue #87)
 
 ---
-*Last Updated: 2025-08-31 by Kinda-Lang Project Manager - v0.4.0 "Fuzzy Types Release" Core Features COMPLETED (~rarely, ~probably, ~kinda bool, ~kinda float) - Ready for Documentation Focus*
+*Last Updated: 2025-08-31 by Kinda-Lang Project Manager - Issue #84 ~ish documentation COMPLETED (PR #112) - v0.4.0 "Fuzzy Types Release" nearing completion*
