@@ -333,4 +333,14 @@ Kinda embraces the philosophy that:
 - **Controlled chaos** - randomness within useful bounds
 - **Augmentation over replacement** - enhance existing languages, don't replace them
 
+## Advanced Usage
+
+For complex applications combining multiple constructs, see the [Advanced Patterns Guide](advanced_patterns.md) which provides:
+
+- **Real-world examples** of fuzzy microservices, recommendation engines, and monitoring systems
+- **Complex construct combinations** with cascading conditionals and state management
+- **Error handling patterns** using ~welp and recovery strategies  
+- **Best practices** for maintainable and performant fuzzy code
+- **Testing strategies** for non-deterministic systems
+
 *"In kinda-lang, even the documentation is kinda comprehensive."* 🎲
