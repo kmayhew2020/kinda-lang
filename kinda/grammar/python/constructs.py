@@ -503,4 +503,110 @@ KindaPythonConstructs = {
             "        return fallback_value"
         ),
     },
+    "time_drift_float": {
+        "type": "declaration",
+        "pattern": re.compile(r"~time drift float (\w+)\s*[~=]+\s*([^#;]+?)(?:\s*#.*)?(?:;|$)"),
+        "description": "Time-based drift floating-point declaration with accumulating uncertainty",
+        "body": (
+            "def time_drift_float(var_name, initial_value):\n"
+            '    """Create a floating-point variable that drifts over time and usage"""\n'
+            "    from kinda.personality import register_time_variable, get_time_drift, update_chaos_state\n"
+            "    import random\n"
+            "    try:\n"
+            "        # Convert initial value to float\n"
+            "        if not isinstance(initial_value, (int, float)):\n"
+            "            try:\n"
+            "                initial_value = float(initial_value)\n"
+            "            except (ValueError, TypeError):\n"
+            '                print(f"[?] time drift float got something weird: {repr(initial_value)}")\n'
+            '                print(f"[tip] Expected a number but got {type(initial_value).__name__}")\n'
+            "                update_chaos_state(failed=True)\n"
+            "                initial_value = random.uniform(0.0, 10.0)\n"
+            "        \n"
+            "        float_value = float(initial_value)\n"
+            "        \n"
+            "        # Register variable for time-based drift tracking\n"
+            "        register_time_variable(var_name, float_value, 'float')\n"
+            "        \n"
+            "        # Apply initial small random drift (fresh variables are mostly precise)\n"
+            "        initial_drift = random.uniform(-0.01, 0.01)\n"
+            "        result = float_value + initial_drift\n"
+            "        \n"
+            "        update_chaos_state(failed=False)\n"
+            "        return result\n"
+            "    except Exception as e:\n"
+            '        print(f"[shrug] Time drift float got confused: {e}")\n'
+            '        print(f"[tip] Just picking a random float instead")\n'
+            "        update_chaos_state(failed=True)\n"
+            "        return random.uniform(0.0, 10.0)"
+        ),
+    },
+    "time_drift_int": {
+        "type": "declaration",
+        "pattern": re.compile(r"~time drift int (\w+)\s*[~=]+\s*([^#;]+?)(?:\s*#.*)?(?:;|$)"),
+        "description": "Time-based drift integer declaration with accumulating uncertainty",
+        "body": (
+            "def time_drift_int(var_name, initial_value):\n"
+            '    """Create an integer variable that drifts over time and usage"""\n'
+            "    from kinda.personality import register_time_variable, get_time_drift, update_chaos_state\n"
+            "    import random\n"
+            "    try:\n"
+            "        # Convert initial value to int\n"
+            "        if not isinstance(initial_value, (int, float)):\n"
+            "            try:\n"
+            "                initial_value = float(initial_value)\n"
+            "            except (ValueError, TypeError):\n"
+            '                print(f"[?] time drift int got something weird: {repr(initial_value)}")\n'
+            '                print(f"[tip] Expected a number but got {type(initial_value).__name__}")\n'
+            "                update_chaos_state(failed=True)\n"
+            "                initial_value = random.randint(0, 10)\n"
+            "        \n"
+            "        int_value = int(initial_value)\n"
+            "        \n"
+            "        # Register variable for time-based drift tracking\n"
+            "        register_time_variable(var_name, int_value, 'int')\n"
+            "        \n"
+            "        # Apply initial small random fuzz (fresh variables are mostly precise)\n"
+            "        initial_fuzz = random.choice([-1, 0, 0, 0, 1])  # Mostly no fuzz, occasional small drift\n"
+            "        result = int_value + initial_fuzz\n"
+            "        \n"
+            "        update_chaos_state(failed=False)\n"
+            "        return result\n"
+            "    except Exception as e:\n"
+            '        print(f"[shrug] Time drift int got confused: {e}")\n'
+            '        print(f"[tip] Just picking a random integer instead")\n'
+            "        update_chaos_state(failed=True)\n"
+            "        return random.randint(0, 10)"
+        ),
+    },
+    "drift_access": {
+        "type": "access",
+        "pattern": re.compile(r"(\w+)~drift"),
+        "description": "Access variable with time-based drift accumulation",
+        "body": (
+            "def drift_access(var_name, current_value):\n"
+            '    """Access a variable with time-based drift applied"""\n'
+            "    from kinda.personality import get_time_drift, update_chaos_state\n"
+            "    try:\n"
+            "        # Calculate time-based drift\n"
+            "        drift = get_time_drift(var_name, current_value)\n"
+            "        \n"
+            "        # Apply drift to current value\n"
+            "        if isinstance(current_value, (int, float)):\n"
+            "            result = current_value + drift\n"
+            "            # Maintain type consistency\n"
+            "            if isinstance(current_value, int):\n"
+            "                result = int(round(result))\n"
+            "        else:\n"
+            "            result = current_value  # Non-numeric values don't drift\n"
+            "        \n"
+            "        update_chaos_state(failed=False)\n"
+            "        return result\n"
+            "    except Exception as e:\n"
+            '        print(f"[shrug] Drift access failed: {e}")\n'
+            '        print(f"[tip] Returning original value")\n'
+            "        update_chaos_state(failed=True)\n"
+            "        return current_value if current_value is not None else 0"
+        ),
+    },
 }

@@ -28,6 +28,41 @@ This file defines all supported Kinda constructs in Python-like syntax. This ver
 - Supports integer values: `1` (truthy), `0` (falsy).
 - Uncertainty varies by personality: reliable (<5%), chaotic (>20%).
 
+### `temp: time drift float = 98.6`
+
+- Declares a floating-point variable that accumulates uncertainty over time.
+- Fresh variables start precise, drift increases with age and usage.
+- Each access adds time-based uncertainty to the value.
+- Drift factors: variable age, access frequency, recent activity.
+- Drift rate controlled by personality: reliable (0.0), chaotic (0.1).
+
+### `count: time drift int = 100`
+
+- Declares an integer variable that drifts over program lifetime.
+- Similar to `time drift float` but maintains integer type.
+- Fresh variables have minimal fuzz, uncertainty grows with time.
+- Each access accumulates integer-appropriate drift.
+
+### `variable~drift`
+
+- Access a time-drift variable with accumulated uncertainty applied.
+- Must be used with variables declared as `time drift float` or `time drift int`.
+- Each access increases the variable's accumulated drift.
+- Returns current value plus time-based uncertainty.
+
+```python
+temp: time drift float = 37.5
+count: time drift int = 1000
+
+# Access with accumulated drift
+current_temp = temp~drift    # Gets value with drift applied
+current_count = count~drift  # Integer with time-based fuzz
+
+# Drift increases with each access
+for i in range(100):
+    reading = temp~drift     # More uncertainty each time
+```
+
 ---
 
 ## ✅ Reassignments

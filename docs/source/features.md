@@ -170,6 +170,83 @@ result = ~welp risky_operation() fallback 42
 # If risky_operation() fails, result = 42
 ```
 
+## Time-Based Variable Drift
+
+Variables in kinda-lang can accumulate uncertainty over program lifetime, simulating real-world software degradation like memory leaks, accumulated errors, and thermal drift.
+
+### `~time drift float` - Floating-Point with Time-Based Drift
+Creates floating-point variables that become fuzzier with age and usage:
+```python
+~time drift float temperature = 98.6  # Starts precise
+# After 1000 operations: temperature might be ~98.7
+# After 10000 operations: temperature might be ~98.2  
+# After 100000 operations: temperature might be ~99.1
+```
+
+**Drift Accumulation Factors:**
+- **Age**: Older variables drift more (logarithmic scaling)
+- **Usage**: More frequently accessed variables accumulate drift
+- **Recency**: Recent activity causes more immediate drift
+- **Personality**: Drift rate controlled by personality profiles
+
+### `~time drift int` - Integer with Time-Based Drift  
+Creates integer variables that drift over time:
+```python
+~time drift int count = 100          # Fresh variable, mostly precise
+count~drift                         # Access with current drift applied
+# Each access accumulates more uncertainty
+```
+
+### Variable Access with Drift: `~drift`
+Access variables with accumulated time-based uncertainty:
+```python
+~time drift float sensor_reading = 25.0
+~time drift int packet_count = 1000
+
+# Each access applies accumulated drift
+current_reading = sensor_reading~drift    # Gets drifted value
+current_count = packet_count~drift        # Integer with accumulated fuzz
+
+# Drift increases with each access and time passage
+for i in range(100):
+    reading = sensor_reading~drift        # More drift each time
+    count = packet_count~drift           # Accumulates uncertainty
+```
+
+### Personality Effects on Time Drift
+Drift behavior varies significantly by personality:
+
+- **Reliable** (`drift_rate=0.0`): No time-based drift - variables stay precise
+- **Cautious** (`drift_rate=0.01`): Very slow drift, minimal degradation
+- **Playful** (`drift_rate=0.05`): Moderate drift, balanced uncertainty growth
+- **Chaotic** (`drift_rate=0.1`): Fast drift, rapid uncertainty accumulation
+
+### Real-World Simulation Examples
+Time drift enables realistic system behavior modeling:
+
+```python
+# System monitoring with degradation
+~time drift float memory_usage = 256.0
+~time drift float cpu_temp = 45.0
+~time drift int error_count = 0
+
+# Over time, values become less reliable
+for hour in range(100):
+    ~maybe (memory_usage~drift > 400.0):
+        ~sorta print("Memory leak detected!")
+        error_count~drift = error_count~drift + 1
+    
+    ~sometimes (cpu_temp~drift > 80.0):
+        ~sorta print("CPU overheating!")
+```
+
+**Use Cases:**
+- Modeling sensor degradation and calibration drift
+- Simulating memory leaks and resource consumption  
+- Testing system resilience to parameter uncertainty
+- Representing accumulated floating-point precision errors
+- Educational demonstrations of real-world software degradation
+
 ## Language Support
 
 ### Current Support
