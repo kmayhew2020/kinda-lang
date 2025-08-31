@@ -133,7 +133,7 @@ class PersonalityContext:
 
     _instance: Optional["PersonalityContext"] = None
 
-    def __init__(self, mood: str = "playful", chaos_level: int = 5):
+    def __init__(self, mood: str = "playful", chaos_level: int = 5, seed: Optional[int] = None):
         self.mood = mood.lower()
         self.profile = PERSONALITY_PROFILES.get(self.mood, PERSONALITY_PROFILES["playful"])
         self.chaos_level = chaos_level
@@ -141,6 +141,10 @@ class PersonalityContext:
         self.execution_count = 0
         self.instability_level = 0.0  # For cascade failures
         self.drift_accumulator = {}  # For time-based drift
+        
+        # Centralized random number generator for reproducibility
+        self.seed = seed
+        self.rng = random.Random(seed)  # Create seeded RNG instance
 
     @classmethod
     def get_instance(cls) -> "PersonalityContext":
@@ -178,13 +182,22 @@ class PersonalityContext:
     def set_mood(cls, mood: str) -> None:
         """Set the global mood/personality."""
         current_chaos_level = cls._instance.chaos_level if cls._instance else 5
-        cls._instance = cls(mood, current_chaos_level)
+        current_seed = cls._instance.seed if cls._instance else None
+        cls._instance = cls(mood, current_chaos_level, current_seed)
 
     @classmethod
     def set_chaos_level(cls, chaos_level: int) -> None:
         """Set the global chaos level."""
         current_mood = cls._instance.mood if cls._instance else "playful"
-        cls._instance = cls(current_mood, chaos_level)
+        current_seed = cls._instance.seed if cls._instance else None
+        cls._instance = cls(current_mood, chaos_level, current_seed)
+
+    @classmethod
+    def set_seed(cls, seed: Optional[int]) -> None:
+        """Set the global random seed."""
+        current_mood = cls._instance.mood if cls._instance else "playful"
+        current_chaos_level = cls._instance.chaos_level if cls._instance else 5
+        cls._instance = cls(current_mood, current_chaos_level, seed)
 
     def get_chaos_probability(self, base_key: str, condition: Any = True) -> float:
         """Get chaos-adjusted probability for a construct."""
@@ -370,10 +383,10 @@ class PersonalityContext:
             # Scale drift relative to value magnitude (but ensure minimum drift)
             value_magnitude = max(1.0, abs(float(current_value)))
             max_drift = max(0.01, drift_magnitude * value_magnitude * 0.1)
-            drift = random.uniform(-max_drift, max_drift)
+            drift = self.uniform(-max_drift, max_drift)  # Use seeded RNG
         else:
             # For non-numeric values, use small fixed drift
-            drift = random.uniform(-0.1, 0.1) * drift_magnitude
+            drift = self.uniform(-0.1, 0.1) * drift_magnitude  # Use seeded RNG
 
         # Accumulate drift for this variable
         var_info["accumulated_drift"] += abs(drift)
@@ -394,6 +407,36 @@ class PersonalityContext:
         var_info = self.drift_accumulator[var_name].copy()
         var_info["age_seconds"] = self.get_variable_age(var_name)
         return var_info
+
+    # Centralized random number generation methods for reproducibility
+    def random(self) -> float:
+        """Get a random float in [0.0, 1.0) from seeded RNG."""
+        return self.rng.random()
+
+    def randint(self, a: int, b: int) -> int:
+        """Get a random integer from seeded RNG."""
+        return self.rng.randint(a, b)
+
+    def uniform(self, a: float, b: float) -> float:
+        """Get a uniform random float from seeded RNG."""
+        return self.rng.uniform(a, b)
+
+    def choice(self, seq):
+        """Choose a random element from a sequence using seeded RNG."""
+        return self.rng.choice(seq)
+
+    def gauss(self, mu: float, sigma: float) -> float:
+        """Get a Gaussian random number from seeded RNG."""
+        return self.rng.gauss(mu, sigma)
+
+    def get_seed_info(self) -> Dict[str, Any]:
+        """Get information about the current seed configuration."""
+        return {
+            "seed": self.seed,
+            "has_seed": self.seed is not None,
+            "rng_state_type": str(type(self.rng.getstate())),
+            "reproducible": self.seed is not None
+        }
 
     def reset_variable_drift(self, var_name: str) -> None:
         """Reset drift accumulation for a variable."""
@@ -490,3 +533,34 @@ def get_variable_drift_stats(var_name: str) -> Dict[str, Any]:
 def reset_variable_drift(var_name: str) -> None:
     """Reset drift accumulation for a variable."""
     return get_personality().reset_variable_drift(var_name)
+
+
+# Centralized random number generation functions for reproducible chaos
+def chaos_random() -> float:
+    """Get a random float in [0.0, 1.0) from personality-controlled seeded RNG."""
+    return get_personality().random()
+
+
+def chaos_randint(a: int, b: int) -> int:
+    """Get a random integer from personality-controlled seeded RNG."""
+    return get_personality().randint(a, b)
+
+
+def chaos_uniform(a: float, b: float) -> float:
+    """Get a uniform random float from personality-controlled seeded RNG."""
+    return get_personality().uniform(a, b)
+
+
+def chaos_choice(seq):
+    """Choose a random element from a sequence using personality-controlled seeded RNG."""
+    return get_personality().choice(seq)
+
+
+def chaos_gauss(mu: float, sigma: float) -> float:
+    """Get a Gaussian random number from personality-controlled seeded RNG."""
+    return get_personality().gauss(mu, sigma)
+
+
+def get_seed_info() -> Dict[str, Any]:
+    """Get information about the current seed configuration."""
+    return get_personality().get_seed_info()

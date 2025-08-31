@@ -1,9 +1,10 @@
 # kinda/cli.py
 
 import argparse
+import os
 import sys
 from pathlib import Path
-from typing import Union
+from typing import Union, Optional
 
 # Optional chardet import for encoding detection
 try:
@@ -255,8 +256,25 @@ def validate_chaos_level(chaos_level: int) -> int:
     return chaos_level
 
 
-def setup_personality(mood: str, chaos_level: int = 5) -> None:
-    """Initialize personality system with specified mood and chaos level."""
+def validate_seed(seed: Optional[int]) -> Optional[int]:
+    """Validate and sanitize seed value for security."""
+    if seed is None:
+        return None
+    
+    # Basic bounds checking for security
+    MAX_SEED = 2**31 - 1  # Max 32-bit signed integer
+    MIN_SEED = -(2**31)   # Min 32-bit signed integer
+    
+    if seed > MAX_SEED or seed < MIN_SEED:
+        safe_print(f"[?] Seed value {seed} is outside safe range ({MIN_SEED} to {MAX_SEED})")
+        safe_print("[tip] Using bounded seed value for security")
+        return max(MIN_SEED, min(MAX_SEED, seed))
+    
+    return seed
+
+
+def setup_personality(mood: str, chaos_level: int = 5, seed: Optional[int] = None) -> None:
+    """Initialize personality system with specified mood, chaos level, and seed."""
     if mood and mood.lower() not in PERSONALITY_PROFILES:
         available_moods = ", ".join(PERSONALITY_PROFILES.keys())
         safe_print(f"[?] Unknown mood '{mood}'. Available moods: {available_moods}")
@@ -266,12 +284,30 @@ def setup_personality(mood: str, chaos_level: int = 5) -> None:
     # Validate chaos level
     chaos_level = validate_chaos_level(chaos_level)
 
+    # Handle seed resolution: CLI arg > environment variable > None
+    resolved_seed = seed
+    if resolved_seed is None:
+        env_seed = os.environ.get("KINDA_SEED")
+        if env_seed is not None:
+            try:
+                resolved_seed = int(env_seed)
+            except ValueError:
+                safe_print(f"[?] Invalid KINDA_SEED value '{env_seed}' - ignoring environment variable")
+                safe_print("[tip] KINDA_SEED must be an integer")
+
+    # Validate and sanitize seed for security
+    resolved_seed = validate_seed(resolved_seed)
+
     PersonalityContext.set_mood(mood or "playful")
     PersonalityContext.set_chaos_level(chaos_level)
+    PersonalityContext.set_seed(resolved_seed)
 
     if mood:
         safe_print(f"🎭 Setting kinda mood to '{mood}'")
     safe_print(f"🎲 Setting chaos level to {chaos_level} (1=minimal, 10=maximum chaos)")
+    if resolved_seed is not None:
+        seed_source = "CLI" if seed is not None else "environment"
+        safe_print(f"🌱 Using random seed {resolved_seed} for reproducible chaos ({seed_source})")
 
 
 def detect_language(path: Path, forced: Union[str, None]) -> str:
@@ -333,6 +369,12 @@ def main(argv=None) -> int:
         default=5,
         help="Control randomness intensity (1=minimal, 10=maximum chaos)",
     )
+    p_transform.add_argument(
+        "--seed",
+        type=int,
+        default=None,
+        help="Random seed for reproducible chaos (overrides KINDA_SEED environment variable)",
+    )
 
     p_run = sub.add_parser("run", help="Transform then execute (living dangerously, I see)")
     p_run.add_argument("input", help="The .knda file you want to run")
@@ -346,6 +388,12 @@ def main(argv=None) -> int:
         choices=range(1, 11),
         default=5,
         help="Control randomness intensity (1=minimal, 10=maximum chaos)",
+    )
+    p_run.add_argument(
+        "--seed",
+        type=int,
+        default=None,
+        help="Random seed for reproducible chaos (overrides KINDA_SEED environment variable)",
     )
 
     p_interpret = sub.add_parser(
@@ -365,6 +413,12 @@ def main(argv=None) -> int:
         default=5,
         help="Control randomness intensity (1=minimal, 10=maximum chaos)",
     )
+    p_interpret.add_argument(
+        "--seed",
+        type=int,
+        default=None,
+        help="Random seed for reproducible chaos (overrides KINDA_SEED environment variable)",
+    )
 
     p_examples = sub.add_parser("examples", help="Show example kinda programs (for inspiration)")
 
@@ -374,7 +428,7 @@ def main(argv=None) -> int:
 
     if args.command == "transform":
         # Setup personality for transform
-        setup_personality(getattr(args, "mood", None), getattr(args, "chaos_level", 5))
+        setup_personality(getattr(args, "mood", None), getattr(args, "chaos_level", 5), getattr(args, "seed", None))
 
         input_path = Path(args.input)
         if not input_path.exists():
@@ -453,7 +507,7 @@ def main(argv=None) -> int:
 
     if args.command == "run":
         # Setup personality for run
-        setup_personality(getattr(args, "mood", None), getattr(args, "chaos_level", 5))
+        setup_personality(getattr(args, "mood", None), getattr(args, "chaos_level", 5), getattr(args, "seed", None))
 
         input_path = Path(args.input)
         if not input_path.exists():
@@ -543,7 +597,7 @@ def main(argv=None) -> int:
 
     if args.command == "interpret":
         # Setup personality for interpret
-        setup_personality(getattr(args, "mood", None), getattr(args, "chaos_level", 5))
+        setup_personality(getattr(args, "mood", None), getattr(args, "chaos_level", 5), getattr(args, "seed", None))
 
         input_path = Path(args.input)
         if not input_path.exists():

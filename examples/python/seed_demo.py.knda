@@ -1,0 +1,143 @@
+# Seed Demo: Reproducible Chaos with Kinda-Lang
+# This example demonstrates how to use the --seed flag for reproducible results
+
+~sorta print("=== Kinda-Lang Seed Demonstration ===")
+~sorta print("This demo shows reproducible chaos using seeds.")
+~sorta print("")
+
+# Basic fuzzy variables with seed reproduction
+~sorta print("--- Basic Fuzzy Variables ---")
+~kinda int base_value = 42
+~sorta print("base_value (kinda int 42):", base_value)
+
+~kinda float pi_ish = 3.14159
+~sorta print("pi_ish (kinda float 3.14159):", pi_ish)
+
+~kinda binary decision = 0
+~sorta print("decision (kinda binary):", decision)
+
+~sorta print("")
+
+# Conditional execution with seeds
+~sorta print("--- Conditional Constructs (Seeded) ---")
+
+~sometimes (True) {
+    ~sorta print("Sometimes block executed! (50% base chance)")
+}
+
+~maybe (True) {
+    ~sorta print("Maybe block executed! (60% base chance)")
+}
+
+~probably (True) {
+    ~sorta print("Probably block executed! (70% base chance)")
+}
+
+~rarely (True) {
+    ~sorta print("Rarely block executed! (15% base chance)")
+}
+
+~sorta print("")
+
+# Demonstrate ish comparisons with reproducible behavior
+~sorta print("--- Ish Comparisons (Reproducible) ---")
+~kinda int x = 100
+~kinda int y = 102
+
+~sometimes (x ~ish y) {
+    ~sorta print("x (~ish) y: Values are kinda similar")
+} ~welp {
+    ~sorta print("x (~ish) y: Values are not that similar")
+}
+
+~sorta print("")
+
+# Complex example combining multiple constructs
+~sorta print("--- Complex Seeded Example ---")
+
+# Create some fuzzy values that will be deterministic with same seed
+~kinda int player_health = 100
+~kinda float damage_multiplier = 1.5
+~kinda binary critical_hit = 0
+
+~sorta print("Initial player_health:", player_health)
+~sorta print("damage_multiplier:", damage_multiplier)
+~sorta print("critical_hit:", critical_hit)
+
+# Simulate a battle scenario with reproducible outcomes
+~maybe (critical_hit > 0) {
+    ~sorta print("Critical hit! Damage multiplier increased!")
+    damage_multiplier ~= damage_multiplier + 0.5
+}
+
+~kinda int base_damage = 25
+~kinda float actual_damage = base_damage * damage_multiplier
+~sorta print("Base damage:", base_damage)
+~sorta print("Actual damage with multiplier:", actual_damage)
+
+# Apply damage with fuzzy math
+player_health ~= player_health - actual_damage
+~sorta print("Player health after damage:", player_health)
+
+# Recovery scenario
+~sometimes (player_health < 80) {
+    ~sorta print("Health is low! Attempting recovery...")
+    ~kinda int healing = 20
+    player_health ~= player_health + healing
+    ~sorta print("Health after healing attempt:", player_health)
+}
+
+~sorta print("")
+
+# Demonstrate welp fallback with reproducible behavior
+~sorta print("--- Welp Fallbacks (Seeded) ---")
+
+~kinda int risky_calculation ~= 100 / (~kinda int x = 5) ~welp 42
+~sorta print("Risky calculation result:", risky_calculation)
+
+~sorta print("")
+
+# Show how different moods affect the same seed
+~sorta print("--- Mood Effects on Same Seed ---")
+~sorta print("Note: Run this example with different --mood flags to see")
+~sorta print("how the same seed produces different but reproducible results:")
+~sorta print("")
+~sorta print("  kinda run seed_demo.py.knda --seed 12345 --mood reliable")
+~sorta print("  kinda run seed_demo.py.knda --seed 12345 --mood chaotic")
+~sorta print("  kinda run seed_demo.py.knda --seed 12345 --mood playful")
+~sorta print("")
+
+# Final fuzzy calculations to show reproducible randomness
+~sorta print("--- Final Reproducible Calculations ---")
+~kinda int sum = 0
+~sorta print("Calculating fuzzy sum of 5 kinda int values:")
+
+for i in range(5):
+    ~kinda int fuzzy_val = i * 10
+    ~sorta print("  Iteration", i, "fuzzy_val:", fuzzy_val)
+    sum ~= sum + fuzzy_val
+
+~sorta print("Final fuzzy sum:", sum)
+
+~sorta print("")
+~sorta print("=== Demo Complete ===")
+~sorta print("Run this demo multiple times with the same --seed to see identical output!")
+~sorta print("Change the seed value to see different but still reproducible results.")
+
+# Instructions for users
+~sorta print("")
+~sorta print("Try these commands:")
+~sorta print("  # Same seed = identical output")
+~sorta print("  kinda run seed_demo.py.knda --seed 42")
+~sorta print("  kinda run seed_demo.py.knda --seed 42")
+~sorta print("")
+~sorta print("  # Different seed = different output")
+~sorta print("  kinda run seed_demo.py.knda --seed 1337")
+~sorta print("")
+~sorta print("  # Environment variable")
+~sorta print("  export KINDA_SEED=99999")
+~sorta print("  kinda run seed_demo.py.knda")
+~sorta print("")
+~sorta print("  # Different moods with same seed")
+~sorta print("  kinda run seed_demo.py.knda --seed 555 --mood reliable")
+~sorta print("  kinda run seed_demo.py.knda --seed 555 --mood chaotic")
