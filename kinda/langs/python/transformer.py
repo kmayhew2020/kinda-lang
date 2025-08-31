@@ -228,13 +228,13 @@ def _transform_ish_constructs(line: str) -> str:
 def _transform_drift_constructs(line: str) -> str:
     """Transform inline ~drift constructs in a line."""
     import re
-    
+
     # Pattern to match variable~drift followed by ~ish (special case)
-    drift_ish_pattern = re.compile(r'\b([a-zA-Z_][a-zA-Z0-9_]*)\s*~\s*drift\s+~\s*ish\s+([^~#;]+)')
-    
+    drift_ish_pattern = re.compile(r"\b([a-zA-Z_][a-zA-Z0-9_]*)\s*~\s*drift\s+~\s*ish\s+([^~#;]+)")
+
     # Pattern to match variable~drift (general case)
-    drift_pattern = re.compile(r'\b([a-zA-Z_][a-zA-Z0-9_]*)\s*~\s*drift\b')
-    
+    drift_pattern = re.compile(r"\b([a-zA-Z_][a-zA-Z0-9_]*)\s*~\s*drift\b")
+
     # First handle the special case of drift + ish
     def replace_drift_ish(match):
         var_name = match.group(1)
@@ -242,16 +242,16 @@ def _transform_drift_constructs(line: str) -> str:
         used_helpers.add("drift_access")
         used_helpers.add("ish_comparison")
         return f"ish_comparison(drift_access('{var_name}', {var_name}), {comparison_val})"
-    
+
     # Apply drift+ish pattern first
     transformed_line = drift_ish_pattern.sub(replace_drift_ish, line)
-    
+
     # Then apply general drift pattern to remaining cases
     def replace_drift(match):
         var_name = match.group(1)
         used_helpers.add("drift_access")
         return f"drift_access('{var_name}', {var_name})"
-    
+
     transformed_line = drift_pattern.sub(replace_drift, transformed_line)
     return transformed_line
 

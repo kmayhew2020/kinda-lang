@@ -580,7 +580,7 @@ KindaPythonConstructs = {
         ),
     },
     "drift_access": {
-        "type": "access", 
+        "type": "access",
         "pattern": re.compile(r"(\w+)~drift"),
         "description": "Access variable with time-based drift accumulation",
         "body": (

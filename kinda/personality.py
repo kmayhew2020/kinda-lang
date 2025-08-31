@@ -278,7 +278,7 @@ class PersonalityContext:
             "access_count": 0,
             "initial_value": initial_value,
             "var_type": var_type,
-            "accumulated_drift": 0.0
+            "accumulated_drift": 0.0,
         }
 
     def get_time_drift(self, var_name: str, current_value: Any) -> float:
@@ -286,41 +286,43 @@ class PersonalityContext:
         if var_name not in self.drift_accumulator:
             # Variable not registered yet, no drift
             return 0.0
-        
+
         var_info = self.drift_accumulator[var_name]
         current_time = time.time()
-        
+
         # Calculate age-based drift
         age_seconds = current_time - var_info["creation_time"]
         time_since_access = current_time - var_info["last_access_time"]
-        
+
         # Update access tracking
         var_info["access_count"] += 1
         var_info["last_access_time"] = current_time
-        
-        # Base drift calculation: 
+
+        # Base drift calculation:
         # - Older variables drift more
         # - More frequently accessed variables drift more
         # - Drift rate from personality profile controls speed
         base_drift_rate = self.profile.drift_rate
         if base_drift_rate <= 0:
             return 0.0
-        
+
         # Age factor: logarithmic scaling to prevent explosive growth
         age_factor = min(1.0, age_seconds / 1000.0)  # Cap at 1000 seconds for max age effect
-        
+
         # Usage factor: more accesses = more drift (but with diminishing returns)
         usage_factor = min(1.0, var_info["access_count"] / 100.0)  # Cap at 100 accesses
-        
+
         # Time factor: recent activity causes more drift
-        time_factor = max(0.1, min(1.0, 10.0 / (time_since_access + 1.0)))  # Recent access = more drift
-        
+        time_factor = max(
+            0.1, min(1.0, 10.0 / (time_since_access + 1.0))
+        )  # Recent access = more drift
+
         # Combined drift magnitude
         drift_magnitude = base_drift_rate * (age_factor + usage_factor + time_factor) / 3.0
-        
+
         # Apply chaos amplifier
         drift_magnitude *= self.profile.chaos_amplifier
-        
+
         # Generate actual drift value within reasonable bounds
         if isinstance(current_value, (int, float)):
             # Scale drift relative to value magnitude (but ensure minimum drift)
@@ -330,10 +332,10 @@ class PersonalityContext:
         else:
             # For non-numeric values, use small fixed drift
             drift = random.uniform(-0.1, 0.1) * drift_magnitude
-        
+
         # Accumulate drift for this variable
         var_info["accumulated_drift"] += abs(drift)
-        
+
         return drift
 
     def get_variable_age(self, var_name: str) -> float:
@@ -346,7 +348,7 @@ class PersonalityContext:
         """Get drift statistics for a variable."""
         if var_name not in self.drift_accumulator:
             return {}
-        
+
         var_info = self.drift_accumulator[var_name].copy()
         var_info["age_seconds"] = self.get_variable_age(var_name)
         return var_info

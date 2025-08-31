@@ -14,7 +14,13 @@ from kinda.langs.python.transformer import transform_line, transform_file
 from kinda.grammar.python.matchers import match_python_construct
 from kinda.langs.python.runtime_gen import generate_runtime_helpers
 from kinda.grammar.python.constructs import KindaPythonConstructs
-from kinda.personality import PersonalityContext, PERSONALITY_PROFILES, register_time_variable, get_time_drift, get_variable_age
+from kinda.personality import (
+    PersonalityContext,
+    PERSONALITY_PROFILES,
+    register_time_variable,
+    get_time_drift,
+    get_variable_age,
+)
 
 
 class TestTimeDriftPersonalityIntegration:
@@ -32,10 +38,10 @@ class TestTimeDriftPersonalityIntegration:
         """Test variable registration for time-based drift"""
         PersonalityContext._instance = None
         personality = PersonalityContext.get_instance()
-        
+
         # Register a variable
         register_time_variable("test_var", 10.5, "float")
-        
+
         # Check that it's tracked
         assert "test_var" in personality.drift_accumulator
         var_info = personality.drift_accumulator["test_var"]
@@ -48,20 +54,20 @@ class TestTimeDriftPersonalityIntegration:
         """Test time-based drift calculation"""
         PersonalityContext.set_mood("playful")  # Has drift_rate = 0.05
         personality = PersonalityContext.get_instance()
-        
+
         # Register a variable
         register_time_variable("drift_test", 100.0, "float")
-        
+
         # Mock time to simulate aging
         with patch("time.time") as mock_time:
             # Initial registration time
             mock_time.return_value = 1000.0
             register_time_variable("aged_var", 50.0, "float")
-            
+
             # Simulate 10 seconds later
             mock_time.return_value = 1010.0
             drift = get_time_drift("aged_var", 50.0)
-            
+
             # Should have some drift due to age
             assert isinstance(drift, float)
             # Drift should be reasonable magnitude
@@ -71,9 +77,9 @@ class TestTimeDriftPersonalityIntegration:
         """Test that zero drift rate produces no drift"""
         PersonalityContext.set_mood("reliable")  # Has drift_rate = 0.0
         personality = PersonalityContext.get_instance()
-        
+
         register_time_variable("no_drift_var", 42.0, "float")
-        
+
         # Should get no drift regardless of time
         drift = get_time_drift("no_drift_var", 42.0)
         assert drift == 0.0
@@ -82,18 +88,18 @@ class TestTimeDriftPersonalityIntegration:
         """Test that drift accumulates properly"""
         PersonalityContext.set_mood("playful")
         personality = PersonalityContext.get_instance()
-        
+
         register_time_variable("accumulate_test", 10.0, "float")
-        
+
         # Get drift multiple times
         initial_accumulated = personality.drift_accumulator["accumulate_test"]["accumulated_drift"]
-        
+
         drift1 = get_time_drift("accumulate_test", 10.0)
         after_first = personality.drift_accumulator["accumulate_test"]["accumulated_drift"]
-        
+
         drift2 = get_time_drift("accumulate_test", 10.0)
         after_second = personality.drift_accumulator["accumulate_test"]["accumulated_drift"]
-        
+
         # Accumulated drift should increase
         assert after_first >= initial_accumulated
         assert after_second >= after_first
@@ -102,15 +108,15 @@ class TestTimeDriftPersonalityIntegration:
         """Test that access count increases with each drift calculation"""
         PersonalityContext.set_mood("playful")
         personality = PersonalityContext.get_instance()
-        
+
         register_time_variable("access_test", 5.0, "float")
-        
+
         initial_count = personality.drift_accumulator["access_test"]["access_count"]
         assert initial_count == 0
-        
+
         get_time_drift("access_test", 5.0)
         assert personality.drift_accumulator["access_test"]["access_count"] == 1
-        
+
         get_time_drift("access_test", 5.0)
         assert personality.drift_accumulator["access_test"]["access_count"] == 2
 
@@ -120,7 +126,7 @@ class TestTimeDriftPersonalityIntegration:
             mock_time.return_value = 1000.0
             PersonalityContext._instance = None
             register_time_variable("age_test", 1.0, "float")
-            
+
             # Simulate 5 seconds later
             mock_time.return_value = 1005.0
             age = get_variable_age("age_test")
@@ -133,13 +139,13 @@ class TestTimeDriftPersonalityIntegration:
         PersonalityContext.set_mood("reliable")
         register_time_variable("low_chaos", 10.0, "float")
         low_drift = abs(get_time_drift("low_chaos", 10.0))
-        
+
         # Test with high chaos (chaotic personality has 1.8 amplifier)
-        PersonalityContext._instance = None  
+        PersonalityContext._instance = None
         PersonalityContext.set_mood("chaotic")
         register_time_variable("high_chaos", 10.0, "float")
         high_drift = abs(get_time_drift("high_chaos", 10.0))
-        
+
         # Both should be floats (actual values will vary due to randomness)
         assert isinstance(high_drift, float)
         assert isinstance(low_drift, float)
@@ -203,10 +209,10 @@ class TestTimeDriftFloatConstruct:
         with patch("kinda.personality.register_time_variable") as mock_register:
             with patch("random.uniform", return_value=0.005):  # Small initial drift
                 result = time_drift_float("test_var", 10.0)
-                
+
                 # Should register the variable
                 mock_register.assert_called_once_with("test_var", 10.0, "float")
-                
+
                 # Should return value close to original with small drift
                 assert isinstance(result, float)
                 assert abs(result - 10.0) < 0.1  # Small initial drift
@@ -270,7 +276,7 @@ class TestTimeDriftIntConstruct:
         with patch("kinda.personality.register_time_variable") as mock_register:
             with patch("random.choice", return_value=0):  # No initial fuzz
                 result = time_drift_int("int_test", 42)
-                
+
                 mock_register.assert_called_once_with("int_test", 42, "int")
                 assert isinstance(result, int)
                 assert result == 42  # No fuzz applied
@@ -415,9 +421,9 @@ class TestTimeDriftPersonalityProfiles:
         PersonalityContext._instance = None  # Extra safety
         PersonalityContext.set_mood("reliable")
         personality = PersonalityContext.get_instance()
-        
+
         assert personality.profile.drift_rate == 0.0
-        
+
         register_time_variable("reliable_var", 10.0, "float")
         drift = get_time_drift("reliable_var", 10.0)
         assert drift == 0.0
@@ -426,12 +432,12 @@ class TestTimeDriftPersonalityProfiles:
         """Test chaotic personality has high time-based drift"""
         PersonalityContext.set_mood("chaotic")
         personality = PersonalityContext.get_instance()
-        
+
         assert personality.profile.drift_rate == 0.1  # High drift rate
-        
+
         register_time_variable("chaotic_var", 10.0, "float")
         drift = get_time_drift("chaotic_var", 10.0)
-        
+
         # Should have some drift (non-zero)
         # Note: Due to randomness, we can't guarantee exact values
         assert isinstance(drift, float)
@@ -441,24 +447,24 @@ class TestTimeDriftPersonalityProfiles:
         PersonalityContext._instance = None  # Ensure clean state
         PersonalityContext.set_mood("playful")
         personality = PersonalityContext.get_instance()
-        
+
         assert personality.profile.drift_rate == 0.05  # Moderate drift rate
-        
+
         register_time_variable("playful_var", 10.0, "float")
         drift = get_time_drift("playful_var", 10.0)
-        
+
         assert isinstance(drift, float)
 
     def test_cautious_personality_slow_time_drift(self):
         """Test cautious personality has slow time-based drift"""
         PersonalityContext.set_mood("cautious")
         personality = PersonalityContext.get_instance()
-        
+
         assert personality.profile.drift_rate == 0.01  # Slow drift rate
-        
+
         register_time_variable("cautious_var", 10.0, "float")
         drift = get_time_drift("cautious_var", 10.0)
-        
+
         assert isinstance(drift, float)
 
 
@@ -470,7 +476,7 @@ class TestTimeDriftEdgeCases:
         PersonalityContext.set_mood("playful")
         register_time_variable("zero_var", 0.0, "float")
         drift = get_time_drift("zero_var", 0.0)
-        
+
         assert isinstance(drift, float)
         # Should handle zero values gracefully
 
@@ -479,7 +485,7 @@ class TestTimeDriftEdgeCases:
         PersonalityContext.set_mood("playful")
         register_time_variable("negative_var", -10.0, "float")
         drift = get_time_drift("negative_var", -10.0)
-        
+
         assert isinstance(drift, float)
         # Should handle negative values gracefully
 
@@ -489,7 +495,7 @@ class TestTimeDriftEdgeCases:
         large_val = 1e6
         register_time_variable("large_var", large_val, "float")
         drift = get_time_drift("large_var", large_val)
-        
+
         assert isinstance(drift, float)
         # Drift should be reasonable relative to value size
 
@@ -499,24 +505,24 @@ class TestTimeDriftEdgeCases:
         small_val = 1e-6
         register_time_variable("small_var", small_val, "float")
         drift = get_time_drift("small_var", small_val)
-        
+
         assert isinstance(drift, float)
 
     def test_repeated_access_increases_drift(self):
         """Test that repeated access can increase drift magnitude"""
         PersonalityContext.set_mood("playful")
         register_time_variable("repeated_var", 10.0, "float")
-        
+
         # Access multiple times
         drifts = []
         for i in range(10):
             drift = get_time_drift("repeated_var", 10.0)
             drifts.append(drift)
-        
+
         # Should all be floats
         for drift in drifts:
             assert isinstance(drift, float)
-        
+
         # Access count should increase
         personality = PersonalityContext.get_instance()
         assert personality.drift_accumulator["repeated_var"]["access_count"] == 10
@@ -528,12 +534,15 @@ class TestTimeDriftDocumentation:
     def test_constructs_have_descriptions(self):
         """Test that all time drift constructs have descriptions"""
         time_drift_constructs = ["time_drift_float", "time_drift_int", "drift_access"]
-        
+
         for construct_name in time_drift_constructs:
             construct_info = KindaPythonConstructs[construct_name]
             assert "description" in construct_info
             assert len(construct_info["description"]) > 0
-            assert "time" in construct_info["description"].lower() or "drift" in construct_info["description"].lower()
+            assert (
+                "time" in construct_info["description"].lower()
+                or "drift" in construct_info["description"].lower()
+            )
 
     def test_constructs_have_proper_types(self):
         """Test that time drift constructs have proper types"""
