@@ -278,6 +278,8 @@ class TestRarelyRuntimeBehavior:
                 # Reset personality context to ensure consistent test environment
                 from kinda.personality import PersonalityContext
 
+                # Completely reset the singleton instance for clean state
+                PersonalityContext._instance = None
                 PersonalityContext.set_mood("playful")  # Default mood
 
                 # Clear module cache if it exists
@@ -289,9 +291,14 @@ class TestRarelyRuntimeBehavior:
                 # Test statistical behavior over multiple calls
                 # With 15% probability, we should get mostly False with occasional True
                 results = []
-                for _ in range(200):  # Larger sample for statistical significance
-                    result = rarely(True)
-                    results.append(result)
+                
+                # Mock both chaos_probability and update_chaos_state for deterministic testing
+                import unittest.mock
+                with unittest.mock.patch("kinda.personality.chaos_probability", return_value=0.15):
+                    with unittest.mock.patch("kinda.personality.update_chaos_state"):
+                        for _ in range(200):  # Larger sample for statistical significance
+                            result = rarely(True)
+                            results.append(result)
 
                 true_count = sum(results)
                 true_ratio = true_count / len(results)
