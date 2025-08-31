@@ -327,8 +327,11 @@ def main(argv=None) -> int:
         "--mood", default=None, help="Personality/chaos level: reliable, cautious, playful, chaotic"
     )
     p_transform.add_argument(
-        "--chaos-level", type=int, choices=range(1, 11), default=5,
-        help="Control randomness intensity (1=minimal, 10=maximum chaos)"
+        "--chaos-level",
+        type=int,
+        choices=range(1, 11),
+        default=5,
+        help="Control randomness intensity (1=minimal, 10=maximum chaos)",
     )
 
     p_run = sub.add_parser("run", help="Transform then execute (living dangerously, I see)")
@@ -338,8 +341,11 @@ def main(argv=None) -> int:
         "--mood", default=None, help="Personality/chaos level: reliable, cautious, playful, chaotic"
     )
     p_run.add_argument(
-        "--chaos-level", type=int, choices=range(1, 11), default=5,
-        help="Control randomness intensity (1=minimal, 10=maximum chaos)"
+        "--chaos-level",
+        type=int,
+        choices=range(1, 11),
+        default=5,
+        help="Control randomness intensity (1=minimal, 10=maximum chaos)",
     )
 
     p_interpret = sub.add_parser(
@@ -353,8 +359,11 @@ def main(argv=None) -> int:
         "--mood", default=None, help="Personality/chaos level: reliable, cautious, playful, chaotic"
     )
     p_interpret.add_argument(
-        "--chaos-level", type=int, choices=range(1, 11), default=5,
-        help="Control randomness intensity (1=minimal, 10=maximum chaos)"
+        "--chaos-level",
+        type=int,
+        choices=range(1, 11),
+        default=5,
+        help="Control randomness intensity (1=minimal, 10=maximum chaos)",
     )
 
     p_examples = sub.add_parser("examples", help="Show example kinda programs (for inspiration)")

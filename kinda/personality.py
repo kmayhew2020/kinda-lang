@@ -153,11 +153,11 @@ class PersonalityContext:
         """Calculate chaos multiplier from level (1-10 scale)."""
         # Chaos level 5 is baseline (1.0 multiplier)
         # Level 1-2: 0.2-0.6 (minimal chaos)
-        # Level 3-4: 0.6-1.0 (low chaos)  
+        # Level 3-4: 0.6-1.0 (low chaos)
         # Level 5-6: 1.0-1.4 (medium chaos) - DEFAULT
         # Level 7-8: 1.4-1.8 (high chaos)
         # Level 9-10: 1.8-2.2 (maximum chaos)
-        
+
         if chaos_level <= 2:
             # Minimal chaos (very predictable)
             return 0.2 + (chaos_level - 1) * 0.2  # 0.2 to 0.4
@@ -179,7 +179,7 @@ class PersonalityContext:
         """Set the global mood/personality."""
         current_chaos_level = cls._instance.chaos_level if cls._instance else 5
         cls._instance = cls(mood, current_chaos_level)
-    
+
     @classmethod
     def set_chaos_level(cls, chaos_level: int) -> None:
         """Set the global chaos level."""
