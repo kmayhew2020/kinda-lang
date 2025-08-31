@@ -11,6 +11,7 @@ Kinda augments existing programming languages with personality, randomness, and 
 getting_started
 features
 usage
+advanced_patterns
 ```
 
 ```{toctree}

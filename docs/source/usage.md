@@ -86,6 +86,12 @@ else:
 
 ## Advanced Usage
 
+For complex patterns and construct combinations, see the [Advanced Patterns Guide](advanced_patterns.md) which covers:
+- Complex construct combinations
+- Edge cases and error handling
+- Production-ready fuzzy systems
+- Performance optimization techniques
+
 ### Working with Examples
 
 Copy examples to explore locally:
