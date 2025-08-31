@@ -35,6 +35,42 @@ KindaPythonConstructs = {
             "        return random.randint(0, 10)"
         ),
     },
+    "kinda_float": {
+        "type": "declaration",
+        "pattern": re.compile(r"~kinda float (\w+)\s*[~=]+\s*([^#;]+?)(?:\s*#.*)?(?:;|$)"),
+        "description": "Fuzzy floating-point declaration with personality-adjusted drift",
+        "body": (
+            "def kinda_float(val):\n"
+            '    """Fuzzy floating-point with personality-adjusted drift and chaos tracking"""\n'
+            "    from kinda.personality import chaos_float_drift_range, update_chaos_state\n"
+            "    import random\n"
+            "    try:\n"
+            "        # Check if value is numeric\n"
+            "        if not isinstance(val, (int, float)):\n"
+            "            try:\n"
+            "                val = float(val)\n"
+            "            except (ValueError, TypeError):\n"
+            '                print(f"[?] kinda float got something weird: {repr(val)}")\n'
+            '                print(f"[tip] Expected a number but got {type(val).__name__}")\n'
+            "                update_chaos_state(failed=True)\n"
+            "                return random.uniform(0.0, 10.0)\n"
+            "        \n"
+            "        # Convert to float\n"
+            "        base_val = float(val)\n"
+            "        \n"
+            "        # Apply personality-adjusted drift\n"
+            "        drift_min, drift_max = chaos_float_drift_range()\n"
+            "        drift = random.uniform(drift_min, drift_max)\n"
+            "        result = base_val + drift\n"
+            "        update_chaos_state(failed=False)\n"
+            "        return result\n"
+            "    except Exception as e:\n"
+            '        print(f"[shrug] Kinda float got kinda confused: {e}")\n'
+            '        print(f"[tip] Just picking a random float instead")\n'
+            "        update_chaos_state(failed=True)\n"
+            "        return random.uniform(0.0, 10.0)"
+        ),
+    },
     "kinda_bool": {
         "type": "declaration",
         "pattern": re.compile(r"~kinda bool (\w+)\s*[~=]+\s*([^#;]+?)(?:\s*#.*)?(?:;|$)"),

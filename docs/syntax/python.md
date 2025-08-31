@@ -12,6 +12,14 @@ This file defines all supported Kinda constructs in Python-like syntax. This ver
 - Adds random noise: value becomes `5 ± 1`.
 - Stored in the environment under name `x`.
 
+### `pi: kinda float = 3.14159`
+
+- Declares a fuzzy floating-point variable.
+- Adds personality-adjusted drift: value gets random drift within range.
+- Supports scientific notation: `avogadro: kinda float = 6.02e23`.
+- Drift varies by personality: reliable (±0.0), chaotic (±2.0).
+- Stored in the environment under name `pi`.
+
 ### `flag: kinda bool = True`
 
 - Declares a fuzzy boolean with personality-adjusted uncertainty.

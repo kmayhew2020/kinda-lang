@@ -13,6 +13,33 @@ Declares a variable with controlled randomness (+/-1 variance):
 # x will be 41, 42, or 43
 ```
 
+### `~kinda float` - Fuzzy Floating-Point
+Declares a fuzzy floating-point variable with personality-adjusted drift:
+```python
+~kinda float pi = 3.14159
+# pi might be 3.139, 3.141, or 3.642 depending on personality
+
+~kinda float temperature = 98.6
+~kinda float pressure = 14.7
+# Both get personality-adjusted drift
+
+# Works with scientific notation
+~kinda float avogadro = 6.02e23
+~kinda float planck = 6.626e-34
+```
+
+**Personality Effects on Float Drift:**
+- **Reliable**: Minimal drift (±0.0), maintains precision
+- **Cautious**: Small drift (±0.2), conservative variance  
+- **Playful**: Standard drift (±0.5), balanced randomness
+- **Chaotic**: High drift (±2.0), maximum variance
+
+**Use Cases:**
+- Simulating sensor noise and measurement uncertainty
+- Testing numerical algorithm robustness  
+- Modeling real-world floating-point precision issues
+- Adding controlled randomness to scientific simulations
+
 ### `~sorta print` - Probabilistic Output  
 Prints with 80% probability, provides snarky alternatives 20% of the time:
 ```python

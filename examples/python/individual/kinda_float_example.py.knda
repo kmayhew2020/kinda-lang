@@ -1,0 +1,47 @@
+# ~kinda float - Fuzzy Floating-Point Assignment
+# Demonstrates fuzzy floating-point values with personality-adjusted drift
+
+~sorta print("=== Kinda Float Examples ===")
+
+# Basic kinda float assignment
+~kinda float pi = 3.14159
+~sorta print("pi =", pi, "(expected: ~3.14159 with drift)")
+
+# Fuzzy reassignment 
+pi ~= 2.71828
+~sorta print("pi after fuzzy reassign:", pi, "(expected: ~2.71828 with drift)")
+
+# Multiple kinda floats
+~kinda float temperature = 98.6
+~kinda float pressure = 14.7
+~sorta print("temperature =", temperature, "pressure =", pressure)
+
+# Scientific notation
+~kinda float avogadro = 6.02e23
+~kinda float planck = 6.626e-34
+~sorta print("avogadro =", avogadro, "(huge number with drift)")
+~sorta print("planck =", planck, "(tiny number with drift)")
+
+# Mathematical operations with kinda floats
+~kinda float radius = 5.0
+area = 3.14159 * radius * radius
+~sorta print("circle area:", area, "(fuzzy geometry!)")
+
+# Integration with other constructs
+~kinda float threshold = 0.5
+~sometimes (threshold > 0) {
+    ~sorta print("threshold is positive:", threshold)
+}
+
+# Comparison with ~ish
+~kinda float value = 2.5
+is_close = value ~ish 2.5
+~sorta print("value ~ish 2.5:", is_close)
+
+# Edge cases
+~kinda float zero = 0.0
+~kinda float negative = -3.14
+~kinda float large = 1234567.89
+~sorta print("zero =", zero, "negative =", negative, "large =", large)
+
+~sorta print("=== End of Kinda Float Demo ===")
