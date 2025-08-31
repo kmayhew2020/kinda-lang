@@ -27,6 +27,9 @@ class ChaosProfile:
     int_fuzz_range: Tuple[int, int] = (-1, 1)  # Range for kinda int fuzz
     ish_variance: float = 2.0  # Variance for ~ish values
     ish_tolerance: float = 2.0  # Tolerance for ~ish comparisons
+    
+    # Boolean construct uncertainty
+    bool_uncertainty: float = 0.1  # Probability of flipping boolean result
 
     # Binary construct probabilities
     binary_pos_prob: float = 0.4  # Probability of positive result
@@ -53,6 +56,7 @@ PERSONALITY_PROFILES: Dict[str, ChaosProfile] = {
         int_fuzz_range=(0, 0),  # No fuzz on integers
         ish_variance=0.5,  # Minimal variance
         ish_tolerance=1.0,  # Tight tolerance
+        bool_uncertainty=0.02,  # Very low boolean uncertainty
         binary_pos_prob=0.8,  # Highly positive
         binary_neg_prob=0.1,  # Rarely negative
         binary_neutral_prob=0.1,  # Rarely neutral
@@ -70,6 +74,7 @@ PERSONALITY_PROFILES: Dict[str, ChaosProfile] = {
         int_fuzz_range=(-1, 1),  # Standard fuzz
         ish_variance=1.5,  # Reduced variance
         ish_tolerance=1.5,  # Moderately tight tolerance
+        bool_uncertainty=0.05,  # Low boolean uncertainty
         binary_pos_prob=0.5,  # Balanced positive
         binary_neg_prob=0.3,  # Less negative
         binary_neutral_prob=0.2,  # Standard neutral
@@ -87,6 +92,7 @@ PERSONALITY_PROFILES: Dict[str, ChaosProfile] = {
         int_fuzz_range=(-2, 2),  # More fuzz
         ish_variance=2.5,  # Standard variance
         ish_tolerance=2.0,  # Standard tolerance
+        bool_uncertainty=0.1,  # Standard boolean uncertainty (default)
         binary_pos_prob=0.4,  # Standard positive (default)
         binary_neg_prob=0.4,  # Standard negative (default)
         binary_neutral_prob=0.2,  # Standard neutral (default)
@@ -104,6 +110,7 @@ PERSONALITY_PROFILES: Dict[str, ChaosProfile] = {
         int_fuzz_range=(-5, 5),  # High fuzz
         ish_variance=5.0,  # High variance
         ish_tolerance=4.0,  # Loose tolerance
+        bool_uncertainty=0.25,  # High boolean uncertainty
         binary_pos_prob=0.2,  # Less positive (chaotic)
         binary_neg_prob=0.6,  # More negative (chaotic)
         binary_neutral_prob=0.2,  # Neutral stays same
@@ -188,6 +195,17 @@ class PersonalityContext:
     def get_ish_tolerance(self) -> float:
         """Get chaos-adjusted ish tolerance."""
         return self.profile.ish_tolerance * self.profile.chaos_amplifier
+
+    def get_bool_uncertainty(self) -> float:
+        """Get personality-adjusted boolean uncertainty."""
+        uncertainty = self.profile.bool_uncertainty * self.profile.chaos_amplifier
+        
+        # Add instability effects
+        if self.instability_level > 0.1:
+            uncertainty += self.instability_level * 0.1
+            
+        # Keep uncertainty within reasonable bounds
+        return max(0.0, min(0.5, uncertainty))
 
     def get_binary_probabilities(self) -> Tuple[float, float, float]:
         """Get personality-adjusted binary probabilities (pos, neg, neutral)."""
@@ -276,6 +294,11 @@ def chaos_tolerance() -> float:
 def chaos_binary_probabilities() -> Tuple[float, float, float]:
     """Get personality-adjusted binary probabilities."""
     return get_personality().get_binary_probabilities()
+
+
+def chaos_bool_uncertainty() -> float:
+    """Get personality-adjusted boolean uncertainty."""
+    return get_personality().get_bool_uncertainty()
 
 
 def update_chaos_state(failed: bool = False) -> None:

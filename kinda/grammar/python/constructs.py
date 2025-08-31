@@ -35,6 +35,56 @@ KindaPythonConstructs = {
             "        return random.randint(0, 10)"
         ),
     },
+    "kinda_bool": {
+        "type": "declaration",
+        "pattern": re.compile(r"~kinda bool (\w+)\s*[~=]+\s*([^#;]+?)(?:\s*#.*)?(?:;|$)"),
+        "description": "Fuzzy boolean declaration with personality-adjusted uncertainty",
+        "body": (
+            "def kinda_bool(val):\n"
+            '    """Fuzzy boolean with personality-adjusted uncertainty and chaos tracking"""\n'
+            "    from kinda.personality import chaos_bool_uncertainty, update_chaos_state\n"
+            "    import random\n"
+            "    try:\n"
+            "        # Handle None case\n"
+            "        if val is None:\n"
+            '            print(f"[?] kinda bool got None - that\'s kinda ambiguous")\n'
+            '            print(f"[tip] Choosing randomly between True and False")\n'
+            "            update_chaos_state(failed=True)\n"
+            "            return random.choice([True, False])\n"
+            "        \n"
+            "        # Convert value to boolean\n"
+            "        if isinstance(val, str):\n"
+            "            val_lower = val.lower().strip()\n"
+            "            if val_lower in ('true', '1', 'yes', 'on', 'y'):\n"
+            "                base_bool = True\n"
+            "            elif val_lower in ('false', '0', 'no', 'off', 'n'):\n"
+            "                base_bool = False\n"
+            "            else:\n"
+            '                print(f"[?] kinda bool got ambiguous string: {repr(val)}")\n'
+            '                print(f"[tip] Treating non-empty string as truthy")\n'
+            "                base_bool = bool(val)\n"
+            "        else:\n"
+            "            base_bool = bool(val)\n"
+            "        \n"
+            "        # Apply personality-adjusted uncertainty\n"
+            "        uncertainty = chaos_bool_uncertainty()\n"
+            "        if random.random() < uncertainty:\n"
+            "            # Introduce fuzzy uncertainty - flip the boolean sometimes\n"
+            "            result = not base_bool\n"
+            '            print(f"[fuzzy] kinda bool feeling uncertain, flipped to {result}")\n'
+            "            update_chaos_state(failed=True)\n"
+            "        else:\n"
+            "            result = base_bool\n"
+            "            update_chaos_state(failed=False)\n"
+            "        \n"
+            "        return result\n"
+            "    except Exception as e:\n"
+            '        print(f"[shrug] Kinda bool got kinda confused: {e}")\n'
+            '        print(f"[tip] Just flipping a coin instead")\n'
+            "        update_chaos_state(failed=True)\n"
+            "        return random.choice([True, False])"
+        ),
+    },
     "sorta_print": {
         "type": "print",
         "pattern": re.compile(r"~sorta print\s*\((.*)\)\s*(?:;|$)"),
