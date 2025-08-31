@@ -100,26 +100,83 @@ if rarely(debug_mode_enabled):
 
 ---
 
-## ✅ Fuzzy Values
+## ✅ Fuzzy Values and Comparisons (`~ish`)
 
-### `value~ish`
+The `~ish` construct has **three distinct usage patterns** with different behaviors:
+
+### Pattern 1: Fuzzy Value Creation (`value~ish`)
 
 ```python
-fuzzy_number = 100~ish
+# Creates fuzzy values from literals
+timeout = 5~ish         # Creates value between 3-7
+delay = 100~ish         # Creates value between 98-102
+factor = 2.5~ish        # Creates value between ~0.5-4.5
 ```
 
-- Creates fuzzy value with ±2 variance.
-- `100~ish` returns value between ~98-102.
+- **Syntax**: `literal~ish` (number directly followed by ~ish)
+- **Behavior**: Creates fuzzy value with ±2 variance from the literal
+- **Use cases**: Random delays, approximate constants, test data variation
 
-### `x ~ish target`
+### Pattern 2: Fuzzy Comparison (`x ~ish target`)
 
 ```python
-if score ~ish 100:
+# Approximate equality checks in conditionals
+score = 98
+if score ~ish 100:                    # True if score is 98-102
     sorta print("Close enough!")
+
+# Works in expressions and function calls
+result = max(score ~ish 100, backup_score)
+is_close = temperature ~ish ideal_temp
 ```
 
-- Fuzzy comparison with ±2 tolerance.
-- Returns True if values are within tolerance range.
+- **Syntax**: `variable ~ish target` in conditionals, expressions, function calls
+- **Behavior**: Returns True/False based on ±2 tolerance comparison
+- **Use cases**: Approximate equality checks, tolerance-based conditions
+
+### Pattern 3: Variable Modification (`var ~ish value`)
+
+```python
+# Assigns fuzzy values to existing variables
+balance = 100
+balance ~ish 50                       # Assigns value between 48-52 to balance
+
+# Works with expressions
+temperature = 70
+temperature ~ish base_temp + variance # Assigns fuzzy result to temperature
+
+# Standalone assignment statements
+health ~ish max_health // 2
+score ~ish opponent_score * 1.1
+```
+
+- **Syntax**: `variable ~ish expression` as standalone statements
+- **Behavior**: Evaluates expression, adds ±2 variance, assigns to variable
+- **Use cases**: Variable updates with uncertainty, gradual drift, simulation
+
+### Context-Aware Pattern Detection
+
+The transformer automatically detects which pattern to use:
+
+```python
+# Pattern 1: Value creation (literal~ish)
+x = 42~ish              # Creates fuzzy value
+
+# Pattern 2: Comparison (in conditionals/expressions)
+if x ~ish 40:           # Fuzzy comparison
+    result = x ~ish 45 + other_value
+
+# Pattern 3: Modification (standalone assignment)
+x ~ish 50               # Modifies x with fuzzy assignment
+```
+
+### Personality Integration
+
+All patterns respect current personality settings:
+- **Reliable**: ±1.0 variance/tolerance (minimal fuzziness)  
+- **Cautious**: ±1.5 variance/tolerance (conservative)
+- **Playful**: ±2.0 variance/tolerance (standard behavior)
+- **Chaotic**: ±3.0 variance/tolerance (maximum chaos)
 
 ---
 

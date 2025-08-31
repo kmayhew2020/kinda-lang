@@ -80,12 +80,63 @@ Low-probability conditional that executes infrequently:
 }
 ```
 
-### `~ish` - Fuzzy Values and Comparisons
-Creates fuzzy values and approximate comparisons:
+### `~ish` - Fuzzy Values, Comparisons, and Variable Modification
+
+The `~ish` construct provides three distinct usage patterns that address different fuzzy programming needs:
+
+#### Pattern 1: Fuzzy Value Creation
+Creates fuzzy values with ±2 variance from literals:
 ```python
-fuzzy_val = 100 ~ish    # ~98-102
-if score ~ish target:   # Within ±2 tolerance
+timeout = 5~ish         # Creates value between 3-7
+delay = 100~ish         # Creates value between 98-102
+pi_ish = 3.14~ish       # Creates value between ~1.14-5.14
+```
+**Use cases**: Random delays, approximate values, testing with variance
+
+#### Pattern 2: Fuzzy Comparison 
+Performs approximate equality checks with ±2 tolerance:
+```python
+score = 98
+if score ~ish 100:      # True if score is 98-102
     ~sorta print("Close enough!")
+
+health = 75
+if health ~ish max_health:  # Compares with tolerance
+    ~sorta print("Nearly full health!")
+```
+**Use cases**: Approximate equality, tolerance-based conditionals, "good enough" checks
+
+#### Pattern 3: Variable Modification
+Assigns fuzzy values back to existing variables:
+```python
+balance = 100
+balance ~ish 50         # Assigns value between 48-52 to balance
+
+temperature = 70
+temperature ~ish base_temp + variance  # Assigns fuzzy result to temperature
+```
+**Use cases**: Variable updates with uncertainty, gradual value drift, simulation
+
+#### Context-Aware Behavior
+The transformer automatically detects which pattern to use based on context:
+- **Value creation**: `literal~ish` (e.g., `42~ish`)
+- **Comparison**: `var ~ish target` in conditionals, expressions, function calls
+- **Modification**: `var ~ish value` as standalone statements
+
+#### Personality System Integration
+All ~ish patterns respect personality settings:
+- **Reliable**: Minimal variance (±1.0), tight tolerance (±1.0)
+- **Cautious**: Moderate variance (±1.5), relaxed tolerance (±1.5) 
+- **Playful**: Standard variance (±2.0), standard tolerance (±2.0)
+- **Chaotic**: High variance (±3.0), loose tolerance (±3.0)
+
+#### Common Usage Examples
+```python
+# Mixed pattern usage
+base_score = 100~ish           # Pattern 1: Create fuzzy value
+if base_score ~ish 100:        # Pattern 2: Compare with tolerance
+    base_score ~ish 95         # Pattern 3: Modify variable
+    ~sorta print("Adjusted score:", base_score)
 ```
 
 ### `~kinda bool` - Fuzzy Boolean

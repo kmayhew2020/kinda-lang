@@ -23,7 +23,15 @@ Kinda introduces **uncertainty as a first-class concept** with the `~` (tilde) p
 ```kinda
 ~kinda int x ~= 42       # Fuzzy integer (adds ±1 noise)
 ~kinda bool ready ~= True # Fuzzy boolean (might flip to False)
-timeout = 5~ish          # Fuzzy value (4-6 seconds, ±2 variance)
+
+# ~ish construct - three distinct usage patterns:
+timeout = 5~ish          # 1. Value creation: creates fuzzy value (3-7 range)
+score = 98
+if score ~ish 100 {     # 2. Comparison: fuzzy equality check (98-102 tolerance)  
+    ~sorta print("Close enough!")
+}
+score ~ish 85           # 3. Variable modification: assigns fuzzy value (83-87 range) to score
+
 ~sorta print("Hello!")   # Maybe prints (80% chance)  
 ~sometimes (x > 40) {    # Random conditional (50% chance)
     ~sorta print("Probably big!")
@@ -31,10 +39,8 @@ timeout = 5~ish          # Fuzzy value (4-6 seconds, ±2 variance)
 } {                      # Else block - runs when condition fails
     ~sorta print("Not so big...")
 }
-~probably (ready) {      # Use the fuzzy boolean
-    if score ~ish 100 {  # Fuzzy comparison (98-102 tolerance)
-        ~sorta print("Close enough!")
-    }
+~probably (ready) {      # Use the fuzzy boolean 
+    ~sorta print("System ready!")
 } {                      # Else block for ~probably too
     ~sorta print("Not ready yet...")
 }
@@ -80,8 +86,9 @@ kinda examples  # Try some examples
 | `~kinda int x ~= 42` | Fuzzy integer (±1 noise) | `x` might be 41, 42, or 43 |
 | `~kinda float pi ~= 3.14` | Fuzzy floating-point (drift) | `pi` might be 3.139, 3.141, or 3.642 with personality-adjusted drift |
 | `~kinda bool flag ~= True` | Fuzzy boolean (uncertainty flip) | Sometimes flips True/False based on personality |
-| `42~ish` | Fuzzy value (±2 variance) | Returns 40-44 randomly |  
+| `42~ish` | Fuzzy value creation (±2 variance) | Returns 40-44 randomly |  
 | `score ~ish 100` | Fuzzy comparison (±2 tolerance) | True if score is 98-102 |
+| `var ~ish 50` | Fuzzy variable modification | Assigns 48-52 randomly to `var` |
 | `~kinda binary decision` | Three-state binary | Returns 1 (yes), -1 (no), or 0 (undecided) |
 | `~sorta print(msg)` | Maybe prints (80% chance) | Sometimes prints, sometimes `[shrug]` |
 | `~sometimes (cond) {} {}` | Random conditional (50%) | Block runs if both random AND condition, optional else |
