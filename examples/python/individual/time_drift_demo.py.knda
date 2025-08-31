@@ -1,0 +1,48 @@
+# Time-based Variable Drift Demo
+# This example demonstrates how variables accumulate uncertainty over program lifetime
+
+~sorta print("=== Time-based Variable Drift Demo ===");
+
+# Create time-drift variables that start precise
+~time drift float temperature = 98.6;  # Body temperature
+~time drift int count = 100;           # Item count
+
+~sorta print("Initial values:");
+~sorta print("Temperature:", temperature~drift);
+~sorta print("Count:", count~drift);
+
+# Simulate operations over time - variables get fuzzier with age and usage
+~sometimes (count~drift > 50) {
+    ~sorta print("High count detected:", count~drift);
+    # Note: Cannot reassign drift variables, they accumulate uncertainty automatically
+}
+
+~maybe (temperature~drift > 98.0) {
+    ~sorta print("Temperature seems normal:", temperature~drift);
+}
+
+# More operations = more uncertainty accumulation
+for i in range(50):
+    # Each access accumulates more drift
+    temp_reading = temperature~drift;
+    count_check = count~drift;
+    
+    ~rarely (i % 10 == 0) {
+        ~sorta print("Cycle", i, "- Temp:", temp_reading, "Count:", count_check);
+    }
+
+~sorta print("\nAfter many operations:");
+~sorta print("Temperature (degraded):", temperature~drift);
+~sorta print("Count (degraded):", count~drift);
+
+# Show how values become less reliable over time
+~sorta print("\nComparison with fresh values:");
+~time drift float fresh_temp = 98.6;
+~time drift int fresh_count = 100;
+
+~sorta print("Fresh temperature:", fresh_temp~drift);
+~sorta print("Aged temperature:", temperature~drift);
+~sorta print("Fresh count:", fresh_count~drift);
+~sorta print("Aged count:", count~drift);
+
+~sorta print("\n=== Demo Complete ===");

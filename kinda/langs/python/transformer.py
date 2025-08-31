@@ -225,6 +225,37 @@ def _transform_ish_constructs(line: str) -> str:
     return transformed_line
 
 
+def _transform_drift_constructs(line: str) -> str:
+    """Transform inline ~drift constructs in a line."""
+    import re
+    
+    # Pattern to match variable~drift followed by ~ish (special case)
+    drift_ish_pattern = re.compile(r'\b([a-zA-Z_][a-zA-Z0-9_]*)\s*~\s*drift\s+~\s*ish\s+([^~#;]+)')
+    
+    # Pattern to match variable~drift (general case)
+    drift_pattern = re.compile(r'\b([a-zA-Z_][a-zA-Z0-9_]*)\s*~\s*drift\b')
+    
+    # First handle the special case of drift + ish
+    def replace_drift_ish(match):
+        var_name = match.group(1)
+        comparison_val = match.group(2).strip()
+        used_helpers.add("drift_access")
+        used_helpers.add("ish_comparison")
+        return f"ish_comparison(drift_access('{var_name}', {var_name}), {comparison_val})"
+    
+    # Apply drift+ish pattern first
+    transformed_line = drift_ish_pattern.sub(replace_drift_ish, line)
+    
+    # Then apply general drift pattern to remaining cases
+    def replace_drift(match):
+        var_name = match.group(1)
+        used_helpers.add("drift_access")
+        return f"drift_access('{var_name}', {var_name})"
+    
+    transformed_line = drift_pattern.sub(replace_drift, transformed_line)
+    return transformed_line
+
+
 def _transform_welp_constructs(line: str) -> str:
     """Transform inline ~welp constructs in a line."""
     welp_constructs = find_welp_constructs(line)
@@ -259,8 +290,11 @@ def transform_line(line: str) -> List[str]:
         return [original_line]
 
     # Check for inline constructs in a single pass for efficiency
-    # First check for inline ~ish constructs
-    ish_transformed_line = _transform_ish_constructs(line)
+    # First check for inline ~drift constructs (must be before ~ish due to ~drift ~ish pattern)
+    drift_transformed_line = _transform_drift_constructs(line)
+
+    # Then check for inline ~ish constructs
+    ish_transformed_line = _transform_ish_constructs(drift_transformed_line)
 
     # Then check for inline ~welp constructs
     welp_transformed_line = _transform_welp_constructs(ish_transformed_line)
@@ -289,6 +323,21 @@ def transform_line(line: str) -> List[str]:
         var, val = groups
         used_helpers.add("kinda_float")
         transformed_code = f"{var} = kinda_float({val})"
+
+    elif key == "time_drift_float":
+        var, val = groups
+        used_helpers.add("time_drift_float")
+        transformed_code = f"{var} = time_drift_float('{var}', {val})"
+
+    elif key == "time_drift_int":
+        var, val = groups
+        used_helpers.add("time_drift_int")
+        transformed_code = f"{var} = time_drift_int('{var}', {val})"
+
+    elif key == "drift_access":
+        var = groups[0]
+        used_helpers.add("drift_access")
+        transformed_code = f"drift_access('{var}')"
 
     elif key == "kinda_binary":
         if len(groups) == 2 and groups[1]:  # Custom probabilities provided

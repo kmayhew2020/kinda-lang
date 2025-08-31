@@ -8,6 +8,7 @@ fuzzy construct behavior, randomness, and error message tone.
 """
 
 import random
+import time
 from dataclasses import dataclass
 from typing import Dict, Optional, Any, Tuple
 
@@ -268,6 +269,97 @@ class PersonalityContext:
         """Track execution count for time-based effects."""
         self.execution_count += 1
 
+    def register_variable(self, var_name: str, initial_value: Any, var_type: str = "float") -> None:
+        """Register a variable for time-based drift tracking."""
+        current_time = time.time()
+        self.drift_accumulator[var_name] = {
+            "creation_time": current_time,
+            "last_access_time": current_time,
+            "access_count": 0,
+            "initial_value": initial_value,
+            "var_type": var_type,
+            "accumulated_drift": 0.0
+        }
+
+    def get_time_drift(self, var_name: str, current_value: Any) -> float:
+        """Calculate time-based drift for a variable."""
+        if var_name not in self.drift_accumulator:
+            # Variable not registered yet, no drift
+            return 0.0
+        
+        var_info = self.drift_accumulator[var_name]
+        current_time = time.time()
+        
+        # Calculate age-based drift
+        age_seconds = current_time - var_info["creation_time"]
+        time_since_access = current_time - var_info["last_access_time"]
+        
+        # Update access tracking
+        var_info["access_count"] += 1
+        var_info["last_access_time"] = current_time
+        
+        # Base drift calculation: 
+        # - Older variables drift more
+        # - More frequently accessed variables drift more
+        # - Drift rate from personality profile controls speed
+        base_drift_rate = self.profile.drift_rate
+        if base_drift_rate <= 0:
+            return 0.0
+        
+        # Age factor: logarithmic scaling to prevent explosive growth
+        age_factor = min(1.0, age_seconds / 1000.0)  # Cap at 1000 seconds for max age effect
+        
+        # Usage factor: more accesses = more drift (but with diminishing returns)
+        usage_factor = min(1.0, var_info["access_count"] / 100.0)  # Cap at 100 accesses
+        
+        # Time factor: recent activity causes more drift
+        time_factor = max(0.1, min(1.0, 10.0 / (time_since_access + 1.0)))  # Recent access = more drift
+        
+        # Combined drift magnitude
+        drift_magnitude = base_drift_rate * (age_factor + usage_factor + time_factor) / 3.0
+        
+        # Apply chaos amplifier
+        drift_magnitude *= self.profile.chaos_amplifier
+        
+        # Generate actual drift value within reasonable bounds
+        if isinstance(current_value, (int, float)):
+            # Scale drift relative to value magnitude (but ensure minimum drift)
+            value_magnitude = max(1.0, abs(float(current_value)))
+            max_drift = max(0.01, drift_magnitude * value_magnitude * 0.1)
+            drift = random.uniform(-max_drift, max_drift)
+        else:
+            # For non-numeric values, use small fixed drift
+            drift = random.uniform(-0.1, 0.1) * drift_magnitude
+        
+        # Accumulate drift for this variable
+        var_info["accumulated_drift"] += abs(drift)
+        
+        return drift
+
+    def get_variable_age(self, var_name: str) -> float:
+        """Get the age of a variable in seconds."""
+        if var_name not in self.drift_accumulator:
+            return 0.0
+        return time.time() - self.drift_accumulator[var_name]["creation_time"]
+
+    def get_variable_drift_stats(self, var_name: str) -> Dict[str, Any]:
+        """Get drift statistics for a variable."""
+        if var_name not in self.drift_accumulator:
+            return {}
+        
+        var_info = self.drift_accumulator[var_name].copy()
+        var_info["age_seconds"] = self.get_variable_age(var_name)
+        return var_info
+
+    def reset_variable_drift(self, var_name: str) -> None:
+        """Reset drift accumulation for a variable."""
+        if var_name in self.drift_accumulator:
+            var_info = self.drift_accumulator[var_name]
+            var_info["accumulated_drift"] = 0.0
+            var_info["access_count"] = 0
+            var_info["creation_time"] = time.time()
+            var_info["last_access_time"] = time.time()
+
     def get_error_message_style(self) -> str:
         """Get personality-appropriate error message style."""
         snark = self.profile.error_snark_level
@@ -328,3 +420,29 @@ def update_chaos_state(failed: bool = False) -> None:
     personality = get_personality()
     personality.update_instability(failed)
     personality.increment_execution()
+
+
+# Time-based drift convenience functions
+def register_time_variable(var_name: str, initial_value: Any, var_type: str = "float") -> None:
+    """Register a variable for time-based drift tracking."""
+    return get_personality().register_variable(var_name, initial_value, var_type)
+
+
+def get_time_drift(var_name: str, current_value: Any) -> float:
+    """Get time-based drift for a variable."""
+    return get_personality().get_time_drift(var_name, current_value)
+
+
+def get_variable_age(var_name: str) -> float:
+    """Get the age of a variable in seconds."""
+    return get_personality().get_variable_age(var_name)
+
+
+def get_variable_drift_stats(var_name: str) -> Dict[str, Any]:
+    """Get drift statistics for a variable."""
+    return get_personality().get_variable_drift_stats(var_name)
+
+
+def reset_variable_drift(var_name: str) -> None:
+    """Reset drift accumulation for a variable."""
+    return get_personality().reset_variable_drift(var_name)

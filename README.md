@@ -24,6 +24,10 @@ Kinda introduces **uncertainty as a first-class concept** with the `~` (tilde) p
 ~kinda int x ~= 42       # Fuzzy integer (adds ±1 noise)
 ~kinda bool ready ~= True # Fuzzy boolean (might flip to False)
 
+# Time-based drift - variables get fuzzier over program lifetime
+~time drift float temp ~= 98.6  # Starts precise, drifts with age/usage
+~time drift int count ~= 100    # Accumulates uncertainty over time
+
 # ~ish construct - three distinct usage patterns:
 timeout = 5~ish          # 1. Value creation: creates fuzzy value (3-7 range)
 score = 98
@@ -43,6 +47,12 @@ score ~ish 85           # 3. Variable modification: assigns fuzzy value (83-87 r
     ~sorta print("System ready!")
 } {                      # Else block for ~probably too
     ~sorta print("Not ready yet...")
+}
+
+# Access drift variables - uncertainty grows with each access
+for i in range(10) {
+    reading = temp~drift    # Gets increasingly fuzzy value
+    ~sorta print("Reading:", reading)
 }
 ```
 
