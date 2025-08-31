@@ -141,7 +141,7 @@ class PersonalityContext:
         self.execution_count = 0
         self.instability_level = 0.0  # For cascade failures
         self.drift_accumulator = {}  # For time-based drift
-        
+
         # Centralized random number generator for reproducibility
         self.seed = seed
         self.rng = random.Random(seed)  # Create seeded RNG instance
@@ -435,7 +435,7 @@ class PersonalityContext:
             "seed": self.seed,
             "has_seed": self.seed is not None,
             "rng_state_type": str(type(self.rng.getstate())),
-            "reproducible": self.seed is not None
+            "reproducible": self.seed is not None,
         }
 
     def reset_variable_drift(self, var_name: str) -> None:

@@ -42,7 +42,7 @@ def generate_runtime(output_dir: Path):
     # Core runtime header
     lines = [
         "# Auto-generated fuzzy runtime for Python\n",
-        "import random\n",
+        "# Uses centralized seeded RNG from PersonalityContext for reproducibility\n",
         "env = {}\n\n",
     ]
 
@@ -71,14 +71,19 @@ def generate_runtime(output_dir: Path):
     if "sorta_print" not in already_added:
         lines.append(
             "def sorta_print(*args):\n"
-            "    if random.random() < 0.8:\n"
+            "    from kinda.personality import chaos_random\n"
+            "    if chaos_random() < 0.8:\n"
             "        print('[print]', *args)\n"
             "    else:\n"
             "        print('[shrug]', *args)\n"
         )
         lines.append("env['sorta_print'] = sorta_print\n\n")
     if "sometimes" not in already_added:
-        lines.append("def sometimes():\n" "    return random.random() < 0.5\n")
+        lines.append(
+            "def sometimes():\n"
+            "    from kinda.personality import chaos_random\n"
+            "    return chaos_random() < 0.5\n"
+        )
         lines.append("env['sometimes'] = sometimes\n\n")
 
     # Write full runtime file

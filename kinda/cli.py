@@ -260,16 +260,16 @@ def validate_seed(seed: Optional[int]) -> Optional[int]:
     """Validate and sanitize seed value for security."""
     if seed is None:
         return None
-    
+
     # Basic bounds checking for security
     MAX_SEED = 2**31 - 1  # Max 32-bit signed integer
-    MIN_SEED = -(2**31)   # Min 32-bit signed integer
-    
+    MIN_SEED = -(2**31)  # Min 32-bit signed integer
+
     if seed > MAX_SEED or seed < MIN_SEED:
         safe_print(f"[?] Seed value {seed} is outside safe range ({MIN_SEED} to {MAX_SEED})")
         safe_print("[tip] Using bounded seed value for security")
         return max(MIN_SEED, min(MAX_SEED, seed))
-    
+
     return seed
 
 
@@ -292,7 +292,9 @@ def setup_personality(mood: str, chaos_level: int = 5, seed: Optional[int] = Non
             try:
                 resolved_seed = int(env_seed)
             except ValueError:
-                safe_print(f"[?] Invalid KINDA_SEED value '{env_seed}' - ignoring environment variable")
+                safe_print(
+                    f"[?] Invalid KINDA_SEED value '{env_seed}' - ignoring environment variable"
+                )
                 safe_print("[tip] KINDA_SEED must be an integer")
 
     # Validate and sanitize seed for security
@@ -428,7 +430,11 @@ def main(argv=None) -> int:
 
     if args.command == "transform":
         # Setup personality for transform
-        setup_personality(getattr(args, "mood", None), getattr(args, "chaos_level", 5), getattr(args, "seed", None))
+        setup_personality(
+            getattr(args, "mood", None),
+            getattr(args, "chaos_level", 5),
+            getattr(args, "seed", None),
+        )
 
         input_path = Path(args.input)
         if not input_path.exists():
@@ -507,7 +513,11 @@ def main(argv=None) -> int:
 
     if args.command == "run":
         # Setup personality for run
-        setup_personality(getattr(args, "mood", None), getattr(args, "chaos_level", 5), getattr(args, "seed", None))
+        setup_personality(
+            getattr(args, "mood", None),
+            getattr(args, "chaos_level", 5),
+            getattr(args, "seed", None),
+        )
 
         input_path = Path(args.input)
         if not input_path.exists():
@@ -597,7 +607,11 @@ def main(argv=None) -> int:
 
     if args.command == "interpret":
         # Setup personality for interpret
-        setup_personality(getattr(args, "mood", None), getattr(args, "chaos_level", 5), getattr(args, "seed", None))
+        setup_personality(
+            getattr(args, "mood", None),
+            getattr(args, "chaos_level", 5),
+            getattr(args, "seed", None),
+        )
 
         input_path = Path(args.input)
         if not input_path.exists():

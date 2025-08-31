@@ -2,7 +2,7 @@
 """
 Tests for seed functionality and reproducible chaos
 Following both meta-programming philosophies:
-1. "KINDA TESTS KINDA": Using existing constructs to test seed functionality  
+1. "KINDA TESTS KINDA": Using existing constructs to test seed functionality
 2. "KINDA BUILDS KINDA": Using kinda constructs in the test development process
 """
 
@@ -18,9 +18,17 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 from kinda.personality import PersonalityContext, get_personality, get_seed_info
 from kinda.personality import chaos_random, chaos_randint, chaos_uniform, chaos_choice
 from kinda.langs.python.runtime.fuzzy import (
-    kinda_int, kinda_float, kinda_bool, kinda_binary,
-    sometimes, maybe, probably, rarely, sorta_print,
-    ish_value, ish_comparison
+    kinda_int,
+    kinda_float,
+    kinda_bool,
+    kinda_binary,
+    sometimes,
+    maybe,
+    probably,
+    rarely,
+    sorta_print,
+    ish_value,
+    ish_comparison,
 )
 
 
@@ -41,7 +49,7 @@ class TestSeedReproducibility(unittest.TestCase):
         personality = PersonalityContext("playful", 5, seed=42)
         self.assertEqual(personality.seed, 42)
         self.assertIsNotNone(personality.rng)
-        
+
         seed_info = personality.get_seed_info()
         self.assertEqual(seed_info["seed"], 42)
         self.assertTrue(seed_info["has_seed"])
@@ -52,7 +60,7 @@ class TestSeedReproducibility(unittest.TestCase):
         personality = PersonalityContext("playful", 5, seed=None)
         self.assertIsNone(personality.seed)
         self.assertIsNotNone(personality.rng)  # Should still have RNG with None seed
-        
+
         seed_info = personality.get_seed_info()
         self.assertIsNone(seed_info["seed"])
         self.assertFalse(seed_info["has_seed"])
@@ -65,13 +73,13 @@ class TestSeedReproducibility(unittest.TestCase):
         sequence1 = []
         for _ in range(10):
             sequence1.append(chaos_random())
-        
+
         # Second run with same seed
         PersonalityContext._instance = PersonalityContext("playful", 5, seed=123)
         sequence2 = []
         for _ in range(10):
             sequence2.append(chaos_random())
-        
+
         # Should be identical
         self.assertEqual(sequence1, sequence2)
 
@@ -82,13 +90,13 @@ class TestSeedReproducibility(unittest.TestCase):
         sequence1 = []
         for _ in range(10):
             sequence1.append(chaos_random())
-        
+
         # Second run with seed 456
         PersonalityContext._instance = PersonalityContext("playful", 5, seed=456)
         sequence2 = []
         for _ in range(10):
             sequence2.append(chaos_random())
-        
+
         # Should be different
         self.assertNotEqual(sequence1, sequence2)
 
@@ -99,13 +107,13 @@ class TestSeedReproducibility(unittest.TestCase):
         results1 = []
         for i in range(10):
             results1.append(kinda_int(i * 10))
-        
+
         # Second run with same seed
         PersonalityContext._instance = PersonalityContext("playful", 5, seed=42)
         results2 = []
         for i in range(10):
             results2.append(kinda_int(i * 10))
-        
+
         # Should be identical
         self.assertEqual(results1, results2)
 
@@ -116,13 +124,13 @@ class TestSeedReproducibility(unittest.TestCase):
         results1 = []
         for i in range(10):
             results1.append(kinda_float(i * 3.14))
-        
+
         # Second run with same seed
         PersonalityContext._instance = PersonalityContext("playful", 5, seed=99)
         results2 = []
         for i in range(10):
             results2.append(kinda_float(i * 3.14))
-        
+
         # Should be identical
         self.assertEqual(results1, results2)
 
@@ -133,13 +141,13 @@ class TestSeedReproducibility(unittest.TestCase):
         results1 = []
         for i in range(20):
             results1.append(sometimes(True))  # Always true condition
-        
+
         # Second run with same seed
         PersonalityContext._instance = PersonalityContext("playful", 5, seed=777)
         results2 = []
         for i in range(20):
             results2.append(sometimes(True))
-        
+
         # Should be identical
         self.assertEqual(results1, results2)
 
@@ -150,13 +158,13 @@ class TestSeedReproducibility(unittest.TestCase):
         results1 = []
         for i in range(20):
             results1.append(maybe(True))  # Always true condition
-        
+
         # Second run with same seed
         PersonalityContext._instance = PersonalityContext("playful", 5, seed=888)
         results2 = []
         for i in range(20):
             results2.append(maybe(True))
-        
+
         # Should be identical
         self.assertEqual(results1, results2)
 
@@ -167,13 +175,13 @@ class TestSeedReproducibility(unittest.TestCase):
         results1 = []
         for i in range(20):
             results1.append(kinda_binary())
-        
+
         # Second run with same seed
         PersonalityContext._instance = PersonalityContext("playful", 5, seed=333)
         results2 = []
         for i in range(20):
             results2.append(kinda_binary())
-        
+
         # Should be identical
         self.assertEqual(results1, results2)
 
@@ -184,13 +192,13 @@ class TestSeedReproducibility(unittest.TestCase):
         results1 = []
         for i in range(10):
             results1.append(ish_value(i * 5, variance=2.0))
-        
+
         # Second run with same seed
         PersonalityContext._instance = PersonalityContext("playful", 5, seed=111)
         results2 = []
         for i in range(10):
             results2.append(ish_value(i * 5, variance=2.0))
-        
+
         # Should be identical
         self.assertEqual(results1, results2)
 
@@ -200,28 +208,32 @@ class TestSeedReproducibility(unittest.TestCase):
         PersonalityContext._instance = PersonalityContext("playful", 5, seed=555)
         results1 = []
         for i in range(5):
-            results1.append({
-                'int': kinda_int(i * 10),
-                'float': kinda_float(i * 2.5),
-                'binary': kinda_binary(),
-                'sometimes': sometimes(True),
-                'maybe': maybe(i > 2),
-                'ish': ish_value(i * 3, variance=1.0)
-            })
-        
+            results1.append(
+                {
+                    "int": kinda_int(i * 10),
+                    "float": kinda_float(i * 2.5),
+                    "binary": kinda_binary(),
+                    "sometimes": sometimes(True),
+                    "maybe": maybe(i > 2),
+                    "ish": ish_value(i * 3, variance=1.0),
+                }
+            )
+
         # Second run with same seed
         PersonalityContext._instance = PersonalityContext("playful", 5, seed=555)
         results2 = []
         for i in range(5):
-            results2.append({
-                'int': kinda_int(i * 10),
-                'float': kinda_float(i * 2.5),
-                'binary': kinda_binary(),
-                'sometimes': sometimes(True),
-                'maybe': maybe(i > 2),
-                'ish': ish_value(i * 3, variance=1.0)
-            })
-        
+            results2.append(
+                {
+                    "int": kinda_int(i * 10),
+                    "float": kinda_float(i * 2.5),
+                    "binary": kinda_binary(),
+                    "sometimes": sometimes(True),
+                    "maybe": maybe(i > 2),
+                    "ish": ish_value(i * 3, variance=1.0),
+                }
+            )
+
         # Should be identical
         self.assertEqual(results1, results2)
 
@@ -232,24 +244,24 @@ class TestSeedReproducibility(unittest.TestCase):
         reliable_results = []
         for i in range(5):
             reliable_results.append(kinda_int(10))
-        
+
         # Chaotic mood with same seed
         PersonalityContext._instance = PersonalityContext("chaotic", 5, seed=1234)
         chaotic_results = []
         for i in range(5):
             chaotic_results.append(kinda_int(10))
-        
+
         # Results should be deterministic within each mood but different between moods
         # (because personality affects the chaos multiplier and ranges)
         # The key is that each run with the same seed+mood should be identical
-        
+
         # Test reliable mood reproducibility
         PersonalityContext._instance = PersonalityContext("reliable", 5, seed=1234)
         reliable_results2 = []
         for i in range(5):
             reliable_results2.append(kinda_int(10))
         self.assertEqual(reliable_results, reliable_results2)
-        
+
         # Test chaotic mood reproducibility
         PersonalityContext._instance = PersonalityContext("chaotic", 5, seed=1234)
         chaotic_results2 = []
@@ -264,13 +276,13 @@ class TestSeedReproducibility(unittest.TestCase):
         low_chaos_results = []
         for i in range(5):
             low_chaos_results.append(kinda_float(5.0))
-        
+
         # High chaos (level 8) with same seed
         PersonalityContext._instance = PersonalityContext("playful", 8, seed=9999)
         high_chaos_results = []
         for i in range(5):
             high_chaos_results.append(kinda_float(5.0))
-        
+
         # Results should be deterministic within each chaos level
         # Test low chaos reproducibility
         PersonalityContext._instance = PersonalityContext("playful", 2, seed=9999)
@@ -278,7 +290,7 @@ class TestSeedReproducibility(unittest.TestCase):
         for i in range(5):
             low_chaos_results2.append(kinda_float(5.0))
         self.assertEqual(low_chaos_results, low_chaos_results2)
-        
+
         # Test high chaos reproducibility
         PersonalityContext._instance = PersonalityContext("playful", 8, seed=9999)
         high_chaos_results2 = []
@@ -289,7 +301,7 @@ class TestSeedReproducibility(unittest.TestCase):
     def test_global_seed_info_function(self):
         """Test the global get_seed_info() convenience function"""
         PersonalityContext._instance = PersonalityContext("playful", 5, seed=12345)
-        
+
         seed_info = get_seed_info()
         self.assertEqual(seed_info["seed"], 12345)
         self.assertTrue(seed_info["has_seed"])
@@ -300,7 +312,7 @@ class TestSeedReproducibility(unittest.TestCase):
         # Note: This test captures print output to verify reproducibility
         from io import StringIO
         from contextlib import redirect_stdout
-        
+
         # First run with seed 2468
         PersonalityContext._instance = PersonalityContext("playful", 5, seed=2468)
         output1 = StringIO()
@@ -308,7 +320,7 @@ class TestSeedReproducibility(unittest.TestCase):
             for i in range(5):
                 sorta_print(f"Test message {i}")
         result1 = output1.getvalue()
-        
+
         # Second run with same seed
         PersonalityContext._instance = PersonalityContext("playful", 5, seed=2468)
         output2 = StringIO()
@@ -316,7 +328,7 @@ class TestSeedReproducibility(unittest.TestCase):
             for i in range(5):
                 sorta_print(f"Test message {i}")
         result2 = output2.getvalue()
-        
+
         # Should be identical
         self.assertEqual(result1, result2)
 
@@ -328,48 +340,48 @@ class TestSeedReproducibility(unittest.TestCase):
         """
         # Set up reproducible environment
         PersonalityContext._instance = PersonalityContext("playful", 5, seed=314159)
-        
+
         # Use ~sometimes to decide which tests to run (but make it deterministic)
         test_cases = []
-        
+
         # ~sometimes will be deterministic with the seed, so we can rely on it
         if sometimes(True):  # This will be deterministic
             test_cases.append("int_test")
         if maybe(True):  # This will also be deterministic
-            test_cases.append("float_test") 
+            test_cases.append("float_test")
         if probably(True):  # This too
             test_cases.append("binary_test")
-        
+
         # The test cases selected should be consistent across runs
         # Reset and run again to verify
         PersonalityContext._instance = PersonalityContext("playful", 5, seed=314159)
         test_cases_repeat = []
-        
+
         if sometimes(True):
             test_cases_repeat.append("int_test")
         if maybe(True):
-            test_cases_repeat.append("float_test") 
+            test_cases_repeat.append("float_test")
         if probably(True):
             test_cases_repeat.append("binary_test")
-        
+
         # Should be identical (KINDA TESTS KINDA in action!)
         self.assertEqual(test_cases, test_cases_repeat)
-        
+
         # Now run the actual tests based on what ~sometimes/~maybe/~probably decided
         results = {}
         PersonalityContext._instance = PersonalityContext("playful", 5, seed=314159)
-        
+
         if "int_test" in test_cases:
             results["int"] = kinda_int(42)
         if "float_test" in test_cases:
             results["float"] = kinda_float(3.14)
         if "binary_test" in test_cases:
             results["binary"] = kinda_binary()
-        
+
         # Verify reproducibility of the selected tests
         results_repeat = {}
         PersonalityContext._instance = PersonalityContext("playful", 5, seed=314159)
-        
+
         # Skip the sometimes/maybe/probably checks since we know what was selected
         if "int_test" in test_cases:
             results_repeat["int"] = kinda_int(42)
@@ -377,7 +389,7 @@ class TestSeedReproducibility(unittest.TestCase):
             results_repeat["float"] = kinda_float(3.14)
         if "binary_test" in test_cases:
             results_repeat["binary"] = kinda_binary()
-        
+
         self.assertEqual(results, results_repeat)
 
     def test_no_seed_non_reproducible(self):
@@ -387,13 +399,13 @@ class TestSeedReproducibility(unittest.TestCase):
         results1 = []
         for i in range(10):
             results1.append(kinda_int(10))
-        
-        # Second run without seed  
+
+        # Second run without seed
         PersonalityContext._instance = PersonalityContext("playful", 5, seed=None)
         results2 = []
         for i in range(10):
             results2.append(kinda_int(10))
-        
+
         # Results should likely be different (though there's a tiny chance they could match)
         # We'll run multiple times to be statistically confident
         different_found = False
@@ -402,14 +414,16 @@ class TestSeedReproducibility(unittest.TestCase):
             new_results = []
             for i in range(10):
                 new_results.append(kinda_int(10))
-            
+
             if new_results != results1:
                 different_found = True
                 break
-        
+
         # With high probability, at least one run should be different
-        self.assertTrue(different_found or len(set(results1)) > 1,
-                       "Non-seeded runs should produce variable results")
+        self.assertTrue(
+            different_found or len(set(results1)) > 1,
+            "Non-seeded runs should produce variable results",
+        )
 
 
 if __name__ == "__main__":
