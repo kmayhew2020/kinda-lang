@@ -547,7 +547,7 @@ class TestKindaFloatEdgeCases:
         personality.profile.chaos_amplifier = 2.0
         drift_min, drift_max = personality.get_float_drift_range()
         expected_min = -100.0 * 2.0 * 1.1  # -220.0
-        expected_max = 100.0 * 2.0 * 1.1   # 220.0
+        expected_max = 100.0 * 2.0 * 1.1  # 220.0
         assert abs(drift_min - expected_min) < 1e-10, f"Expected {expected_min}, got {drift_min}"
         assert abs(drift_max - expected_max) < 1e-10, f"Expected {expected_max}, got {drift_max}"
 
@@ -557,7 +557,7 @@ class TestKindaFloatEdgeCases:
         personality.profile.chaos_amplifier = 0.1
         drift_min, drift_max = personality.get_float_drift_range()
         expected_min = -0.001 * 0.1 * 1.1  # -0.00011
-        expected_max = 0.001 * 0.1 * 1.1   # 0.00011
+        expected_max = 0.001 * 0.1 * 1.1  # 0.00011
         assert abs(drift_min - expected_min) < 1e-10, f"Expected {expected_min}, got {drift_min}"
         assert abs(drift_max - expected_max) < 1e-10, f"Expected {expected_max}, got {drift_max}"
 
@@ -734,7 +734,7 @@ class TestKindaFloatDriftBehavior:
         personality.profile.chaos_amplifier = 2.0
         drift_min, drift_max = personality.get_float_drift_range()
         expected_min = -1.0 * 2.0 * 1.1  # -2.2
-        expected_max = 1.0 * 2.0 * 1.1   # 2.2
+        expected_max = 1.0 * 2.0 * 1.1  # 2.2
         assert abs(drift_min - expected_min) < 1e-10, f"Expected {expected_min}, got {drift_min}"
         assert abs(drift_max - expected_max) < 1e-10, f"Expected {expected_max}, got {drift_max}"
 
@@ -743,7 +743,7 @@ class TestKindaFloatDriftBehavior:
         personality.profile.chaos_amplifier = 0.5
         drift_min, drift_max = personality.get_float_drift_range()
         expected_min = -1.0 * 0.5 * 1.1  # -0.55
-        expected_max = 1.0 * 0.5 * 1.1   # 0.55
+        expected_max = 1.0 * 0.5 * 1.1  # 0.55
         assert abs(drift_min - expected_min) < 1e-10, f"Expected {expected_min}, got {drift_min}"
         assert abs(drift_max - expected_max) < 1e-10, f"Expected {expected_max}, got {drift_max}"
 
