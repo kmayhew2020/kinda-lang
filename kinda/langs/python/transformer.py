@@ -172,7 +172,7 @@ def _transform_ish_constructs(line: str) -> str:
             replacement = f"ish_value({value})"
         elif construct_type == "ish_comparison":
             left_val = match.group(1)
-            right_val = match.group(2)
+            right_val = match.group(2).strip()
 
             # CRITICAL FIX: Detect assignment vs comparison context
             stripped_line = line.strip()
@@ -214,7 +214,7 @@ def _transform_ish_constructs(line: str) -> str:
             used_helpers.add("ish_comparison")
             used_helpers.add("ish_value")
             left_val = match.group(1)
-            right_val = match.group(2)
+            right_val = match.group(2).strip()
             replacement = f"ish_comparison({left_val}, ish_value({right_val}))"
         else:
             continue  # Skip unknown constructs
