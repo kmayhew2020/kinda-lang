@@ -1,6 +1,6 @@
 # Kinda-Lang Development Roadmap
 
-## Current Status (2025-08-30)
+## Current Status (2025-08-31)
 
 ### ✅ Completed (v0.3.0 RELEASED)
 - **All Core Constructs**: `~kinda int`, `~sorta print`, `~sometimes`, `~maybe`, `~ish`, `~kinda binary`, `~welp`
@@ -13,17 +13,19 @@
 
 ### 🚀 Active Development Roadmap
 
-**v0.4.0 - Enhanced Features & C Transpiler (CURRENT):**
+**v0.4.0 "The Fuzzy Types Release" (CURRENT):**
 - ✅ **Personality System Integration**: Complete chaos-personality integration (Issue #73) - MERGED
   - 4 personality modes: reliable, cautious, playful, chaotic
   - ALL 9 constructs now personality-aware
   - CLI --mood flag support
   - Cascade failure tracking & instability system
-- 🔄 **Enhanced Chaos Constructs**: Time-based drift, cascade failures (Epic #35)
+- ✅ **New Fuzzy Constructs**: ~rarely (15%), ~probably (70%), ~kinda bool, ~kinda float - ALL COMPLETED
 - 🔄 **Documentation Enhancement**: Complex usage patterns, domain examples (Epic #76)
-- 🔄 **C Language Support**: Complete C transpiler pipeline (Epic #19)
+- 🔄 **Time-based Variable Drift**: Issue #74 evaluation for feasibility and scope
 
-**v0.5.0 - Advanced Personality & User Experience (PLANNED):**
+**v0.5.0 "The Multi-Language Release" (PLANNED):**
+- 🔧 **C Language Support**: Complete C transpiler pipeline (Epic #19)
+- 🎲 **Enhanced Chaos Constructs**: Time-based drift, cascade failures (Epic #35)  
 - 🎭 **10 Personality Modes**: Expand from 4 to 10 distinct personalities (Issue #77)
   - Reliability spectrum: ultra_reliable → reliable → cautious
   - Standard range: playful → mischievous  
@@ -72,10 +74,14 @@
   - 29 comprehensive tests, all passing
   - Full CI verification with all tests green
   - Complete documentation and working examples
+- ✅ **Issue #99**: Feature: Implement ~kinda float fuzzy floating-point type - **COMPLETED** 
+  - Complete fuzzy float construct with controlled drift behavior
+  - Personality-based noise levels (reliable=0.1%, chaotic=5%)
+  - Comprehensive test coverage and working examples
+  - All mathematical operations and comparisons supported
 
 ### 🚀 New Feature Requests (Discovered 2025-08-29/30)
-- 🔴 **Issue #99**: Feature: Implement ~kinda float fuzzy floating-point type - **HIGH PRIORITY**
-- 🟡 **Issue #100**: Feature: Implement ~eventually delayed execution blocks - **MEDIUM**
+- 🟡 **Issue #100**: Feature: Implement ~eventually delayed execution blocks - **MEDIUM** (moved to v0.5.0)
 
 ### 🔍 Enhancement Issues from Expert Analysis
 - 🟡 **Issue #86**: Feature: Add determinism controls (--seed, --chaos flags) - MEDIUM
@@ -97,23 +103,23 @@
    - Variable modification now works correctly with expressions
 
 **🔴 HIGH PRIORITY (Next Development Wave):**
-2. **New Core Constructs**: Issues #98, #99 - ~kinda bool/float (Issue #97 ~rarely COMPLETED ✅)
-3. **Epic #35**: 🎲 Enhanced Chaos Constructs - New fuzzy constructs and behaviors
-4. **Issue #74**: ⏰ Time-based Variable Drift - Variables get fuzzier over program lifetime
+2. **Issue #74**: ⏰ Time-based Variable Drift - Evaluate feasibility and implementation scope for v0.4.0
+3. **Epic #76**: 📚 Documentation Enhancement - Complex usage patterns and comprehensive guides
+4. **Issue #84**: 📖 Documentation: ~ish construct usage patterns clarification
 
 **🟡 MEDIUM PRIORITY (Documentation & Features):**
-5. **Issue #100**: ~eventually delayed execution blocks
-6. **Issue #84**: 📖 Documentation: ~ish construct usage patterns need clarification  
-7. **Issue #87**: 📘 Docs: Create comprehensive ~ish usage guide
-8. **Issue #86**: ⚙️ Feature: Add determinism controls (--seed, --chaos flags)
+5. **Issue #87**: 📘 Docs: Create comprehensive ~ish usage guide
+6. **Issue #86**: ⚙️ Feature: Add determinism controls (--seed, --chaos flags)
 
 **🟢 LOW PRIORITY (Future Enhancement):**
-9. **Epic #19**: 🔧 C Language Support - Complete C transpiler pipeline
-10. **Issue #88**: 🔧 Feature: Single-source spec.yaml → docs + CLI to prevent drift
-11. **Issue #89**: 🛠️ DX: Add source maps for error reporting (.knda line/col in stack traces)
+7. **Issue #88**: 🔧 Feature: Single-source spec.yaml → docs + CLI to prevent drift
+8. **Issue #89**: 🛠️ DX: Add source maps for error reporting (.knda line/col in stack traces)
 
 **🔮 FUTURE PLANNING (v0.5.0):**
-12. **Issue #77**: 🎭 10 Personality Expansion - Expand from 4 to 10 distinct personality modes
+- **Epic #19**: 🔧 C Language Support - Complete C transpiler pipeline (moved to v0.5.0)
+- **Epic #35**: 🎲 Enhanced Chaos Constructs - Time-based drift, cascade failures (moved to v0.5.0)
+- **Issue #77**: 🎭 10 Personality Expansion - Expand from 4 to 10 distinct personality modes
+- **Issue #100**: ~eventually delayed execution blocks
 
 ### 💡 Enhancement Ideas from Personality Analysis
 - **Personality Intensity Levels**: `--mood chaotic-extreme`, `--mood reliable-strict`
@@ -149,4 +155,4 @@
 - 🟡 **Documentation Gap**: ~ish usage patterns need comprehensive guide (Issue #87)
 
 ---
-*Last Updated: 2025-08-30 by Kinda-Lang Project Manager - ~rarely Construct Implementation COMPLETED (Issue #97, PR #109) - Ready for ~kinda bool/float Development*
+*Last Updated: 2025-08-31 by Kinda-Lang Project Manager - v0.4.0 "Fuzzy Types Release" Core Features COMPLETED (~rarely, ~probably, ~kinda bool, ~kinda float) - Ready for Documentation Focus*
