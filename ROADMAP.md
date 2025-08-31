@@ -1,6 +1,6 @@
 # Kinda-Lang Development Roadmap
 
-## Current Status (2025-08-31)
+## Current Status (2025-08-31) - STRATEGIC PIVOT
 
 ### ✅ Completed (v0.3.0 RELEASED)
 - **All Core Constructs**: `~kinda int`, `~sorta print`, `~sometimes`, `~maybe`, `~ish`, `~kinda binary`, `~welp`
@@ -11,9 +11,22 @@
 - **CI Pipeline**: Passing on Ubuntu/macOS/Windows, Python 3.8-3.12
 - **Test Coverage**: 75% overall coverage achieved
 
+### 🚨 STRATEGIC REALIGNMENT (Based on User Feedback)
+
+**CRITICAL INSIGHT**: User feedback reveals fundamental misalignment between current documentation-focused v0.4.0 and user vision of "genuinely useful tool." 
+
+**USER PRIORITY: "Kinda builds Kinda"** - Self-hosting is core validation criterion.
+
+**NEW HIGH PRIORITY ISSUES** (Created 2025-08-31):
+- 🎯 **Issue #121**: --chaos-level parameter (1-10) for fine-grained randomness control  
+- 🎥 **Issue #122**: kinda record/replay system for debugging and testing
+- 🧪 **Issue #123**: ~assert_eventually() statistical assertions for fuzzy testing
+- 🏗️ **Epic #124**: Construct Self-definition - Higher-level constructs built from basic ones
+- ⚙️ **Issue #86**: --seed flag (upgraded to HIGH priority)
+
 ### 🚀 Active Development Roadmap
 
-**v0.4.0 "The Fuzzy Types Release" (CURRENT):**
+**v0.4.0 "The Developer Experience Release" (REVISED):**
 - ✅ **Personality System Integration**: Complete chaos-personality integration (Issue #73) - MERGED
   - 4 personality modes: reliable, cautious, playful, chaotic
   - ALL 9 constructs now personality-aware
@@ -26,23 +39,29 @@
   - `var~drift` - Access variables with accumulated drift applied
   - Advanced multi-factor drift algorithm (age, usage, recency, personality)
   - 36 comprehensive tests, full backward compatibility
-- 🔄 **Documentation Enhancement**: Epic #76 broken down into 5 specific tasks:
-  - ✅ Issue #114: Advanced Usage Patterns Documentation (HIGH) - **COMPLETED via PR #119**
-  - Issue #115: Personality System Integration Guide (HIGH) 
-  - Issue #116: Real-world Application Examples (MEDIUM)
-  - Issue #117: Performance and Debugging Guide (MEDIUM)
-  - Issue #118: Migration Guide for Existing Projects (LOW)
+- 🚀 **DEVELOPER EXPERIENCE FUNDAMENTALS** (User HIGH Priority):
+  - 🎯 **Issue #121**: --chaos-level parameter (1-10 scale) - **NEW HIGH**
+  - ⚙️ **Issue #86**: --seed flag for reproducible chaos - **UPGRADED to HIGH**
+  - 🎥 **Issue #122**: kinda record/replay debugging system - **NEW HIGH**
+- 🧪 **TESTING INFRASTRUCTURE** (User HIGH Priority):
+  - 🧪 **Issue #123**: ~assert_eventually() statistical assertions - **NEW HIGH**
+- 🔄 **SELECTIVE Documentation Enhancement**: Epic #76 (REVISED priorities based on user alignment):
+  - ✅ Issue #114: Advanced Usage Patterns Documentation - **COMPLETED via PR #119**
+  - Issue #116: Real-world Application Examples - **MEDIUM** (aligns with "practical use cases")
+  - Issue #117: Performance and Debugging Guide - **MEDIUM** (aligns with "developer experience")  
+  - Issue #115: Personality System Integration Guide - **DOWNGRADED to LOW** (low user impact)
+  - Issue #118: Migration Guide for Existing Projects - **DEFERRED** (low user priority)
 
-**v0.5.0 "The Multi-Language Release" (PLANNED):**
-- 🔧 **C Language Support**: Complete C transpiler pipeline (Epic #19)
-- 🎲 **Enhanced Chaos Constructs**: Time-based drift, cascade failures (Epic #35)  
-- 🎭 **10 Personality Modes**: Expand from 4 to 10 distinct personalities (Issue #77)
-  - Reliability spectrum: ultra_reliable → reliable → cautious
-  - Standard range: playful → mischievous  
-  - Chaotic spectrum: chaotic → unpredictable → anarchic
-  - Specialized: pessimistic, optimistic personalities
-- **Advanced Personality Features**: Custom personalities, personality mixing
-- **Enhanced User Experience**: Improved CLI, better error messages
+**v0.5.0 "The Construct Composition Release" (STRATEGIC PIVOT):**
+- 🏗️ **EPIC #124: CONSTRUCT SELF-DEFINITION** - Higher-level constructs built from basic ones (User Core Vision)
+  - Phase 1: Define ~sorta using ~sometimes + ~maybe + personality (~2 weeks)
+  - Phase 2: Implement ~ish patterns from ~kinda float + tolerance (~2 weeks)  
+  - Phase 3: Create construct composition framework (~2-3 weeks)
+  - Phase 4: Documentation & examples showing elegant composition (~1-2 weeks)
+- 🔧 **C Language Support**: Complete C transpiler pipeline (Epic #19) - **DEFERRED**
+- 🎲 **Enhanced Chaos Constructs**: Time-based drift, cascade failures (Epic #35) - **DEFERRED**  
+- 🎭 **10 Personality Modes**: Expand from 4 to 10 distinct personalities (Issue #77) - **DEFERRED**
+- **Integration & Ecosystem**: Python compatibility improvements (User MEDIUM Priority)
 
 ### 📋 Recently Completed Issues (v0.4.0)
 - ✅ Issue #73: Chaos-Personality Integration - Complete personality system with 4 modes - MERGED
@@ -125,25 +144,28 @@
    - Production-ready patterns for complex fuzzy applications
    - Addresses core user pain point of "trial and error" learning
 
-**🔴 HIGH PRIORITY (Next Development Wave):**
-1. **Issue #115**: 🎭 Personality System Integration Guide (Epic #76.2) - Complete personality system documentation
+**🔴 HIGH PRIORITY (REVISED - User Feedback Alignment):**
+1. **Issue #121**: 🎯 --chaos-level parameter (1-10 scale) - **NEW** - Core DX improvement
+2. **Issue #86**: ⚙️ --seed flag for reproducible chaos - **UPGRADED** - Core DX improvement  
+3. **Issue #122**: 🎥 kinda record/replay system - **NEW** - Essential for debugging fuzzy programs
+4. **Issue #123**: 🧪 ~assert_eventually() statistical assertions - **NEW** - Essential for testing fuzzy programs
 
-**🟡 MEDIUM PRIORITY (Documentation & Features):**
-2. **Issue #116**: 🌍 Real-world Application Examples (Epic #76.3) - IoT, distributed systems, chaos engineering examples
-3. **Issue #117**: 🔧 Performance and Debugging Guide (Epic #76.4) - Performance characteristics and debugging strategies  
-4. **Issue #87**: 📘 Docs: Create comprehensive ~ish usage guide
-5. **Issue #86**: ⚙️ Feature: Add determinism controls (--seed, --chaos flags)
+**🟡 MEDIUM PRIORITY (User-Aligned Features):**
+5. **Issue #116**: 🌍 Real-world Application Examples (Epic #76.3) - Aligns with "practical use cases"
+6. **Issue #117**: 🔧 Performance and Debugging Guide (Epic #76.4) - Aligns with "developer experience"  
+7. **Issue #87**: 📘 Docs: Create comprehensive ~ish usage guide
 
-**🟢 LOW PRIORITY (Future Enhancement):**
-6. **Issue #118**: 🔄 Migration Guide for Existing Projects (Epic #76.5) - Integration patterns and adoption strategies
-7. **Issue #88**: 🔧 Feature: Single-source spec.yaml → docs + CLI to prevent drift
-8. **Issue #89**: 🛠️ DX: Add source maps for error reporting (.knda line/col in stack traces)
+**🟢 LOW PRIORITY (Deferred Based on User Feedback):**
+8. **Issue #115**: 🎭 Personality System Integration Guide - **DOWNGRADED** (low impact on user goals)
+9. **Issue #118**: 🔄 Migration Guide for Existing Projects - **DEFERRED** (low user priority)
+10. **Issue #88**: 🔧 Single-source spec.yaml → docs + CLI - **DEFERRED**
+11. **Issue #89**: 🛠️ Source maps for error reporting - **DEFERRED**
 
-**🔮 FUTURE PLANNING (v0.5.0):**
-- **Epic #19**: 🔧 C Language Support - Complete C transpiler pipeline (moved to v0.5.0)
-- **Epic #35**: 🎲 Enhanced Chaos Constructs - Time-based drift, cascade failures (moved to v0.5.0)
-- **Issue #77**: 🎭 10 Personality Expansion - Expand from 4 to 10 distinct personality modes
-- **Issue #100**: ~eventually delayed execution blocks
+**🔮 FUTURE PLANNING (v0.6.0+):**
+- **Epic #19**: 🔧 C Language Support - **DEFERRED** (lower user priority than self-hosting)
+- **Epic #35**: 🎲 Enhanced Chaos Constructs - **DEFERRED** (lower user priority than DX)
+- **Issue #77**: 🎭 10 Personality Expansion - **DEFERRED** (lower user priority)
+- **Issue #100**: ~eventually delayed execution blocks - **DEFERRED**
 
 ### 💡 Enhancement Ideas from Personality Analysis
 - **Personality Intensity Levels**: `--mood chaotic-extreme`, `--mood reliable-strict`
@@ -179,4 +201,86 @@
 - 🟡 **Documentation Gap**: ~ish usage patterns need comprehensive guide (Issue #87)
 
 ---
-*Last Updated: 2025-08-31 by Kinda-Lang Project Manager - Issue #114 Advanced Usage Patterns Documentation completed via PR #119 - Next priority: Issue #115 Personality System Integration Guide*
+
+## 🔄 CRITICAL VISION CORRECTION (2025-08-31)
+
+### **WHAT USER ACTUALLY MEANT BY "KINDA BUILDS KINDA"**
+
+**❌ MISINTERPRETATION (Compiler Self-hosting):**
+- Rewrite entire compiler/parser/toolchain in kinda-lang syntax
+- Transform Python transformer itself using kinda constructs  
+- Toolchain-level bootstrapping like traditional compiler self-hosting
+
+**✅ CORRECT VISION (Construct Self-definition):**
+- **Meta-circular construct composition**: Higher-level fuzziness built from lower-level fuzziness
+- `~sorta` implemented using `~sometimes` + `~maybe` + personality logic
+- `~ish` patterns implemented using `~kinda float` + tolerance logic
+- **Language feature composition**, not toolchain rewriting
+
+**EXAMPLE OF USER'S VISION:**
+```kinda
+# Define ~sorta using existing constructs
+def implement_sorta(message):
+    ~sometimes (~maybe (print_with_personality(message)))
+    ~rarely (return_snarky_response())
+    
+# Show ~ish emerges from simpler constructs  
+def implement_ish_comparison(a, b, tolerance):
+    difference = ~kinda float abs(a - b)
+    ~probably (difference < tolerance)
+```
+
+**WHY USER'S VISION IS SUPERIOR:**
+1. **More achievable** - doesn't require rewriting entire toolchain
+2. **More educational** - shows elegant composition patterns  
+3. **More aligned** with "genuinely useful" goal - proves language primitives are sufficient
+4. **Better validation** - demonstrates construct expressiveness through composition
+5. **More practical** - achievable in v0.5.0 timeframe (7-9 weeks vs 12-16 weeks)
+
+**EPIC #124 REVISED FOCUS:**
+- Build hierarchy: basic constructs → composite constructs → complex behaviors
+- Demonstrate `~sorta` = `~sometimes` + `~maybe` + personality patterns
+- Show `~ish` patterns emerge from `~kinda float` + tolerance logic
+- Create construct composition framework and documentation
+- **Success Metric**: All high-level constructs implementable from basic ones
+
+This clarification makes the strategic direction MORE focused and achievable, perfectly aligned with user's vision of practical utility through elegant composition.
+
+---
+
+## 🎯 STRATEGIC RECOMMENDATION (2025-08-31)
+
+### **IMMEDIATE NEXT ACTION (Week 1)**
+**PIVOT FROM** Issue #115 (Personality System Integration Guide) 
+**TO** Issue #121 (--chaos-level parameter implementation)
+
+**Rationale**: User feedback clearly prioritizes Developer Experience over documentation. The --chaos-level flag is:
+- **High user impact**: Core DX improvement users specifically requested
+- **Foundation for other DX features**: Required for record/replay and statistical testing  
+- **Quick win**: Can be implemented in ~1 week, demonstrating responsiveness to feedback
+- **Validates strategy shift**: From "creative experiment" to "genuinely useful tool"
+
+### **v0.4.0 TIMELINE ADJUSTMENT**
+- **REMOVE**: Issue #115 (Personality Guide) from v0.4.0 
+- **ADD**: Issues #121, #86, #122, #123 to v0.4.0
+- **KEEP**: Issues #116, #117 (aligned with user priorities)
+- **RESULT**: v0.4.0 becomes "Developer Experience Release" instead of documentation-focused
+
+### **v0.5.0 STRATEGIC REFOCUS**  
+- **PRIMARY GOAL**: Epic #124 (Construct Self-definition) - User's core validation criterion
+- **TIMELINE**: 7-9 weeks for construct composition framework
+- **IMPACT**: Proves kinda-lang primitives are sufficient to build complex behaviors through elegant composition
+
+### **USER ALIGNMENT SCORE** 
+- **BEFORE PIVOT**: ~40% aligned (documentation focus vs. practical utility needs)
+- **AFTER PIVOT**: ~85% aligned (DX fundamentals + self-hosting + practical examples)
+
+### **RISK MITIGATION**
+- **Documentation debt**: Issues #115, #118 deferred but not abandoned
+- **Complexity increase**: Self-hosting is ambitious - may need timeline flexibility
+- **Community expectations**: Need to communicate strategic shift clearly
+
+**DECISION REQUIRED**: Approve strategic pivot and begin Issue #121 implementation immediately.
+
+---
+*Last Updated: 2025-08-31 by Kinda-Lang Project Manager - STRATEGIC PIVOT based on comprehensive user feedback - Recommendation: Immediately begin Issue #121 (--chaos-level) implementation*
