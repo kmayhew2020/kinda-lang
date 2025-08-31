@@ -291,9 +291,10 @@ class TestRarelyRuntimeBehavior:
                 # Test statistical behavior over multiple calls
                 # With 15% probability, we should get mostly False with occasional True
                 results = []
-                
+
                 # Mock both chaos_probability and update_chaos_state for deterministic testing
                 import unittest.mock
+
                 with unittest.mock.patch("kinda.personality.chaos_probability", return_value=0.15):
                     with unittest.mock.patch("kinda.personality.update_chaos_state"):
                         for _ in range(200):  # Larger sample for statistical significance

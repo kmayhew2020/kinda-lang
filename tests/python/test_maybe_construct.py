@@ -223,7 +223,9 @@ class TestMaybeRuntimeBehavior:
                 from fuzzy import maybe
 
                 result = maybe(True)
-                assert result == True  # Should execute when condition is True and random < probability
+                assert (
+                    result == True
+                )  # Should execute when condition is True and random < probability
             finally:
                 sys.path.remove(str(temp_path))
 
