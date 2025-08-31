@@ -542,18 +542,24 @@ class TestKindaFloatEdgeCases:
         personality = PersonalityContext.get_instance()
 
         # Test maximum bounds
+        # With default chaos_level=5, chaos_multiplier=1.1, so combined = 2.0 * 1.1 = 2.2
         personality.profile.float_drift_range = (-100.0, 100.0)
         personality.profile.chaos_amplifier = 2.0
         drift_min, drift_max = personality.get_float_drift_range()
-        assert drift_min == -200.0, f"Expected -200.0, got {drift_min}"
-        assert drift_max == 200.0, f"Expected 200.0, got {drift_max}"
+        expected_min = -100.0 * 2.0 * 1.1  # -220.0
+        expected_max = 100.0 * 2.0 * 1.1  # 220.0
+        assert abs(drift_min - expected_min) < 1e-10, f"Expected {expected_min}, got {drift_min}"
+        assert abs(drift_max - expected_max) < 1e-10, f"Expected {expected_max}, got {drift_max}"
 
         # Test minimum bounds (should be able to handle small ranges)
+        # With chaos_level=5, chaos_multiplier=1.1, so combined = 0.1 * 1.1 = 0.11
         personality.profile.float_drift_range = (-0.001, 0.001)
         personality.profile.chaos_amplifier = 0.1
         drift_min, drift_max = personality.get_float_drift_range()
-        assert abs(drift_min - (-0.0001)) < 1e-10, f"Expected -0.0001, got {drift_min}"
-        assert abs(drift_max - 0.0001) < 1e-10, f"Expected 0.0001, got {drift_max}"
+        expected_min = -0.001 * 0.1 * 1.1  # -0.00011
+        expected_max = 0.001 * 0.1 * 1.1  # 0.00011
+        assert abs(drift_min - expected_min) < 1e-10, f"Expected {expected_min}, got {drift_min}"
+        assert abs(drift_max - expected_max) < 1e-10, f"Expected {expected_max}, got {drift_max}"
 
 
 class TestKindaFloatMathematicalOperations:
@@ -723,17 +729,23 @@ class TestKindaFloatDriftBehavior:
         personality = PersonalityContext.get_instance()
 
         # Test with amplifier = 2.0 (double the drift)
+        # With default chaos_level=5, chaos_multiplier=1.1, so combined = 2.0 * 1.1 = 2.2
         personality.profile.float_drift_range = (-1.0, 1.0)
         personality.profile.chaos_amplifier = 2.0
         drift_min, drift_max = personality.get_float_drift_range()
-        assert drift_min == -2.0, f"Expected -2.0, got {drift_min}"
-        assert drift_max == 2.0, f"Expected 2.0, got {drift_max}"
+        expected_min = -1.0 * 2.0 * 1.1  # -2.2
+        expected_max = 1.0 * 2.0 * 1.1  # 2.2
+        assert abs(drift_min - expected_min) < 1e-10, f"Expected {expected_min}, got {drift_min}"
+        assert abs(drift_max - expected_max) < 1e-10, f"Expected {expected_max}, got {drift_max}"
 
         # Test with amplifier = 0.5 (half the drift)
+        # With chaos_level=5, chaos_multiplier=1.1, so combined = 0.5 * 1.1 = 0.55
         personality.profile.chaos_amplifier = 0.5
         drift_min, drift_max = personality.get_float_drift_range()
-        assert drift_min == -0.5, f"Expected -0.5, got {drift_min}"
-        assert drift_max == 0.5, f"Expected 0.5, got {drift_max}"
+        expected_min = -1.0 * 0.5 * 1.1  # -0.55
+        expected_max = 1.0 * 0.5 * 1.1  # 0.55
+        assert abs(drift_min - expected_min) < 1e-10, f"Expected {expected_min}, got {drift_min}"
+        assert abs(drift_max - expected_max) < 1e-10, f"Expected {expected_max}, got {drift_max}"
 
 
 if __name__ == "__main__":

@@ -133,9 +133,11 @@ class PersonalityContext:
 
     _instance: Optional["PersonalityContext"] = None
 
-    def __init__(self, mood: str = "playful"):
+    def __init__(self, mood: str = "playful", chaos_level: int = 5):
         self.mood = mood.lower()
         self.profile = PERSONALITY_PROFILES.get(self.mood, PERSONALITY_PROFILES["playful"])
+        self.chaos_level = chaos_level
+        self.chaos_multiplier = self._calculate_chaos_multiplier(chaos_level)
         self.execution_count = 0
         self.instability_level = 0.0  # For cascade failures
         self.drift_accumulator = {}  # For time-based drift
@@ -147,32 +149,67 @@ class PersonalityContext:
             cls._instance = cls()
         return cls._instance
 
+    def _calculate_chaos_multiplier(self, chaos_level: int) -> float:
+        """Calculate chaos multiplier from level (1-10 scale)."""
+        # Chaos level 5 is baseline (1.0 multiplier)
+        # Level 1-2: 0.2-0.6 (minimal chaos)
+        # Level 3-4: 0.6-1.0 (low chaos)
+        # Level 5-6: 1.0-1.4 (medium chaos) - DEFAULT
+        # Level 7-8: 1.4-1.8 (high chaos)
+        # Level 9-10: 1.8-2.2 (maximum chaos)
+
+        if chaos_level <= 2:
+            # Minimal chaos (very predictable)
+            return 0.2 + (chaos_level - 1) * 0.2  # 0.2 to 0.4
+        elif chaos_level <= 4:
+            # Low chaos (slight unpredictability)
+            return 0.4 + (chaos_level - 2) * 0.2  # 0.4 to 0.8
+        elif chaos_level <= 6:
+            # Medium chaos (balanced randomness) - DEFAULT
+            return 0.8 + (chaos_level - 4) * 0.3  # 0.8 to 1.4
+        elif chaos_level <= 8:
+            # High chaos (significant randomness)
+            return 1.4 + (chaos_level - 6) * 0.2  # 1.4 to 1.8
+        else:
+            # Maximum chaos (highly unpredictable)
+            return 1.8 + (chaos_level - 8) * 0.2  # 1.8 to 2.2
+
     @classmethod
     def set_mood(cls, mood: str) -> None:
         """Set the global mood/personality."""
-        cls._instance = cls(mood)
+        current_chaos_level = cls._instance.chaos_level if cls._instance else 5
+        cls._instance = cls(mood, current_chaos_level)
+
+    @classmethod
+    def set_chaos_level(cls, chaos_level: int) -> None:
+        """Set the global chaos level."""
+        current_mood = cls._instance.mood if cls._instance else "playful"
+        cls._instance = cls(current_mood, chaos_level)
 
     def get_chaos_probability(self, base_key: str, condition: Any = True) -> float:
         """Get chaos-adjusted probability for a construct."""
         base_prob = getattr(self.profile, f"{base_key}_base", 0.5)
 
+        # Combine personality profile chaos_amplifier with chaos_level multiplier
+        combined_chaos_amplifier = self.profile.chaos_amplifier * self.chaos_multiplier
+
         # Apply chaos amplifier - simpler approach
-        # chaos_amplifier < 1.0 = more reliable (less chaos)
-        # chaos_amplifier > 1.0 = more chaotic
-        if self.profile.chaos_amplifier < 1.0:
+        # combined_chaos_amplifier < 1.0 = more reliable (less chaos)
+        # combined_chaos_amplifier > 1.0 = more chaotic
+        if combined_chaos_amplifier < 1.0:
             # More reliable: pull probabilities toward their "success" direction
             if base_prob >= 0.5:
                 # High base prob -> make it higher (more reliable)
-                adjusted = base_prob + (1.0 - base_prob) * (1.0 - self.profile.chaos_amplifier)
+                adjusted = base_prob + (1.0 - base_prob) * (1.0 - combined_chaos_amplifier)
             else:
                 # Low base prob -> make it lower (more predictably low)
-                adjusted = base_prob * self.profile.chaos_amplifier
+                adjusted = base_prob * combined_chaos_amplifier
         else:
             # More chaotic: pull probabilities toward 0.5 (unpredictable)
             if base_prob > 0.5:
-                adjusted = base_prob - (base_prob - 0.5) * (self.profile.chaos_amplifier - 1.0)
+                adjusted = base_prob - (base_prob - 0.5) * (combined_chaos_amplifier - 1.0)
             else:
-                adjusted = base_prob + (0.5 - base_prob) * (self.profile.chaos_amplifier - 1.0)
+                adjusted = base_prob + (0.5 - base_prob) * (combined_chaos_amplifier - 1.0)
 
         # Apply cascade effects
         if self.instability_level > 0:
@@ -185,38 +222,41 @@ class PersonalityContext:
     def get_fuzz_range(self, base_key: str = "int") -> Tuple[int, int]:
         """Get chaos-adjusted fuzz range."""
         base_range = getattr(self.profile, f"{base_key}_fuzz_range", (-1, 1))
-        amplifier = self.profile.chaos_amplifier
+        combined_amplifier = self.profile.chaos_amplifier * self.chaos_multiplier
 
-        # Scale the range by chaos amplifier
+        # Scale the range by combined chaos amplifier
         min_val, max_val = base_range
-        scaled_min = int(min_val * amplifier)
-        scaled_max = int(max_val * amplifier)
+        scaled_min = int(min_val * combined_amplifier)
+        scaled_max = int(max_val * combined_amplifier)
 
         return (scaled_min, scaled_max)
 
     def get_float_drift_range(self) -> Tuple[float, float]:
         """Get chaos-adjusted float drift range."""
         base_range = self.profile.float_drift_range
-        amplifier = self.profile.chaos_amplifier
+        combined_amplifier = self.profile.chaos_amplifier * self.chaos_multiplier
 
-        # Scale the range by chaos amplifier
+        # Scale the range by combined chaos amplifier
         min_val, max_val = base_range
-        scaled_min = min_val * amplifier
-        scaled_max = max_val * amplifier
+        scaled_min = min_val * combined_amplifier
+        scaled_max = max_val * combined_amplifier
 
         return (scaled_min, scaled_max)
 
     def get_ish_variance(self) -> float:
         """Get chaos-adjusted ish variance."""
-        return self.profile.ish_variance * self.profile.chaos_amplifier
+        combined_amplifier = self.profile.chaos_amplifier * self.chaos_multiplier
+        return self.profile.ish_variance * combined_amplifier
 
     def get_ish_tolerance(self) -> float:
         """Get chaos-adjusted ish tolerance."""
-        return self.profile.ish_tolerance * self.profile.chaos_amplifier
+        combined_amplifier = self.profile.chaos_amplifier * self.chaos_multiplier
+        return self.profile.ish_tolerance * combined_amplifier
 
     def get_bool_uncertainty(self) -> float:
         """Get personality-adjusted boolean uncertainty."""
-        uncertainty = self.profile.bool_uncertainty * self.profile.chaos_amplifier
+        combined_amplifier = self.profile.chaos_amplifier * self.chaos_multiplier
+        uncertainty = self.profile.bool_uncertainty * combined_amplifier
 
         # Add instability effects
         if self.instability_level > 0.1:
@@ -232,16 +272,17 @@ class PersonalityContext:
         neg = self.profile.binary_neg_prob
         neutral = self.profile.binary_neutral_prob
 
-        # Apply chaos amplifier - make more/less extreme
-        if self.profile.chaos_amplifier > 1.0:
+        # Apply combined chaos amplifier - make more/less extreme
+        combined_amplifier = self.profile.chaos_amplifier * self.chaos_multiplier
+        if combined_amplifier > 1.0:
             # More chaotic: push toward extremes
-            factor = self.profile.chaos_amplifier - 1.0
+            factor = combined_amplifier - 1.0
             pos = pos * (1.0 + factor * 0.5)
             neg = neg * (1.0 + factor * 0.5)
             neutral = neutral * (1.0 - factor * 0.5)
-        elif self.profile.chaos_amplifier < 1.0:
+        elif combined_amplifier < 1.0:
             # More reliable: balance toward neutral
-            factor = 1.0 - self.profile.chaos_amplifier
+            factor = 1.0 - combined_amplifier
             pos = pos + (neutral - pos) * factor * 0.3
             neg = neg + (neutral - neg) * factor * 0.3
 
@@ -320,8 +361,9 @@ class PersonalityContext:
         # Combined drift magnitude
         drift_magnitude = base_drift_rate * (age_factor + usage_factor + time_factor) / 3.0
 
-        # Apply chaos amplifier
-        drift_magnitude *= self.profile.chaos_amplifier
+        # Apply combined chaos amplifier
+        combined_amplifier = self.profile.chaos_amplifier * self.chaos_multiplier
+        drift_magnitude *= combined_amplifier
 
         # Generate actual drift value within reasonable bounds
         if isinstance(current_value, (int, float)):

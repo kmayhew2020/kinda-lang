@@ -245,18 +245,33 @@ def get_transformer(lang: str):
         raise ValueError(f"Unsupported language: {lang}. Currently only 'python' is supported.")
 
 
-def setup_personality(mood: str) -> None:
-    """Initialize personality system with specified mood."""
+def validate_chaos_level(chaos_level: int) -> int:
+    """Validate and return a valid chaos level (1-10)."""
+    if chaos_level < 1 or chaos_level > 10:
+        available_range = "1-10"
+        safe_print(f"[?] Invalid chaos level '{chaos_level}'. Valid range: {available_range}")
+        safe_print("[tip] Defaulting to chaos level 5 (medium chaos)")
+        return 5
+    return chaos_level
+
+
+def setup_personality(mood: str, chaos_level: int = 5) -> None:
+    """Initialize personality system with specified mood and chaos level."""
     if mood and mood.lower() not in PERSONALITY_PROFILES:
         available_moods = ", ".join(PERSONALITY_PROFILES.keys())
         safe_print(f"[?] Unknown mood '{mood}'. Available moods: {available_moods}")
         safe_print("[tip] Defaulting to 'playful' mood")
         mood = "playful"
 
+    # Validate chaos level
+    chaos_level = validate_chaos_level(chaos_level)
+
     PersonalityContext.set_mood(mood or "playful")
+    PersonalityContext.set_chaos_level(chaos_level)
 
     if mood:
         safe_print(f"🎭 Setting kinda mood to '{mood}'")
+    safe_print(f"🎲 Setting chaos level to {chaos_level} (1=minimal, 10=maximum chaos)")
 
 
 def detect_language(path: Path, forced: Union[str, None]) -> str:
@@ -311,12 +326,26 @@ def main(argv=None) -> int:
     p_transform.add_argument(
         "--mood", default=None, help="Personality/chaos level: reliable, cautious, playful, chaotic"
     )
+    p_transform.add_argument(
+        "--chaos-level",
+        type=int,
+        choices=range(1, 11),
+        default=5,
+        help="Control randomness intensity (1=minimal, 10=maximum chaos)",
+    )
 
     p_run = sub.add_parser("run", help="Transform then execute (living dangerously, I see)")
     p_run.add_argument("input", help="The .knda file you want to run")
     p_run.add_argument("--lang", default=None, help="Target language (currently: 'python' only)")
     p_run.add_argument(
         "--mood", default=None, help="Personality/chaos level: reliable, cautious, playful, chaotic"
+    )
+    p_run.add_argument(
+        "--chaos-level",
+        type=int,
+        choices=range(1, 11),
+        default=5,
+        help="Control randomness intensity (1=minimal, 10=maximum chaos)",
     )
 
     p_interpret = sub.add_parser(
@@ -329,6 +358,13 @@ def main(argv=None) -> int:
     p_interpret.add_argument(
         "--mood", default=None, help="Personality/chaos level: reliable, cautious, playful, chaotic"
     )
+    p_interpret.add_argument(
+        "--chaos-level",
+        type=int,
+        choices=range(1, 11),
+        default=5,
+        help="Control randomness intensity (1=minimal, 10=maximum chaos)",
+    )
 
     p_examples = sub.add_parser("examples", help="Show example kinda programs (for inspiration)")
 
@@ -338,7 +374,7 @@ def main(argv=None) -> int:
 
     if args.command == "transform":
         # Setup personality for transform
-        setup_personality(getattr(args, "mood", None))
+        setup_personality(getattr(args, "mood", None), getattr(args, "chaos_level", 5))
 
         input_path = Path(args.input)
         if not input_path.exists():
@@ -417,7 +453,7 @@ def main(argv=None) -> int:
 
     if args.command == "run":
         # Setup personality for run
-        setup_personality(getattr(args, "mood", None))
+        setup_personality(getattr(args, "mood", None), getattr(args, "chaos_level", 5))
 
         input_path = Path(args.input)
         if not input_path.exists():
@@ -507,7 +543,7 @@ def main(argv=None) -> int:
 
     if args.command == "interpret":
         # Setup personality for interpret
-        setup_personality(getattr(args, "mood", None))
+        setup_personality(getattr(args, "mood", None), getattr(args, "chaos_level", 5))
 
         input_path = Path(args.input)
         if not input_path.exists():

@@ -89,6 +89,39 @@ kinda examples  # Try some examples
 - `kinda examples` - See example programs
 - `kinda syntax` - Quick syntax reference
 
+### Chaos Control
+Kinda gives you fine-grained control over randomness intensity:
+
+```bash
+# Chaos Level (1-10 scale) - controls all fuzzy behavior
+kinda run mycode.py.knda --chaos-level 1   # Minimal chaos (predictable)
+kinda run mycode.py.knda --chaos-level 5   # Medium chaos (default)
+kinda run mycode.py.knda --chaos-level 10  # Maximum chaos (wild)
+
+# Personality Moods - overall behavior style
+kinda run mycode.py.knda --mood reliable   # Conservative, high success rates
+kinda run mycode.py.knda --mood cautious   # Moderate uncertainty
+kinda run mycode.py.knda --mood playful    # Standard kinda behavior (default)
+kinda run mycode.py.knda --mood chaotic    # Embrace the chaos
+
+# Combine both for precise control
+kinda run mycode.py.knda --mood reliable --chaos-level 1   # Maximum predictability
+kinda run mycode.py.knda --mood chaotic --chaos-level 10   # Absolute chaos
+```
+
+**Chaos Level Effects:**
+- **Level 1-2**: Minimal chaos - fuzzy constructs behave almost deterministically  
+- **Level 3-4**: Low chaos - slight unpredictability, small variance
+- **Level 5-6**: Medium chaos - balanced randomness (default behavior)
+- **Level 7-8**: High chaos - significant randomness and variance
+- **Level 9-10**: Maximum chaos - highly unpredictable, extreme variance
+
+Try the demo to see the difference:
+```bash
+kinda run examples/python/chaos_level_demo.py.knda --chaos-level 1
+kinda run examples/python/chaos_level_demo.py.knda --chaos-level 10
+```
+
 ### Syntax Reference
 
 | Kinda Construct | What It Does | Example |

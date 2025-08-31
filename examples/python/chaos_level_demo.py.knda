@@ -1,0 +1,73 @@
+# Chaos Level Demo - Showcasing --chaos-level parameter effects
+# Run with different chaos levels to see the difference:
+#   kinda run examples/python/chaos_level_demo.py.knda --chaos-level 1  (minimal chaos)
+#   kinda run examples/python/chaos_level_demo.py.knda --chaos-level 5  (medium chaos - default)
+#   kinda run examples/python/chaos_level_demo.py.knda --chaos-level 10 (maximum chaos)
+
+print("🎲 Chaos Level Demo - Testing randomness intensity")
+print("=" * 50)
+
+# Test fuzzy integers with different chaos levels
+print("\n📊 Testing ~kinda int (fuzzy integers):")
+for i in range(5):
+    ~kinda int x = 10;
+    print(f"  Attempt {i+1}: ~kinda int x = 10 → {x}")
+
+# Test different chaos level effects on core constructs
+print("\n🖨️  Testing core constructs with current chaos level:")
+
+# Test fuzzy floats
+print("\n🌊 Testing ~kinda float (fuzzy floating-point):")
+for i in range(5):
+    ~kinda float y = 3.14;
+    print(f"  Attempt {i+1}: ~kinda float y = 3.14 → {y:.3f}")
+
+# Test fuzzy booleans  
+print("\n🔀 Testing ~kinda bool (fuzzy booleans):")
+for i in range(5):
+    ~kinda bool flag = True;
+    print(f"  Attempt {i+1}: ~kinda bool flag = True → {flag}")
+
+# Test kinda binary (ternary logic)
+print("\n⚖️  Testing ~kinda binary (ternary: 1/-1/0):")
+for i in range(8):
+    ~kinda binary choice;
+    print(f"  Choice {i+1}: {choice}")
+
+# Demonstrate chaos level effects on complex operations
+print("\n🧮 Testing complex fuzzy math:")
+~kinda int a = 5;
+~kinda int b = 3;
+result = a + b
+print(f"  ~kinda int a = 5 → {a}")
+print(f"  ~kinda int b = 3 → {b}")  
+print(f"  a + b = {result}")
+
+# Test cascading fuzzy operations
+print("\n🔗 Testing cascading fuzzy operations:")
+~kinda float base = 10.0;
+~kinda float modifier = 2.0;
+base = base * modifier;
+print(f"  base = {base:.2f} (from 10.0 * 2.0 with fuzzy math)")
+
+# Demonstrate multiple fuzzy operations
+print("\n🔄 Testing multiple fuzzy operations:")
+~kinda int sum = 0;
+for i in range(5):
+    ~kinda int val = i;
+    sum = sum + val
+    print(f"  Adding fuzzy {i} (got {val}), sum now: {sum}")
+print(f"  Final fuzzy sum: {sum} (expected around 10)")
+
+print("\n" + "=" * 50)
+print("🎲 Demo complete! Try different --chaos-level values (1-10) to see how")
+print("   randomness intensity affects the behavior of all fuzzy constructs.")
+print("\n💡 Chaos Level Guide:")
+print("   1-2:  Minimal chaos (very predictable)")
+print("   3-4:  Low chaos (slight unpredictability)")  
+print("   5-6:  Medium chaos (balanced randomness) - DEFAULT")
+print("   7-8:  High chaos (significant randomness)")
+print("   9-10: Maximum chaos (highly unpredictable)")
+print("\n🎭 Combine with --mood for even more personality:")
+print("   kinda run this_file.py.knda --mood chaotic --chaos-level 10")
+print("   kinda run this_file.py.knda --mood reliable --chaos-level 1")
