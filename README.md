@@ -78,6 +78,7 @@ kinda examples  # Try some examples
 | Kinda Construct | What It Does | Example |
 |-----------------|--------------|---------|
 | `~kinda int x ~= 42` | Fuzzy integer (±1 noise) | `x` might be 41, 42, or 43 |
+| `~kinda float pi ~= 3.14` | Fuzzy floating-point (drift) | `pi` might be 3.139, 3.141, or 3.642 with personality-adjusted drift |
 | `~kinda bool flag ~= True` | Fuzzy boolean (uncertainty flip) | Sometimes flips True/False based on personality |
 | `42~ish` | Fuzzy value (±2 variance) | Returns 40-44 randomly |  
 | `score ~ish 100` | Fuzzy comparison (±2 tolerance) | True if score is 98-102 |

@@ -25,6 +25,7 @@ class ChaosProfile:
 
     # Variance modifiers for numeric constructs
     int_fuzz_range: Tuple[int, int] = (-1, 1)  # Range for kinda int fuzz
+    float_drift_range: Tuple[float, float] = (-0.5, 0.5)  # Range for kinda float drift
     ish_variance: float = 2.0  # Variance for ~ish values
     ish_tolerance: float = 2.0  # Tolerance for ~ish comparisons
 
@@ -54,6 +55,7 @@ PERSONALITY_PROFILES: Dict[str, ChaosProfile] = {
         rarely_base=0.85,  # Reliable even when "rarely"
         sorta_print_base=0.95,  # Almost always print
         int_fuzz_range=(0, 0),  # No fuzz on integers
+        float_drift_range=(0.0, 0.0),  # No drift on floats
         ish_variance=0.5,  # Minimal variance
         ish_tolerance=1.0,  # Tight tolerance
         bool_uncertainty=0.02,  # Very low boolean uncertainty
@@ -72,6 +74,7 @@ PERSONALITY_PROFILES: Dict[str, ChaosProfile] = {
         rarely_base=0.25,  # Still cautious about rare events
         sorta_print_base=0.85,  # Usually prints
         int_fuzz_range=(-1, 1),  # Standard fuzz
+        float_drift_range=(-0.2, 0.2),  # Minimal float drift
         ish_variance=1.5,  # Reduced variance
         ish_tolerance=1.5,  # Moderately tight tolerance
         bool_uncertainty=0.05,  # Low boolean uncertainty
@@ -90,6 +93,7 @@ PERSONALITY_PROFILES: Dict[str, ChaosProfile] = {
         rarely_base=0.15,  # Standard rarely (default)
         sorta_print_base=0.8,  # Standard print rate
         int_fuzz_range=(-2, 2),  # More fuzz
+        float_drift_range=(-0.5, 0.5),  # Standard float drift (default)
         ish_variance=2.5,  # Standard variance
         ish_tolerance=2.0,  # Standard tolerance
         bool_uncertainty=0.1,  # Standard boolean uncertainty (default)
@@ -108,6 +112,7 @@ PERSONALITY_PROFILES: Dict[str, ChaosProfile] = {
         rarely_base=0.05,  # Almost never in chaotic mode
         sorta_print_base=0.6,  # Often skips printing
         int_fuzz_range=(-5, 5),  # High fuzz
+        float_drift_range=(-2.0, 2.0),  # High float drift
         ish_variance=5.0,  # High variance
         ish_tolerance=4.0,  # Loose tolerance
         bool_uncertainty=0.25,  # High boolean uncertainty
@@ -185,6 +190,18 @@ class PersonalityContext:
         min_val, max_val = base_range
         scaled_min = int(min_val * amplifier)
         scaled_max = int(max_val * amplifier)
+
+        return (scaled_min, scaled_max)
+
+    def get_float_drift_range(self) -> Tuple[float, float]:
+        """Get chaos-adjusted float drift range."""
+        base_range = self.profile.float_drift_range
+        amplifier = self.profile.chaos_amplifier
+
+        # Scale the range by chaos amplifier
+        min_val, max_val = base_range
+        scaled_min = min_val * amplifier
+        scaled_max = max_val * amplifier
 
         return (scaled_min, scaled_max)
 
@@ -279,6 +296,11 @@ def chaos_probability(base_key: str, condition: Any = True) -> float:
 def chaos_fuzz_range(base_key: str = "int") -> Tuple[int, int]:
     """Get personality-adjusted fuzz range."""
     return get_personality().get_fuzz_range(base_key)
+
+
+def chaos_float_drift_range() -> Tuple[float, float]:
+    """Get personality-adjusted float drift range."""
+    return get_personality().get_float_drift_range()
 
 
 def chaos_variance() -> float:
