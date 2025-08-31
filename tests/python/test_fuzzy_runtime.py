@@ -179,14 +179,14 @@ class TestFuzzyAssign:
         """Test fuzzy assignment with integer values."""
         # Use deterministic seed to get predictable results
         PersonalityContext._instance = PersonalityContext("playful", 5, seed=12345)
-        
+
         # Test multiple calls to verify deterministic behavior
         result1 = fuzzy_assign("x", 42)
-        
+
         # Reset with same seed for second test
         PersonalityContext._instance = PersonalityContext("playful", 5, seed=12345)
         result2 = fuzzy_assign("x", 42)
-        
+
         # Should be the same due to seed
         assert result1 == result2
         # Should be close to 42 but may have some fuzz
@@ -266,7 +266,7 @@ class TestKindaBinary:
         result = kinda_binary()
         # Should return one of -1, 0, 1
         assert result in [-1, 0, 1]
-        
+
         # Test reproducibility
         PersonalityContext._instance = PersonalityContext("playful", 5, seed=77777)
         result2 = kinda_binary()
@@ -275,11 +275,11 @@ class TestKindaBinary:
     def test_kinda_binary_custom_probabilities(self):
         """Test kinda_binary with custom probabilities."""
         PersonalityContext._instance = PersonalityContext("playful", 5, seed=88888)
-        
+
         # Test with custom probabilities - focus on valid outputs
         result1 = kinda_binary(pos_prob=0.8, neg_prob=0.1, neutral_prob=0.1)
         assert result1 in [-1, 0, 1]
-        
+
         result2 = kinda_binary(pos_prob=0.1, neg_prob=0.8, neutral_prob=0.1)
         assert result2 in [-1, 0, 1]
 
@@ -305,11 +305,11 @@ class TestKindaBinary:
         # Since we can't easily force the new seeded system to fail,
         # let's test with malformed probability arguments instead
         PersonalityContext._instance = PersonalityContext("playful", 5, seed=66666)
-        
+
         # Test that function handles extreme probabilities gracefully
-        result = kinda_binary(pos_prob=float('inf'), neg_prob=0.1, neutral_prob=0.1)
+        result = kinda_binary(pos_prob=float("inf"), neg_prob=0.1, neutral_prob=0.1)
         assert result in [-1, 0, 1]
-        
+
         sys.stdout = sys.__stdout__
 
 
@@ -393,7 +393,7 @@ class TestMaybe:
         PersonalityContext._instance = PersonalityContext("playful", 5, seed=12121)
         result1 = maybe(True)
         assert result1 in [True, False]
-        
+
         # Test reproducibility
         PersonalityContext._instance = PersonalityContext("playful", 5, seed=12121)
         result2 = maybe(True)
@@ -422,7 +422,7 @@ class TestMaybe:
         """Test maybe with truthy/falsy conditions."""
         # Maybe should work with any truthy/falsy value
         PersonalityContext._instance = PersonalityContext("playful", 5, seed=14141)
-        
+
         # Test truthy/falsy behavior - results should be boolean
         assert isinstance(maybe(1), bool)
         assert maybe(0) is False  # Falsy condition always False
@@ -444,7 +444,7 @@ class TestSometimes:
         PersonalityContext._instance = PersonalityContext("playful", 5, seed=15151)
         result1 = sometimes(True)
         assert result1 in [True, False]
-        
+
         # Test reproducibility
         PersonalityContext._instance = PersonalityContext("playful", 5, seed=15151)
         result2 = sometimes(True)
@@ -473,8 +473,8 @@ class TestSometimes:
         """Test sometimes with truthy/falsy conditions."""
         # Sometimes should work with any truthy/falsy value
         PersonalityContext._instance = PersonalityContext("playful", 5, seed=17171)
-        
-        # Test truthy/falsy behavior - results should be boolean  
+
+        # Test truthy/falsy behavior - results should be boolean
         assert isinstance(sometimes(1), bool)
         assert sometimes(0) is False  # Falsy condition always False
         assert sometimes("") is False  # Falsy condition always False
@@ -573,11 +573,11 @@ class TestSortaPrint:
         sys.stdout = captured_output
 
         PersonalityContext._instance = PersonalityContext("playful", 5, seed=23232)
-        
+
         # Test multiple calls to see different possible behaviors
         for i in range(5):
             sorta_print(f"test{i}")
-            
+
         output = captured_output.getvalue()
         # Should contain some form of the test messages
         assert "test" in output  # At least some test message should appear

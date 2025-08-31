@@ -19,15 +19,15 @@ class TestFuzzyAssignErrorHandling:
         # With the new seeded system, exceptions are less likely, so let's test
         # with an extreme input that might cause issues
         PersonalityContext._instance = PersonalityContext("playful", 5, seed=99999)
-        
+
         with patch("builtins.print") as mock_print:
             # Test with an input that can potentially cause issues
-            result = fuzzy_assign("test_var", float('inf'))
-            
+            result = fuzzy_assign("test_var", float("inf"))
+
             # Should handle gracefully and return a valid integer
             assert isinstance(result, int)
             # In case of extreme values, should return fallback range
-            assert 0 <= result <= 10 or abs(result - float('inf')) < 100
+            assert 0 <= result <= 10 or abs(result - float("inf")) < 100
 
 
 class TestKindaIntErrorHandling:
@@ -40,11 +40,11 @@ class TestKindaIntErrorHandling:
     def test_kinda_int_exception_during_processing(self):
         """Test kinda_int when an exception occurs during processing"""
         PersonalityContext._instance = PersonalityContext("playful", 5, seed=44444)
-        
+
         # Test with extreme input that should trigger error handling
         with patch("builtins.print") as mock_print:
-            result = kinda_int(float('inf'))
-            
+            result = kinda_int(float("inf"))
+
             # Should handle gracefully and return a valid integer
             assert isinstance(result, int)
             # Should either handle inf or fallback to 0-10 range
@@ -61,7 +61,7 @@ class TestMaybeErrorHandling:
     def test_maybe_exception_during_evaluation(self):
         """Test maybe when an exception occurs during evaluation"""
         PersonalityContext._instance = PersonalityContext("playful", 5, seed=55555)
-        
+
         # Create a condition that raises an exception when converted to bool
         class ProblematicCondition:
             def __bool__(self):
@@ -69,7 +69,7 @@ class TestMaybeErrorHandling:
 
         with patch("builtins.print") as mock_print:
             result = maybe(ProblematicCondition())
-            
+
             # Should handle gracefully and return a boolean
             assert isinstance(result, bool)
             # With seeded RNG, result should be deterministic
@@ -86,7 +86,7 @@ class TestSometimesErrorHandling:
     def test_sometimes_exception_during_evaluation(self):
         """Test sometimes when an exception occurs during evaluation"""
         PersonalityContext._instance = PersonalityContext("playful", 5, seed=66666)
-        
+
         # Create a condition that raises an exception when evaluated as bool
         class ProblematicCondition:
             def __bool__(self):
@@ -94,7 +94,7 @@ class TestSometimesErrorHandling:
 
         with patch("builtins.print") as mock_print:
             result = sometimes(ProblematicCondition())
-            
+
             # Should handle gracefully and return a boolean
             assert isinstance(result, bool)
             # With seeded RNG, result should be deterministic
@@ -129,10 +129,10 @@ class TestSortaPrintErrorHandling:
     def test_sorta_print_no_args_shrug_response(self):
         """Test sorta_print with no args and shrug response"""
         PersonalityContext._instance = PersonalityContext("playful", 5, seed=77777)
-        
+
         with patch("builtins.print") as mock_print:
             sorta_print()
-            
+
             # Should handle no args gracefully, may or may not print
             # The important thing is it doesn't crash
             assert True  # Test passes if no exception
