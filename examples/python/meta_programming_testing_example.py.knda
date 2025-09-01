@@ -14,7 +14,7 @@ print("🎯 Basic Meta-Validation Example")
 
 ~kinda bool meta_result = ~sometimes True
 ~assert_eventually (~sometimes (meta_result == ~sometimes True), timeout=2.0, confidence=0.4)
-~sorta print "✅ Meta-validation: ~sometimes tested itself!"
+~sorta (print("✅ Meta-validation: ~sometimes tested itself!"))
 
 # Example 2: Probabilistic Parameter Self-Determination
 # Using ~maybe and ~rarely to determine test parameters dynamically
@@ -28,7 +28,7 @@ print(f"Dynamic parameters: prob={fuzzy_expected_prob}, samples={fuzzy_samples},
 
 # Test ~maybe with dynamically generated parameters
 ~assert_probability (~maybe True, expected_prob=fuzzy_expected_prob, tolerance=fuzzy_tolerance, samples=fuzzy_samples)
-~sorta print "✅ Dynamic parameters: ~maybe tested with self-generated fuzzy parameters!"
+~sorta (print("✅ Dynamic parameters: ~maybe tested with self-generated fuzzy parameters!"))
 
 # Example 3: Compound Meta-Validation 
 # Tests that combine multiple kinda constructs for complex validation
@@ -36,11 +36,11 @@ print("\n🌀 Compound Meta-Construct Testing")
 
 # Test the interaction between ~sometimes and ~maybe
 ~assert_probability (~sometimes (~maybe True), expected_prob=0.30, tolerance=0.15, samples=200)
-~sorta print "✅ Compound: ~sometimes and ~maybe interaction validated!"
+~sorta (print("✅ Compound: ~sometimes and ~maybe interaction validated!"))
 
 # Test ~rarely nested in ~probably
 ~assert_probability (~probably (~rarely True), expected_prob=0.105, tolerance=0.05, samples=300) 
-~sorta print "✅ Compound: ~probably(~rarely) nested validation complete!"
+~sorta (print("✅ Compound: ~probably(~rarely) nested validation complete!"))
 
 # Example 4: Time-Based Meta-Testing
 # Using kinda constructs to test time-dependent behavior
@@ -70,7 +70,7 @@ print("\n🎭 Recursive Meta-Framework Pattern")
 ~probably (meta_success_count = meta_success_count + (~maybe 1 if True else 0))
 ~assert_probability ((meta_success_count > 0), expected_prob=0.42, tolerance=0.2, samples=100)
 
-~sorta print "✅ Recursive: Meta-framework validated its own meta-validation capabilities!"
+~sorta (print("✅ Recursive: Meta-framework validated its own meta-validation capabilities!"))
 
 # Example 6: Chaos-Tolerant Meta-Testing
 # Showing how meta-tests can adapt to different chaos levels
@@ -119,16 +119,16 @@ print(f"Dynamic timeout: {dynamic_timeout}")
 # Final Meta-Philosophy Statement
 print("\n🎭 ULTIMATE META-PROGRAMMING ACHIEVED!")
 print("=" * 50)
-~sorta print "🏆 This example demonstrates the pinnacle of 'Kinda tests Kinda' philosophy:"
-~probably print "   • Kinda constructs testing themselves"  
-~maybe print "   • Dynamic parameter generation using fuzzy logic"
-~sometimes print "   • Recursive meta-validation frameworks"
-~rarely print "   • Self-modifying test behaviors"
+~sorta (print("🏆 This example demonstrates the pinnacle of 'Kinda tests Kinda' philosophy:"))
+~probably (print("   • Kinda constructs testing themselves"))  
+~maybe (print("   • Dynamic parameter generation using fuzzy logic"))
+~sometimes (print("   • Recursive meta-validation frameworks"))
+~rarely (print("   • Self-modifying test behaviors"))
 print("   • Chaos-adaptive statistical assertions")
 print("   • Multi-level probabilistic meta-analysis")
 print("")
-~sorta print "🎯 The tests themselves have become kinda - embracing uncertainty,"
-~maybe print "   chaos, and probabilistic thinking at every level."
+~sorta (print("🎯 The tests themselves have become kinda - embracing uncertainty,"))
+~maybe (print("   chaos, and probabilistic thinking at every level."))
 print("")
 print("This is not just testing WITH kinda constructs -")  
 print("This IS kinda constructs testing kinda constructs recursively!")
