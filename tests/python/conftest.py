@@ -136,7 +136,7 @@ def regenerate_build():
                 print("[CONFTEST] ~rarely continuing despite transformer failure (chaos tolerance)")
             else:
                 raise RuntimeError("Transformer failed during test setup")
-    
+
     yield  # Make this a generator function - yield after all build is complete
 
 
