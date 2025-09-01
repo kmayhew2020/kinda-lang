@@ -492,9 +492,11 @@ class TestMetaProgrammingPatterns:
             # natural variance and cross-platform differences in randomness
             if not test_result:
                 # Instead of random failure, use a deterministic retry approach
-                print(f"[META] Statistical test failed once - this is expected due to natural variance")
+                print(
+                    f"[META] Statistical test failed once - this is expected due to natural variance"
+                )
                 print(f"[META] Running simplified validation for cross-platform robustness")
-                
+
                 # Run a simpler, more robust validation
                 simple_samples = 50  # Fixed, smaller sample size
                 simple_test_result = assert_probability_meta(
@@ -504,7 +506,7 @@ class TestMetaProgrammingPatterns:
                     samples=simple_samples,
                     description=f"simplified meta ~{construct_to_test} validation",
                 )
-                
+
                 # Only fail if both the complex and simple tests fail
                 if not simple_test_result:
                     print(f"[META] Both complex and simple statistical validations failed")
