@@ -201,11 +201,11 @@ class TestStatisticalAssertionsRuntime:
         # Import after ensuring runtime is generated
         import importlib
         import sys
-        
+
         # Force reload the runtime module to get latest generation
-        if 'kinda.langs.python.runtime.fuzzy' in sys.modules:
-            importlib.reload(sys.modules['kinda.langs.python.runtime.fuzzy'])
-        
+        if "kinda.langs.python.runtime.fuzzy" in sys.modules:
+            importlib.reload(sys.modules["kinda.langs.python.runtime.fuzzy"])
+
         from kinda.langs.python.runtime.fuzzy import assert_probability
 
         # Should observe probability of 1.0
@@ -217,11 +217,11 @@ class TestStatisticalAssertionsRuntime:
         # Import after ensuring runtime is generated
         import importlib
         import sys
-        
+
         # Force reload the runtime module to get latest generation
-        if 'kinda.langs.python.runtime.fuzzy' in sys.modules:
-            importlib.reload(sys.modules['kinda.langs.python.runtime.fuzzy'])
-        
+        if "kinda.langs.python.runtime.fuzzy" in sys.modules:
+            importlib.reload(sys.modules["kinda.langs.python.runtime.fuzzy"])
+
         from kinda.langs.python.runtime.fuzzy import assert_probability
 
         # Should observe probability of 0.0
@@ -233,11 +233,11 @@ class TestStatisticalAssertionsRuntime:
         # Import after ensuring runtime is generated
         import importlib
         import sys
-        
+
         # Force reload the runtime module to get latest generation
-        if 'kinda.langs.python.runtime.fuzzy' in sys.modules:
-            importlib.reload(sys.modules['kinda.langs.python.runtime.fuzzy'])
-        
+        if "kinda.langs.python.runtime.fuzzy" in sys.modules:
+            importlib.reload(sys.modules["kinda.langs.python.runtime.fuzzy"])
+
         from kinda.langs.python.runtime.fuzzy import assert_probability
 
         # Invalid expected_prob should be corrected
@@ -261,11 +261,11 @@ class TestStatisticalAssertionsRuntime:
         # Import after ensuring runtime is generated
         import importlib
         import sys
-        
+
         # Force reload the runtime module to get latest generation
-        if 'kinda.langs.python.runtime.fuzzy' in sys.modules:
-            importlib.reload(sys.modules['kinda.langs.python.runtime.fuzzy'])
-        
+        if "kinda.langs.python.runtime.fuzzy" in sys.modules:
+            importlib.reload(sys.modules["kinda.langs.python.runtime.fuzzy"])
+
         from kinda.langs.python.runtime.fuzzy import assert_probability
 
         # Should limit to 10000 samples
