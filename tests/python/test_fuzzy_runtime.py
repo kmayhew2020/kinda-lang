@@ -171,7 +171,7 @@ from kinda.langs.python.runtime.fuzzy import (
 class TestFuzzyAssign:
     """Test fuzzy_assign function with various inputs and edge cases."""
 
-    def setUp(self):
+    def setup_method(self):
         """Set up deterministic PersonalityContext for each test."""
         PersonalityContext._instance = None
 
@@ -260,7 +260,7 @@ class TestFuzzyAssign:
 class TestKindaBinary:
     """Test kinda_binary function with various probability configurations."""
 
-    def setUp(self):
+    def setup_method(self):
         """Set up deterministic PersonalityContext for each test."""
         PersonalityContext._instance = None
 
@@ -320,7 +320,7 @@ class TestKindaBinary:
 class TestKindaInt:
     """Test kinda_int function with various inputs."""
 
-    def setUp(self):
+    def setup_method(self):
         """Set up deterministic PersonalityContext for each test."""
         PersonalityContext._instance = None
 
@@ -388,7 +388,7 @@ class TestKindaInt:
 class TestMaybe:
     """Test maybe function with various conditions."""
 
-    def setUp(self):
+    def setup_method(self):
         """Set up deterministic PersonalityContext for each test."""
         PersonalityContext._instance = None
 
@@ -439,7 +439,7 @@ class TestMaybe:
 class TestSometimes:
     """Test sometimes function with various conditions."""
 
-    def setUp(self):
+    def setup_method(self):
         """Set up deterministic PersonalityContext for each test."""
         PersonalityContext._instance = None
 
@@ -490,7 +490,7 @@ class TestSometimes:
 class TestSortaPrint:
     """Test sorta_print function with various inputs."""
 
-    def setUp(self):
+    def setup_method(self):
         """Set up deterministic PersonalityContext for each test."""
         PersonalityContext._instance = None
 
