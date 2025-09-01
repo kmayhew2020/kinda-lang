@@ -207,7 +207,7 @@ class TestTimeDriftFloatConstruct:
 
         # Mock the personality functions
         with patch("kinda.personality.register_time_variable") as mock_register:
-            with patch("random.uniform", return_value=0.005):  # Small initial drift
+            with patch("kinda.personality.chaos_uniform", return_value=0.005):  # Small initial drift
                 result = time_drift_float("test_var", 10.0)
 
                 # Should register the variable
@@ -224,7 +224,7 @@ class TestTimeDriftFloatConstruct:
         time_drift_float = test_namespace["time_drift_float"]
 
         with patch("kinda.personality.register_time_variable"):
-            with patch("random.uniform", return_value=0.0):  # No drift for easier testing
+            with patch("kinda.personality.chaos_uniform", return_value=0.0):  # No drift for easier testing
                 result = time_drift_float("string_test", "3.14159")
                 assert isinstance(result, float)
                 assert result == 3.14159
@@ -236,7 +236,7 @@ class TestTimeDriftFloatConstruct:
         time_drift_float = test_namespace["time_drift_float"]
 
         with patch("kinda.personality.register_time_variable"):
-            with patch("random.uniform", return_value=5.0):
+            with patch("kinda.personality.chaos_uniform", return_value=5.0):
                 result = time_drift_float("error_test", "not_a_number")
                 assert isinstance(result, float)
                 # Should return fallback random value
@@ -274,7 +274,7 @@ class TestTimeDriftIntConstruct:
         time_drift_int = test_namespace["time_drift_int"]
 
         with patch("kinda.personality.register_time_variable") as mock_register:
-            with patch("random.choice", return_value=0):  # No initial fuzz
+            with patch("kinda.personality.chaos_choice", return_value=0):  # No initial fuzz
                 result = time_drift_int("int_test", 42)
 
                 mock_register.assert_called_once_with("int_test", 42, "int")
@@ -288,7 +288,7 @@ class TestTimeDriftIntConstruct:
         time_drift_int = test_namespace["time_drift_int"]
 
         with patch("kinda.personality.register_time_variable"):
-            with patch("random.choice", return_value=1):  # Small positive fuzz
+            with patch("kinda.personality.chaos_choice", return_value=1):  # Small positive fuzz
                 result = time_drift_int("fuzz_test", 10)
                 assert isinstance(result, int)
                 assert result == 11
@@ -300,7 +300,7 @@ class TestTimeDriftIntConstruct:
         time_drift_int = test_namespace["time_drift_int"]
 
         with patch("kinda.personality.register_time_variable"):
-            with patch("random.randint", return_value=7):
+            with patch("kinda.personality.chaos_randint", return_value=7):
                 result = time_drift_int("error_test", "not_a_number")
                 assert isinstance(result, int)
                 # Should return fallback random value

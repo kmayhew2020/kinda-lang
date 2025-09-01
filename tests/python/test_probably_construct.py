@@ -723,7 +723,7 @@ class TestProbablySecurityProtection:
 
         for condition in legitimate_conditions:
             # Mock random to ensure deterministic testing
-            with unittest.mock.patch("random.random", return_value=0.5):
+            with unittest.mock.patch("kinda.personality.chaos_random", return_value=0.5):
                 with unittest.mock.patch("kinda.personality.chaos_probability", return_value=0.8):
                     result = probably(condition)
                     # Should either return True or False based on condition truthiness and probability

@@ -196,7 +196,7 @@ print("done")
 class TestMaybeRuntimeBehavior:
     """Test ~maybe runtime behavior and probability"""
 
-    @patch("random.random")
+    @patch("kinda.personality.chaos_random")
     @patch("kinda.personality.chaos_probability")
     def test_maybe_probability_execution(self, mock_chaos_prob, mock_random):
         """Test ~maybe executes with 60% probability"""
@@ -229,7 +229,7 @@ class TestMaybeRuntimeBehavior:
             finally:
                 sys.path.remove(str(temp_path))
 
-    @patch("random.random")
+    @patch("kinda.personality.chaos_random")
     @patch("kinda.personality.chaos_probability")
     def test_maybe_probability_no_execution(self, mock_chaos_prob, mock_random):
         """Test ~maybe doesn't execute when probability fails"""
@@ -260,7 +260,7 @@ class TestMaybeRuntimeBehavior:
             finally:
                 sys.path.remove(str(temp_path))
 
-    @patch("random.random")
+    @patch("kinda.personality.chaos_random")
     @patch("kinda.personality.chaos_probability")
     def test_maybe_condition_false(self, mock_chaos_prob, mock_random):
         """Test ~maybe doesn't execute when condition is False"""

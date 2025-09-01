@@ -288,7 +288,7 @@ class TestKindaBinary:
         captured_output = StringIO()
         sys.stdout = captured_output
 
-        with patch("random.random", return_value=0.3):
+        with patch("kinda.personality.chaos_random", return_value=0.3):
             result = kinda_binary(pos_prob=0.5, neg_prob=0.3, neutral_prob=0.1)
             assert result in [1, -1, 0]
             output = captured_output.getvalue()

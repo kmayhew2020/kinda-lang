@@ -118,7 +118,7 @@ class TestSortaPrintErrorHandling:
 
         with patch("builtins.print", side_effect=mock_print):
             # Force the 80% path to trigger the exception
-            with patch("random.random", return_value=0.5):  # < 0.8, should print
+            with patch("kinda.personality.chaos_random", return_value=0.5):  # < 0.8, should print
                 sorta_print("test message")
 
                 # Should have captured the error and fallback messages
@@ -140,7 +140,7 @@ class TestSortaPrintErrorHandling:
     def test_sorta_print_no_args_with_shrug_message(self):
         """Test sorta_print with no args but shows shrug message"""
         # Test the path where no args are provided and random choice is to print shrug
-        with patch("random.random", return_value=0.3), patch(
+        with patch("kinda.personality.chaos_random", return_value=0.3), patch(
             "kinda.personality.chaos_probability", return_value=0.8
         ):  # random < prob, should print shrug
             with patch("builtins.print") as mock_print:

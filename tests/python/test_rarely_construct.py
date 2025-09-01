@@ -740,7 +740,7 @@ class TestRarelySecurityProtection:
 
         for condition in legitimate_conditions:
             # Mock random to ensure deterministic testing
-            with unittest.mock.patch("random.random", return_value=0.1):  # Below 15% threshold
+            with unittest.mock.patch("kinda.personality.chaos_random", return_value=0.1):  # Below 15% threshold
                 with unittest.mock.patch("kinda.personality.chaos_probability", return_value=0.2):
                     result = rarely(condition)
                     # Should either return True or False based on condition truthiness and probability
