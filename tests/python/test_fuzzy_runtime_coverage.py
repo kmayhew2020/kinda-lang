@@ -109,7 +109,7 @@ class TestSortaPrintErrorHandling:
         """Test sorta_print when an exception occurs during printing"""
         # Set up seeded context
         PersonalityContext._instance = PersonalityContext("playful", 5, seed=99999)
-        
+
         # Capture printed messages
         printed_messages = []
 
@@ -125,7 +125,7 @@ class TestSortaPrintErrorHandling:
 
             # Should have captured the error and fallback messages if exception occurred
             output = " ".join(printed_messages)
-            
+
             # Check for either normal output or error handling
             if "[error] Sorta print kinda broke:" in output:
                 assert "[fallback] test message" in output
@@ -133,7 +133,7 @@ class TestSortaPrintErrorHandling:
                 # Normal execution path - also valid
                 pass
             else:
-                # Shrug response path - also valid 
+                # Shrug response path - also valid
                 assert "[shrug]" in output and "test message" in output
 
     def test_sorta_print_no_args_shrug_response(self):
@@ -151,10 +151,10 @@ class TestSortaPrintErrorHandling:
         """Test sorta_print with no args but shows shrug message"""
         # Set up a seeded context that will trigger the shrug message path
         PersonalityContext._instance = PersonalityContext("playful", 5, seed=88888)
-        
+
         with patch("builtins.print") as mock_print:
             sorta_print()
-            
+
             # With deterministic seeding, should print shrug message when no args
             # Check that print was called with a shrug message
             if mock_print.call_count > 0:
