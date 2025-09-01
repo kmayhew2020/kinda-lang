@@ -23,6 +23,34 @@ SRC_DIRS = ["tests/python/input", "tests"]
 BUILD_DIR = Path("build/python")
 RUNTIME_OUT = Path("kinda/langs/python/runtime")
 
+
+def safe_emoji_print(text):
+    """Print text with emoji fallbacks for Windows compatibility."""
+    # Emoji fallback mapping for Windows encoding issues
+    emoji_fallbacks = {
+        "🎯": "[TARGET]",
+        "🎲": "[DICE]",
+        "🎆": "[SPARKLE]",
+        "🎭": "[MASKS]",
+        "✨": "[STAR]",
+        "🏆": "[TROPHY]",
+        "📈": "[CHART]",
+        "📚": "[BOOKS]",
+        "🌪️": "[TORNADO]",
+        "⚙️": "[GEAR]",
+        "🌀": "[SPIRAL]",
+    }
+
+    try:
+        print(text)
+    except UnicodeEncodeError:
+        # Replace emojis with text alternatives
+        safe_text = text
+        for emoji, fallback in emoji_fallbacks.items():
+            safe_text = safe_text.replace(emoji, fallback)
+        print(safe_text)
+
+
 # Global meta-testing framework for ~kinda test environment configuration
 GLOBAL_KINDA_FRAMEWORK = None
 
@@ -58,11 +86,11 @@ def setup_kinda_test_environment():
     # ~rarely use unseeded randomness (for true chaos testing)
     if chaos_random() < chaos_probability("rarely"):
         test_seed = None  # Unseeded chaos!
-        print(f"[CONFTEST] 🎲 ~rarely using unseeded chaos for test session!")
+        safe_emoji_print(f"[CONFTEST] 🎲 ~rarely using unseeded chaos for test session!")
     else:
         test_seed = 42  # Reproducible by default
 
-    print(f"[CONFTEST] 🎆 Setting up kinda test environment:")
+    safe_emoji_print(f"[CONFTEST] 🎆 Setting up kinda test environment:")
     print(f"   Personality: {selected_personality}")
     print(f"   Chaos Level: {chaos_level}/10")
     print(f"   Seed: {test_seed}")
@@ -76,11 +104,13 @@ def setup_kinda_test_environment():
     # ~sorta run additional test setup based on personality
     personality = get_personality()
     if personality.mood == "chaotic":
-        print(f"[CONFTEST] 🌀 Chaotic personality detected - expect unpredictable test behavior!")
+        safe_emoji_print(f"[CONFTEST] 🌀 Chaotic personality detected - expect unpredictable test behavior!")
     elif personality.mood == "reliable":
-        print(f"[CONFTEST] ⚙️ Reliable personality detected - prioritizing deterministic behavior")
+        safe_emoji_print(f"[CONFTEST] ⚙️ Reliable personality detected - prioritizing deterministic behavior")
     elif personality.mood == "playful":
-        print(f"[CONFTEST] 🎭 Playful personality detected - balanced chaos and reliability")
+        safe_emoji_print(
+            f"[CONFTEST] 🎭 Playful personality detected - balanced chaos and reliability"
+        )
 
     # Yield to actual build regeneration
     yield from regenerate_build()
@@ -291,13 +321,13 @@ def pytest_runtest_setup(item):
     # ~sometimes we print extra test information
     if chaos_random() < chaos_probability("sometimes"):
         personality = get_personality()
-        print(
+        safe_emoji_print(
             f"\n[PYTEST] 🎲 Running {item.name} with {personality.mood} personality (chaos: {personality.chaos_level})"
         )
 
     # ~rarely we might skip a test entirely (controlled chaos!)
     if chaos_random() < chaos_probability("rarely") * 0.1:  # Very rare, just 1.5% chance typically
-        print(f"[PYTEST] 🎭 ~rarely skipping test {item.name} due to chaos factor!")
+        safe_emoji_print(f"[PYTEST] 🎭 ~rarely skipping test {item.name} due to chaos factor!")
         pytest.skip("~rarely skipped due to chaos factor")
 
 
@@ -306,7 +336,9 @@ def pytest_runtest_teardown(item):
     # ~sorta print test completion information
     if chaos_random() < chaos_probability("sorta_print"):
         personality = get_personality()
-        print(f"[PYTEST] ✨ ~sorta completed {item.name} (personality: {personality.mood})")
+        safe_emoji_print(
+            f"[PYTEST] ✨ ~sorta completed {item.name} (personality: {personality.mood})"
+        )
 
         # ~maybe update instability based on test outcome
         if hasattr(item, "_skipped") and item._skipped:
@@ -324,7 +356,7 @@ def pytest_sessionfinish(session, exitstatus):
     # ~sometimes we print a comprehensive session report
     if chaos_random() < chaos_probability("sometimes"):
         personality = get_personality()
-        print(f"\n🎯 KINDA TEST SESSION FINAL REPORT")
+        safe_emoji_print(f"\n🎯 KINDA TEST SESSION FINAL REPORT")
         print(f"=" * 50)
         print(f"Session Personality: {personality.mood}")
         print(f"Chaos Level: {personality.chaos_level}/10")
@@ -337,20 +369,20 @@ def pytest_sessionfinish(session, exitstatus):
             print(f"Meta-Framework 'Kinda Tests Kinda' Score: {framework_score:.1%}")
 
             if framework_score > 0.8:
-                print("🏆 EXCELLENT: Meta-programming philosophy achieved!")
+                safe_emoji_print("🏆 EXCELLENT: Meta-programming philosophy achieved!")
             elif framework_score > 0.6:
-                print("✨ GOOD: Strong meta-programming patterns")
+                safe_emoji_print("✨ GOOD: Strong meta-programming patterns")
             elif framework_score > 0.4:
-                print("📈 MODERATE: Some meta-programming present")
+                safe_emoji_print("📈 MODERATE: Some meta-programming present")
             else:
-                print("📚 BASIC: Limited meta-programming patterns")
+                safe_emoji_print("📚 BASIC: Limited meta-programming patterns")
 
         # Personality-based exit messages
         if personality.mood == "chaotic":
-            print("🌪️ Chaotic testing session complete - embrace the uncertainty!")
+            safe_emoji_print("🌪️ Chaotic testing session complete - embrace the uncertainty!")
         elif personality.mood == "reliable":
-            print("⚙️ Reliable testing session complete - predictable outcomes achieved")
+            safe_emoji_print("⚙️ Reliable testing session complete - predictable outcomes achieved")
         else:
-            print("🎭 Playful testing session complete - balanced chaos and order")
+            safe_emoji_print("🎭 Playful testing session complete - balanced chaos and order")
     else:
         print(f"[SESSION] ~sorta skipping detailed session report")
