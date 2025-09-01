@@ -198,6 +198,14 @@ class TestStatisticalAssertionsRuntime:
 
     def test_assert_probability_deterministic_true(self):
         """Test ~assert_probability with always-true event"""
+        # Import after ensuring runtime is generated
+        import importlib
+        import sys
+        
+        # Force reload the runtime module to get latest generation
+        if 'kinda.langs.python.runtime.fuzzy' in sys.modules:
+            importlib.reload(sys.modules['kinda.langs.python.runtime.fuzzy'])
+        
         from kinda.langs.python.runtime.fuzzy import assert_probability
 
         # Should observe probability of 1.0
@@ -206,6 +214,14 @@ class TestStatisticalAssertionsRuntime:
 
     def test_assert_probability_deterministic_false(self):
         """Test ~assert_probability with always-false event"""
+        # Import after ensuring runtime is generated
+        import importlib
+        import sys
+        
+        # Force reload the runtime module to get latest generation
+        if 'kinda.langs.python.runtime.fuzzy' in sys.modules:
+            importlib.reload(sys.modules['kinda.langs.python.runtime.fuzzy'])
+        
         from kinda.langs.python.runtime.fuzzy import assert_probability
 
         # Should observe probability of 0.0
@@ -214,6 +230,14 @@ class TestStatisticalAssertionsRuntime:
 
     def test_assert_probability_parameter_validation(self):
         """Test ~assert_probability parameter validation"""
+        # Import after ensuring runtime is generated
+        import importlib
+        import sys
+        
+        # Force reload the runtime module to get latest generation
+        if 'kinda.langs.python.runtime.fuzzy' in sys.modules:
+            importlib.reload(sys.modules['kinda.langs.python.runtime.fuzzy'])
+        
         from kinda.langs.python.runtime.fuzzy import assert_probability
 
         # Invalid expected_prob should be corrected
@@ -234,6 +258,14 @@ class TestStatisticalAssertionsRuntime:
 
     def test_assert_probability_sample_limiting(self):
         """Test ~assert_probability sample count limiting for performance"""
+        # Import after ensuring runtime is generated
+        import importlib
+        import sys
+        
+        # Force reload the runtime module to get latest generation
+        if 'kinda.langs.python.runtime.fuzzy' in sys.modules:
+            importlib.reload(sys.modules['kinda.langs.python.runtime.fuzzy'])
+        
         from kinda.langs.python.runtime.fuzzy import assert_probability
 
         # Should limit to 10000 samples
