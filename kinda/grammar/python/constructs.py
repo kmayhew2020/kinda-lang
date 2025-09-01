@@ -595,4 +595,180 @@ KindaPythonConstructs = {
             "        return current_value if current_value is not None else 0"
         ),
     },
+    "assert_eventually": {
+        "type": "statistical",
+        "pattern": re.compile(r"~assert_eventually\s*\(\s*([^,)]+)(?:\s*,\s*timeout\s*=\s*([^,)]+))?(?:\s*,\s*confidence\s*=\s*([^)]+))?\s*\)"),
+        "description": "Statistical assertion that waits for probabilistic condition to become true",
+        "body": (
+            "def assert_eventually(condition, timeout=5.0, confidence=0.95):\n"
+            '    """Wait for probabilistic condition to become true with statistical confidence"""\n'
+            "    import time\n"
+            "    from kinda.personality import update_chaos_state, get_personality\n"
+            "    from kinda.security import secure_condition_check\n"
+            "    try:\n"
+            "        # Validate parameters\n"
+            "        if not isinstance(timeout, (int, float)) or timeout <= 0:\n"
+            '            print(f"[?] assert_eventually got weird timeout: {timeout}")\n'
+            '            print(f"[tip] Using default timeout of 5.0 seconds")\n'
+            "            timeout = 5.0\n"
+            "        \n"
+            "        if not isinstance(confidence, (int, float)) or not (0 < confidence < 1):\n"
+            '            print(f"[?] assert_eventually got weird confidence: {confidence}")\n'
+            '            print(f"[tip] Using default confidence of 0.95")\n'
+            "            confidence = 0.95\n"
+            "        \n"
+            "        start_time = time.time()\n"
+            "        attempts = 0\n"
+            "        successes = 0\n"
+            "        min_attempts = max(10, int(1 / (1 - confidence) * 3))  # Statistical minimum\n"
+            "        \n"
+            "        # Get personality for error messages\n"
+            "        personality = get_personality()\n"
+            "        style = personality.get_error_message_style()\n"
+            "        \n"
+            "        while time.time() - start_time < timeout:\n"
+            "            attempts += 1\n"
+            "            \n"
+            "            # Security check for condition\n"
+            "            should_proceed, condition_result = secure_condition_check(condition, 'assert_eventually')\n"
+            "            if not should_proceed:\n"
+            "                update_chaos_state(failed=True)\n"
+            "                raise AssertionError(f'Unsafe condition in assert_eventually')\n"
+            "            \n"
+            "            if condition_result:\n"
+            "                successes += 1\n"
+            "            \n"
+            "            # Check if we have enough data for statistical confidence\n"
+            "            if attempts >= min_attempts:\n"
+            "                observed_rate = successes / attempts\n"
+            "                # Use Wilson score interval for confidence bounds\n"
+            "                import math\n"
+            "                z = 1.96  # 95% confidence\n"
+            "                if confidence > 0.99:\n"
+            "                    z = 2.576  # 99% confidence\n"
+            "                elif confidence > 0.975:\n"
+            "                    z = 2.326  # 97.5% confidence\n"
+            "                elif confidence > 0.9:\n"
+            "                    z = 1.645  # 90% confidence\n"
+            "                \n"
+            "                n = attempts\n"
+            "                p_hat = observed_rate\n"
+            "                denominator = 1 + z*z/n\n"
+            "                center = (p_hat + z*z/(2*n)) / denominator\n"
+            "                margin = z * math.sqrt((p_hat*(1-p_hat) + z*z/(4*n))/n) / denominator\n"
+            "                lower_bound = center - margin\n"
+            "                \n"
+            "                # If lower confidence bound > 0.5, condition is statistically true\n"
+            "                if lower_bound > 0.5:\n"
+            '                    print(f"[stat] assert_eventually succeeded: {successes}/{attempts} = {observed_rate:.3f} (confidence: {confidence:.3f})")\n'
+            "                    update_chaos_state(failed=False)\n"
+            "                    return True\n"
+            "            \n"
+            "            time.sleep(0.05)  # Small delay between attempts\n"
+            "        \n"
+            "        # Timeout reached - statistical failure\n"
+            "        final_rate = successes / attempts if attempts > 0 else 0\n"
+            "        \n"
+            "        if style == 'professional':\n"
+            "            error_msg = f'Statistical assertion failed: condition was true in {successes}/{attempts} attempts ({final_rate:.3f}), below confidence threshold {confidence:.3f} within {timeout}s'\n"
+            "        elif style == 'friendly':\n"
+            "            error_msg = f'Hmm, that condition only happened {successes}/{attempts} times ({final_rate:.3f}) in {timeout}s - not confident enough!'\n"
+            "        elif style == 'snarky':\n"
+            "            error_msg = f'Surprise! Your \"eventually\" condition was kinda flaky: {successes}/{attempts} ({final_rate:.3f}) in {timeout}s. Try lowering your standards.'\n"
+            "        else:  # chaotic\n"
+            "            error_msg = f'NOPE! 💥 Condition flopped {attempts-successes}/{attempts} times in {timeout}s. Maybe try \"~assert_never\" instead? 😏'\n"
+            "        \n"
+            "        update_chaos_state(failed=True)\n"
+            "        raise AssertionError(error_msg)\n"
+            "    except AssertionError:\n"
+            "        raise  # Re-raise assertion errors\n"
+            "    except Exception as e:\n"
+            '        print(f"[shrug] assert_eventually got confused: {e}")\n'
+            '        print(f"[tip] Maybe check your condition syntax?")\n'
+            "        update_chaos_state(failed=True)\n"
+            "        raise AssertionError(f'assert_eventually failed with error: {e}')"
+        ),
+    },
+    "assert_probability": {
+        "type": "statistical",
+        "pattern": re.compile(r"~assert_probability\s*\(\s*([^,)]+)(?:\s*,\s*expected_prob\s*=\s*([^,)]+))?(?:\s*,\s*tolerance\s*=\s*([^,)]+))?(?:\s*,\s*samples\s*=\s*([^)]+))?\s*\)"),
+        "description": "Statistical assertion for validating probability distributions",
+        "body": (
+            "def assert_probability(event, expected_prob=0.5, tolerance=0.1, samples=1000):\n"
+            '    """Validate probability distributions with statistical testing"""\n'
+            "    from kinda.personality import update_chaos_state, get_personality\n"
+            "    from kinda.security import secure_condition_check\n"
+            "    import math\n"
+            "    try:\n"
+            "        # Validate parameters\n"
+            "        if not isinstance(expected_prob, (int, float)) or not (0 <= expected_prob <= 1):\n"
+            '            print(f"[?] assert_probability got weird expected_prob: {expected_prob}")\n'
+            '            print(f"[tip] Using default expected_prob of 0.5")\n'
+            "            expected_prob = 0.5\n"
+            "        \n"
+            "        if not isinstance(tolerance, (int, float)) or tolerance <= 0:\n"
+            '            print(f"[?] assert_probability got weird tolerance: {tolerance}")\n'
+            '            print(f"[tip] Using default tolerance of 0.1")\n'
+            "            tolerance = 0.1\n"
+            "        \n"
+            "        if not isinstance(samples, int) or samples <= 0:\n"
+            '            print(f"[?] assert_probability got weird samples: {samples}")\n'
+            '            print(f"[tip] Using default samples of 1000")\n'
+            "            samples = 1000\n"
+            "        \n"
+            "        # Limit samples for performance and security\n"
+            "        if samples > 10000:\n"
+            '            print(f"[?] Limiting samples to 10000 for performance (requested {samples})")\n'
+            "            samples = 10000\n"
+            "        \n"
+            "        # Run statistical sampling\n"
+            "        successes = 0\n"
+            "        for i in range(samples):\n"
+            "            # Security check for event condition\n"
+            "            should_proceed, event_result = secure_condition_check(event, 'assert_probability')\n"
+            "            if not should_proceed:\n"
+            "                update_chaos_state(failed=True)\n"
+            "                raise AssertionError(f'Unsafe event condition in assert_probability')\n"
+            "            \n"
+            "            if event_result:\n"
+            "                successes += 1\n"
+            "        \n"
+            "        observed_prob = successes / samples\n"
+            "        difference = abs(observed_prob - expected_prob)\n"
+            "        \n"
+            "        # Calculate statistical significance (binomial test approximation)\n"
+            "        # Standard error for binomial proportion\n"
+            "        se = math.sqrt(expected_prob * (1 - expected_prob) / samples)\n"
+            "        z_score = abs(observed_prob - expected_prob) / se if se > 0 else 0\n"
+            "        \n"
+            "        # Get personality for error messages\n"
+            "        personality = get_personality()\n"
+            "        style = personality.get_error_message_style()\n"
+            "        \n"
+            "        if difference <= tolerance:\n"
+            '            print(f"[stat] assert_probability passed: {observed_prob:.3f} vs expected {expected_prob:.3f} (diff: {difference:.3f}, tolerance: {tolerance:.3f})")\n'
+            "            update_chaos_state(failed=False)\n"
+            "            return True\n"
+            "        else:\n"
+            "            # Statistical failure\n"
+            "            if style == 'professional':\n"
+            "                error_msg = f'Probability assertion failed: observed {observed_prob:.3f}, expected {expected_prob:.3f} ± {tolerance:.3f} (difference: {difference:.3f}, z-score: {z_score:.2f})'\n"
+            "            elif style == 'friendly':\n"
+            "                error_msg = f'Oops! Got probability {observed_prob:.3f} but expected around {expected_prob:.3f} ± {tolerance:.3f} (off by {difference:.3f})'\n"
+            "            elif style == 'snarky':\n"
+            "                error_msg = f'Your random event is apparently not very random: {observed_prob:.3f} vs {expected_prob:.3f} ± {tolerance:.3f}. Maybe check your math?'\n"
+            "            else:  # chaotic\n"
+            "                error_msg = f'PROBABILITY FAIL! 🎲💥 Got {observed_prob:.3f}, wanted ~{expected_prob:.3f}. That\\'s a {difference:.3f} swing, which is NOT kinda close!'\n"
+            "            \n"
+            "            update_chaos_state(failed=True)\n"
+            "            raise AssertionError(error_msg)\n"
+            "    except AssertionError:\n"
+            "        raise  # Re-raise assertion errors\n"
+            "    except Exception as e:\n"
+            '        print(f"[shrug] assert_probability got confused: {e}")\n'
+            '        print(f"[tip] Maybe check your event condition or parameters?")\n'
+            "        update_chaos_state(failed=True)\n"
+            "        raise AssertionError(f'assert_probability failed with error: {e}')"
+        ),
+    },
 }

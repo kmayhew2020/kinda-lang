@@ -379,6 +379,34 @@ def transform_line(line: str) -> List[str]:
         used_helpers.add("fuzzy_assign")
         transformed_code = f"{var} = fuzzy_assign('{var}', {val})"
 
+    elif key == "assert_eventually":
+        used_helpers.add("assert_eventually")
+        condition, timeout, confidence = groups
+        
+        # Build function call with optional parameters
+        args = [condition] if condition else ["True"]
+        if timeout is not None:
+            args.append(f"timeout={timeout}")
+        if confidence is not None:
+            args.append(f"confidence={confidence}")
+        
+        transformed_code = f"assert_eventually({', '.join(args)})"
+
+    elif key == "assert_probability":
+        used_helpers.add("assert_probability")
+        event, expected_prob, tolerance, samples = groups
+        
+        # Build function call with optional parameters
+        args = [event] if event else ["True"]
+        if expected_prob is not None:
+            args.append(f"expected_prob={expected_prob}")
+        if tolerance is not None:
+            args.append(f"tolerance={tolerance}")
+        if samples is not None:
+            args.append(f"samples={samples}")
+        
+        transformed_code = f"assert_probability({', '.join(args)})"
+
     else:
         transformed_code = stripped  # fallback
 
