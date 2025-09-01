@@ -1,0 +1,119 @@
+# Kinda-Lang Statistical Testing Demo
+# Demonstrates ~assert_eventually and ~assert_probability for fuzzy/probabilistic testing
+
+~sorta print("=== Kinda-Lang Statistical Testing Demo ===")
+~sorta print("")
+
+# Example 1: Using ~assert_eventually to test probabilistic conditions
+~sorta print("🎯 Example 1: Testing that ~sometimes eventually succeeds")
+~sorta print("Testing that ~sometimes(True) eventually succeeds with 95% confidence...")
+
+# This should succeed because ~sometimes has roughly 50% chance of being true
+~assert_eventually (~sometimes True, timeout=3.0, confidence=0.95)
+~sorta print("✅ ~sometimes eventually succeeded!")
+~sorta print("")
+
+# Example 2: Testing with different confidence levels
+~sorta print("🎯 Example 2: Testing ~maybe with lower confidence")
+~sorta print("Testing that ~maybe(True) eventually succeeds with 80% confidence...")
+
+# ~maybe has ~60% chance, so this should succeed more easily
+~assert_eventually (~maybe True, timeout=2.0, confidence=0.8)
+~sorta print("✅ ~maybe eventually succeeded!")
+~sorta print("")
+
+# Example 3: Testing ~rarely (should take longer or might fail)
+~sorta print("🎯 Example 3: Testing ~rarely (challenging case)")
+~sorta print("Testing that ~rarely(True) eventually succeeds (this might take a while or fail)...")
+
+# ~rarely has ~15% chance, so this is much harder to achieve
+~probably (~assert_eventually (~rarely True, timeout=5.0, confidence=0.7)) {
+    ~sorta print("🎉 Wow! ~rarely eventually succeeded - that's pretty rare!")
+} {
+    ~sorta print("💡 As expected, ~rarely didn't meet our confidence threshold. That's normal!")
+}
+~sorta print("")
+
+# Example 4: Using ~assert_probability to validate probability distributions
+~sorta print("🎯 Example 4: Validating ~sometimes probability distribution")
+~sorta print("Testing that ~sometimes has approximately 50% probability...")
+
+# Test that ~sometimes behaves with roughly 50% probability
+~assert_probability (~sometimes True, expected_prob=0.5, tolerance=0.1, samples=1000)
+~sorta print("✅ ~sometimes probability validated!")
+~sorta print("")
+
+# Example 5: Validating ~maybe probability  
+~sorta print("🎯 Example 5: Validating ~maybe probability distribution")
+~sorta print("Testing that ~maybe has approximately 60% probability...")
+
+# Test that ~maybe behaves with roughly 60% probability
+~assert_probability (~maybe True, expected_prob=0.6, tolerance=0.15, samples=800)
+~sorta print("✅ ~maybe probability validated!")
+~sorta print("")
+
+# Example 6: Validating ~rarely probability
+~sorta print("🎯 Example 6: Validating ~rarely probability distribution")
+~sorta print("Testing that ~rarely has approximately 15% probability...")
+
+# Test that ~rarely behaves with roughly 15% probability
+~assert_probability (~rarely True, expected_prob=0.15, tolerance=0.08, samples=1500)
+~sorta print("✅ ~rarely probability validated!")
+~sorta print("")
+
+# Example 7: KINDA TESTS KINDA - Self-validation
+~sorta print("🎭 Example 7: KINDA TESTS KINDA - Self-validation")
+~sorta print("Using kinda constructs to test other kinda constructs...")
+
+~kinda int test_counter = 0
+
+# Use probabilistic constructs to modify the counter
+~sometimes () { test_counter = test_counter + 1 }
+~maybe () { test_counter = test_counter + 1 }  
+~probably () { test_counter = test_counter + 1 }
+
+~sorta print("Test counter after probabilistic modifications:", test_counter)
+
+# Now assert that the counter eventually becomes positive
+# (since we did several probabilistic increments)
+~assert_eventually (test_counter > 0, timeout=1.0, confidence=0.9)
+~sorta print("✅ Counter eventually became positive through probabilistic operations!")
+~sorta print("")
+
+# Example 8: Testing with custom conditions
+~sorta print("🎯 Example 8: Custom probabilistic conditions")
+
+~kinda float random_value = 0.5
+
+# Test that a fuzzy float comparison eventually succeeds
+~assert_eventually (random_value ~ish 0.5, timeout=2.0, confidence=0.85)
+~sorta print("✅ Fuzzy comparison eventually succeeded!")
+
+# Test the probability of fuzzy comparisons
+~assert_probability (random_value ~ish 0.5, expected_prob=0.7, tolerance=0.2, samples=500)
+~sorta print("✅ Fuzzy comparison probability validated!")
+~sorta print("")
+
+# Example 9: Demonstrating statistical failure handling
+~sorta print("🚨 Example 9: Demonstrating graceful failure handling")
+~sorta print("Attempting an assertion that should fail...")
+
+# This will likely fail, but we'll handle it gracefully with ~welp
+~assert_eventually (False, timeout=0.5, confidence=0.95) ~welp ~sorta print("⚠️ Expected failure: False is never true!")
+
+~sorta print("")
+
+# Example 10: Seed-based reproducible testing
+~sorta print("🌱 Example 10: Reproducible statistical testing")
+~sorta print("Statistical assertions work with --seed flag for reproducible chaos!")
+~sorta print("Try running this example with: kinda run statistical_testing_demo.py.knda --seed 12345")
+~sorta print("The same seed should produce identical statistical results.")
+~sorta print("")
+
+~sorta print("=== Demo Complete! ===")
+~sorta print("Statistical assertions provide:")
+~sorta print("• ~assert_eventually: Wait for probabilistic conditions")  
+~sorta print("• ~assert_probability: Validate probability distributions")
+~sorta print("• Integration with --seed flag for reproducibility")
+~sorta print("• Personality-aware error messages")
+~sorta print("• KINDA TESTS KINDA self-validation capabilities")

@@ -149,6 +149,152 @@ def _parse_conditional_arguments(line: str, construct_name: str):
     return None
 
 
+def _parse_statistical_arguments(line: str, construct_name: str):
+    """
+    Parse statistical assertion constructs with complex parameter parsing.
+    Supports named parameters like timeout=5.0, confidence=0.95, etc.
+    """
+    import re
+
+    # Match the construct pattern
+    pattern = re.compile(f"^~{construct_name}\\s*\\(")
+    match = pattern.match(line)
+    if not match:
+        return None
+
+    # Find the opening parenthesis
+    start_idx = match.end() - 1  # -1 to include the opening paren
+    content, is_balanced = _parse_balanced_parentheses(line, start_idx)
+
+    # Only return content if parentheses are properly balanced
+    if content is not None and is_balanced:
+        # Parse the complex arguments
+        if construct_name == "assert_eventually":
+            return _parse_assert_eventually_args(content)
+        elif construct_name == "assert_probability":
+            return _parse_assert_probability_args(content)
+
+    return None
+
+
+def _parse_assert_eventually_args(content: str):
+    """Parse assert_eventually arguments: condition, timeout=5.0, confidence=0.95"""
+    import re
+
+    # Split on commas that aren't inside parentheses, quotes, etc.
+    args = _split_function_arguments(content)
+
+    if not args:
+        return None
+
+    # First argument is always the condition
+    condition = args[0].strip()
+
+    # Parse optional named parameters
+    timeout = None
+    confidence = None
+
+    for arg in args[1:]:
+        arg = arg.strip()
+        if "=" in arg:
+            key, value = arg.split("=", 1)
+            key = key.strip()
+            value = value.strip()
+
+            if key == "timeout":
+                timeout = value
+            elif key == "confidence":
+                confidence = value
+
+    return (condition, timeout, confidence)
+
+
+def _parse_assert_probability_args(content: str):
+    """Parse assert_probability arguments: event, expected_prob=0.5, tolerance=0.1, samples=1000"""
+    import re
+
+    # Split on commas that aren't inside parentheses, quotes, etc.
+    args = _split_function_arguments(content)
+
+    if not args:
+        return None
+
+    # First argument is always the event condition
+    event = args[0].strip()
+
+    # Parse optional named parameters
+    expected_prob = None
+    tolerance = None
+    samples = None
+
+    for arg in args[1:]:
+        arg = arg.strip()
+        if "=" in arg:
+            key, value = arg.split("=", 1)
+            key = key.strip()
+            value = value.strip()
+
+            if key == "expected_prob":
+                expected_prob = value
+            elif key == "tolerance":
+                tolerance = value
+            elif key == "samples":
+                samples = value
+
+    return (event, expected_prob, tolerance, samples)
+
+
+def _split_function_arguments(content: str):
+    """Split function arguments on commas, respecting nested parentheses and strings."""
+    args = []
+    current_arg = []
+    paren_depth = 0
+    in_string = False
+    string_char = None
+    escaped = False
+
+    for char in content:
+        if escaped:
+            current_arg.append(char)
+            escaped = False
+            continue
+
+        if char == "\\" and in_string:
+            current_arg.append(char)
+            escaped = True
+            continue
+
+        if not in_string:
+            if char in "\"'":
+                in_string = True
+                string_char = char
+                current_arg.append(char)
+            elif char == "(":
+                paren_depth += 1
+                current_arg.append(char)
+            elif char == ")":
+                paren_depth -= 1
+                current_arg.append(char)
+            elif char == "," and paren_depth == 0:
+                # Split here
+                args.append("".join(current_arg))
+                current_arg = []
+            else:
+                current_arg.append(char)
+        else:
+            # We're inside a string
+            current_arg.append(char)
+            if char == string_char:
+                in_string = False
+                string_char = None
+
+    # Add the last argument
+    if current_arg:
+        args.append("".join(current_arg))
+
+    return [arg.strip() for arg in args if arg.strip()]
+
+
 def match_python_construct(line: str):
     """
     Enhanced Python construct matcher with robust parsing for all constructs.
@@ -160,11 +306,16 @@ def match_python_construct(line: str):
             content = _parse_sorta_print_arguments(line)
             if content is not None:
                 return "sorta_print", (content,)
-        elif key in ["maybe", "sometimes", "probably"]:
+        elif key in ["maybe", "sometimes", "probably", "rarely"]:
             # Use enhanced conditional parsing with balanced parentheses
             content = _parse_conditional_arguments(line, key)
             if content is not None:
                 return key, (content,)
+        elif key in ["assert_eventually", "assert_probability"]:
+            # Use enhanced parsing for statistical assertions with balanced parentheses
+            content = _parse_statistical_arguments(line, key)
+            if content is not None:
+                return key, content
         else:
             pattern = data["pattern"]
             match = pattern.match(line)

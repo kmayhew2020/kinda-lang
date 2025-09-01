@@ -216,3 +216,4 @@ __marimo__/
 
 # Profiling output files
 *.prof
+/kinda/langs/python/runtime/fuzzy.py

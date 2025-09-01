@@ -174,13 +174,45 @@ kinda run examples/python/seed_demo.py.knda --seed 1337  # Different output
 | `~maybe (cond) {} {}` | Less random conditional (60%) | More likely than ~sometimes but still fuzzy, optional else |
 | `~probably (cond) {} {}` | Confident conditional (70%) | Higher confidence than ~maybe, optional else |
 | `~rarely (cond) {} {}` | Low-probability conditional (15%) | Executes infrequently, lowest chance of all conditionals |
+| `~assert_eventually (condition, timeout=5.0, confidence=0.95)` | Statistical assertion for probabilistic conditions | Waits for fuzzy condition to become statistically true |
+| `~assert_probability (event, expected_prob=0.5, tolerance=0.1, samples=1000)` | Statistical validation of probability distributions | Validates event probability matches expectations |
 | `x ~= x + 1` | Fuzzy assignment | Adds 1 ± random noise |
+
+### Statistical Testing: "Kinda Tests Kinda"
+
+Kinda includes powerful statistical assertions for testing fuzzy and probabilistic behavior:
+
+```kinda
+# Test that probabilistic conditions eventually succeed
+~assert_eventually (~sometimes True, timeout=5.0, confidence=0.95)
+
+# Validate probability distributions of fuzzy constructs  
+~assert_probability (~maybe True, expected_prob=0.6, tolerance=0.1, samples=1000)
+
+# KINDA TESTS KINDA: Use kinda constructs to test other kinda constructs!
+~kinda int counter = 0
+~sometimes { counter = counter + 1 }
+~assert_eventually (counter > 0, timeout=2.0, confidence=0.9)
+```
+
+**Statistical Features:**
+- **~assert_eventually**: Wait for probabilistic conditions with statistical confidence
+- **~assert_probability**: Validate probability distributions of fuzzy events  
+- **Seed integration**: Reproducible statistical testing with `--seed` flag
+- **Personality-aware**: Error messages match your chosen mood/chaos level
+- **Wilson score intervals**: Proper statistical confidence bounds
+
+Try the statistical testing demo:
+```bash
+kinda run examples/python/statistical_testing_demo.py.knda --seed 42
+```
 
 ## 🎯 Why Use Kinda?
 
 - **Test code resilience** - See how your logic handles randomness
 - **Simulate real-world uncertainty** - Model unreliable systems  
 - **Debug by chaos** - Find edge cases through controlled randomness
+- **Statistical validation** - Verify fuzzy behavior meets expectations
 - **Have fun** - Your compiler has personality and attitude
 
 ## 🔧 Development
