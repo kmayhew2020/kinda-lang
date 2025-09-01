@@ -597,7 +597,9 @@ KindaPythonConstructs = {
     },
     "assert_eventually": {
         "type": "statistical",
-        "pattern": re.compile(r"~assert_eventually\s*\(\s*([^,)]+)(?:\s*,\s*timeout\s*=\s*([^,)]+))?(?:\s*,\s*confidence\s*=\s*([^)]+))?\s*\)"),
+        "pattern": re.compile(
+            r"~assert_eventually\s*\(\s*([^,)]+)(?:\s*,\s*timeout\s*=\s*([^,)]+))?(?:\s*,\s*confidence\s*=\s*([^)]+))?\s*\)"
+        ),
         "description": "Statistical assertion that waits for probabilistic condition to become true",
         "body": (
             "def assert_eventually(condition, timeout=5.0, confidence=0.95):\n"
@@ -691,7 +693,9 @@ KindaPythonConstructs = {
     },
     "assert_probability": {
         "type": "statistical",
-        "pattern": re.compile(r"~assert_probability\s*\(\s*([^,)]+)(?:\s*,\s*expected_prob\s*=\s*([^,)]+))?(?:\s*,\s*tolerance\s*=\s*([^,)]+))?(?:\s*,\s*samples\s*=\s*([^)]+))?\s*\)"),
+        "pattern": re.compile(
+            r"~assert_probability\s*\(\s*([^,)]+)(?:\s*,\s*expected_prob\s*=\s*([^,)]+))?(?:\s*,\s*tolerance\s*=\s*([^,)]+))?(?:\s*,\s*samples\s*=\s*([^)]+))?\s*\)"
+        ),
         "description": "Statistical assertion for validating probability distributions",
         "body": (
             "def assert_probability(event, expected_prob=0.5, tolerance=0.1, samples=1000):\n"
