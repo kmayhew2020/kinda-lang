@@ -485,7 +485,7 @@ KindaPythonConstructs = {
             "        elif style == 'snarky':\n"
             '            print(f"[welp] Predictably failed with {type(e).__name__}, fine: {repr(fallback_value)}")\n'
             "        else:  # chaotic\n"
-            '            print(f"[welp] BOOM! {e} 💥 Whatever, here\'s: {repr(fallback_value)}")\n'
+            '            print(f"[welp] BOOM! {e} *CRASH* Whatever, here\'s: {repr(fallback_value)}")\n'
             "        \n"
             "        update_chaos_state(failed=True)\n"
             "        return fallback_value"
@@ -678,7 +678,7 @@ KindaPythonConstructs = {
             "        elif style == 'snarky':\n"
             "            error_msg = f'Surprise! Your \"eventually\" condition was kinda flaky: {successes}/{attempts} ({final_rate:.3f}) in {timeout}s. Try lowering your standards.'\n"
             "        else:  # chaotic\n"
-            "            error_msg = f'NOPE! 💥 Condition flopped {attempts-successes}/{attempts} times in {timeout}s. Maybe try \"~assert_never\" instead? 😏'\n"
+            "            error_msg = f'NOPE! *BOOM* Condition flopped {attempts-successes}/{attempts} times in {timeout}s. Maybe try \"~assert_never\" instead? *wink*'\n"
             "        \n"
             "        update_chaos_state(failed=True)\n"
             "        raise AssertionError(error_msg)\n"
@@ -762,7 +762,7 @@ KindaPythonConstructs = {
             "            elif style == 'snarky':\n"
             "                error_msg = f'Your random event is apparently not very random: {observed_prob:.3f} vs {expected_prob:.3f} ± {tolerance:.3f}. Maybe check your math?'\n"
             "            else:  # chaotic\n"
-            "                error_msg = f'PROBABILITY FAIL! 🎲💥 Got {observed_prob:.3f}, wanted ~{expected_prob:.3f}. That\\'s a {difference:.3f} swing, which is NOT kinda close!'\n"
+            "                error_msg = f'PROBABILITY FAIL! [DICE]*CRASH* Got {observed_prob:.3f}, wanted ~{expected_prob:.3f}. That\\'s a {difference:.3f} swing, which is NOT kinda close!'\n"
             "            \n"
             "            update_chaos_state(failed=True)\n"
             "            raise AssertionError(error_msg)\n"
