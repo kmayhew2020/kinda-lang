@@ -1,0 +1,135 @@
+# Meta-Programming Testing Example: "Kinda Tests Kinda" Philosophy
+# =============================================================
+# This example demonstrates the ultimate expression of the kinda-lang philosophy:
+# using kinda constructs to test other kinda constructs, creating recursive
+# meta-programming patterns that showcase sophisticated probabilistic testing.
+
+# Import statistical assertion constructs
+~assert_eventually
+~assert_probability
+
+# Example 1: Basic Meta-Validation
+# Tests where kinda constructs validate themselves
+print("🎯 Basic Meta-Validation Example")
+
+~kinda bool meta_result = ~sometimes True
+~assert_eventually (~sometimes (meta_result == ~sometimes True), timeout=2.0, confidence=0.4)
+~sorta print "✅ Meta-validation: ~sometimes tested itself!"
+
+# Example 2: Probabilistic Parameter Self-Determination
+# Using ~maybe and ~rarely to determine test parameters dynamically
+print("\n🔄 Dynamic Parameter Generation")
+
+~kinda float fuzzy_expected_prob = ~maybe 0.6 if True else 0.4  # ~maybe 60% or 40%
+~kinda int fuzzy_samples = (~rarely 500 if True else 100)       # ~rarely high sample count
+~kinda float fuzzy_tolerance = (~probably 0.1 if True else 0.2) # ~probably strict tolerance
+
+print(f"Dynamic parameters: prob={fuzzy_expected_prob}, samples={fuzzy_samples}, tolerance={fuzzy_tolerance}")
+
+# Test ~maybe with dynamically generated parameters
+~assert_probability (~maybe True, expected_prob=fuzzy_expected_prob, tolerance=fuzzy_tolerance, samples=fuzzy_samples)
+~sorta print "✅ Dynamic parameters: ~maybe tested with self-generated fuzzy parameters!"
+
+# Example 3: Compound Meta-Validation 
+# Tests that combine multiple kinda constructs for complex validation
+print("\n🌀 Compound Meta-Construct Testing")
+
+# Test the interaction between ~sometimes and ~maybe
+~assert_probability (~sometimes (~maybe True), expected_prob=0.30, tolerance=0.15, samples=200)
+~sorta print "✅ Compound: ~sometimes and ~maybe interaction validated!"
+
+# Test ~rarely nested in ~probably
+~assert_probability (~probably (~rarely True), expected_prob=0.105, tolerance=0.05, samples=300) 
+~sorta print "✅ Compound: ~probably(~rarely) nested validation complete!"
+
+# Example 4: Time-Based Meta-Testing
+# Using kinda constructs to test time-dependent behavior
+print("\n⏱️ Time-Based Meta-Testing")
+
+~kinda int time_counter = 0
+~sometimes (time_counter = time_counter + 1)  # Increment ~sometimes
+
+# Validate that time_counter grows over multiple iterations
+~kinda bool eventually_incremented = False
+~assert_eventually ((time_counter > 0), timeout=1.0, confidence=0.7)
+
+~sorta print f"✅ Time-based: Counter reached {time_counter} (temporal meta-validation)"
+
+# Example 5: Recursive Meta-Framework Demonstration
+# The ultimate expression: a test that tests the testing framework
+print("\n🎭 Recursive Meta-Framework Pattern")
+
+# Meta-validation of the testing framework itself
+~kinda bool framework_working = True
+
+# Test that assert_eventually can validate itself
+~assert_eventually ((framework_working == ~sometimes True), timeout=1.5, confidence=0.5)
+
+# Test that assert_probability can validate its own behavior
+~kinda int meta_success_count = 0
+~probably (meta_success_count = meta_success_count + (~maybe 1 if True else 0))
+~assert_probability ((meta_success_count > 0), expected_prob=0.42, tolerance=0.2, samples=100)
+
+~sorta print "✅ Recursive: Meta-framework validated its own meta-validation capabilities!"
+
+# Example 6: Chaos-Tolerant Meta-Testing
+# Showing how meta-tests can adapt to different chaos levels
+print("\n🌪️ Chaos-Adaptive Meta-Testing")
+
+# Tests that adjust their expectations based on inherent uncertainty
+~kinda float chaos_factor = ~maybe 1.5 if True else 0.8  # Chaos amplifier
+
+# Adaptive assertion that tolerates chaos
+~kinda float adaptive_prob = 0.5 * chaos_factor  # Scale expectation by chaos
+~assert_probability (~sometimes True, expected_prob=adaptive_prob, tolerance=0.3, samples=150)
+
+~sorta print f"✅ Chaos-adaptive: Validated with chaos factor {chaos_factor}"
+
+# Example 7: Meta-Statistical Validation
+# Using statistical assertions to validate statistical behavior
+print("\n📊 Meta-Statistical Analysis")
+
+# Validate that our assertions have reasonable success rates
+~kinda int assertion_successes = 0
+~kinda int total_assertions = 5  # We've run about 5 major assertions above
+
+# Meta-assertion about assertion success rate
+~probably (assertion_successes = assertion_successes + (~maybe 1 if True else 0))
+~assert_probability ((assertion_successes >= 2), expected_prob=0.8, tolerance=0.2, samples=50)
+
+~sorta print f"✅ Meta-statistical: Assertion success rate meta-validated!"
+
+# Example 8: Ultimate Meta-Programming: Self-Modifying Test Logic
+# Tests that use kinda constructs to modify their own testing behavior
+print("\n🎪 Self-Modifying Meta-Test Logic")
+
+~kinda str test_mode = (~sometimes "strict" if True else "lenient")
+~kinda float dynamic_confidence = (~maybe 0.9 if test_mode == "strict" else 0.6)
+~kinda float dynamic_timeout = (~rarely 3.0 if test_mode == "strict" else 1.0)
+
+print(f"Self-adapting test mode: {test_mode}")
+print(f"Dynamic confidence: {dynamic_confidence}")
+print(f"Dynamic timeout: {dynamic_timeout}")
+
+# Execute self-modifying validation
+~assert_eventually (~sometimes (test_mode != "impossible"), timeout=dynamic_timeout, confidence=dynamic_confidence)
+
+~sorta print f"✅ Self-modifying: Test adapted its behavior based on ~{test_mode} mode!"
+
+# Final Meta-Philosophy Statement
+print("\n🎭 ULTIMATE META-PROGRAMMING ACHIEVED!")
+print("=" * 50)
+~sorta print "🏆 This example demonstrates the pinnacle of 'Kinda tests Kinda' philosophy:"
+~probably print "   • Kinda constructs testing themselves"  
+~maybe print "   • Dynamic parameter generation using fuzzy logic"
+~sometimes print "   • Recursive meta-validation frameworks"
+~rarely print "   • Self-modifying test behaviors"
+print("   • Chaos-adaptive statistical assertions")
+print("   • Multi-level probabilistic meta-analysis")
+print("")
+~sorta print "🎯 The tests themselves have become kinda - embracing uncertainty,"
+~maybe print "   chaos, and probabilistic thinking at every level."
+print("")
+print("This is not just testing WITH kinda constructs -")  
+print("This IS kinda constructs testing kinda constructs recursively!")
+print("🎪 Welcome to meta-programming nirvana! 🎪")
