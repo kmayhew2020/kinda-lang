@@ -178,7 +178,9 @@ class TestSortaPrint:
 
         semantics.env["msg"] = "Should not print"
 
-        with patch("kinda.langs.python.semantics.chaos_random", return_value=0.9):  # Greater than 0.8
+        with patch(
+            "kinda.langs.python.semantics.chaos_random", return_value=0.9
+        ):  # Greater than 0.8
             semantics.sorta_print("msg")
             output = captured_output.getvalue()
             assert output == ""  # Nothing printed
@@ -238,7 +240,9 @@ class TestRunSometimesBlock:
 
         # Mock evaluate to return False for the condition
         with patch("kinda.langs.python.semantics.evaluate", return_value=False):
-            with patch("kinda.langs.python.semantics.chaos_random", return_value=0.5):  # Less than 0.7
+            with patch(
+                "kinda.langs.python.semantics.chaos_random", return_value=0.5
+            ):  # Less than 0.7
                 block_lines = ['print("Should not run")']
                 semantics.run_sometimes_block("x > 5", block_lines)
 
@@ -252,7 +256,9 @@ class TestRunSometimesBlock:
         captured_output = StringIO()
         sys.stdout = captured_output
 
-        with patch("kinda.langs.python.semantics.chaos_random", return_value=0.8):  # Greater than 0.7
+        with patch(
+            "kinda.langs.python.semantics.chaos_random", return_value=0.8
+        ):  # Greater than 0.7
             block_lines = ['print("Should not run")']
             semantics.run_sometimes_block("x > 5", block_lines)
 

@@ -207,7 +207,9 @@ class TestTimeDriftFloatConstruct:
 
         # Mock the personality functions
         with patch("kinda.personality.register_time_variable") as mock_register:
-            with patch("kinda.personality.chaos_uniform", return_value=0.005):  # Small initial drift
+            with patch(
+                "kinda.personality.chaos_uniform", return_value=0.005
+            ):  # Small initial drift
                 result = time_drift_float("test_var", 10.0)
 
                 # Should register the variable
@@ -224,7 +226,9 @@ class TestTimeDriftFloatConstruct:
         time_drift_float = test_namespace["time_drift_float"]
 
         with patch("kinda.personality.register_time_variable"):
-            with patch("kinda.personality.chaos_uniform", return_value=0.0):  # No drift for easier testing
+            with patch(
+                "kinda.personality.chaos_uniform", return_value=0.0
+            ):  # No drift for easier testing
                 result = time_drift_float("string_test", "3.14159")
                 assert isinstance(result, float)
                 assert result == 3.14159

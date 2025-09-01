@@ -208,7 +208,9 @@ class TestKindaFloatRuntime:
         kinda_float = test_namespace["kinda_float"]
 
         # Test with string representation of float
-        with patch("kinda.personality.chaos_uniform", return_value=0.0):  # No drift for easier testing
+        with patch(
+            "kinda.personality.chaos_uniform", return_value=0.0
+        ):  # No drift for easier testing
             with patch("kinda.personality.chaos_float_drift_range", return_value=(-0.5, 0.5)):
                 result = kinda_float("3.14159")
                 assert isinstance(result, float)
@@ -228,7 +230,9 @@ class TestKindaFloatRuntime:
         kinda_float = test_namespace["kinda_float"]
 
         # Test with scientific notation
-        with patch("kinda.personality.chaos_uniform", return_value=0.0):  # No drift for easier testing
+        with patch(
+            "kinda.personality.chaos_uniform", return_value=0.0
+        ):  # No drift for easier testing
             with patch("kinda.personality.chaos_float_drift_range", return_value=(-0.5, 0.5)):
                 result = kinda_float(1.23e-4)
                 assert isinstance(result, float)
@@ -662,7 +666,9 @@ class TestKindaFloatSpecialValues:
 
         # Test 1/3
         one_third = 1.0 / 3.0
-        with patch("kinda.personality.chaos_uniform", return_value=0.0):  # No drift for precision test
+        with patch(
+            "kinda.personality.chaos_uniform", return_value=0.0
+        ):  # No drift for precision test
             with patch("kinda.personality.chaos_float_drift_range", return_value=(-0.1, 0.1)):
                 result = kinda_float(one_third)
                 assert isinstance(result, float)
@@ -670,7 +676,9 @@ class TestKindaFloatSpecialValues:
 
         # Test 1/7
         one_seventh = 1.0 / 7.0
-        with patch("kinda.personality.chaos_uniform", return_value=0.0):  # No drift for precision test
+        with patch(
+            "kinda.personality.chaos_uniform", return_value=0.0
+        ):  # No drift for precision test
             with patch("kinda.personality.chaos_float_drift_range", return_value=(-0.1, 0.1)):
                 result = kinda_float(one_seventh)
                 assert isinstance(result, float)
