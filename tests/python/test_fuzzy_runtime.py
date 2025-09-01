@@ -275,13 +275,13 @@ class TestKindaBinary:
         PersonalityContext._instance = PersonalityContext("playful", 5, seed=77777)
         result2 = kinda_binary()
         assert result == result2
-        
+
         # Test multiple calls with same seed produce consistent results
         results = []
         for _ in range(5):
             PersonalityContext._instance = PersonalityContext("playful", 5, seed=77777)
             results.append(kinda_binary())
-        
+
         # All results should be the same with same seed
         assert all(r == results[0] for r in results)
 
@@ -462,13 +462,13 @@ class TestSometimes:
         PersonalityContext._instance = PersonalityContext("playful", 5, seed=15151)
         result2 = sometimes(True)
         assert result1 == result2
-        
+
         # Test multiple calls with same seed produce consistent results
         results = []
         for _ in range(5):
             PersonalityContext._instance = PersonalityContext("playful", 5, seed=15151)
             results.append(sometimes(True))
-        
+
         # All results should be the same with same seed
         assert all(r == results[0] for r in results)
 
