@@ -109,11 +109,10 @@ def regenerate_build():
     BUILD_DIR.mkdir(parents=True, exist_ok=True)
 
     # Step 3: Run transformer on all .knda files in each src dir
-    yield  # Make this a generator function
     for src_dir in SRC_DIRS:
         # Only use Python language since C support is disabled in v0.3.0
         lang = "python"
-        result1 = subprocess.run(
+        result = subprocess.run(
             [
                 "python",
                 "-m",
@@ -128,29 +127,17 @@ def regenerate_build():
             capture_output=True,
             text=True,
         )
-        result2 = subprocess.run(
-            ["kinda", "transform", src_dir, "--out", str(BUILD_DIR), "--lang", lang],
-            capture_output=True,
-            text=True,
-        )
-        if result1.returncode != 0:
+        if result.returncode != 0:
             print("Transformer failed:")
-            print("STDOUT:\n", result1.stdout)
-            print("STDERR:\n", result1.stderr)
+            print("STDOUT:\n", result.stdout)
+            print("STDERR:\n", result.stderr)
             # ~maybe we continue despite transformer failure (chaos tolerance)
             if chaos_random() < chaos_probability("rarely"):
                 print("[CONFTEST] ~rarely continuing despite transformer failure (chaos tolerance)")
             else:
                 raise RuntimeError("Transformer failed during test setup")
-        if result2.returncode != 0:
-            print("Transformer failed:")
-            print("STDOUT:\n", result2.stdout)
-            print("STDERR:\n", result2.stderr)
-            # ~maybe we continue despite transformer failure (chaos tolerance)
-            if chaos_random() < chaos_probability("rarely"):
-                print("[CONFTEST] ~rarely continuing despite transformer failure (chaos tolerance)")
-            else:
-                raise RuntimeError("Transformer failed during test setup")
+    
+    yield  # Make this a generator function - yield after all build is complete
 
 
 # Additional kinda-based pytest fixtures and hooks for meta-programming test patterns
