@@ -22,7 +22,7 @@
 - 🎥 **Issue #122**: kinda record/replay system for debugging and testing
 - 🧪 **Issue #123**: ~assert_eventually() statistical assertions for fuzzy testing
 - 🏗️ **Epic #124**: Construct Self-definition - Higher-level constructs built from basic ones
-- ⚙️ **Issue #86**: --seed flag (upgraded to HIGH priority)
+- ✅ **Issue #86**: --seed flag (upgraded to HIGH priority) - **COMPLETED via PR #126**
 
 ### 🚀 Active Development Roadmap
 
@@ -41,7 +41,7 @@
   - 36 comprehensive tests, full backward compatibility
 - 🚀 **DEVELOPER EXPERIENCE FUNDAMENTALS** (User HIGH Priority):
   - ✅ **Issue #121**: --chaos-level parameter (1-10 scale) - **COMPLETED via PR #125**
-  - ⚙️ **Issue #86**: --seed flag for reproducible chaos - **UPGRADED to HIGH**
+  - ✅ **Issue #86**: --seed flag for reproducible chaos - **COMPLETED via PR #126**
   - 🎥 **Issue #122**: kinda record/replay debugging system - **NEW HIGH**
 - 🧪 **TESTING INFRASTRUCTURE** (User HIGH Priority):
   - 🧪 **Issue #123**: ~assert_eventually() statistical assertions - **NEW HIGH**
@@ -146,7 +146,7 @@
 
 **🔴 HIGH PRIORITY (REVISED - User Feedback Alignment):**
 1. ✅ **Issue #121**: 🎯 --chaos-level parameter (1-10 scale) - **COMPLETED via PR #125** - Core DX improvement
-2. **Issue #86**: ⚙️ --seed flag for reproducible chaos - **UPGRADED** - Core DX improvement  
+2. ✅ **Issue #86**: ⚙️ --seed flag for reproducible chaos - **COMPLETED via PR #126** - Core DX improvement  
 3. **Issue #122**: 🎥 kinda record/replay system - **NEW** - Essential for debugging fuzzy programs
 4. **Issue #123**: 🧪 ~assert_eventually() statistical assertions - **NEW** - Essential for testing fuzzy programs
 5. **Issue #TBD**: 🎲 **Kinda Tests Kinda Infrastructure** - **NEW** - Self-testing framework for meta-validation
@@ -260,13 +260,15 @@ This clarification makes the strategic direction MORE focused and achievable, pe
 - **Quick win**: Implemented and merged, demonstrating responsiveness to feedback - ✅ ACHIEVED
 - **Validates strategy shift**: From "creative experiment" to "genuinely useful tool" - ✅ PROVEN
 
-**NEXT IMMEDIATE ACTION**: Issue #86 (--seed flag for reproducible chaos) - Now highest priority DX improvement
+**✅ COMPLETED**: Issue #86 (--seed flag for reproducible chaos) via PR #126 - Core DX improvement delivered
+**NEXT IMMEDIATE ACTION**: Issue #122 (record/replay system) or Issue #123 (statistical assertions) - Remaining DX fundamentals
 
 ### **v0.4.0 TIMELINE ADJUSTMENT - UPDATE**
 - **COMPLETED**: Issue #121 (--chaos-level parameter) ✅ DELIVERED via PR #125
-- **NEXT**: Issues #86 (--seed), #122 (record/replay), #123 (statistical assertions) 
+- **COMPLETED**: Issue #86 (--seed flag) ✅ DELIVERED via PR #126
+- **NEXT**: Issues #122 (record/replay), #123 (statistical assertions) 
 - **KEEP**: Issues #116, #117 (aligned with user priorities)
-- **RESULT**: v0.4.0 "Developer Experience Release" - 25% complete with --chaos-level delivered
+- **RESULT**: v0.4.0 "Developer Experience Release" - 40% complete with --chaos-level and --seed flags delivered
 
 ### **v0.5.0 STRATEGIC REFOCUS**  
 - **PRIMARY GOAL**: Epic #124 (Construct Self-definition) - User's core validation criterion
@@ -282,7 +284,10 @@ This clarification makes the strategic direction MORE focused and achievable, pe
 - **Complexity increase**: Self-hosting is ambitious - may need timeline flexibility
 - **Community expectations**: Need to communicate strategic shift clearly
 
-**✅ STRATEGIC PIVOT EXECUTED**: Issue #121 --chaos-level parameter successfully implemented and merged via PR #125.
+**✅ STRATEGIC PIVOT PROGRESS**: 
+- Issue #121 --chaos-level parameter successfully implemented and merged via PR #125
+- Issue #86 --seed flag successfully implemented and merged via PR #126
+- Developer Experience fundamentals: 2/4 high-priority DX improvements completed
 
 ---
-*Last Updated: 2025-08-31 by Kinda-Lang Project Manager - Issue #121 COMPLETED via PR #125 - Next Priority: Issue #86 (--seed flag) for continued Developer Experience improvements*
+*Last Updated: 2025-09-01 by Kinda-Lang Project Manager - Issue #86 COMPLETED via PR #126 - Next Priority: Issue #122 (record/replay) or Issue #123 (statistical assertions) for continued Developer Experience improvements*
