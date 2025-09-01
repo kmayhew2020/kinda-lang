@@ -104,9 +104,13 @@ def setup_kinda_test_environment():
     # ~sorta run additional test setup based on personality
     personality = get_personality()
     if personality.mood == "chaotic":
-        safe_emoji_print(f"[CONFTEST] 🌀 Chaotic personality detected - expect unpredictable test behavior!")
+        safe_emoji_print(
+            f"[CONFTEST] 🌀 Chaotic personality detected - expect unpredictable test behavior!"
+        )
     elif personality.mood == "reliable":
-        safe_emoji_print(f"[CONFTEST] ⚙️ Reliable personality detected - prioritizing deterministic behavior")
+        safe_emoji_print(
+            f"[CONFTEST] ⚙️ Reliable personality detected - prioritizing deterministic behavior"
+        )
     elif personality.mood == "playful":
         safe_emoji_print(
             f"[CONFTEST] 🎭 Playful personality detected - balanced chaos and reliability"
