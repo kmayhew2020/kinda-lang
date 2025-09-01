@@ -175,14 +175,14 @@ class TestKindaFloatRuntime:
         kinda_float = test_namespace["kinda_float"]
 
         # Test with positive float
-        with patch("random.uniform", return_value=0.1):  # Small drift
+        with patch("kinda.personality.chaos_uniform", return_value=0.1):  # Small drift
             with patch("kinda.personality.chaos_float_drift_range", return_value=(-0.5, 0.5)):
                 result = kinda_float(3.14)
                 assert isinstance(result, float)
                 assert abs(result - 3.14) <= 0.5  # Within drift range
 
         # Test with negative float
-        with patch("random.uniform", return_value=-0.1):  # Small negative drift
+        with patch("kinda.personality.chaos_uniform", return_value=-0.1):  # Small negative drift
             with patch("kinda.personality.chaos_float_drift_range", return_value=(-0.5, 0.5)):
                 result = kinda_float(-2.5)
                 assert isinstance(result, float)
@@ -195,7 +195,7 @@ class TestKindaFloatRuntime:
         kinda_float = test_namespace["kinda_float"]
 
         # Test with integer input
-        with patch("random.uniform", return_value=0.2):  # Drift value
+        with patch("kinda.personality.chaos_uniform", return_value=0.2):  # Drift value
             with patch("kinda.personality.chaos_float_drift_range", return_value=(-0.5, 0.5)):
                 result = kinda_float(42)
                 assert isinstance(result, float)
@@ -208,14 +208,16 @@ class TestKindaFloatRuntime:
         kinda_float = test_namespace["kinda_float"]
 
         # Test with string representation of float
-        with patch("random.uniform", return_value=0.0):  # No drift for easier testing
+        with patch(
+            "kinda.personality.chaos_uniform", return_value=0.0
+        ):  # No drift for easier testing
             with patch("kinda.personality.chaos_float_drift_range", return_value=(-0.5, 0.5)):
                 result = kinda_float("3.14159")
                 assert isinstance(result, float)
                 assert result == 3.14159
 
         # Test with string representation of integer
-        with patch("random.uniform", return_value=0.0):
+        with patch("kinda.personality.chaos_uniform", return_value=0.0):
             with patch("kinda.personality.chaos_float_drift_range", return_value=(-0.5, 0.5)):
                 result = kinda_float("42")
                 assert isinstance(result, float)
@@ -228,7 +230,9 @@ class TestKindaFloatRuntime:
         kinda_float = test_namespace["kinda_float"]
 
         # Test with scientific notation
-        with patch("random.uniform", return_value=0.0):  # No drift for easier testing
+        with patch(
+            "kinda.personality.chaos_uniform", return_value=0.0
+        ):  # No drift for easier testing
             with patch("kinda.personality.chaos_float_drift_range", return_value=(-0.5, 0.5)):
                 result = kinda_float(1.23e-4)
                 assert isinstance(result, float)
@@ -245,7 +249,7 @@ class TestKindaFloatRuntime:
         kinda_float = test_namespace["kinda_float"]
 
         # Test with invalid string should return random float
-        with patch("random.uniform", return_value=5.0):
+        with patch("kinda.personality.chaos_uniform", return_value=5.0):
             with patch("kinda.personality.chaos_float_drift_range", return_value=(-0.5, 0.5)):
                 result = kinda_float("not_a_number")
                 assert isinstance(result, float)
@@ -258,13 +262,13 @@ class TestKindaFloatRuntime:
         kinda_float = test_namespace["kinda_float"]
 
         # Test positive drift
-        with patch("random.uniform", return_value=0.3):
+        with patch("kinda.personality.chaos_uniform", return_value=0.3):
             with patch("kinda.personality.chaos_float_drift_range", return_value=(-0.5, 0.5)):
                 result = kinda_float(10.0)
                 assert result == 10.3
 
         # Test negative drift
-        with patch("random.uniform", return_value=-0.2):
+        with patch("kinda.personality.chaos_uniform", return_value=-0.2):
             with patch("kinda.personality.chaos_float_drift_range", return_value=(-0.5, 0.5)):
                 result = kinda_float(10.0)
                 assert result == 9.8
@@ -276,14 +280,14 @@ class TestKindaFloatRuntime:
         kinda_float = test_namespace["kinda_float"]
 
         # Test with zero
-        with patch("random.uniform", return_value=0.1):
+        with patch("kinda.personality.chaos_uniform", return_value=0.1):
             with patch("kinda.personality.chaos_float_drift_range", return_value=(-0.5, 0.5)):
                 result = kinda_float(0.0)
                 assert isinstance(result, float)
                 assert result == 0.1
 
         # Test with negative zero
-        with patch("random.uniform", return_value=-0.1):
+        with patch("kinda.personality.chaos_uniform", return_value=-0.1):
             with patch("kinda.personality.chaos_float_drift_range", return_value=(-0.5, 0.5)):
                 result = kinda_float(-0.0)
                 assert isinstance(result, float)
@@ -299,7 +303,7 @@ class TestKindaFloatRuntime:
         with patch(
             "kinda.personality.chaos_float_drift_range", side_effect=Exception("Test error")
         ):
-            with patch("random.uniform", return_value=5.0):
+            with patch("kinda.personality.chaos_uniform", return_value=5.0):
                 result = kinda_float(3.14)
                 assert isinstance(result, float)
                 assert result == 5.0  # Should use fallback
@@ -454,13 +458,13 @@ class TestKindaFloatEdgeCases:
         kinda_float = test_namespace["kinda_float"]
 
         # Test with positive infinity
-        with patch("random.uniform", return_value=0.0):
+        with patch("kinda.personality.chaos_uniform", return_value=0.0):
             with patch("kinda.personality.chaos_float_drift_range", return_value=(-0.5, 0.5)):
                 result = kinda_float(float("inf"))
                 assert math.isinf(result)
 
         # Test with negative infinity
-        with patch("random.uniform", return_value=0.0):
+        with patch("kinda.personality.chaos_uniform", return_value=0.0):
             with patch("kinda.personality.chaos_float_drift_range", return_value=(-0.5, 0.5)):
                 result = kinda_float(float("-inf"))
                 assert math.isinf(result)
@@ -472,7 +476,7 @@ class TestKindaFloatEdgeCases:
         kinda_float = test_namespace["kinda_float"]
 
         # Test with NaN - should handle gracefully
-        with patch("random.uniform", return_value=0.0):
+        with patch("kinda.personality.chaos_uniform", return_value=0.0):
             with patch("kinda.personality.chaos_float_drift_range", return_value=(-0.5, 0.5)):
                 result = kinda_float(float("nan"))
                 # NaN + anything is still NaN
@@ -486,7 +490,7 @@ class TestKindaFloatEdgeCases:
 
         # Test with very large number
         large_num = 1.23e100
-        with patch("random.uniform", return_value=0.1):
+        with patch("kinda.personality.chaos_uniform", return_value=0.1):
             with patch("kinda.personality.chaos_float_drift_range", return_value=(-0.5, 0.5)):
                 result = kinda_float(large_num)
                 assert isinstance(result, float)
@@ -500,7 +504,7 @@ class TestKindaFloatEdgeCases:
 
         # Test with very small number
         small_num = 1.23e-100
-        with patch("random.uniform", return_value=1e-101):
+        with patch("kinda.personality.chaos_uniform", return_value=1e-101):
             with patch("kinda.personality.chaos_float_drift_range", return_value=(-1e-100, 1e-100)):
                 result = kinda_float(small_num)
                 assert isinstance(result, float)
@@ -514,7 +518,7 @@ class TestKindaFloatEdgeCases:
 
         # Test that we maintain reasonable precision
         precision_test_val = 0.1 + 0.2  # This is 0.30000000000000004 in Python
-        with patch("random.uniform", return_value=0.0):  # No drift
+        with patch("kinda.personality.chaos_uniform", return_value=0.0):  # No drift
             with patch("kinda.personality.chaos_float_drift_range", return_value=(-0.5, 0.5)):
                 result = kinda_float(precision_test_val)
                 assert isinstance(result, float)
@@ -635,7 +639,7 @@ class TestKindaFloatSpecialValues:
         kinda_float = test_namespace["kinda_float"]
 
         pi_approx = 3.14159
-        with patch("random.uniform", return_value=0.01):  # Small drift
+        with patch("kinda.personality.chaos_uniform", return_value=0.01):  # Small drift
             with patch("kinda.personality.chaos_float_drift_range", return_value=(-0.1, 0.1)):
                 result = kinda_float(pi_approx)
                 assert isinstance(result, float)
@@ -648,7 +652,7 @@ class TestKindaFloatSpecialValues:
         kinda_float = test_namespace["kinda_float"]
 
         e_approx = 2.71828
-        with patch("random.uniform", return_value=-0.005):  # Small negative drift
+        with patch("kinda.personality.chaos_uniform", return_value=-0.005):  # Small negative drift
             with patch("kinda.personality.chaos_float_drift_range", return_value=(-0.1, 0.1)):
                 result = kinda_float(e_approx)
                 assert isinstance(result, float)
@@ -662,7 +666,9 @@ class TestKindaFloatSpecialValues:
 
         # Test 1/3
         one_third = 1.0 / 3.0
-        with patch("random.uniform", return_value=0.0):  # No drift for precision test
+        with patch(
+            "kinda.personality.chaos_uniform", return_value=0.0
+        ):  # No drift for precision test
             with patch("kinda.personality.chaos_float_drift_range", return_value=(-0.1, 0.1)):
                 result = kinda_float(one_third)
                 assert isinstance(result, float)
@@ -670,7 +676,9 @@ class TestKindaFloatSpecialValues:
 
         # Test 1/7
         one_seventh = 1.0 / 7.0
-        with patch("random.uniform", return_value=0.0):  # No drift for precision test
+        with patch(
+            "kinda.personality.chaos_uniform", return_value=0.0
+        ):  # No drift for precision test
             with patch("kinda.personality.chaos_float_drift_range", return_value=(-0.1, 0.1)):
                 result = kinda_float(one_seventh)
                 assert isinstance(result, float)
@@ -687,7 +695,7 @@ class TestKindaFloatDriftBehavior:
         kinda_float = test_namespace["kinda_float"]
 
         # Small positive value shouldn't become negative with reasonable drift
-        with patch("random.uniform", return_value=0.1):  # Positive drift
+        with patch("kinda.personality.chaos_uniform", return_value=0.1):  # Positive drift
             with patch("kinda.personality.chaos_float_drift_range", return_value=(-0.5, 0.5)):
                 result = kinda_float(0.2)
                 assert result > 0, f"Small positive value became negative: {result}"
@@ -699,7 +707,7 @@ class TestKindaFloatDriftBehavior:
         kinda_float = test_namespace["kinda_float"]
 
         # Very small positive value can become negative with large enough drift
-        with patch("random.uniform", return_value=-0.4):  # Large negative drift
+        with patch("kinda.personality.chaos_uniform", return_value=-0.4):  # Large negative drift
             with patch("kinda.personality.chaos_float_drift_range", return_value=(-0.5, 0.5)):
                 result = kinda_float(0.1)
                 assert result < 0, f"Expected sign flip but got: {result}"

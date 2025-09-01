@@ -74,7 +74,7 @@ class TestKindaAssign:
         captured_output = StringIO()
         sys.stdout = captured_output
 
-        with patch("random.choice", return_value=1):
+        with patch("kinda.langs.python.semantics.chaos_choice", return_value=1):
             semantics.kinda_assign("x", "42")
             assert semantics.env["x"] == 43
             output = captured_output.getvalue()
@@ -88,7 +88,7 @@ class TestKindaAssign:
         captured_output = StringIO()
         sys.stdout = captured_output
 
-        with patch("random.choice", return_value=-1):
+        with patch("kinda.langs.python.semantics.chaos_choice", return_value=-1):
             semantics.kinda_assign("y", "3.14")
             assert semantics.env["y"] == 2.14
             output = captured_output.getvalue()
@@ -102,7 +102,7 @@ class TestKindaAssign:
         captured_output = StringIO()
         sys.stdout = captured_output
 
-        with patch("random.choice", return_value=0):
+        with patch("kinda.langs.python.semantics.chaos_choice", return_value=0):
             semantics.kinda_assign("z", "100")
             assert semantics.env["z"] == 100
             output = captured_output.getvalue()
@@ -143,7 +143,7 @@ class TestKindaAssign:
         sys.stdout = captured_output
 
         semantics.env["a"] = 10
-        with patch("random.choice", return_value=1):
+        with patch("kinda.langs.python.semantics.chaos_choice", return_value=1):
             semantics.kinda_assign("b", "a * 2")
             assert semantics.env["b"] == 21  # (10 * 2) + 1
             output = captured_output.getvalue()
@@ -163,7 +163,7 @@ class TestSortaPrint:
 
         semantics.env["msg"] = "Hello World"
 
-        with patch("random.random", return_value=0.5):  # Less than 0.8
+        with patch("kinda.langs.python.semantics.chaos_random", return_value=0.5):  # Less than 0.8
             semantics.sorta_print("msg")
             output = captured_output.getvalue()
             assert "[print] Hello World" in output
@@ -178,7 +178,9 @@ class TestSortaPrint:
 
         semantics.env["msg"] = "Should not print"
 
-        with patch("random.random", return_value=0.9):  # Greater than 0.8
+        with patch(
+            "kinda.langs.python.semantics.chaos_random", return_value=0.9
+        ):  # Greater than 0.8
             semantics.sorta_print("msg")
             output = captured_output.getvalue()
             assert output == ""  # Nothing printed
@@ -194,7 +196,7 @@ class TestSortaPrint:
         semantics.env["x"] = 5
         semantics.env["y"] = 10
 
-        with patch("random.random", return_value=0.5):
+        with patch("kinda.langs.python.semantics.chaos_random", return_value=0.5):
             semantics.sorta_print("x + y")
             output = captured_output.getvalue()
             assert "[print] 15" in output
@@ -207,7 +209,7 @@ class TestSortaPrint:
         captured_output = StringIO()
         sys.stdout = captured_output
 
-        with patch("random.random", return_value=0.5):
+        with patch("kinda.langs.python.semantics.chaos_random", return_value=0.5):
             semantics.sorta_print("undefined_var")
             output = captured_output.getvalue()
             assert "[print] Failed to evaluate: undefined_var" in output
@@ -220,7 +222,7 @@ class TestSortaPrint:
         captured_output = StringIO()
         sys.stdout = captured_output
 
-        with patch("random.random", return_value=0.5):
+        with patch("kinda.langs.python.semantics.chaos_random", return_value=0.5):
             semantics.sorta_print('"Direct string"')
             output = captured_output.getvalue()
             assert "[print] Direct string" in output
@@ -238,7 +240,9 @@ class TestRunSometimesBlock:
 
         # Mock evaluate to return False for the condition
         with patch("kinda.langs.python.semantics.evaluate", return_value=False):
-            with patch("random.random", return_value=0.5):  # Less than 0.7
+            with patch(
+                "kinda.langs.python.semantics.chaos_random", return_value=0.5
+            ):  # Less than 0.7
                 block_lines = ['print("Should not run")']
                 semantics.run_sometimes_block("x > 5", block_lines)
 
@@ -252,7 +256,9 @@ class TestRunSometimesBlock:
         captured_output = StringIO()
         sys.stdout = captured_output
 
-        with patch("random.random", return_value=0.8):  # Greater than 0.7
+        with patch(
+            "kinda.langs.python.semantics.chaos_random", return_value=0.8
+        ):  # Greater than 0.7
             block_lines = ['print("Should not run")']
             semantics.run_sometimes_block("x > 5", block_lines)
 
@@ -268,7 +274,7 @@ class TestRunSometimesBlock:
 
         # Mock evaluate to return None for invalid condition
         with patch("kinda.langs.python.semantics.evaluate", return_value=None):
-            with patch("random.random", return_value=0.5):
+            with patch("kinda.langs.python.semantics.chaos_random", return_value=0.5):
                 block_lines = ['print("test")']
                 semantics.run_sometimes_block("undefined_var > 5", block_lines)
 

@@ -157,7 +157,9 @@ class TestRuntimeGenerationEdgeCases:
             assert runtime_file.exists()
 
             result = runtime_file.read_text()
-            assert "import random" in result
+            assert (
+                "Uses centralized seeded RNG from PersonalityContext for reproducibility" in result
+            )
             assert "env = {}" in result
 
     def test_runtime_includes_expected_functions(self):

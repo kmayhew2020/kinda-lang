@@ -66,7 +66,7 @@ class TestIshComparison:
         captured_output = StringIO()
         sys.stdout = captured_output
 
-        with patch("random.choice", return_value=True):
+        with patch("kinda.personality.chaos_choice", return_value=True):
             result = ish_comparison("not_a_number", 42)
             assert result is True
 
@@ -81,7 +81,7 @@ class TestIshComparison:
         captured_output = StringIO()
         sys.stdout = captured_output
 
-        with patch("random.choice", return_value=False):
+        with patch("kinda.personality.chaos_choice", return_value=False):
             result = ish_comparison(42, "not_a_number")
             assert result is False
 
@@ -96,7 +96,7 @@ class TestIshComparison:
         captured_output = StringIO()
         sys.stdout = captured_output
 
-        with patch("random.choice", side_effect=[True, False]):
+        with patch("kinda.personality.chaos_choice", side_effect=[True, False]):
             # First call returns True for left error
             result1 = ish_comparison("left_bad", 42)
             assert result1 is True
@@ -118,7 +118,7 @@ class TestIshComparison:
 
         # Force an exception by patching abs to raise
         with patch("builtins.abs", side_effect=Exception("Math error")):
-            with patch("random.choice", return_value=True):
+            with patch("kinda.personality.chaos_choice", return_value=True):
                 result = ish_comparison(10, 12)
                 assert result is True
 
@@ -133,11 +133,11 @@ class TestIshComparison:
         captured_output = StringIO()
         sys.stdout = captured_output
 
-        with patch("random.choice", return_value=True):
+        with patch("kinda.personality.chaos_choice", return_value=True):
             result = ish_comparison(None, 42)
             assert result is True
 
-        with patch("random.choice", return_value=False):
+        with patch("kinda.personality.chaos_choice", return_value=False):
             result = ish_comparison(42, None)
             assert result is False
 
@@ -149,33 +149,33 @@ class TestIshValue:
 
     def test_ish_value_with_integer(self):
         """Test ish_value with integer input."""
-        with patch("random.uniform", return_value=1.0):
+        with patch("kinda.personality.chaos_uniform", return_value=1.0):
             result = ish_value(42)
             assert result == 43  # Should return integer since input was integer
             assert isinstance(result, int)
 
     def test_ish_value_with_float(self):
         """Test ish_value with float input."""
-        with patch("random.uniform", return_value=1.5):
+        with patch("kinda.personality.chaos_uniform", return_value=1.5):
             result = ish_value(42.0)
             assert result == 43.5  # Should return float since input was float
             assert isinstance(result, float)
 
     def test_ish_value_with_custom_variance(self):
         """Test ish_value with custom variance."""
-        with patch("random.uniform", return_value=3.0):
+        with patch("kinda.personality.chaos_uniform", return_value=3.0):
             result = ish_value(10, variance=5)
             assert result == 13
 
     def test_ish_value_with_negative_variance(self):
         """Test ish_value with negative variance (fuzzy decrease)."""
-        with patch("random.uniform", return_value=-1.0):
+        with patch("kinda.personality.chaos_uniform", return_value=-1.0):
             result = ish_value(42)
             assert result == 41
 
     def test_ish_value_string_to_float_conversion(self):
         """Test ish_value with string that converts to number."""
-        with patch("random.uniform", return_value=0.5):
+        with patch("kinda.personality.chaos_uniform", return_value=0.5):
             result = ish_value("42.5")
             assert result == 43.0
 
@@ -184,7 +184,7 @@ class TestIshValue:
         captured_output = StringIO()
         sys.stdout = captured_output
 
-        with patch("random.uniform", return_value=1.5):
+        with patch("kinda.personality.chaos_uniform", return_value=1.5):
             result = ish_value("not_a_number", variance=3)
             assert result == 1.5  # Should return random value with variance
 
@@ -199,7 +199,7 @@ class TestIshValue:
         captured_output = StringIO()
         sys.stdout = captured_output
 
-        with patch("random.uniform", return_value=2.0):
+        with patch("kinda.personality.chaos_uniform", return_value=2.0):
             result = ish_value([1, 2, 3])
             assert result == 2.0
 
@@ -212,12 +212,12 @@ class TestIshValue:
     def test_ish_value_edge_cases(self):
         """Test ish_value with additional edge cases."""
         # Test with zero variance (should return original value)
-        with patch("random.uniform", return_value=0.0):
+        with patch("kinda.personality.chaos_uniform", return_value=0.0):
             result = ish_value(42, variance=0)
             assert result == 42
 
         # Test with very small variance
-        with patch("random.uniform", return_value=0.1):
+        with patch("kinda.personality.chaos_uniform", return_value=0.1):
             result = ish_value(100.0, variance=0.5)
             assert result == 100.1
 
@@ -226,7 +226,7 @@ class TestIshValue:
         captured_output = StringIO()
         sys.stdout = captured_output
 
-        with patch("random.uniform", return_value=-0.5):
+        with patch("kinda.personality.chaos_uniform", return_value=-0.5):
             result = ish_value(None)
             assert result == -0.5
 

@@ -122,6 +122,42 @@ kinda run examples/python/chaos_level_demo.py.knda --chaos-level 1
 kinda run examples/python/chaos_level_demo.py.knda --chaos-level 10
 ```
 
+### Reproducible Chaos with Seeds
+
+Kinda supports **reproducible randomness** using the `--seed` flag, perfect for testing, debugging, or when you need "deterministic chaos":
+
+```bash
+# Same seed = identical output every time
+kinda run mycode.py.knda --seed 12345
+kinda run mycode.py.knda --seed 12345  # Produces identical results
+
+# Different seed = different but reproducible results  
+kinda run mycode.py.knda --seed 99999  # Different output, but consistent
+
+# Environment variable support
+export KINDA_SEED=42
+kinda run mycode.py.knda              # Uses KINDA_SEED=42
+kinda run mycode.py.knda --seed 777   # CLI overrides environment (uses 777)
+
+# Seeds work with all personality combinations
+kinda run mycode.py.knda --seed 555 --mood reliable --chaos-level 2
+kinda run mycode.py.knda --seed 555 --mood chaotic --chaos-level 8   # Same seed, different personality
+```
+
+**Seed Features:**
+- **Deterministic**: Same seed + same mood/chaos-level = identical output
+- **Cross-run**: Seeds persist across transform/run/interpret commands  
+- **Secure**: Automatic bounds checking prevents unsafe seed values
+- **Flexible**: Works with environment variables (KINDA_SEED) and CLI flags
+
+Try the seed demonstration:
+
+```bash
+kinda run examples/python/seed_demo.py.knda --seed 42
+kinda run examples/python/seed_demo.py.knda --seed 42    # Identical output
+kinda run examples/python/seed_demo.py.knda --seed 1337  # Different output
+```
+
 ### Syntax Reference
 
 | Kinda Construct | What It Does | Example |

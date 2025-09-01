@@ -62,7 +62,7 @@ def test_semantics_run_sometimes_block_edge_cases():
     captured_output = StringIO()
     sys.stdout = captured_output
 
-    with patch("random.random", return_value=0.5):  # Ensure block runs
+    with patch("kinda.langs.python.semantics.chaos_random", return_value=0.5):  # Ensure block runs
         with patch("kinda.langs.python.semantics.evaluate", return_value=True):
             # This should trigger the execution path on lines 32-35
             try:
@@ -81,7 +81,7 @@ def test_semantics_condition_false_path():
     captured_output = StringIO()
     sys.stdout = captured_output
 
-    with patch("random.random", return_value=0.5):  # Ensure block runs
+    with patch("kinda.langs.python.semantics.chaos_random", return_value=0.5):  # Ensure block runs
         with patch("kinda.langs.python.semantics.evaluate", return_value=False):
             run_sometimes_block("False", ["print('test')"])
 
@@ -205,11 +205,11 @@ def test_end_to_end_coverage_validation():
     assert len(result) > 0
 
     # Test runtime functions still work
-    with patch("random.random", return_value=0.5):
+    with patch("kinda.langs.python.semantics.chaos_random", return_value=0.5):
         maybe_result = maybe(True)
         assert isinstance(maybe_result, bool)
 
-    with patch("random.randint", return_value=1):
+    with patch("kinda.personality.chaos_randint", return_value=1):
         kinda_result = kinda_int(42)
         assert isinstance(kinda_result, int)
 

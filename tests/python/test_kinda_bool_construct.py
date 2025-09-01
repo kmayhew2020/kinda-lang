@@ -159,13 +159,13 @@ class TestKindaBoolRuntime:
         kinda_bool = test_namespace["kinda_bool"]
 
         # Test with True
-        with patch("random.random", return_value=0.9):  # No uncertainty flip
+        with patch("kinda.personality.chaos_random", return_value=0.9):  # No uncertainty flip
             with patch("kinda.personality.chaos_bool_uncertainty", return_value=0.1):
                 result = kinda_bool(True)
                 assert isinstance(result, bool)
 
         # Test with False
-        with patch("random.random", return_value=0.9):  # No uncertainty flip
+        with patch("kinda.personality.chaos_random", return_value=0.9):  # No uncertainty flip
             with patch("kinda.personality.chaos_bool_uncertainty", return_value=0.1):
                 result = kinda_bool(False)
                 assert isinstance(result, bool)
@@ -177,13 +177,13 @@ class TestKindaBoolRuntime:
         kinda_bool = test_namespace["kinda_bool"]
 
         # Test with 1 (truthy)
-        with patch("random.random", return_value=0.9):  # No uncertainty flip
+        with patch("kinda.personality.chaos_random", return_value=0.9):  # No uncertainty flip
             with patch("kinda.personality.chaos_bool_uncertainty", return_value=0.1):
                 result = kinda_bool(1)
                 assert result is True
 
         # Test with 0 (falsy)
-        with patch("random.random", return_value=0.9):  # No uncertainty flip
+        with patch("kinda.personality.chaos_random", return_value=0.9):  # No uncertainty flip
             with patch("kinda.personality.chaos_bool_uncertainty", return_value=0.1):
                 result = kinda_bool(0)
                 assert result is False
@@ -197,7 +197,7 @@ class TestKindaBoolRuntime:
         # Test truthy strings
         truthy_strings = ["true", "TRUE", "1", "yes", "YES", "on", "y"]
         for val in truthy_strings:
-            with patch("random.random", return_value=0.9):  # No uncertainty flip
+            with patch("kinda.personality.chaos_random", return_value=0.9):  # No uncertainty flip
                 with patch("kinda.personality.chaos_bool_uncertainty", return_value=0.1):
                     result = kinda_bool(val)
                     assert result is True, f"Expected True for '{val}'"
@@ -205,7 +205,7 @@ class TestKindaBoolRuntime:
         # Test falsy strings
         falsy_strings = ["false", "FALSE", "0", "no", "NO", "off", "n"]
         for val in falsy_strings:
-            with patch("random.random", return_value=0.9):  # No uncertainty flip
+            with patch("kinda.personality.chaos_random", return_value=0.9):  # No uncertainty flip
                 with patch("kinda.personality.chaos_bool_uncertainty", return_value=0.1):
                     result = kinda_bool(val)
                     assert result is False, f"Expected False for '{val}'"
@@ -217,12 +217,12 @@ class TestKindaBoolRuntime:
         kinda_bool = test_namespace["kinda_bool"]
 
         # With None, should return random boolean
-        with patch("random.choice", return_value=True):
+        with patch("kinda.personality.chaos_choice", return_value=True):
             with patch("kinda.personality.chaos_bool_uncertainty", return_value=0.1):
                 result = kinda_bool(None)
                 assert result is True
 
-        with patch("random.choice", return_value=False):
+        with patch("kinda.personality.chaos_choice", return_value=False):
             with patch("kinda.personality.chaos_bool_uncertainty", return_value=0.1):
                 result = kinda_bool(None)
                 assert result is False
@@ -234,7 +234,7 @@ class TestKindaBoolRuntime:
         kinda_bool = test_namespace["kinda_bool"]
 
         # High uncertainty should cause flip
-        with patch("random.random", return_value=0.05):  # Triggers uncertainty
+        with patch("kinda.personality.chaos_random", return_value=0.05):  # Triggers uncertainty
             with patch("kinda.personality.chaos_bool_uncertainty", return_value=0.1):
                 result = kinda_bool(True)
                 assert result is False  # Should be flipped
@@ -250,7 +250,7 @@ class TestKindaBoolRuntime:
 
         # Test with problematic value that causes exception
         with patch("kinda.personality.chaos_bool_uncertainty", side_effect=Exception("Test error")):
-            with patch("random.choice", return_value=True):
+            with patch("kinda.personality.chaos_choice", return_value=True):
                 result = kinda_bool("test")
                 assert isinstance(result, bool)
 
@@ -371,7 +371,7 @@ class TestKindaBoolEdgeCases:
         kinda_bool = test_namespace["kinda_bool"]
 
         # Empty string should be falsy
-        with patch("random.random", return_value=0.9):  # No uncertainty flip
+        with patch("kinda.personality.chaos_random", return_value=0.9):  # No uncertainty flip
             with patch("kinda.personality.chaos_bool_uncertainty", return_value=0.1):
                 result = kinda_bool("")
                 assert result is False
@@ -390,7 +390,7 @@ class TestKindaBoolEdgeCases:
         ]
 
         for input_val, expected in test_cases:
-            with patch("random.random", return_value=0.9):  # No uncertainty flip
+            with patch("kinda.personality.chaos_random", return_value=0.9):  # No uncertainty flip
                 with patch("kinda.personality.chaos_bool_uncertainty", return_value=0.1):
                     result = kinda_bool(input_val)
                     assert result is expected, f"Expected {expected} for '{input_val}'"
@@ -405,7 +405,7 @@ class TestKindaBoolEdgeCases:
         ambiguous_values = ["maybe", "kinda", "hello", "123abc"]
 
         for val in ambiguous_values:
-            with patch("random.random", return_value=0.9):  # No uncertainty flip
+            with patch("kinda.personality.chaos_random", return_value=0.9):  # No uncertainty flip
                 with patch("kinda.personality.chaos_bool_uncertainty", return_value=0.1):
                     result = kinda_bool(val)
                     assert result is True, f"Ambiguous string '{val}' should be truthy"
@@ -424,7 +424,7 @@ class TestKindaBoolEdgeCases:
         ]
 
         for input_val, expected in test_cases:
-            with patch("random.random", return_value=0.9):  # No uncertainty flip
+            with patch("kinda.personality.chaos_random", return_value=0.9):  # No uncertainty flip
                 with patch("kinda.personality.chaos_bool_uncertainty", return_value=0.1):
                     result = kinda_bool(input_val)
                     assert result is expected, f"Expected {expected} for {input_val}"
