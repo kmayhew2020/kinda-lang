@@ -260,6 +260,10 @@ class TestFuzzyAssign:
 class TestKindaBinary:
     """Test kinda_binary function with various probability configurations."""
 
+    def setUp(self):
+        """Set up deterministic PersonalityContext for each test."""
+        PersonalityContext._instance = None
+
     def test_kinda_binary_default_probabilities(self):
         """Test kinda_binary with default probabilities."""
         PersonalityContext._instance = PersonalityContext("playful", 5, seed=77777)
