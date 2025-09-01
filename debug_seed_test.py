@@ -16,14 +16,24 @@ def test_kinda_binary_reproducibility():
     print("=== Testing kinda_binary reproducibility ===")
     
     # First run with seed 77777
+    print("Creating first PersonalityContext...")
     PersonalityContext._instance = PersonalityContext("playful", 5, seed=77777)
+    ctx1 = PersonalityContext._instance
+    print(f"First context seed: {ctx1.seed}, RNG state: {ctx1.rng.getstate()[1][0]}")
+    
     result1 = kinda_binary()
     print(f"First result: {result1}")
+    print(f"First context RNG state after call: {ctx1.rng.getstate()[1][0]}")
     
     # Second run with same seed
+    print("Creating second PersonalityContext...")
     PersonalityContext._instance = PersonalityContext("playful", 5, seed=77777)
+    ctx2 = PersonalityContext._instance
+    print(f"Second context seed: {ctx2.seed}, RNG state: {ctx2.rng.getstate()[1][0]}")
+    
     result2 = kinda_binary()
     print(f"Second result: {result2}")
+    print(f"Second context RNG state after call: {ctx2.rng.getstate()[1][0]}")
     
     print(f"Results equal: {result1 == result2}")
     return result1 == result2
