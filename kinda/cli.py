@@ -426,6 +426,35 @@ def main(argv=None) -> int:
 
     p_syntax = sub.add_parser("syntax", help="Quick syntax reference (because you'll forget)")
 
+    # Record/replay commands for debugging
+    p_record = sub.add_parser("record", help="Record execution for debugging and replay")
+    record_sub = p_record.add_subparsers(dest="record_command", required=True)
+    
+    p_record_run = record_sub.add_parser("run", help="Record program execution to session file")
+    p_record_run.add_argument("input", help="The .knda file to run and record")
+    p_record_run.add_argument(
+        "--output", "-o", 
+        default=None,
+        help="Output session file path (default: <input>.session.json)"
+    )
+    p_record_run.add_argument("--lang", default=None, help="Target language (currently: 'python' only)")
+    p_record_run.add_argument(
+        "--mood", default=None, help="Personality/chaos level: reliable, cautious, playful, chaotic"
+    )
+    p_record_run.add_argument(
+        "--chaos-level",
+        type=int,
+        choices=range(1, 11),
+        default=5,
+        help="Control randomness intensity (1=minimal, 10=maximum chaos)",
+    )
+    p_record_run.add_argument(
+        "--seed",
+        type=int,
+        default=None,
+        help="Random seed for reproducible chaos (overrides KINDA_SEED environment variable)",
+    )
+
     args = parser.parse_args(argv)
 
     if args.command == "transform":
@@ -645,6 +674,91 @@ def main(argv=None) -> int:
             return 0
         safe_print(f"🤨 Interpret mode only works with Python. What are you even trying to do?")
         return 1
+
+    if args.command == "record":
+        if args.record_command == "run":
+            # Setup personality for record run
+            setup_personality(
+                getattr(args, "mood", None),
+                getattr(args, "chaos_level", 5),
+                getattr(args, "seed", None),
+            )
+            
+            input_path = Path(args.input)
+            if not input_path.exists():
+                safe_print(f"[?] Can't find '{args.input}' to record. Did you spell that right?")
+                safe_print("[tip] Make sure your .knda file exists and the path is correct")
+                return 1
+                
+            # Validate file before processing
+            if not validate_knda_file(input_path):
+                safe_print("💥 File validation failed - cannot record this file")
+                return 1
+            
+            # Determine output file path
+            if args.output:
+                output_path = Path(args.output)
+            else:
+                output_path = input_path.parent / f"{input_path.stem}.session.json"
+            
+            try:
+                lang = detect_language(input_path, args.lang)
+            except ValueError as e:
+                # Language not supported (like C)
+                return 1
+                
+            transformer = get_transformer(lang)
+            if transformer is None:
+                safe_print(f"🙄 Can't record {lang} files yet. Python works though.")
+                return 1
+            
+            if lang == "python":
+                from kinda.record_replay import start_recording, stop_recording
+                import runpy
+                
+                try:
+                    # Start recording
+                    safe_print("🎥 Starting recording session...")
+                    command_args = sys.argv[1:]  # Store original command for session
+                    session_id = start_recording(str(input_path), command_args, output_path)
+                    safe_print(f"📼 Session ID: {session_id}")
+                    
+                    # Transform and execute the program
+                    out_dir = Path(".kinda-build")
+                    out_paths = transformer.transform(input_path, out_dir=out_dir)
+                    
+                    safe_print("🎮 Running and recording your questionable code...")
+                    
+                    try:
+                        # Execute the transformed file while recording
+                        runpy.run_path(str(out_paths[0]), run_name="__main__")
+                        safe_print("🎉 Execution complete! Recording captured.")
+                        
+                    except Exception as e:
+                        safe_print(f"💥 Runtime error during recording: {e}")
+                        safe_print("[info] Recording captured up to the point of failure")
+                        
+                    finally:
+                        # Always stop recording and save session
+                        session = stop_recording()
+                        safe_print(f"💾 Session saved to: {output_path}")
+                        safe_print(f"📊 Recorded {session.total_calls} RNG calls in {session.duration:.3f}s")
+                        
+                        # Show summary of what was recorded
+                        if session.construct_usage:
+                            safe_print("🎯 Constructs recorded:")
+                            for construct, count in sorted(session.construct_usage.items()):
+                                safe_print(f"   • {construct}: {count} calls")
+                        
+                        return 0
+                        
+                except Exception as e:
+                    safe_print(f"💥 Recording failed: {e}")
+                    safe_print("[tip] Check that your .knda file is syntactically correct")
+                    return 1
+            else:
+                safe_print(f"😅 Recording is only supported for Python programs currently")
+                return 1
 
     if args.command == "examples":
         show_examples()
