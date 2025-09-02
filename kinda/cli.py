@@ -455,6 +455,35 @@ def main(argv=None) -> int:
         help="Random seed for reproducible chaos (overrides KINDA_SEED environment variable)",
     )
 
+    # Replay command for exact execution reproduction
+    p_replay = sub.add_parser("replay", help="Replay recorded sessions for debugging")
+    p_replay.add_argument("session", help="The session.json file to replay")
+    p_replay.add_argument("program", help="The .knda file to replay (must match recorded session)")
+    p_replay.add_argument("--lang", default=None, help="Target language (currently: 'python' only)")
+    p_replay.add_argument(
+        "--verbose", "-v",
+        action="store_true", 
+        help="Show detailed replay progress and validation info"
+    )
+
+    # Analyze command for session inspection and debugging
+    p_analyze = sub.add_parser("analyze", help="Analyze recorded sessions for debugging insights")
+    p_analyze.add_argument("session", help="The session.json file to analyze")
+    p_analyze.add_argument(
+        "--format", "-f",
+        choices=["summary", "detailed", "constructs", "timeline", "json"],
+        default="summary",
+        help="Analysis output format"
+    )
+    p_analyze.add_argument(
+        "--construct", "-c",
+        help="Focus analysis on specific construct type"
+    )
+    p_analyze.add_argument(
+        "--export", "-e",
+        help="Export analysis to file (format: csv, json)"
+    )
+
     args = parser.parse_args(argv)
 
     if args.command == "transform":
@@ -759,6 +788,300 @@ def main(argv=None) -> int:
             else:
                 safe_print(f"😅 Recording is only supported for Python programs currently")
                 return 1
+
+    if args.command == "replay":
+        # Replay recorded session
+        session_path = Path(args.session)
+        program_path = Path(args.program)
+        
+        if not session_path.exists():
+            safe_print(f"[?] Can't find session file '{args.session}'. Did you record this session?")
+            safe_print("[tip] Use 'kinda record run' to create a session file first")
+            return 1
+            
+        if not program_path.exists():
+            safe_print(f"[?] Can't find program file '{args.program}'. Did you move it?")
+            safe_print("[tip] Make sure the .knda file exists and matches the recorded session")
+            return 1
+        
+        # Validate file before processing
+        if not validate_knda_file(program_path):
+            safe_print("💥 File validation failed - cannot replay this file")
+            return 1
+        
+        try:
+            lang = detect_language(program_path, args.lang)
+        except ValueError as e:
+            # Language not supported (like C)
+            return 1
+            
+        transformer = get_transformer(lang)
+        if transformer is None:
+            safe_print(f"🙄 Can't replay {lang} files yet. Python works though.")
+            return 1
+        
+        if lang == "python":
+            from kinda.record_replay import ExecutionRecorder, start_replay, stop_replay
+            import runpy
+            
+            try:
+                # Load the recorded session
+                safe_print(f"📂 Loading session from: {session_path}")
+                session = ExecutionRecorder.load_session(session_path)
+                safe_print(f"🎭 Original session: {session.session_id}")
+                safe_print(f"📅 Recorded: {session.start_time} ({session.total_calls} RNG calls)")
+                
+                # Verify session matches program
+                if session.input_file != str(program_path):
+                    safe_print(f"⚠️  Session was recorded for '{session.input_file}', replaying '{program_path}'")
+                    safe_print("[info] This may cause replay mismatches if files differ")
+                
+                # Start replay engine
+                safe_print("🔄 Starting deterministic replay...")
+                replay_session_id = start_replay(session)
+                
+                # Transform and execute the program
+                out_dir = Path(".kinda-build")
+                out_paths = transformer.transform(program_path, out_dir=out_dir)
+                
+                safe_print("🎮 Replaying your questionable code with recorded decisions...")
+                
+                try:
+                    # Execute the transformed file with replay active
+                    runpy.run_path(str(out_paths[0]), run_name="__main__")
+                    safe_print("🎉 Replay complete! Execution was deterministic.")
+                    
+                except Exception as e:
+                    safe_print(f"💥 Runtime error during replay: {e}")
+                    safe_print("[info] This may indicate a difference from the original execution")
+                
+                finally:
+                    # Always stop replay and show statistics
+                    replay_stats = stop_replay()
+                    safe_print(f"📊 Replay Statistics:")
+                    safe_print(f"   • Total calls: {replay_stats['total_calls']}")
+                    safe_print(f"   • Calls replayed: {replay_stats['calls_replayed']}")
+                    safe_print(f"   • Success rate: {replay_stats['success_rate']:.1f}%")
+                    
+                    if replay_stats['validation_issues'] > 0:
+                        safe_print(f"   ⚠️  {replay_stats['validation_issues']} validation issues detected")
+                        if args.verbose:
+                            for i, mismatch in enumerate(replay_stats['mismatches'][:5]):  # Show first 5
+                                safe_print(f"      {i+1}. {mismatch['reason']} at call {mismatch['call_index']}")
+                    
+                    if replay_stats['replay_complete']:
+                        safe_print("✅ Replay completed successfully - all recorded calls matched")
+                    else:
+                        safe_print("⚠️  Replay incomplete - execution path may have diverged")
+                    
+                    return 0
+                    
+            except Exception as e:
+                safe_print(f"💥 Replay failed: {e}")
+                safe_print("[tip] Make sure the session file is valid and the program hasn't changed")
+                return 1
+        else:
+            safe_print(f"😅 Replay is only supported for Python programs currently")
+            return 1
+
+    if args.command == "analyze":
+        # Analyze recorded session
+        session_path = Path(args.session)
+        
+        if not session_path.exists():
+            safe_print(f"[?] Can't find session file '{args.session}'. Did you record this session?")
+            safe_print("[tip] Use 'kinda record run' to create a session file first")
+            return 1
+        
+        try:
+            from kinda.record_replay import ExecutionRecorder
+            
+            # Load the session
+            safe_print(f"📂 Loading session from: {session_path}")
+            session = ExecutionRecorder.load_session(session_path)
+            
+            # Generate analysis based on format
+            if args.format == "json":
+                # Output raw JSON
+                import json
+                session_dict = {
+                    "session_id": session.session_id,
+                    "input_file": session.input_file,
+                    "start_time": session.start_time,
+                    "duration": session.duration,
+                    "total_calls": session.total_calls,
+                    "construct_usage": session.construct_usage,
+                    "initial_personality": session.initial_personality,
+                    "rng_calls": [
+                        {
+                            "sequence_number": call.sequence_number,
+                            "method_name": call.method_name,
+                            "args": call.args,
+                            "result": call.result,
+                            "construct_type": call.construct_type,
+                            "decision_impact": call.decision_impact
+                        } for call in session.rng_calls
+                    ]
+                }
+                print(json.dumps(session_dict, indent=2))
+                
+            elif args.format == "summary":
+                # Show session summary
+                safe_print(f"🎭 Session Analysis: {session.session_id}")
+                safe_print(f"📁 Program: {session.input_file}")
+                safe_print(f"⏱️  Duration: {session.duration:.3f}s ({session.total_calls} RNG calls)")
+                safe_print(f"🎲 Initial Personality: {session.initial_personality}")
+                
+                if session.construct_usage:
+                    safe_print("\n🎯 Construct Usage:")
+                    total_calls = sum(session.construct_usage.values())
+                    for construct, count in sorted(session.construct_usage.items(), key=lambda x: x[1], reverse=True):
+                        percentage = (count / total_calls * 100) if total_calls > 0 else 0
+                        safe_print(f"   • {construct}: {count} calls ({percentage:.1f}%)")
+                        
+                    # Show most impactful constructs
+                    if len(session.construct_usage) > 1:
+                        top_construct = max(session.construct_usage.items(), key=lambda x: x[1])
+                        safe_print(f"\n💫 Most Active Construct: {top_construct[0]} ({top_construct[1]} calls)")
+                
+            elif args.format == "detailed":
+                # Show detailed call-by-call analysis
+                safe_print(f"🔍 Detailed Session Analysis: {session.session_id}")
+                safe_print(f"📁 Program: {session.input_file}")
+                safe_print(f"⏱️  Duration: {session.duration:.3f}s")
+                
+                safe_print(f"\n📋 RNG Call Timeline ({session.total_calls} calls):")
+                
+                construct_filter = args.construct
+                displayed_calls = 0
+                
+                for i, call in enumerate(session.rng_calls[:50]):  # Limit to first 50 calls
+                    if construct_filter and call.construct_type != construct_filter:
+                        continue
+                        
+                    safe_print(f"   {call.sequence_number:3d}. {call.method_name}({', '.join(map(str, call.args))}) → {call.result}")
+                    if call.construct_type:
+                        safe_print(f"        📍 {call.construct_type}: {call.decision_impact}")
+                    displayed_calls += 1
+                    
+                if len(session.rng_calls) > 50:
+                    safe_print(f"   ... and {len(session.rng_calls) - 50} more calls")
+                    
+                if construct_filter:
+                    safe_print(f"\n🎯 Showing calls for construct: {construct_filter}")
+                    safe_print(f"📊 {displayed_calls} matching calls found")
+                
+            elif args.format == "constructs":
+                # Focus on construct analysis
+                safe_print(f"🎯 Construct Analysis: {session.session_id}")
+                safe_print(f"📁 Program: {session.input_file}")
+                
+                if not session.construct_usage:
+                    safe_print("🤔 No construct usage detected in this session")
+                    return 0
+                
+                safe_print(f"\n📊 Construct Breakdown ({session.total_calls} total calls):")
+                
+                for construct, count in sorted(session.construct_usage.items(), key=lambda x: x[1], reverse=True):
+                    percentage = (count / session.total_calls * 100) if session.total_calls > 0 else 0
+                    safe_print(f"\n🎲 {construct.upper()}: {count} calls ({percentage:.1f}%)")
+                    
+                    # Find example calls for this construct
+                    examples = [call for call in session.rng_calls if call.construct_type == construct][:3]
+                    if examples:
+                        safe_print("   Examples:")
+                        for example in examples:
+                            safe_print(f"     • {example.method_name}({', '.join(map(str, example.args))}) → {example.result}")
+                            if example.decision_impact:
+                                safe_print(f"       Impact: {example.decision_impact}")
+                
+            elif args.format == "timeline":
+                # Show execution timeline
+                safe_print(f"📈 Execution Timeline: {session.session_id}")
+                safe_print(f"📁 Program: {session.input_file}")
+                
+                if not session.rng_calls:
+                    safe_print("🤔 No RNG calls recorded in this session")
+                    return 0
+                
+                # Group calls by construct type over time
+                time_buckets = {}
+                start_time = session.rng_calls[0].timestamp
+                
+                for call in session.rng_calls:
+                    elapsed = call.timestamp - start_time
+                    bucket = int(elapsed * 10) / 10  # 0.1s buckets
+                    construct = call.construct_type or "unknown"
+                    
+                    if bucket not in time_buckets:
+                        time_buckets[bucket] = {}
+                    
+                    time_buckets[bucket][construct] = time_buckets[bucket].get(construct, 0) + 1
+                
+                safe_print("\n⏱️  Timeline (calls per 0.1s interval):")
+                for bucket in sorted(time_buckets.keys())[:20]:  # Show first 20 intervals
+                    calls = time_buckets[bucket]
+                    total = sum(calls.values())
+                    construct_list = ", ".join(f"{k}:{v}" for k, v in sorted(calls.items()))
+                    safe_print(f"   {bucket:4.1f}s: {total:2d} calls ({construct_list})")
+            
+            # Export functionality
+            if args.export:
+                export_path = Path(args.export)
+                export_format = export_path.suffix.lower().lstrip('.')
+                
+                if export_format == "csv":
+                    import csv
+                    with open(export_path, 'w', newline='') as csvfile:
+                        writer = csv.writer(csvfile)
+                        writer.writerow(['sequence', 'method', 'args', 'result', 'construct', 'impact'])
+                        for call in session.rng_calls:
+                            writer.writerow([
+                                call.sequence_number,
+                                call.method_name,
+                                str(call.args),
+                                call.result,
+                                call.construct_type or '',
+                                call.decision_impact or ''
+                            ])
+                    safe_print(f"💾 Analysis exported to: {export_path}")
+                    
+                elif export_format == "json":
+                    import json
+                    analysis_data = {
+                        "session_metadata": {
+                            "session_id": session.session_id,
+                            "input_file": session.input_file,
+                            "duration": session.duration,
+                            "total_calls": session.total_calls
+                        },
+                        "construct_usage": session.construct_usage,
+                        "rng_calls": [
+                            {
+                                "sequence": call.sequence_number,
+                                "method": call.method_name,
+                                "args": call.args,
+                                "result": call.result,
+                                "construct": call.construct_type,
+                                "impact": call.decision_impact,
+                                "timestamp": call.timestamp
+                            } for call in session.rng_calls
+                        ]
+                    }
+                    with open(export_path, 'w') as jsonfile:
+                        json.dump(analysis_data, jsonfile, indent=2)
+                    safe_print(f"💾 Analysis exported to: {export_path}")
+                else:
+                    safe_print(f"❌ Unsupported export format: {export_format}")
+                    safe_print("[tip] Use .csv or .json file extensions")
+                    return 1
+            
+            return 0
+            
+        except Exception as e:
+            safe_print(f"💥 Analysis failed: {e}")
+            safe_print("[tip] Make sure the session file is valid and not corrupted")
+            return 1
 
     if args.command == "examples":
         show_examples()

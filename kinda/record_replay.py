@@ -479,3 +479,295 @@ def _reset_global_recorder() -> None:
     """Reset the global recorder instance. For testing only."""
     global _global_recorder
     _global_recorder = None
+
+
+class ReplayEngine:
+    """
+    Replays PersonalityContext RNG calls for exact execution reproduction.
+    
+    This class implements deterministic replay by intercepting RNG calls and 
+    returning pre-recorded values in the exact sequence they were captured.
+    """
+    
+    def __init__(self, session: RecordingSession):
+        self.session = session
+        self.replaying = False
+        self._call_index = 0
+        self._lock = threading.Lock()
+        
+        # Hook tracking
+        self._original_methods: Dict[str, Any] = {}
+        self._hooked = False
+        
+        # Validation tracking
+        self._mismatches: List[Dict[str, Any]] = []
+    
+    def start_replay(self) -> str:
+        """
+        Start replaying the recorded session.
+        
+        Returns:
+            session_id: The ID of the session being replayed
+        """
+        if self.replaying:
+            raise RuntimeError("Replay already in progress. Stop current replay first.")
+        
+        # Import here to avoid circular import
+        from kinda.personality import PersonalityContext
+        
+        with self._lock:
+            # Restore initial personality state
+            personality = PersonalityContext.get_instance()
+            initial_state = self.session.initial_personality
+            
+            # Set personality to match recorded state
+            if "mood" in initial_state:
+                personality.mood = initial_state["mood"]
+            if "chaos_level" in initial_state:
+                personality.chaos_level = initial_state["chaos_level"]
+            if "seed" in initial_state and initial_state["seed"] is not None:
+                personality.set_seed(initial_state["seed"])
+            
+            # Install replay hooks
+            self._install_replay_hooks()
+            
+            self.replaying = True
+            self._call_index = 0
+            self._mismatches.clear()
+            
+            return self.session.session_id
+    
+    def stop_replay(self) -> Dict[str, Any]:
+        """
+        Stop replaying and return replay statistics.
+        
+        Returns:
+            Replay summary with statistics and any validation issues
+        """
+        if not self.replaying:
+            raise RuntimeError("No replay session in progress")
+        
+        with self._lock:
+            # Remove hooks
+            self._remove_replay_hooks()
+            
+            self.replaying = False
+            
+            # Generate replay summary
+            total_calls = len(self.session.rng_calls)
+            calls_replayed = self._call_index
+            success_rate = (calls_replayed / total_calls * 100) if total_calls > 0 else 100
+            
+            return {
+                "session_id": self.session.session_id,
+                "total_calls": total_calls,
+                "calls_replayed": calls_replayed,
+                "success_rate": success_rate,
+                "mismatches": self._mismatches.copy(),
+                "validation_issues": len(self._mismatches),
+                "replay_complete": calls_replayed == total_calls
+            }
+    
+    def _install_replay_hooks(self) -> None:
+        """Install RNG method hooks for replay in PersonalityContext."""
+        if self._hooked:
+            return
+            
+        from kinda.personality import PersonalityContext
+        
+        # Get the instance to hook
+        personality = PersonalityContext.get_instance()
+        
+        # Hook the main RNG methods
+        rng_methods = ['random', 'randint', 'uniform', 'choice', 'gauss']
+        
+        for method_name in rng_methods:
+            if hasattr(personality, method_name):
+                original_method = getattr(personality, method_name)
+                self._original_methods[method_name] = original_method
+                
+                # Create replay hook
+                replay_method = self._create_replay_hook(method_name, original_method)
+                setattr(personality, method_name, replay_method)
+        
+        self._hooked = True
+    
+    def _remove_replay_hooks(self) -> None:
+        """Remove RNG method hooks from PersonalityContext."""
+        if not self._hooked:
+            return
+            
+        from kinda.personality import PersonalityContext
+        
+        # Get the instance to unhook
+        personality = PersonalityContext.get_instance()
+        
+        # Restore original methods
+        for method_name, original_method in self._original_methods.items():
+            setattr(personality, method_name, original_method)
+        
+        self._original_methods.clear()
+        self._hooked = False
+    
+    def _create_replay_hook(self, method_name: str, original_method):
+        """Create a replay hook that returns pre-recorded values."""
+        
+        def replay_method(*args, **kwargs):
+            # Return pre-recorded value if we're actively replaying
+            if self.replaying:
+                try:
+                    return self._get_recorded_result(method_name, args, kwargs)
+                except Exception as e:
+                    # If replay fails, fall back to original method and log mismatch
+                    result = original_method(*args, **kwargs)
+                    self._log_replay_mismatch(method_name, args, kwargs, None, result, str(e))
+                    return result
+            else:
+                # Not replaying, use original method
+                return original_method(*args, **kwargs)
+            
+        return replay_method
+    
+    def _get_recorded_result(self, method_name: str, args: tuple, kwargs: dict) -> Any:
+        """Get the next recorded result for this RNG call."""
+        
+        with self._lock:
+            # Check if we have more recorded calls
+            if self._call_index >= len(self.session.rng_calls):
+                raise RuntimeError(f"Replay exhausted: no more recorded calls (index {self._call_index})")
+            
+            # Get the next recorded call
+            recorded_call = self.session.rng_calls[self._call_index]
+            self._call_index += 1
+            
+            # Validate the call matches what we expect
+            if recorded_call.method_name != method_name:
+                raise ValueError(f"Method mismatch: expected {recorded_call.method_name}, got {method_name}")
+            
+            # Check arguments match (with some tolerance for floating point)
+            if not self._args_match(recorded_call.args, list(args), recorded_call.kwargs, dict(kwargs)):
+                # Log mismatch but continue with recorded result
+                self._log_replay_mismatch(
+                    method_name, args, kwargs, 
+                    (recorded_call.args, recorded_call.kwargs),
+                    recorded_call.result,
+                    "Argument mismatch during replay"
+                )
+            
+            return recorded_call.result
+    
+    def _args_match(self, recorded_args: List[Any], actual_args: List[Any], 
+                   recorded_kwargs: Dict[str, Any], actual_kwargs: Dict[str, Any]) -> bool:
+        """Check if arguments match with tolerance for floating point values."""
+        
+        # Check positional args
+        if len(recorded_args) != len(actual_args):
+            return False
+        
+        for recorded, actual in zip(recorded_args, actual_args):
+            if isinstance(recorded, float) and isinstance(actual, float):
+                if abs(recorded - actual) > 1e-10:  # Floating point tolerance
+                    return False
+            elif recorded != actual:
+                return False
+        
+        # Check keyword args
+        if set(recorded_kwargs.keys()) != set(actual_kwargs.keys()):
+            return False
+        
+        for key in recorded_kwargs:
+            recorded_val = recorded_kwargs[key]
+            actual_val = actual_kwargs[key]
+            if isinstance(recorded_val, float) and isinstance(actual_val, float):
+                if abs(recorded_val - actual_val) > 1e-10:
+                    return False
+            elif recorded_val != actual_val:
+                return False
+        
+        return True
+    
+    def _log_replay_mismatch(self, method_name: str, actual_args: tuple, actual_kwargs: dict,
+                           expected_args: Any, fallback_result: Any, reason: str) -> None:
+        """Log a mismatch between recorded and actual RNG calls."""
+        
+        mismatch = {
+            "call_index": self._call_index - 1,
+            "method_name": method_name,
+            "actual_args": list(actual_args),
+            "actual_kwargs": dict(actual_kwargs),
+            "expected_args": expected_args,
+            "fallback_result": fallback_result,
+            "reason": reason,
+            "timestamp": time.time()
+        }
+        
+        self._mismatches.append(mismatch)
+    
+    def get_replay_progress(self) -> Dict[str, Any]:
+        """Get current replay progress information."""
+        
+        if not self.replaying:
+            return {"status": "not_replaying"}
+        
+        total_calls = len(self.session.rng_calls)
+        current_index = self._call_index
+        progress_percent = (current_index / total_calls * 100) if total_calls > 0 else 100
+        
+        return {
+            "status": "replaying",
+            "session_id": self.session.session_id,
+            "current_call": current_index,
+            "total_calls": total_calls,
+            "progress_percent": progress_percent,
+            "mismatches": len(self._mismatches)
+        }
+
+
+# Global replay engine instance for CLI usage
+_global_replay_engine: Optional[ReplayEngine] = None
+
+
+def start_replay(session: RecordingSession) -> str:
+    """
+    Convenience function to start replay with a global engine.
+    
+    Args:
+        session: The recorded session to replay
+        
+    Returns:
+        session_id: The ID of the session being replayed
+    """
+    global _global_replay_engine
+    _global_replay_engine = ReplayEngine(session)
+    return _global_replay_engine.start_replay()
+
+
+def stop_replay() -> Dict[str, Any]:
+    """Stop replay with the global engine and return statistics."""
+    global _global_replay_engine
+    if _global_replay_engine is None:
+        raise RuntimeError("No replay session to stop")
+    
+    result = _global_replay_engine.stop_replay()
+    _global_replay_engine = None  # Clear global instance
+    return result
+
+
+def is_replaying() -> bool:
+    """Check if replay is currently active."""
+    global _global_replay_engine
+    return _global_replay_engine is not None and _global_replay_engine.replaying
+
+
+def get_replay_progress() -> Dict[str, Any]:
+    """Get progress of current replay session."""
+    global _global_replay_engine
+    if _global_replay_engine is None:
+        return {"status": "no_replay_session"}
+    return _global_replay_engine.get_replay_progress()
+
+
+def _reset_global_replay_engine() -> None:
+    """Reset the global replay engine instance. For testing only."""
+    global _global_replay_engine
+    _global_replay_engine = None
