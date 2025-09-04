@@ -148,7 +148,7 @@ def regenerate_build():
         lang = "python"
         result = subprocess.run(
             [
-                "python",
+                "python3",
                 "-m",
                 "kinda",
                 "transform",
