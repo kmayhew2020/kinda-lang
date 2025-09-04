@@ -155,7 +155,7 @@ class TestInstallationInfrastructure:
 
         content = pyproject_path.read_text()
         assert 'name = "kinda-lang"' in content
-        assert 'version = "0.3.1"' in content
+        assert 'version = "0.4.0"' in content
         assert 'kinda = "kinda.cli:main"' in content
         assert 'license = { file = "LICENSE" }' in content
 
