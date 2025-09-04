@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "kinda-lang"
-version = "0.3.0"
+version = "0.4.0"
 description = "🤷 A programming language for people who aren't totally sure"
 authors = [
     { name = "Kevin Mayhew", email = "kevin@example.com" }
