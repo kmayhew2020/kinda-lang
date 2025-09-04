@@ -58,11 +58,11 @@
   - Issue #118: Migration Guide for Existing Projects - **DEFERRED** (low user priority)
 
 **v0.5.0 "The Construct Composition Release" (STRATEGIC PIVOT):**
-- 🏗️ **EPIC #124: CONSTRUCT SELF-DEFINITION** - Higher-level constructs built from basic ones (User Core Vision)
-  - Phase 1: Define ~sorta using ~sometimes + ~maybe + personality (~2 weeks)
-  - Phase 2: Implement ~ish patterns from ~kinda float + tolerance (~2 weeks)  
-  - Phase 3: Create construct composition framework (~2-3 weeks)
-  - Phase 4: Documentation & examples showing elegant composition (~1-2 weeks)
+- 🏗️ **EPIC #124: CONSTRUCT SELF-DEFINITION** - Higher-level constructs built from basic ones (User Core Vision) - ✅ **APPROVED & ACTIVE**
+  - **Task 1**: Core ~sorta Conditional Implementation using existing constructs (~2 weeks) - 🚀 **READY FOR ASSIGNMENT**
+  - **Task 2**: Framework for Construct Composition Development (~2 weeks)
+  - **Task 3**: ~ish Patterns Implementation using ~kinda float + tolerance (~2 weeks)  
+  - **Task 4**: Documentation & Examples for Construct Composition (~1-2 weeks)
 - 🔧 **C Language Support**: Complete C transpiler pipeline (Epic #19) - **DEFERRED**
 - 🎲 **Enhanced Chaos Constructs**: Time-based drift, cascade failures (Epic #35) - **DEFERRED**  
 - 🎭 **10 Personality Modes**: Expand from 4 to 10 distinct personalities (Issue #77) - **DEFERRED**
@@ -165,16 +165,22 @@
 **🚀 NEW HIGH PRIORITY (v0.5.0 Epic #124 - Construct Self-definition):**
 1. **Epic #124**: 🏗️ **Construct Self-definition** - Higher-level constructs built from basic ones (User Core Vision)
 
+**🚀 HIGH PRIORITY (v0.5.0 Epic #124 - Construct Self-definition):**
+5. **Task 1**: 🏗️ Core ~sorta Conditional Implementation - Build ~sorta from ~sometimes + ~maybe + personality
+6. **Task 2**: 🔧 Framework for Construct Composition Development - Meta-programming infrastructure
+7. **Task 3**: 🎯 ~ish Patterns Implementation - Build ~ish behaviors from ~kinda float + tolerance  
+8. **Task 4**: 📖 Documentation & Examples for Construct Composition - Complete implementation showcase
+
 **🟡 MEDIUM PRIORITY (User-Aligned Features):**
-5. **Issue #116**: 🌍 Real-world Application Examples (Epic #76.3) - Aligns with "practical use cases"
-6. **Issue #117**: 🔧 Performance and Debugging Guide (Epic #76.4) - Aligns with "developer experience"  
-7. **Issue #87**: 📘 Docs: Create comprehensive ~ish usage guide
+9. **Issue #116**: 🌍 Real-world Application Examples (Epic #76.3) - Aligns with "practical use cases"
+10. **Issue #117**: 🔧 Performance and Debugging Guide (Epic #76.4) - Aligns with "developer experience"  
+11. **Issue #87**: 📘 Docs: Create comprehensive ~ish usage guide
 
 **🟢 LOW PRIORITY (Deferred Based on User Feedback):**
-8. **Issue #115**: 🎭 Personality System Integration Guide - **DOWNGRADED** (low impact on user goals)
-9. **Issue #118**: 🔄 Migration Guide for Existing Projects - **DEFERRED** (low user priority)
-10. **Issue #88**: 🔧 Single-source spec.yaml → docs + CLI - **DEFERRED**
-11. **Issue #89**: 🛠️ Source maps for error reporting - **DEFERRED**
+12. **Issue #115**: 🎭 Personality System Integration Guide - **DOWNGRADED** (low impact on user goals)
+13. **Issue #118**: 🔄 Migration Guide for Existing Projects - **DEFERRED** (low user priority)
+14. **Issue #88**: 🔧 Single-source spec.yaml → docs + CLI - **DEFERRED**
+15. **Issue #89**: 🛠️ Source maps for error reporting - **DEFERRED**
 
 **🔮 FUTURE PLANNING (v0.6.0+):**
 - **Epic #19**: 🔧 C Language Support - **DEFERRED** (lower user priority than self-hosting)
@@ -309,4 +315,4 @@ This clarification makes the strategic direction MORE focused and achievable, pe
 - **v0.4.0 SUCCESS**: All core developer experience fundamentals delivered as planned
 
 ---
-*Last Updated: 2025-09-04 by Kinda-Lang Project Manager - Issue #122 COMPLETED and merged via PR #1 - All v0.4.0 Developer Experience fundamentals delivered (100% complete) - Strategic transition to v0.5.0 Epic #124 (Construct Self-definition) ready to begin*
+*Last Updated: 2025-09-04 by Kinda-Lang Project Manager - Epic #124 APPROVED & ACTIVE - 4-task breakdown official, Task 1 ready for coder assignment - v0.5.0 "Construct Composition Release" development begins*
