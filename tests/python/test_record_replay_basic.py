@@ -11,7 +11,7 @@ import pytest
 import json
 import tempfile
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import patch, Mock
 
 from kinda.record_replay import (
     ExecutionRecorder,
@@ -320,7 +320,7 @@ class TestGlobalRecorderFunctions:
             summary = recorder.get_session_summary()
             assert summary["status"] == "active"
             assert summary["session_id"] == session_id
-            assert summary["rng_calls_made"] >= 3
+            assert summary["rng_calls"] >= 3
 
             # Stop recording
             session = recorder.stop_recording()
