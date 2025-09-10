@@ -357,14 +357,14 @@ class TestSeedCLIIntegration(unittest.TestCase):
 
     def test_invalid_seed_type_handling(self):
         """Test handling of invalid seed types from environment"""
-        os.environ["KINDA_SEED"] = "definitely_not_a_number"
+        os.environ["KINDA_SEED"] = "invalid"
 
         with patch("kinda.cli.safe_print") as mock_print:
             setup_personality("playful", 5, seed=None)
 
         # Should print warning and ignore invalid env var
         mock_print.assert_any_call(
-            "[?] Invalid KINDA_SEED value 'definitely_not_a_number' - ignoring environment variable"
+            "[?] Invalid KINDA_SEED value 'invalid' - ignoring environment variable"
         )
 
         personality = PersonalityContext.get_instance()
