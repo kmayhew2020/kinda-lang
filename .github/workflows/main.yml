@@ -36,6 +36,11 @@ jobs:
           pip install -e .[dev] --timeout=600 --retries=5
         shell: bash
 
+      - name: Check code formatting with Black
+        run: |
+          black --check --diff .
+        shell: bash
+
       - name: Run tests with coverage
         timeout-minutes: 25
         run: |

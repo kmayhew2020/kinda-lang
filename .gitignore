@@ -216,3 +216,6 @@ __marimo__/
 
 # Profiling output files
 *.prof
+/kinda/langs/python/runtime/fuzzy.py
+
+# Bot infrastructure is in kinda-lang-agents repo (not here)

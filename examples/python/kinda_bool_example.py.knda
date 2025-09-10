@@ -1,0 +1,77 @@
+# Kinda Bool Fuzzy Boolean Example
+#
+# This demonstrates the ~kinda bool construct which creates fuzzy booleans
+# that aren't quite true or false - they have personality-adjusted uncertainty
+
+~sorta print("=== Fuzzy Boolean Demo ===");
+
+# Basic fuzzy boolean declarations
+~kinda bool is_ready ~= True;   # Might flip to False sometimes
+~kinda bool has_access = False; # Might flip to True sometimes
+~kinda bool enabled ~= 1;       # Integer treated as boolean
+~kinda bool active = "yes";     # String converted to boolean
+
+~sorta print("Basic fuzzy booleans:");
+~sorta print("is_ready:", is_ready);
+~sorta print("has_access:", has_access);
+~sorta print("enabled:", enabled);
+~sorta print("active:", active);
+
+# Using fuzzy booleans in conditionals
+~sorta print("\n=== Using fuzzy booleans in conditions ===");
+
+~sometimes (is_ready) {
+    ~sorta print("System is ready (maybe)");
+} {
+    ~sorta print("System not ready (or uncertainty kicked in)");
+}
+
+~probably (enabled and active) {
+    ~sorta print("Both enabled AND active (probably)");
+} {
+    ~sorta print("At least one is disabled or uncertain");
+}
+
+# Demonstrating fuzzy boolean with string values
+~kinda bool user_confirmed ~= "true";
+~kinda bool admin_mode = "no";
+
+~sorta print("\n=== String-based booleans ===");
+~sorta print("user_confirmed ('true'):", user_confirmed);
+~sorta print("admin_mode ('no'):", admin_mode);
+
+# Edge cases with fuzzy booleans
+~kinda bool weird_case = "maybe";  # Ambiguous string -> True (but might flip)
+~kinda bool empty_case ~= "";      # Empty string -> False (but might flip)
+
+~sorta print("\n=== Edge cases ===");
+~sorta print("weird_case ('maybe'):", weird_case);
+~sorta print("empty_case (''):", empty_case);
+
+# Combining with other fuzzy constructs
+~kinda int score ~= 85;
+~kinda bool passing = score > 70;
+
+~sorta print("\n=== Combining with other fuzzy constructs ===");
+~sorta print("score:", score);
+~sorta print("passing (score > 70):", passing);
+
+~maybe (passing) {
+    ~sorta print("Student passed! (score was", score, ")");
+} {
+    ~sorta print("Student didn't pass this time");
+}
+
+# Separate check for honor roll to avoid nested block issues
+~kinda bool honor_roll ~= score > 90;
+~probably (honor_roll and passing) {
+    ~sorta print("Congratulations! Honor roll candidate!");
+} {
+    ~sorta print("Good effort, keep it up!");
+}
+
+~sorta print("\n=== Personality affects uncertainty ===");
+~sorta print("In 'reliable' mode: very low chance of flipping");
+~sorta print("In 'chaotic' mode: much higher chance of flipping");
+~sorta print("Run with different moods to see the difference!");
+~sorta print("Example: kinda run --mood chaotic kinda_bool_example.py.knda");

@@ -17,6 +17,7 @@ LANG_DISPATCH = {
     # Future: "c": {...}
 }
 
+
 def load_fuzzy_runtime(runtime_path: Path):
     spec = importlib.util.spec_from_file_location("fuzzy", runtime_path)
     fuzzy = importlib.util.module_from_spec(spec)
@@ -42,11 +43,11 @@ def run_interpreter(filepath, lang="python"):
     )
 
     fuzzy = load_fuzzy_runtime(runtime_path / "fuzzy.py")
-    
+
     # Ensure fuzzy module has env attribute
-    if not hasattr(fuzzy, 'env'):
+    if not hasattr(fuzzy, "env"):
         fuzzy.env = {}
-    
+
     exec(helper_imports, {}, fuzzy.env)
 
     try:

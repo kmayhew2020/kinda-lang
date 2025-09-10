@@ -1,0 +1,96 @@
+# ~ish Construct - Three Usage Patterns (Simplified Demo)
+# This example demonstrates the three distinct ~ish patterns clearly
+
+~sorta print("=== ~ish Construct Usage Patterns ===")
+~sorta print()
+
+# =============================================================================
+# PATTERN 1: FUZZY VALUE CREATION (literal~ish)
+# =============================================================================
+~sorta print("Pattern 1: Fuzzy Value Creation")
+~sorta print("Syntax: literal~ish")
+~sorta print()
+
+# Create fuzzy values from literals
+timeout = 5~ish          
+delay = 100~ish          
+factor = 2.5~ish         
+
+~sorta print("timeout =", timeout, "(expected: 3-7)")
+~sorta print("delay =", delay, "(expected: 98-102)")
+~sorta print("factor =", factor, "(expected: ~0.5-4.5)")
+~sorta print()
+
+# =============================================================================
+# PATTERN 2: FUZZY COMPARISON (var ~ish target)
+# =============================================================================
+~sorta print("Pattern 2: Fuzzy Comparison")
+~sorta print("Syntax: variable ~ish target (in conditionals)")
+~sorta print()
+
+score = 98
+target = 100
+health = 75
+max_health = 80
+
+~sorta print("score =", score, "target =", target)
+if score ~ish target:
+    ~sorta print("Score is close to target!")
+else:
+    ~sorta print("Score is not close to target")
+
+~sorta print("health =", health, "max_health =", max_health)
+if health ~ish max_health:
+    ~sorta print("Health is nearly full!")
+else:
+    ~sorta print("Health needs attention")
+~sorta print()
+
+# =============================================================================
+# PATTERN 3: VARIABLE MODIFICATION (var ~ish value)  
+# =============================================================================
+~sorta print("Pattern 3: Variable Modification")
+~sorta print("Syntax: variable ~ish expression (standalone)")
+~sorta print()
+
+balance = 100
+energy = 50
+
+~sorta print("Initial balance =", balance)
+~sorta print("Initial energy =", energy)
+
+# Modify variables with fuzzy assignment
+balance ~ish 75          
+energy ~ish 80           
+
+~sorta print("After modification:")
+~sorta print("balance =", balance, "(expected: 73-77)")
+~sorta print("energy =", energy, "(expected: 78-82)")
+~sorta print()
+
+# =============================================================================
+# MIXED USAGE EXAMPLE
+# =============================================================================
+~sorta print("Mixed Usage Example:")
+
+# Create fuzzy damage (Pattern 1)
+damage = 15~ish
+~sorta print("Created damage =", damage, "(Pattern 1)")
+
+# Check if player health is low (Pattern 2)
+player_hp = 45
+if player_hp ~ish 50:
+    ~sorta print("Health is low! (Pattern 2 comparison)")
+    
+    # Heal player (Pattern 3)
+    player_hp ~ish player_hp + 25
+    ~sorta print("After healing: player_hp =", player_hp, "(Pattern 3)")
+else:
+    ~sorta print("Health is fine")
+
+~sorta print()
+~sorta print("=== Summary ===")
+~sorta print("Pattern 1: literal~ish creates fuzzy values")
+~sorta print("Pattern 2: var ~ish target compares with tolerance") 
+~sorta print("Pattern 3: var ~ish value assigns fuzzy result to variable")
+~sorta print("All patterns respect personality settings for variance/tolerance")

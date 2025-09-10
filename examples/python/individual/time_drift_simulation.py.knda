@@ -1,0 +1,103 @@
+# Real-World System Degradation Simulation
+# This example simulates how real software systems degrade over time
+
+~sorta print("=== System Degradation Simulation ===");
+
+# System metrics that degrade over time
+~time drift float memory_usage = 256.0;      # MB
+~time drift float cpu_temperature = 45.0;    # Celsius
+~time drift int network_latency = 50;        # milliseconds
+~time drift int error_count = 0;             # errors
+
+~sorta print("Starting system monitoring...");
+~sorta print("Initial state:");
+~sorta print("  Memory usage:", memory_usage~drift, "MB");
+~sorta print("  CPU temp:", cpu_temperature~drift, "°C");
+~sorta print("  Network latency:", network_latency~drift, "ms");
+~sorta print("  Error count:", error_count~drift);
+
+# Simulate system running for extended period
+for uptime_hours in range(1, 101, 10) {
+    ~sorta print("\n--- After", uptime_hours, "hours of uptime ---");
+    
+    # Check memory usage (tends to increase due to leaks)
+    current_memory = memory_usage~drift;
+    ~probably (current_memory > 300.0) {
+        ~sorta print("  WARNING: High memory usage:", current_memory, "MB");
+        ~sometimes (current_memory > 400.0) {
+            ~sorta print("  CRITICAL: Memory leak detected!");
+            error_count~drift = error_count~drift + 1;
+        }
+    }
+    
+    # Monitor CPU temperature (fluctuates with load and thermal drift)
+    current_temp = cpu_temperature~drift;
+    ~maybe (current_temp > 60.0) {
+        ~sorta print("  CPU running warm:", current_temp, "°C");
+        ~rarely (current_temp > 80.0) {
+            ~sorta print("  ALERT: CPU overheating!");
+            error_count~drift = error_count~drift + 2;
+        }
+    }
+    
+    # Network performance degrades
+    current_latency = network_latency~drift;
+    ~sometimes (current_latency > 100) {
+        ~sorta print("  Network slowdown detected:", current_latency, "ms");
+        ~maybe (current_latency > 200) {
+            ~sorta print("  TIMEOUT: Network issues!");
+            error_count~drift = error_count~drift + 1;
+        }
+    }
+    
+    # Regular status check
+    ~sorta print("  Memory:", current_memory, "MB | CPU:", current_temp, "°C | Latency:", current_latency, "ms");
+    
+    # System tries to compensate (but becomes less effective over time)
+    ~probably (current_memory > 350.0) {
+        ~sorta print("  Attempting memory cleanup...");
+        memory_usage~drift = memory_usage~drift * 0.9;  # Cleanup is less effective over time
+    }
+    
+    ~sometimes (current_temp > 70.0) {
+        ~sorta print("  Increasing fan speed...");
+        cpu_temperature~drift = cpu_temperature~drift - 5.0;  # Cooling is less effective over time
+    }
+}
+
+# Final system state
+~sorta print("\n=== Final System State ===");
+~sorta print("After extended uptime, system has degraded:");
+~sorta print("  Memory usage:", memory_usage~drift, "MB (started at 256 MB)");
+~sorta print("  CPU temperature:", cpu_temperature~drift, "°C (started at 45°C)");
+~sorta print("  Network latency:", network_latency~drift, "ms (started at 50ms)");
+~sorta print("  Total errors:", error_count~drift, "(started at 0)");
+
+# Calculate system health
+final_memory = memory_usage~drift;
+final_temp = cpu_temperature~drift;
+final_latency = network_latency~drift;
+final_errors = error_count~drift;
+
+system_health = 100.0;
+~maybe (final_memory > 300.0) {
+    system_health = system_health - 20.0;
+}
+~maybe (final_temp > 60.0) {
+    system_health = system_health - 15.0;
+}
+~maybe (final_latency > 80) {
+    system_health = system_health - 10.0;
+}
+~maybe (final_errors > 5) {
+    system_health = system_health - 25.0;
+}
+
+~sorta print("\nSystem Health Score:", system_health, "/ 100");
+~probably (system_health < 50.0) {
+    ~sorta print("RECOMMENDATION: System restart required!");
+} ~welp {
+    ~sorta print("System operating within acceptable parameters.");
+}
+
+~sorta print("\n=== This demonstrates how kinda-lang models real-world system uncertainty ===");

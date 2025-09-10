@@ -2,6 +2,7 @@ import os
 import subprocess
 from pathlib import Path
 
+
 def run_python_file(filepath):
     env = os.environ.copy()
     env["PYTHONPATH"] = str(Path.cwd())  # Ensure project root is on PYTHONPATH

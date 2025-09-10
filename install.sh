@@ -37,7 +37,7 @@ fi
 # Make sure pip is ready
 python -m pip install --upgrade pip setuptools wheel
 
-# Install kinda (editable)
+# Install kinda (editable) with dev dependencies
 echo "📦 Installing kinda-lang via pip (editable)..."
 pip install -e . || {
   echo "💥 Editable install failed."
@@ -45,6 +45,12 @@ pip install -e . || {
   echo "     - pip install --user -e .            # per-user site-packages"
   echo "     - pip install --break-system-packages -e .   # Debian/Ubuntu ONLY, risky"
   exit 1
+}
+
+echo "🧪 Installing dev dependencies (pytest, black, mypy)..."
+pip install -e .[dev] || {
+  echo "💥 Dev dependencies install failed."
+  echo "   Continuing with basic installation..."
 }
 
 echo

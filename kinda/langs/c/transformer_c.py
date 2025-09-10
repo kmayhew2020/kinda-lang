@@ -14,7 +14,10 @@ from kinda.grammar.c.constructs_c import KindaCConstructs
 
 used_helpers: Set[str] = set()
 
-def _process_conditional_block(lines: List[str], start_index: int, output_lines: List[str], indent: str) -> int:
+
+def _process_conditional_block(
+    lines: List[str], start_index: int, output_lines: List[str], indent: str
+) -> int:
     """
     Process a conditional block (sometimes or maybe) with proper nesting support.
     Returns the index after processing the block.
@@ -29,7 +32,7 @@ def _process_conditional_block(lines: List[str], start_index: int, output_lines:
             output_lines.append(indent[:-4] + "}")  # Reduce indent for closing brace
             i += 1
             break
-        
+
         # Empty lines or comments - pass through with indentation
         if not stripped or stripped.startswith("//"):
             if stripped.startswith("//"):
@@ -54,6 +57,7 @@ def _process_conditional_block(lines: List[str], start_index: int, output_lines:
 
     return i
 
+
 def transform_line(line: str) -> List[str]:
     """Transform a single line from kinda-lang C to native C."""
     original_line = line
@@ -75,7 +79,7 @@ def transform_line(line: str) -> List[str]:
 
     elif key == "kinda_int_decl":
         var, val = groups
-        used_helpers.add("kinda_int") 
+        used_helpers.add("kinda_int")
         transformed_code = f"int {var} = kinda_int({val});"
 
     elif key == "kinda_binary":
@@ -83,7 +87,7 @@ def transform_line(line: str) -> List[str]:
             var, probs = groups
             used_helpers.add("kinda_binary_custom")
             # Parse probabilities like "0.4, 0.3"
-            prob_parts = [p.strip() for p in probs.split(',')]
+            prob_parts = [p.strip() for p in probs.split(",")]
             if len(prob_parts) >= 2:
                 pos_prob = int(float(prob_parts[0]) * 100)
                 neg_prob = int(float(prob_parts[1]) * 100)
@@ -99,13 +103,13 @@ def transform_line(line: str) -> List[str]:
         expr = groups[0]
         used_helpers.add("sorta_print")
         # Parse the expression to handle format strings
-        if ',' in expr:
+        if "," in expr:
             # Split on comma and format properly
-            parts = [p.strip() for p in expr.split(',')]
+            parts = [p.strip() for p in expr.split(",")]
             if len(parts) >= 2:
                 # Assume first part is string literal, rest are variables
                 fmt_str = parts[0]
-                vars_str = ', '.join(parts[1:])
+                vars_str = ", ".join(parts[1:])
                 # Convert string literal to format string by adding %d for integers
                 if fmt_str.startswith('"') and fmt_str.endswith('"'):
                     fmt_content = fmt_str[1:-1]  # Remove quotes
@@ -152,13 +156,13 @@ def transform_file(path: Path, target_language="c") -> str:
 
     # Add includes at the top
     header_lines = [
-        '#include <stdio.h>',
-        '#include <stdlib.h>', 
+        "#include <stdio.h>",
+        "#include <stdlib.h>",
         '#include "fuzzy.h"',
-        '',
-        'int main() {'
+        "",
+        "int main() {",
     ]
-    
+
     i = 0
     while i < len(lines):
         line = lines[i]
@@ -180,12 +184,9 @@ def transform_file(path: Path, target_language="c") -> str:
             indented_lines.append("    " + line)
         else:
             indented_lines.append("")
-            
+
     # Add return statement and close main
-    footer_lines = [
-        "    return 0;",
-        "}"
-    ]
+    footer_lines = ["    return 0;", "}"]
 
     return "\n".join(header_lines + indented_lines + footer_lines)
 
@@ -212,7 +213,7 @@ def transform(input_path: Path, out_dir: Path) -> List[Path]:
                 new_name = file.name.replace(".c.knda", ".c")
                 output_file_path = out_dir / relative_path.with_name(new_name)
                 output_file_path.parent.mkdir(parents=True, exist_ok=True)
-                output_file_path.write_text(output_code, encoding='utf-8')
+                output_file_path.write_text(output_code, encoding="utf-8")
                 output_paths.append(output_file_path)
     else:
         output_code = transform_file(input_path)
@@ -222,7 +223,7 @@ def transform(input_path: Path, out_dir: Path) -> List[Path]:
             new_name = input_path.stem + ".c"
         output_file_path = out_dir / new_name
         output_file_path.parent.mkdir(parents=True, exist_ok=True)
-        output_file_path.write_text(output_code, encoding='utf-8')
+        output_file_path.write_text(output_code, encoding="utf-8")
         output_paths.append(output_file_path)
 
     return output_paths
