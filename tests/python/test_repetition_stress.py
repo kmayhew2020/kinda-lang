@@ -8,11 +8,17 @@ import tempfile
 import os
 import time
 import gc
-import psutil
 from pathlib import Path
 from subprocess import run, PIPE, TimeoutExpired
 
 from kinda.personality import PersonalityContext
+
+# Try to import psutil for memory tests, but make it optional
+try:
+    import psutil
+    PSUTIL_AVAILABLE = True
+except ImportError:
+    PSUTIL_AVAILABLE = False
 
 
 class TestStressKindaRepeat:
@@ -125,6 +131,7 @@ print(f"RESULT:{total}")
         PersonalityContext.set_seed(None)
         PersonalityContext.set_mood("playful")
 
+    @pytest.mark.skipif(not PSUTIL_AVAILABLE, reason="psutil not available")
     def test_kinda_repeat_memory_usage(self):
         """Test that ~kinda_repeat doesn't cause memory leaks with high iterations"""
         process = psutil.Process(os.getpid())
@@ -428,6 +435,7 @@ print(f"RESULT:{counter}")
         PersonalityContext.set_seed(None)
         PersonalityContext.set_mood("playful")
 
+    @pytest.mark.skipif(not PSUTIL_AVAILABLE, reason="psutil not available")
     def test_eventually_until_memory_efficiency(self):
         """Test that ~eventually_until doesn't accumulate excessive state"""
         process = psutil.Process(os.getpid())
