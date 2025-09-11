@@ -221,9 +221,81 @@
 16. **Issue #88**: 🔧 Single-source spec.yaml → docs + CLI - **DEFERRED**
 17. **Issue #89**: 🛠️ Source maps for error reporting - **DEFERRED**
 
-**🔮 FUTURE PLANNING (v0.6.0+):**
-- **Epic #19**: 🔧 C Language Support - **DEFERRED** (lower user priority than self-hosting)
-- **Epic #35**: 🎲 Enhanced Chaos Constructs - **DEFERRED** (lower user priority than DX)
+**v0.6.0 "Production Ready" - Dual Language Strategy:**
+
+🎯 **STRATEGIC PIVOT: DUAL TARGET LANGUAGE APPROACH**
+
+Based on strategic analysis, v0.6.0 focuses on **dual language support** to maximize market coverage and practical utility:
+
+- 🔧 **EPIC #19: C Language Support** - **HIGH PRIORITY** (MOVED FROM DEFERRED)
+- 🧮 **EPIC #126: MATLAB/Octave Language Support** - **HIGH PRIORITY** (NEW)
+
+#### 🔧 **EPIC #19: C Language Support (HIGH PRIORITY)**
+
+**Strategic Rationale**:
+- **Performance-Critical Applications**: Embedded systems, IoT, real-time systems where fuzzy logic adds value but Python overhead is prohibitive
+- **Production Integration**: Most production systems have C components - enables seamless integration
+- **Universal Development Access**: Free toolchain (GCC, Clang) removes licensing barriers for development and testing
+- **Credibility Boost**: Compiled target demonstrates kinda-lang is "serious" for production environments
+- **Market Positioning**: Performance-focused applications where probabilistic programming provides competitive advantage
+
+**Target Applications**:
+- Embedded/IoT systems with uncertainty handling requirements
+- Performance-critical control systems with fuzzy logic needs
+- Production systems requiring probabilistic decision-making
+- Real-time applications where Python interpretation overhead matters
+
+**Technical Approach**:
+- Leverage existing transpiler framework from Python target
+- Extend personality system to C-appropriate constructs
+- Implement statistical runtime library in C
+- Maintain same kinda-lang syntax with compiled performance
+
+#### 🧮 **EPIC #126: MATLAB/Octave Language Support (HIGH PRIORITY)**
+
+**Strategic Rationale**:
+- **Perfect User Alignment**: MATLAB users already think in terms of probability distributions, uncertainty quantification
+- **Scientific Computing Market**: Engineering simulation, financial modeling, research applications naturally align with probabilistic programming
+- **Dual Development Strategy**: Target GNU Octave for free development/testing + MATLAB for commercial market reach
+- **Natural Fit**: Existing MATLAB users leverage fuzzy logic toolbox, uncertainty quantification, Monte Carlo methods
+
+**Target Applications**:
+- Scientific computing and research with uncertainty modeling
+- Engineering simulation incorporating probabilistic elements  
+- Financial modeling with risk and uncertainty quantification
+- Academic institutions (leveraging both Octave and MATLAB ecosystems)
+
+**Technical Approach**:
+- Build on shared transpiler infrastructure with C Language Support
+- Implement kinda-lang constructs as MATLAB/Octave functions
+- Leverage native statistical toolbox integration where available
+- Provide compatibility layer for both MATLAB and GNU Octave
+
+#### 🚀 **STRATEGIC BENEFITS OF DUAL LANGUAGE APPROACH**
+
+**Market Coverage Optimization**:
+- **Performance Segment**: C targets embedded, real-time, production systems
+- **Scientific Segment**: MATLAB/Octave targets research, engineering, financial modeling
+- **Complementary Positioning**: Performance vs. Scientific Computing - no market overlap
+
+**Development Efficiency**:
+- **Shared Infrastructure**: Same transpiler framework, personality system, statistical constructs
+- **Parallel Development**: Similar technical challenges solved once, applied twice
+- **Resource Optimization**: Maximum language target ROI from shared engineering effort
+
+**User Validation Strategy**:
+- **C Language**: Validates "production ready" positioning through compiled performance
+- **MATLAB/Octave**: Validates "scientific computing" positioning through natural user alignment
+- **Dual Proof Points**: Two distinct user communities naturally aligned with probabilistic programming
+
+**Timeline Estimation**:
+- **Epic #19 (C Language)**: 8-10 weeks (transpiler extension, runtime library, testing)
+- **Epic #126 (MATLAB/Octave)**: 6-8 weeks (function library, compatibility layer, examples)
+- **Parallel Development**: Shared infrastructure development reduces total timeline
+- **Target Completion**: Q1 2026 for dual language support delivery
+
+**🔮 FUTURE PLANNING (v0.7.0+):**
+- **Epic #35**: 🎲 Enhanced Chaos Constructs - **DEFERRED** (lower user priority than production readiness)
 - **Issue #77**: 🎭 10 Personality Expansion - **DEFERRED** (lower user priority)
 - **Issue #100**: ~eventually delayed execution blocks - **DEFERRED**
 
