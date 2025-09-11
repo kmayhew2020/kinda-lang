@@ -258,7 +258,7 @@ For production systems and proprietary applications:
 - ✅ **No copyleft obligations** on your code
 - ✅ **Professional support** and custom development
 - ✅ **Security clearance** support for classified systems
-- ✅ **Certification assistance** (DO-178C, IEC 62304, etc.)
+- ✅ **Certification assistance** for regulatory compliance
 
 📄 **[Enterprise Information](./ENTERPRISE.md)** | 📄 **[Licensing Options](./LICENSE-DUAL.md)**
 

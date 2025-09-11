@@ -43,7 +43,7 @@ This Commercial License specifically permits:
 ### Support Included:
 - Technical support and consulting
 - Custom chaos model development
-- Certification assistance (DO-178C, ARINC 653, etc.)
+- Compliance documentation and consulting
 - Priority bug fixes and feature requests
 - Training and implementation services
 

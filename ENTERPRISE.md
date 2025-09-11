@@ -59,11 +59,11 @@ Kinda uses dual licensing:
 - Role-based access control
 
 ### **Compliance Support:**
-- **Aerospace**: DO-178C, ARINC 653
-- **Medical**: IEC 62304, FDA validation
-- **Automotive**: ISO 26262
-- **Defense**: CMMC, ITAR compliance
-- **Finance**: SOX, PCI DSS
+- **Aerospace**: Aviation safety standards and certification
+- **Medical**: Medical device validation and regulatory approval
+- **Automotive**: Automotive safety standards
+- **Defense**: Security compliance and export controls
+- **Finance**: Financial regulatory requirements
 
 ---
 
