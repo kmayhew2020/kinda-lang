@@ -775,4 +775,58 @@ KindaPythonConstructs = {
             "        raise AssertionError(f'assert_probability failed with error: {e}')"
         ),
     },
+    "sometimes_while": {
+        "type": "loop",
+        "pattern": re.compile(r"~sometimes_while\s+(.+):\s*"),
+        "description": "Probabilistic while loop with personality-adjusted continuation probability",
+        "body": (
+            "def sometimes_while_condition(condition):\n"
+            '    """Check if sometimes_while loop should continue with probabilistic decision"""\n'
+            "    from kinda.personality import chaos_probability, update_chaos_state, chaos_random\n"
+            "    from kinda.security import secure_condition_check\n"
+            "    try:\n"
+            "        # First check the actual condition\n"
+            "        should_proceed, condition_result = secure_condition_check(condition, 'sometimes_while')\n"
+            "        if not should_proceed:\n"
+            "            update_chaos_state(failed=True)\n"
+            "            return False\n"
+            "        \n"
+            "        # If condition is false, definitely don't continue\n"
+            "        if not condition_result:\n"
+            "            update_chaos_state(failed=False)\n"
+            "            return False\n"
+            "        \n"
+            "        # Condition is true, now apply personality-based probability\n"
+            "        prob = chaos_probability('sometimes_while')\n"
+            "        should_continue = chaos_random() < prob\n"
+            "        update_chaos_state(failed=not should_continue)\n"
+            "        return should_continue\n"
+            "    except Exception as e:\n"
+            '        print(f"[shrug] sometimes_while condition check failed: {e}")\n'
+            '        print(f"[tip] Defaulting to False for safety")\n'
+            "        update_chaos_state(failed=True)\n"
+            "        return False"
+        ),
+    },
+    "maybe_for": {
+        "type": "loop",
+        "pattern": re.compile(r"~maybe_for\s+(\w+)\s+in\s+(.+):\s*"),
+        "description": "Probabilistic for loop with personality-adjusted per-iteration execution",
+        "body": (
+            "def maybe_for_item_execute():\n"
+            '    """Check if maybe_for should execute current iteration with probabilistic decision"""\n'
+            "    from kinda.personality import chaos_probability, update_chaos_state, chaos_random\n"
+            "    try:\n"
+            "        # Apply personality-based probability for this iteration\n"
+            "        prob = chaos_probability('maybe_for')\n"
+            "        should_execute = chaos_random() < prob\n"
+            "        update_chaos_state(failed=not should_execute)\n"
+            "        return should_execute\n"
+            "    except Exception as e:\n"
+            '        print(f"[shrug] maybe_for execution check failed: {e}")\n'
+            '        print(f"[tip] Defaulting to True for safety")\n'
+            "        update_chaos_state(failed=True)\n"
+            "        return True"
+        ),
+    },
 }

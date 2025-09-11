@@ -1,0 +1,52 @@
+# 🎲 Kinda v0.4.0 New Constructs Demo
+
+~sorta print("=== New v0.4.0 Constructs Test ===")
+
+# Test ~probably (70% chance)
+~sorta print("\n🎯 Testing ~probably (70% chance):")
+~probably (True) {
+    ~sorta print("Probably message 1 - should appear ~70% of the time")
+}
+~probably (True) {
+    ~sorta print("Probably message 2 - higher chance than ~maybe!")
+}
+~probably (True) {
+    ~sorta print("Probably message 3 - most confident construct")
+}
+
+# Test ~rarely (15% chance)
+~sorta print("\n🦄 Testing ~rarely (15% chance):")
+~rarely (True) {
+    ~sorta print("RARE EVENT 1! You're lucky!")
+}
+~rarely (True) {
+    ~sorta print("RARE EVENT 2! Lightning strikes twice?")
+}
+~rarely (True) {
+    ~sorta print("RARE EVENT 3! Buy a lottery ticket!")
+}
+
+# Test ~kinda bool
+~sorta print("\n🤔 Testing ~kinda bool:")
+~kinda bool decision1 = True
+~kinda bool decision2 = False
+~sorta print("decision1 (started True):", decision1)
+~sorta print("decision2 (started False):", decision2)
+
+# Comparison of all probabilistic constructs
+~sorta print("\n📊 Probability Comparison Test:")
+~sometimes (True) {
+    ~sorta print("~sometimes (50%): Medium probability")
+}
+~maybe (True) {
+    ~sorta print("~maybe (60%): Higher probability")
+}
+~probably (True) {
+    ~sorta print("~probably (70%): High confidence!")
+}
+~rarely (True) {
+    ~sorta print("~rarely (15%): Extremely unlikely!")
+}
+
+~sorta print("\n🎲 Run this multiple times to see the probabilistic behavior!")
+~sorta print("Try different chaos levels: --chaos-level 1 to 10")

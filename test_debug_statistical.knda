@@ -1,0 +1,15 @@
+# Test that reliable personality executes most iterations
+iteration_counts = []
+for trial in range(20):
+    count = 0
+    ~sometimes_while count < 10:
+        count += 1
+    iteration_counts.append(count)
+
+# Calculate average
+average = sum(iteration_counts) / len(iteration_counts)
+print(f"Average iterations: {average}")
+
+# With reliable personality (90% continuation), expect ~9 iterations on average
+~assert_eventually(average >= 7.5, timeout=0.1, confidence=0.9)
+print("Statistical test passed!")
