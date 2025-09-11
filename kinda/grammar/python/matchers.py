@@ -301,7 +301,7 @@ def match_python_construct(line: str):
     """
     # Clean matching - no debug spam
     # Check loop constructs first to avoid conflicts with conditional constructs
-    for key in ["sometimes_while", "maybe_for"]:
+    for key in ["sometimes_while", "maybe_for", "kinda_repeat", "eventually_until"]:
         if key in KindaPythonConstructs:
             data = KindaPythonConstructs[key]
             pattern = data["pattern"]

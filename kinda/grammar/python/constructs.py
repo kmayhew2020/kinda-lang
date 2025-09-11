@@ -829,4 +829,117 @@ KindaPythonConstructs = {
             "        return True"
         ),
     },
+    "kinda_repeat": {
+        "type": "loop",
+        "pattern": re.compile(r"~kinda_repeat\s*\(\s*([^)]+)\s*\):\s*"),
+        "description": "Fuzzy repetition with personality-based variance using normal distribution",
+        "body": (
+            "def kinda_repeat_count(n):\n"
+            '    """Calculate fuzzy repetition count with personality-based variance"""\n'
+            "    from kinda.personality import get_kinda_repeat_variance, update_chaos_state, chaos_gauss, chaos_randint\n"
+            "    try:\n"
+            "        # Convert n to integer\n"
+            "        if not isinstance(n, (int, float)):\n"
+            "            try:\n"
+            "                n = int(float(n))\n"
+            "            except (ValueError, TypeError):\n"
+            '                print(f"[?] kinda_repeat got weird count: {repr(n)}")\n'
+            '                print(f"[tip] Expected a number but got {type(n).__name__}, using 1")\n'
+            "                update_chaos_state(failed=True)\n"
+            "                return 1\n"
+            "        \n"
+            "        base_n = int(n)\n"
+            "        \n"
+            "        # Handle edge cases\n"
+            "        if base_n <= 0:\n"
+            "            update_chaos_state(failed=False)\n"
+            "            return max(0, base_n)  # Return 0 for n=0, but ensure no negative\n"
+            "        \n"
+            "        # Get personality-based variance (as fraction of n)\n"
+            "        variance_fraction = get_kinda_repeat_variance()\n"
+            "        sigma = base_n * variance_fraction\n"
+            "        \n"
+            "        # Generate count using normal distribution centered on n\n"
+            "        fuzzy_count = chaos_gauss(base_n, sigma)\n"
+            "        result_count = max(1, int(round(fuzzy_count)))  # Always at least 1 (unless n=0)\n"
+            "        \n"
+            "        update_chaos_state(failed=False)\n"
+            "        return result_count\n"
+            "    except Exception as e:\n"
+            '        print(f"[shrug] kinda_repeat count calculation failed: {e}")\n'
+            '        print(f"[tip] Falling back to original count or 1")\n'
+            "        update_chaos_state(failed=True)\n"
+            "        return max(1, int(n) if isinstance(n, (int, float)) else 1)"
+        ),
+    },
+    "eventually_until": {
+        "type": "loop",
+        "pattern": re.compile(r"~eventually_until\s+(.+):\s*"),
+        "description": "Probabilistic loop with statistical termination using Wilson score intervals",
+        "body": (
+            "def eventually_until_condition(condition):\n"
+            '    """Check eventually_until condition with statistical confidence"""\n'
+            "    from kinda.personality import get_eventually_until_confidence, update_chaos_state\n"
+            "    from kinda.security import secure_condition_check\n"
+            "    import math\n"
+            "    \n"
+            "    # Create evaluator if it doesn't exist in globals\n"
+            "    if 'eventually_until_evaluator' not in globals():\n"
+            "        confidence = get_eventually_until_confidence()\n"
+            "        globals()['eventually_until_evaluator'] = {\n"
+            "            'confidence_threshold': confidence,\n"
+            "            'evaluations': [],\n"
+            "            'min_samples': 3\n"
+            "        }\n"
+            "    \n"
+            "    evaluator = globals()['eventually_until_evaluator']\n"
+            "    \n"
+            "    try:\n"
+            "        # Security check for condition\n"
+            "        should_proceed, condition_result = secure_condition_check(condition, 'eventually_until')\n"
+            "        if not should_proceed:\n"
+            "            update_chaos_state(failed=True)\n"
+            "            return True  # Terminate unsafe conditions\n"
+            "        \n"
+            "        # Add evaluation result\n"
+            "        evaluator['evaluations'].append(bool(condition_result))\n"
+            "        n = len(evaluator['evaluations'])\n"
+            "        \n"
+            "        # Need minimum sample size for statistics\n"
+            "        if n < evaluator['min_samples']:\n"
+            "            update_chaos_state(failed=False)\n"
+            "            return not condition_result  # Continue until we have enough data\n"
+            "        \n"
+            "        # Calculate observed success rate\n"
+            "        successes = sum(evaluator['evaluations'])\n"
+            "        p_hat = successes / n\n"
+            "        \n"
+            "        # Wilson score interval for confidence bounds\n"
+            "        confidence_threshold = evaluator['confidence_threshold']\n"
+            "        if confidence_threshold >= 0.99:\n"
+            "            z = 2.576  # 99% confidence\n"
+            "        elif confidence_threshold >= 0.95:\n"
+            "            z = 1.96   # 95% confidence\n"
+            "        elif confidence_threshold >= 0.90:\n"
+            "            z = 1.645  # 90% confidence\n"
+            "        else:\n"
+            "            z = 1.28   # 80% confidence (and below)\n"
+            "        \n"
+            "        # Wilson score calculation\n"
+            "        denominator = 1 + z*z/n\n"
+            "        center = (p_hat + z*z/(2*n)) / denominator\n"
+            "        margin = z * math.sqrt((p_hat*(1-p_hat) + z*z/(4*n))/n) / denominator\n"
+            "        lower_bound = center - margin\n"
+            "        \n"
+            "        # If lower confidence bound > 0.5, condition is statistically true\n"
+            "        should_terminate = lower_bound > 0.5\n"
+            "        update_chaos_state(failed=not should_terminate)\n"
+            "        return not should_terminate  # Continue while not terminated\n"
+            "        \n"
+            "    except Exception as e:\n"
+            '        print(f"[shrug] eventually_until condition check failed: {e}")\n'
+            "        update_chaos_state(failed=True)\n"
+            "        return False  # Terminate on errors for safety"
+        ),
+    },
 }

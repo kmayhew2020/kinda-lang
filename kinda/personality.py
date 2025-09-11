@@ -28,6 +28,12 @@ class ChaosProfile:
     sometimes_while_base: float = 0.6  # Base probability for ~sometimes_while continuation
     maybe_for_base: float = 0.7  # Base probability for ~maybe_for item execution
 
+    # Repetition construct variance settings
+    kinda_repeat_variance: float = 0.1  # Standard deviation as fraction of n for ~kinda_repeat
+
+    # Eventually until confidence thresholds
+    eventually_until_confidence: float = 0.8  # Confidence threshold for termination
+
     # Variance modifiers for numeric constructs
     int_fuzz_range: Tuple[int, int] = (-1, 1)  # Range for kinda int fuzz
     float_drift_range: Tuple[float, float] = (-0.5, 0.5)  # Range for kinda float drift
@@ -61,6 +67,8 @@ PERSONALITY_PROFILES: Dict[str, ChaosProfile] = {
         sorta_print_base=0.95,  # Almost always print
         sometimes_while_base=0.90,  # 90% continuation probability per task spec
         maybe_for_base=0.95,  # 95% execution probability per item per task spec
+        kinda_repeat_variance=0.10,  # ±10% variance per task spec
+        eventually_until_confidence=0.95,  # 95% confidence threshold per task spec
         int_fuzz_range=(0, 0),  # No fuzz on integers
         float_drift_range=(0.0, 0.0),  # No drift on floats
         ish_variance=0.5,  # Minimal variance
@@ -82,6 +90,8 @@ PERSONALITY_PROFILES: Dict[str, ChaosProfile] = {
         sorta_print_base=0.85,  # Usually prints
         sometimes_while_base=0.75,  # 75% continuation probability per task spec
         maybe_for_base=0.85,  # 85% execution probability per item per task spec
+        kinda_repeat_variance=0.20,  # ±20% variance per task spec
+        eventually_until_confidence=0.90,  # 90% confidence threshold per task spec
         int_fuzz_range=(-1, 1),  # Standard fuzz
         float_drift_range=(-0.2, 0.2),  # Minimal float drift
         ish_variance=1.5,  # Reduced variance
@@ -103,6 +113,8 @@ PERSONALITY_PROFILES: Dict[str, ChaosProfile] = {
         sorta_print_base=0.8,  # Standard print rate
         sometimes_while_base=0.60,  # 60% continuation probability per task spec
         maybe_for_base=0.70,  # 70% execution probability per item per task spec
+        kinda_repeat_variance=0.30,  # ±30% variance per task spec
+        eventually_until_confidence=0.80,  # 80% confidence threshold per task spec
         int_fuzz_range=(-2, 2),  # More fuzz
         float_drift_range=(-0.5, 0.5),  # Standard float drift (default)
         ish_variance=2.5,  # Standard variance
@@ -124,6 +136,8 @@ PERSONALITY_PROFILES: Dict[str, ChaosProfile] = {
         sorta_print_base=0.6,  # Often skips printing
         sometimes_while_base=0.40,  # 40% continuation probability per task spec
         maybe_for_base=0.50,  # 50% execution probability per item per task spec
+        kinda_repeat_variance=0.40,  # ±40% variance per task spec
+        eventually_until_confidence=0.70,  # 70% confidence threshold per task spec
         int_fuzz_range=(-5, 5),  # High fuzz
         float_drift_range=(-2.0, 2.0),  # High float drift
         ish_variance=5.0,  # High variance
@@ -571,6 +585,34 @@ def chaos_choice(seq):
 def chaos_gauss(mu: float, sigma: float) -> float:
     """Get a Gaussian random number from personality-controlled seeded RNG."""
     return get_personality().gauss(mu, sigma)
+
+
+def get_kinda_repeat_variance() -> float:
+    """Get personality-adjusted variance for ~kinda_repeat constructs."""
+    personality = get_personality()
+    base_variance = personality.profile.kinda_repeat_variance
+    # Apply chaos multiplier for additional variance scaling
+    combined_amplifier = personality.profile.chaos_amplifier * personality.chaos_multiplier
+    return base_variance * combined_amplifier
+
+
+def get_eventually_until_confidence() -> float:
+    """Get personality-adjusted confidence threshold for ~eventually_until constructs."""
+    personality = get_personality()
+    base_confidence = personality.profile.eventually_until_confidence
+    # Apply chaos effects - more chaos means lower confidence thresholds
+    combined_amplifier = personality.profile.chaos_amplifier * personality.chaos_multiplier
+    if combined_amplifier > 1.0:
+        # More chaotic: reduce confidence threshold (terminate earlier)
+        factor = min(0.3, (combined_amplifier - 1.0) * 0.2)  # Cap reduction
+        adjusted = base_confidence - factor
+    else:
+        # More reliable: increase confidence threshold (be more certain)
+        factor = (1.0 - combined_amplifier) * 0.1
+        adjusted = base_confidence + factor
+
+    # Keep confidence in reasonable bounds
+    return max(0.5, min(0.99, adjusted))
 
 
 def get_seed_info() -> Dict[str, Any]:
