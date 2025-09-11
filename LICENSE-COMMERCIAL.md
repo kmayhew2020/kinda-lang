@@ -73,7 +73,7 @@ Commercial license includes:
 
 For commercial licensing inquiries:
 
-**Email**: kinda-commercial@kindachaos.com  
+**Email**: kindachaos.commercial@gmail.com  
 **Phone**: [Contact via GitHub Issues for details]  
 **GitHub**: https://github.com/kmayhew2020/kinda-lang
 

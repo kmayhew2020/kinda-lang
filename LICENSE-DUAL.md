@@ -57,11 +57,11 @@ The open source version is licensed under the **GNU Affero General Public Licens
 
 **Ready for production use?**
 
-📧 **Email**: kinda-commercial@kindachaos.com  
+📧 **Email**: kindachaos.commercial@gmail.com  
 📞 **Phone**: [Contact for details]  
 🌐 **Website**: https://github.com/kmayhew2020/kinda-lang
 
-**For aerospace/defense**: kinda-defense@kindachaos.com
+**For aerospace/defense**: kindachaos.commercial@gmail.com
 
 ## ❓ FAQ
 
