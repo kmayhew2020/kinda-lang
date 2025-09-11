@@ -234,10 +234,46 @@ Pull requests welcome! Kinda is chaos, but organized chaos.
 - Improve the snark level
 - Help with other language support (C is next!)
 
+---
+
+## 🏢 Enterprise & Professional Use
+
+**Kinda for Mission-Critical Systems**
+
+While Kinda started as a playful language for uncertainty, it has proven valuable for serious applications where traditional testing falls short:
+
+### **🛰️ Aerospace & Defense Applications**
+- **External code analysis** to find edge cases in spacecraft software
+- **Physics-based chaos models** for space radiation, EMI, hardware aging
+- **Mission-critical system validation** where failure is not an option
+
+### **⚡ Critical Infrastructure**
+- **Nuclear power** control system testing
+- **Medical device** software validation  
+- **Financial trading** platform resilience
+- **Industrial automation** fault tolerance
+
+### **💼 Commercial Licensing**
+For production systems and proprietary applications:
+- ✅ **No copyleft obligations** on your code
+- ✅ **Professional support** and custom development
+- ✅ **Security clearance** support for classified systems
+- ✅ **Certification assistance** (DO-178C, IEC 62304, etc.)
+
+📄 **[Enterprise Information](./ENTERPRISE.md)** | 📄 **[Licensing Options](./LICENSE-DUAL.md)**
+
+---
+
 ## 📜 License
 
-AGPL v3 - Use it, break it, fix it, but share the fixes. We're not responsible if kinda makes your code too honest about what it actually does.
+**Dual Licensed:**
+- 🆓 **[Open Source (AGPL v3)](./LICENSE)** - Research, education, open source projects
+- 💼 **[Commercial License](./LICENSE-COMMERCIAL.md)** - Production, proprietary, classified systems
+
+**Which license do you need?** See our **[Licensing Guide](./LICENSE-DUAL.md)**
 
 ---
 
 *"Sometimes the best way to make software reliable is to admit it was never reliable in the first place."* 🎲
+
+*For mission-critical systems: "Sometimes the best way to find critical bugs is to systematically inject controlled chaos."* 🛰️
