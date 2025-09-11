@@ -33,12 +33,12 @@ This Commercial License specifically permits:
 
 ## Commercial License Terms
 
-### Pricing Structure:
-- **Evaluation License**: 30-day free trial for proof-of-concept
-- **Development License**: $25,000/year per development team (up to 10 developers)
-- **Production License**: $100,000/year per production deployment
-- **Enterprise License**: $500,000/year unlimited use within organization
-- **Government/Defense License**: Custom pricing for classified systems
+### License Tiers:
+- **Evaluation License**: Free trial for proof-of-concept development
+- **Development License**: Annual licensing for development teams and testing
+- **Production License**: Commercial deployment in production environments
+- **Enterprise License**: Organization-wide unlimited use with premium support
+- **Government/Defense License**: Custom terms for classified and regulated systems
 
 ### Support Included:
 - Technical support and consulting
