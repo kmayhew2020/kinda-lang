@@ -13,9 +13,9 @@ We take security seriously. If you discover a security vulnerability, please rep
 **DO NOT create public GitHub issues for security vulnerabilities.**
 
 ### **Response Timeline**
-- **Initial response**: Within 48 hours
-- **Vulnerability assessment**: Within 1 week
-- **Fix timeline**: Based on severity (1-30 days)
+- **Initial response**: Within 1 week
+- **Vulnerability assessment**: Within 2-3 weeks
+- **Fix timeline**: Based on severity (1-90 days)
 - **Public disclosure**: After fix + coordination
 
 ## 🎯 Security Scope
