@@ -64,12 +64,14 @@ def _process_conditional_block(
             continue
 
         try:
-            # Handle nested conditional constructs
+            # Handle nested conditional and loop constructs
             if (
                 stripped.startswith("~sometimes")
                 or stripped.startswith("~maybe")
                 or stripped.startswith("~probably")
                 or stripped.startswith("~rarely")
+                or stripped.startswith("~sometimes_while")
+                or stripped.startswith("~maybe_for")
             ):
                 if not _validate_conditional_syntax(stripped, line_number, file_path):
                     i += 1
@@ -124,6 +126,13 @@ def _process_python_indented_block(
     i = start_index
     base_indent = len(conditional_line) - len(conditional_line.lstrip())
 
+    # Check if this is a ~maybe_for construct that needs special handling
+    is_maybe_for = conditional_line.strip().startswith("~maybe_for")
+    if is_maybe_for:
+        # Add the conditional check for ~maybe_for
+        indent_str = " " * (base_indent + 4)  # Standard 4-space indentation
+        output_lines.append(f"{indent_str}if maybe_for_item_execute():")
+
     while i < len(lines):
         line = lines[i]
         stripped = line.strip()
@@ -147,7 +156,18 @@ def _process_python_indented_block(
             transformed = transform_line(line)
             if not transformed:
                 _warn_about_line(stripped, line_number, file_path)
-            output_lines.extend(transformed)
+
+            # For ~maybe_for, add extra indentation for the conditional block
+            if is_maybe_for:
+                extra_indented_lines = []
+                for t_line in transformed:
+                    if t_line.strip():  # Only add extra indent to non-empty lines
+                        extra_indented_lines.append("    " + t_line)
+                    else:
+                        extra_indented_lines.append(t_line)
+                output_lines.extend(extra_indented_lines)
+            else:
+                output_lines.extend(transformed)
             i += 1
         except Exception as e:
             raise KindaParseError(
@@ -374,6 +394,19 @@ def transform_line(line: str) -> List[str]:
         cond = groups[0].strip() if groups and groups[0] else ""
         transformed_code = f"if rarely({cond}):" if cond else "if rarely():"
 
+    elif key == "sometimes_while":
+        used_helpers.add("sometimes_while_condition")
+        condition = groups[0].strip() if groups and groups[0] else "True"
+        transformed_code = f"while sometimes_while_condition({condition}):"
+
+    elif key == "maybe_for":
+        used_helpers.add("maybe_for_item_execute")
+        var_name, collection = groups
+        var_name = var_name.strip()
+        collection = collection.strip()
+        # Transform ~maybe_for into a for loop - conditional logic will be handled specially
+        transformed_code = f"for {var_name} in {collection}:"
+
     elif key == "fuzzy_reassign":
         var, val = groups
         used_helpers.add("fuzzy_assign")
@@ -463,6 +496,8 @@ def transform_file(path: Path, target_language="python") -> str:
                 or stripped.startswith("~maybe")
                 or stripped.startswith("~probably")
                 or stripped.startswith("~rarely")
+                or stripped.startswith("~sometimes_while")
+                or stripped.startswith("~maybe_for")
             ):
                 # Validate conditional syntax
                 if not _validate_conditional_syntax(stripped, line_number, str(path)):
@@ -499,6 +534,10 @@ def transform_file(path: Path, target_language="python") -> str:
 
 def _validate_conditional_syntax(line: str, line_number: int, file_path: str) -> bool:
     """Validate ~sometimes, ~maybe, ~probably, and ~rarely syntax with helpful error messages"""
+    # Skip validation for loop constructs
+    if line.startswith("~sometimes_while") or line.startswith("~maybe_for"):
+        return True
+
     if line.startswith("~sometimes"):
         if "(" not in line:
             raise KindaParseError(

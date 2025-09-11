@@ -1,0 +1,6 @@
+processed = []
+items = [1, 2, 3, 4, 5]
+~maybe_for item in items:
+    processed.append(item)
+print(f"Processed count: {len(processed)}")
+print(f"Items: {processed}")

@@ -24,6 +24,10 @@ class ChaosProfile:
     rarely_base: float = 0.15  # Base probability for ~rarely
     sorta_print_base: float = 0.8  # Base probability for ~sorta print
 
+    # Loop construct continuation probabilities
+    sometimes_while_base: float = 0.6  # Base probability for ~sometimes_while continuation
+    maybe_for_base: float = 0.7  # Base probability for ~maybe_for item execution
+
     # Variance modifiers for numeric constructs
     int_fuzz_range: Tuple[int, int] = (-1, 1)  # Range for kinda int fuzz
     float_drift_range: Tuple[float, float] = (-0.5, 0.5)  # Range for kinda float drift
@@ -55,6 +59,8 @@ PERSONALITY_PROFILES: Dict[str, ChaosProfile] = {
         probably_base=0.95,  # Almost always execute
         rarely_base=0.85,  # Reliable even when "rarely"
         sorta_print_base=0.95,  # Almost always print
+        sometimes_while_base=0.90,  # 90% continuation probability per task spec
+        maybe_for_base=0.95,  # 95% execution probability per item per task spec
         int_fuzz_range=(0, 0),  # No fuzz on integers
         float_drift_range=(0.0, 0.0),  # No drift on floats
         ish_variance=0.5,  # Minimal variance
@@ -74,6 +80,8 @@ PERSONALITY_PROFILES: Dict[str, ChaosProfile] = {
         probably_base=0.8,  # Conservative but reliable
         rarely_base=0.25,  # Still cautious about rare events
         sorta_print_base=0.85,  # Usually prints
+        sometimes_while_base=0.75,  # 75% continuation probability per task spec
+        maybe_for_base=0.85,  # 85% execution probability per item per task spec
         int_fuzz_range=(-1, 1),  # Standard fuzz
         float_drift_range=(-0.2, 0.2),  # Minimal float drift
         ish_variance=1.5,  # Reduced variance
@@ -93,6 +101,8 @@ PERSONALITY_PROFILES: Dict[str, ChaosProfile] = {
         probably_base=0.7,  # Standard probably (default)
         rarely_base=0.15,  # Standard rarely (default)
         sorta_print_base=0.8,  # Standard print rate
+        sometimes_while_base=0.60,  # 60% continuation probability per task spec
+        maybe_for_base=0.70,  # 70% execution probability per item per task spec
         int_fuzz_range=(-2, 2),  # More fuzz
         float_drift_range=(-0.5, 0.5),  # Standard float drift (default)
         ish_variance=2.5,  # Standard variance
@@ -112,6 +122,8 @@ PERSONALITY_PROFILES: Dict[str, ChaosProfile] = {
         probably_base=0.5,  # Chaotic probably (reduced reliability)
         rarely_base=0.05,  # Almost never in chaotic mode
         sorta_print_base=0.6,  # Often skips printing
+        sometimes_while_base=0.40,  # 40% continuation probability per task spec
+        maybe_for_base=0.50,  # 50% execution probability per item per task spec
         int_fuzz_range=(-5, 5),  # High fuzz
         float_drift_range=(-2.0, 2.0),  # High float drift
         ish_variance=5.0,  # High variance
