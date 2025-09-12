@@ -668,7 +668,7 @@ print(f"SUCCESS:{successful_operations}")
                 success_line = [line for line in output_lines if line.startswith("SUCCESS:")]
                 assert len(success_line) == 1
 
-                success_count = int(success_line[0].split(":")[1])
+                success_count = float(success_line[0].split(":")[1])
 
                 # With chaotic personality, kinda_repeat should still run some iterations
                 # All operations should succeed (1/1 = 1.0)

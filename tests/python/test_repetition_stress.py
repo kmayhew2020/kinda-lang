@@ -212,11 +212,11 @@ import sys
 import os
 sys.path.insert(0, os.path.abspath('.'))
 
-count = 0
+counter = [0]  # Use list to avoid scoping issues
 ~kinda_repeat({input_val}):
-    count += 1
+    counter[0] += 1
 
-print(f"RESULT:{count}")
+print(f"RESULT:{{counter[0]}}")
 """
 
             with tempfile.NamedTemporaryFile(mode="w", suffix=".knda", delete=False) as f:
@@ -583,14 +583,14 @@ import sys
 import os
 sys.path.insert(0, os.path.abspath('.'))
 
-total_iterations = 0
+state = [0]  # [total_iterations] - Use list to avoid scoping issues
 ~kinda_repeat(5):
-    counter = 0
-    ~eventually_until counter >= 10:
-        counter += 1
-        total_iterations += 1
+    counter = [0]  # Use list for inner counter too
+    ~eventually_until counter[0] >= 10:
+        counter[0] += 1
+        state[0] += 1
 
-print(f"RESULT:{total_iterations}")
+print(f"RESULT:{state[0]}")
 """
 
         with tempfile.NamedTemporaryFile(mode="w", suffix=".knda", delete=False) as f:

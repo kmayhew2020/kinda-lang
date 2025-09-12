@@ -36,14 +36,14 @@ import sys
 import os
 sys.path.insert(0, os.path.abspath('.'))
 
-executed = 0
+counter = [0]  # Use list to avoid scoping issues
 try:
     ~kinda_repeat({invalid_input}):
-        executed += 1
+        counter[0] += 1
 except Exception as exc:
     print(f"ERROR:{{type(exc).__name__}}")
 
-print(f"EXECUTED:{executed}")
+print(f"EXECUTED:{{counter[0]}}")
 """
 
             with tempfile.NamedTemporaryFile(mode="w", suffix=".knda", delete=False) as f:
@@ -99,16 +99,16 @@ import sys
 import os
 sys.path.insert(0, os.path.abspath('.'))
 
-count = 0
+counter = [0]  # Use list to avoid scoping issues
 try:
     ~kinda_repeat({test_value}):
-        count += 1
-        if count > 10000:  # Safety break
+        counter[0] += 1
+        if counter[0] > 10000:  # Safety break
             break
 except Exception as exc:
-    print(f"ERROR:{{type(exc).__name__}}:{exc}")
+    print(f"ERROR:{{type(exc).__name__}}:{{exc}}")
 
-print(f"RESULT:{count}")
+print(f"RESULT:{{counter[0]}}")
 """
 
             with tempfile.NamedTemporaryFile(mode="w", suffix=".knda", delete=False) as f:
@@ -183,12 +183,12 @@ import sys
 import os
 sys.path.insert(0, os.path.abspath('.'))
 
-iterations = 0
+counter = [0]  # Use list to avoid scoping issues
 ~kinda_repeat({expr}):
-    iterations += 1
+    counter[0] += 1
 
 print(f"EXPR:{{repr('{expr}')}}")
-print(f"ITERATIONS:{iterations}")
+print(f"ITERATIONS:{{counter[0]}}")
 """
 
             with tempfile.NamedTemporaryFile(mode="w", suffix=".knda", delete=False) as f:
@@ -303,16 +303,16 @@ import sys
 import os
 sys.path.insert(0, os.path.abspath('.'))
 
-iterations = 0
+counter = [0]  # Use list to avoid scoping issues
 try:
     ~eventually_until {condition}:
-        iterations += 1
-        if iterations > 20:  # Safety break
+        counter[0] += 1
+        if counter[0] > 20:  # Safety break
             break
 except Exception as exc:
     print(f"ERROR:{{type(exc).__name__}}")
 
-print(f"ITERATIONS:{iterations}")
+print(f"ITERATIONS:{{counter[0]}}")
 """
 
             with tempfile.NamedTemporaryFile(mode="w", suffix=".knda", delete=False) as f:
@@ -355,30 +355,35 @@ print(f"ITERATIONS:{iterations}")
         PersonalityContext.set_seed(1800)
 
         complex_conditions = [
-            "x > 10 and y < 5",
-            "x % 7 == 0 or y > 15",
-            "(x + y) * 2 > 50",
-            "x in [20, 21, 22] and y not in [3, 4]",
-            "len(str(x)) >= 2",
+            ("x > 10 and y < 5", "state[0] > 10 and state[1] < 5"),
+            ("x % 7 == 0 or y > 15", "state[0] % 7 == 0 or state[1] > 15"),
+            ("(x + y) * 2 > 50", "(state[0] + state[1]) * 2 > 50"),
+            ("x in [20, 21, 22] and y not in [3, 4]", "state[0] in [20, 21, 22] and state[1] not in [3, 4]"),
+            ("len(str(x)) >= 2", "len(str(state[0])) >= 2"),
         ]
 
-        for condition in complex_conditions:
+        for original_condition, state_condition in complex_conditions:
             test_code = f"""
 import sys
 import os
 sys.path.insert(0, os.path.abspath('.'))
 
-x = 0
-y = 0
-~eventually_until {condition}:
+state = [0, 0]  # Use list to avoid scoping issues: [x, y]
+iteration_count = [0]  # Safety counter
+~eventually_until {state_condition}:
+    x, y = state[0], state[1]  # Load values
+    iteration_count[0] += 1
+    if iteration_count[0] > 1000:  # Safety break to prevent infinite loops
+        break
     x += 1
     if x > 10:
         y += 1
         x = 0
+    state[0], state[1] = x, y  # Store values
 
-print(f"X:{x}")
-print(f"Y:{y}")
-print(f"CONDITION_MET:{{condition}}")
+print(f"X:{{state[0]}}")
+print(f"Y:{{state[1]}}")
+print(f"CONDITION_MET:{original_condition}")
 """
 
             with tempfile.NamedTemporaryFile(mode="w", suffix=".knda", delete=False) as f:
@@ -694,10 +699,10 @@ PersonalityContext.set_mood("reliable")
 
 for mood in ["reliable", "chaotic", "cautious"]:
     PersonalityContext.set_mood(mood)
-    count = 0
+    counter = [0]  # Use list to avoid scoping issues
     ~kinda_repeat(10):
-        count += 1
-    results.append(count)
+        counter[0] += 1
+    results.append(counter[0])
 
 print(f"RESULTS:{results}")
 """

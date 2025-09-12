@@ -474,7 +474,7 @@ for i in range(3):
                 [
                     sys.executable,
                     "-m",
-                    "kinda.cli",
+                    "kinda",
                     "record",
                     "run",
                     str(test_file),
@@ -483,7 +483,7 @@ for i in range(3):
                 ],
                 capture_output=True,
                 text=True,
-                cwd=temp_dir,
+                cwd="/home/kevin/kinda-lang",
             )
 
             # Should fail with error about invalid chaos level

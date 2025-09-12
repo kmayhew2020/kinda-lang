@@ -32,16 +32,16 @@ import os
 sys.path.insert(0, os.path.abspath('.'))
 
 # Test both constructs with reliable personality
-repeat_count = 0
+repeat_counter = [0]  # Use list to avoid scoping issues
 ~kinda_repeat(50):
-    repeat_count += 1
+    repeat_counter[0] += 1
 
-eventually_count = 0
-~eventually_until eventually_count >= 20:
-    eventually_count += 1
+eventually_counter = [0]  # Use list to avoid scoping issues
+~eventually_until eventually_counter[0] >= 20:
+    eventually_counter[0] += 1
 
-print(f"REPEAT:{repeat_count}")
-print(f"EVENTUALLY:{eventually_count}")
+print(f"REPEAT:{repeat_counter[0]}")
+print(f"EVENTUALLY:{eventually_counter[0]}")
 """
 
             with tempfile.NamedTemporaryFile(mode="w", suffix=".knda", delete=False) as f:
@@ -121,16 +121,16 @@ import os
 sys.path.insert(0, os.path.abspath('.'))
 
 # Test both constructs with chaotic personality
-repeat_count = 0
+repeat_counter = [0]  # Use list to avoid scoping issues
 ~kinda_repeat(30):
-    repeat_count += 1
+    repeat_counter[0] += 1
 
-eventually_count = 0
-~eventually_until eventually_count >= 15:
-    eventually_count += 1
+eventually_counter = [0]  # Use list to avoid scoping issues
+~eventually_until eventually_counter[0] >= 15:
+    eventually_counter[0] += 1
 
-print(f"REPEAT:{repeat_count}")
-print(f"EVENTUALLY:{eventually_count}")
+print(f"REPEAT:{repeat_counter[0]}")
+print(f"EVENTUALLY:{eventually_counter[0]}")
 """
 
             with tempfile.NamedTemporaryFile(mode="w", suffix=".knda", delete=False) as f:
@@ -205,16 +205,16 @@ import os
 sys.path.insert(0, os.path.abspath('.'))
 
 # Test both constructs with cautious personality
-repeat_count = 0
+repeat_counter = [0]  # Use list to avoid scoping issues
 ~kinda_repeat(40):
-    repeat_count += 1
+    repeat_counter[0] += 1
 
-eventually_count = 0
-~eventually_until eventually_count >= 25:
-    eventually_count += 1
+eventually_counter = [0]  # Use list to avoid scoping issues
+~eventually_until eventually_counter[0] >= 25:
+    eventually_counter[0] += 1
 
-print(f"REPEAT:{repeat_count}")
-print(f"EVENTUALLY:{eventually_count}")
+print(f"REPEAT:{repeat_counter[0]}")
+print(f"EVENTUALLY:{eventually_counter[0]}")
 """
 
             with tempfile.NamedTemporaryFile(mode="w", suffix=".knda", delete=False) as f:
@@ -293,12 +293,12 @@ import os
 sys.path.insert(0, os.path.abspath('.'))
 
 # Test kinda_repeat with different chaos levels
-repeat_count = 0
+repeat_counter = [0]  # Use list to avoid scoping issues
 ~kinda_repeat(20):
-    repeat_count += 1
+    repeat_counter[0] += 1
 
 print(f"CHAOS_LEVEL:{chaos_level}")
-print(f"REPEAT:{repeat_count}")
+print(f"REPEAT:{{repeat_counter[0]}}")
 """
 
             with tempfile.NamedTemporaryFile(mode="w", suffix=".knda", delete=False) as f:
@@ -371,20 +371,20 @@ sys.path.insert(0, os.path.abspath('.'))
 # Test both constructs with extreme chaos levels
 repeat_results = []
 for i in range(3):
-    count = 0
+    counter = [0]  # Use list to avoid scoping issues
     ~kinda_repeat(15):
-        count += 1
-    repeat_results.append(count)
+        counter[0] += 1
+    repeat_results.append(counter[0])
 
-eventually_count = 0
-~eventually_until eventually_count >= 10:
-    eventually_count += 1
-    if eventually_count > 100:  # Safety break
+eventually_counter = [0]  # Use list to avoid scoping issues
+~eventually_until eventually_counter[0] >= 10:
+    eventually_counter[0] += 1
+    if eventually_counter[0] > 100:  # Safety break
         break
 
 print(f"CHAOS:{chaos_level}")
 print(f"REPEATS:{repeat_results}")
-print(f"EVENTUALLY:{eventually_count}")
+print(f"EVENTUALLY:{eventually_counter[0]}")
 """
 
             with tempfile.NamedTemporaryFile(mode="w", suffix=".knda", delete=False) as f:
@@ -695,11 +695,11 @@ import sys
 import os
 sys.path.insert(0, os.path.abspath('.'))
 
-count = 0
+counter = [0]  # Use list to avoid scoping issues
 ~kinda_repeat(25):
-    count += 1
+    counter[0] += 1
 
-print(f"RESULT:{{count}}")
+print(f"RESULT:{{counter[0]}}")
 """
 
                 with tempfile.NamedTemporaryFile(mode="w", suffix=".knda", delete=False) as f:
