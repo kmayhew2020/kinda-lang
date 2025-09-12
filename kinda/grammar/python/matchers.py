@@ -300,8 +300,21 @@ def match_python_construct(line: str):
     Enhanced Python construct matcher with robust parsing for all constructs.
     """
     # Clean matching - no debug spam
+    # Check loop constructs first to avoid conflicts with conditional constructs
+    for key in ["sometimes_while", "maybe_for"]:
+        if key in KindaPythonConstructs:
+            data = KindaPythonConstructs[key]
+            pattern = data["pattern"]
+            match = pattern.match(line.strip())
+            if match:
+                return key, match.groups()
+
+    # Then check other constructs
     for key, data in KindaPythonConstructs.items():
-        if key == "sorta_print":
+        # Skip loop constructs as they were already checked
+        if key in ["sometimes_while", "maybe_for"]:
+            continue
+        elif key == "sorta_print":
             # Use enhanced sorta_print parsing
             content = _parse_sorta_print_arguments(line)
             if content is not None:

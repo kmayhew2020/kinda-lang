@@ -57,16 +57,42 @@
   - Issue #115: Personality System Integration Guide - **DOWNGRADED to LOW** (low user impact)
   - Issue #118: Migration Guide for Existing Projects - **DEFERRED** (low user priority)
 
-**v0.5.0 "The Construct Composition Release" (STRATEGIC PIVOT):**
+**v0.5.0 "Complete Probabilistic Programming" (DUAL EPIC STRATEGY):**
 - 🏗️ **EPIC #124: CONSTRUCT SELF-DEFINITION** - Higher-level constructs built from basic ones (User Core Vision) - ✅ **APPROVED & ACTIVE**
   - **Task 1**: Core ~sorta Conditional Implementation using existing constructs (~2 weeks) - 🚀 **READY FOR ASSIGNMENT**
   - **Task 2**: Framework for Construct Composition Development (~2 weeks)
   - **Task 3**: ~ish Patterns Implementation using ~kinda float + tolerance (~2 weeks)  
   - **Task 4**: Documentation & Examples for Construct Composition (~1-2 weeks)
+- 🎲 **EPIC #125: PROBABILISTIC CONTROL FLOW CONSTRUCTS** - Complete fuzzy programming paradigm (User HIGH Priority) - ✅ **TASK 1 COMPLETED**
+  - **Task 1**: Core Loop Constructs (~sometimes_while, ~maybe_for) - ✅ **COMPLETED**
+  - **Task 2**: Repetition Constructs (~kinda_repeat, ~eventually_until) - 🚀 **READY FOR ASSIGNMENT**
+  - **Task 3**: Advanced Integration & Optimization (~1-2 weeks)
+  - **Task 4**: Documentation & Real-world Examples (~1 week)
+- **PARALLEL DEVELOPMENT**: Epic #124 and Epic #125 run simultaneously with coordinated development streams
 - 🔧 **C Language Support**: Complete C transpiler pipeline (Epic #19) - **DEFERRED**
-- 🎲 **Enhanced Chaos Constructs**: Time-based drift, cascade failures (Epic #35) - **DEFERRED**  
 - 🎭 **10 Personality Modes**: Expand from 4 to 10 distinct personalities (Issue #77) - **DEFERRED**
 - **Integration & Ecosystem**: Python compatibility improvements (User MEDIUM Priority)
+
+#### 🎯 **STRATEGIC RATIONALE FOR DUAL EPIC APPROACH**
+
+**Based on Architect Agent's comprehensive analysis of v0.4.0 user feedback (8.5/10 score):**
+
+**CRITICAL USER INSIGHT**: Probabilistic control flow emerged as the **highest priority gap** in current language capabilities. While existing constructs handle individual statements well (`~sometimes print`, `~maybe x = 5`), there's no way to express probabilistic program flow patterns like "kinda loop", "maybe iterate", or "sorta repeat".
+
+**DUAL EPIC STRATEGY BENEFITS**:
+1. **Epic #124**: Demonstrates **how to build** constructs (composition framework)  
+2. **Epic #125**: Provides **what to build** (missing probabilistic control flow)
+3. **Combined Impact**: Achieves "Complete Probabilistic Programming" vision
+4. **Resource Efficiency**: Parallel development maximizes v0.5.0 deliverable value
+5. **User Alignment**: Addresses both "self-hosting" vision and practical expressiveness gaps
+
+**COORDINATION FRAMEWORK**:
+- Weekly sync meetings between epic development streams
+- Shared infrastructure (personality system, statistical testing, documentation)
+- Cross-epic integration examples in final documentation
+- Unified v0.5.0 release with both epic deliverables
+
+**TARGET OUTCOME**: v0.5.0 delivers both the theoretical foundation (construct composition) and practical capabilities (complete probabilistic programming) to achieve "genuinely useful tool" vision.
 
 ### 📋 Recently Completed Issues (v0.4.0)
 - ✅ Issue #73: Chaos-Personality Integration - Complete personality system with 4 modes - MERGED
@@ -162,8 +188,21 @@
 3. ✅ **Issue #122**: 🎥 kinda record/replay system - **COMPLETED via PR #1** - Essential debugging infrastructure delivered
 4. ✅ **Issue #123**: 🧪 ~assert_eventually() statistical assertions - **COMPLETED via PR #127** - Essential for testing fuzzy programs
 
-**🚀 NEW HIGH PRIORITY (v0.5.0 Epic #124 - Construct Self-definition):**
+**🚀 HIGH PRIORITY (v0.5.0 DUAL EPIC STRATEGY):**
 1. **Epic #124**: 🏗️ **Construct Self-definition** - Higher-level constructs built from basic ones (User Core Vision)
+2. **Epic #125**: 🎲 **Probabilistic Control Flow Constructs** - Complete fuzzy programming paradigm (User HIGH Priority)
+
+**🚀 EPIC #124 TASKS (Parallel Stream A):**
+3. **Task 1**: 🏗️ Core ~sorta Conditional Implementation - Build ~sorta from ~sometimes + ~maybe + personality
+4. **Task 2**: 🔧 Framework for Construct Composition Development - Meta-programming infrastructure
+5. **Task 3**: 🎯 ~ish Patterns Implementation - Build ~ish behaviors from ~kinda float + tolerance  
+6. **Task 4**: 📖 Documentation & Examples for Construct Composition - Complete implementation showcase
+
+**🚀 EPIC #125 TASKS (Parallel Stream B):**
+7. **Task 1**: 🔄 Core Loop Constructs (~sometimes_while, ~maybe_for) - Probabilistic loop continuation and iteration
+8. **Task 2**: 🔁 Repetition Constructs (~kinda_repeat, ~eventually_until) - Fuzzy repetition and statistical termination
+9. **Task 3**: ⚙️ Advanced Integration & Optimization - Performance optimization and cross-construct compatibility
+10. **Task 4**: 📘 Documentation & Real-world Examples - Comprehensive probabilistic control flow guide
 
 **🚀 HIGH PRIORITY (v0.5.0 Epic #124 - Construct Self-definition):**
 5. **Task 1**: 🏗️ Core ~sorta Conditional Implementation - Build ~sorta from ~sometimes + ~maybe + personality
@@ -172,15 +211,15 @@
 8. **Task 4**: 📖 Documentation & Examples for Construct Composition - Complete implementation showcase
 
 **🟡 MEDIUM PRIORITY (User-Aligned Features):**
-9. **Issue #116**: 🌍 Real-world Application Examples (Epic #76.3) - Aligns with "practical use cases"
-10. **Issue #117**: 🔧 Performance and Debugging Guide (Epic #76.4) - Aligns with "developer experience"  
-11. **Issue #87**: 📘 Docs: Create comprehensive ~ish usage guide
+11. **Issue #116**: 🌍 Real-world Application Examples (Epic #76.3) - Aligns with "practical use cases"
+12. **Issue #117**: 🔧 Performance and Debugging Guide (Epic #76.4) - Aligns with "developer experience"  
+13. **Issue #87**: 📘 Docs: Create comprehensive ~ish usage guide
 
 **🟢 LOW PRIORITY (Deferred Based on User Feedback):**
-12. **Issue #115**: 🎭 Personality System Integration Guide - **DOWNGRADED** (low impact on user goals)
-13. **Issue #118**: 🔄 Migration Guide for Existing Projects - **DEFERRED** (low user priority)
-14. **Issue #88**: 🔧 Single-source spec.yaml → docs + CLI - **DEFERRED**
-15. **Issue #89**: 🛠️ Source maps for error reporting - **DEFERRED**
+14. **Issue #115**: 🎭 Personality System Integration Guide - **DOWNGRADED** (low impact on user goals)
+15. **Issue #118**: 🔄 Migration Guide for Existing Projects - **DEFERRED** (low user priority)
+16. **Issue #88**: 🔧 Single-source spec.yaml → docs + CLI - **DEFERRED**
+17. **Issue #89**: 🛠️ Source maps for error reporting - **DEFERRED**
 
 **🔮 FUTURE PLANNING (v0.6.0+):**
 - **Epic #19**: 🔧 C Language Support - **DEFERRED** (lower user priority than self-hosting)
@@ -315,4 +354,4 @@ This clarification makes the strategic direction MORE focused and achievable, pe
 - **v0.4.0 SUCCESS**: All core developer experience fundamentals delivered as planned
 
 ---
-*Last Updated: 2025-09-04 by Kinda-Lang Project Manager - Epic #124 APPROVED & ACTIVE - 4-task breakdown official, Task 1 ready for coder assignment - v0.5.0 "Construct Composition Release" development begins*
+*Last Updated: 2025-09-10 by Kinda-Lang Project Manager - Epic #125 Task 1 COMPLETED: Core Loop Constructs delivered. Dual Epic Strategy in effect - parallel development for v0.5.0 "Complete Probabilistic Programming"*
