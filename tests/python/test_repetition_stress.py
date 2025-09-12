@@ -35,6 +35,11 @@ import sys
 import os
 sys.path.insert(0, os.path.abspath('.'))
 
+# Set personality in the subprocess
+from kinda.personality import PersonalityContext
+PersonalityContext.set_mood("reliable")
+PersonalityContext.set_seed(42)
+
 total = 0
 ~kinda_repeat(1000):
     total += 1
@@ -526,6 +531,11 @@ import sys
 import os
 sys.path.insert(0, os.path.abspath('.'))
 
+# Set personality in the subprocess
+from kinda.personality import PersonalityContext
+PersonalityContext.set_mood("cautious")
+PersonalityContext.set_seed(987)
+
 total = 0
 ~kinda_repeat(10):
     ~kinda_repeat(10):
@@ -582,6 +592,11 @@ print(f"RESULT:{total}")
 import sys
 import os
 sys.path.insert(0, os.path.abspath('.'))
+
+# Set personality in the subprocess
+from kinda.personality import PersonalityContext
+PersonalityContext.set_mood("reliable")
+PersonalityContext.set_seed(654)
 
 state = [0]  # [total_iterations] - Use list to avoid scoping issues
 ~kinda_repeat(5):

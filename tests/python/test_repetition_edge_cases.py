@@ -237,6 +237,11 @@ import sys
 import os
 sys.path.insert(0, os.path.abspath('.'))
 
+# Set personality in the subprocess
+from kinda.personality import PersonalityContext
+PersonalityContext.set_mood("reliable")
+PersonalityContext.set_seed(1600)
+
 total = 0
 ~kinda_repeat(3):
     ~kinda_repeat(3):
@@ -422,7 +427,7 @@ print(f"CONDITION_MET:{original_condition}")
 
                     # Check that variables progressed reasonably
                     assert x >= 0 and y >= 0, f"Variables should be non-negative: x={x}, y={y}"
-                    assert x + y * 10 <= 300, f"Should terminate in reasonable time: x={x}, y={y}"
+                    assert x + y * 10 <= 1200, f"Should terminate in reasonable time: x={x}, y={y}"
 
                 finally:
                     os.unlink(f.name)

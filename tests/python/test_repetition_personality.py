@@ -199,10 +199,15 @@ print(f"EVENTUALLY:{eventually_counter[0]}")
         for seed in range(6):
             PersonalityContext.set_seed(seed + 5000)
 
-            test_code = """
+            test_code = f"""
 import sys
 import os
 sys.path.insert(0, os.path.abspath('.'))
+
+# Set personality in the subprocess
+from kinda.personality import PersonalityContext
+PersonalityContext.set_mood("cautious")
+PersonalityContext.set_seed({seed + 5000})
 
 # Test both constructs with cautious personality
 repeat_counter = [0]  # Use list to avoid scoping issues
@@ -213,8 +218,8 @@ eventually_counter = [0]  # Use list to avoid scoping issues
 ~eventually_until eventually_counter[0] >= 25:
     eventually_counter[0] += 1
 
-print(f"REPEAT:{repeat_counter[0]}")
-print(f"EVENTUALLY:{eventually_counter[0]}")
+print(f"REPEAT:{{repeat_counter[0]}}")
+print(f"EVENTUALLY:{{eventually_counter[0]}}")
 """
 
             with tempfile.NamedTemporaryFile(mode="w", suffix=".knda", delete=False) as f:
@@ -368,6 +373,12 @@ import sys
 import os
 sys.path.insert(0, os.path.abspath('.'))
 
+# Set personality in the subprocess
+from kinda.personality import PersonalityContext
+PersonalityContext.set_mood("playful")
+PersonalityContext.set_chaos_level({chaos_level})
+PersonalityContext.set_seed({chaos_level * 2000})
+
 # Test both constructs with extreme chaos levels
 repeat_results = []
 for i in range(3):
@@ -383,8 +394,8 @@ eventually_counter = [0]  # Use list to avoid scoping issues
         break
 
 print(f"CHAOS:{chaos_level}")
-print(f"REPEATS:{repeat_results}")
-print(f"EVENTUALLY:{eventually_counter[0]}")
+print(f"REPEATS:{{repeat_results}}")
+print(f"EVENTUALLY:{{eventually_counter[0]}}")
 """
 
             with tempfile.NamedTemporaryFile(mode="w", suffix=".knda", delete=False) as f:
@@ -694,6 +705,11 @@ print(f"CHAOTIC:{count2}")
 import sys
 import os
 sys.path.insert(0, os.path.abspath('.'))
+
+# Set personality in the subprocess
+from kinda.personality import PersonalityContext
+PersonalityContext.set_mood("{personality}")
+PersonalityContext.set_seed({seed_value})
 
 counter = [0]  # Use list to avoid scoping issues
 ~kinda_repeat(25):

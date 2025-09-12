@@ -26,6 +26,11 @@ import sys
 import os
 sys.path.insert(0, os.path.abspath('.'))
 
+# Set personality in the subprocess
+from kinda.personality import PersonalityContext
+PersonalityContext.set_mood("reliable")
+PersonalityContext.set_seed(100)
+
 executed_count = 0
 total_loops = 0
 
@@ -389,6 +394,11 @@ import sys
 import os
 sys.path.insert(0, os.path.abspath('.'))
 
+# Set personality in the subprocess
+from kinda.personality import PersonalityContext
+PersonalityContext.set_mood("reliable")
+PersonalityContext.set_seed(700)
+
 total_iterations = 0
 outer_loops = 0
 
@@ -521,6 +531,11 @@ class TestRepetitionWithOutputConstructs:
 import sys
 import os
 sys.path.insert(0, os.path.abspath('.'))
+
+# Set personality in the subprocess
+from kinda.personality import PersonalityContext
+PersonalityContext.set_mood("reliable")
+PersonalityContext.set_seed(900)
 
 loop_count = 0
 ~kinda_repeat(8):
