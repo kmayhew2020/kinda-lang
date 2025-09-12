@@ -43,7 +43,7 @@ try:
 except Exception as exc:
     print(f"ERROR:{{type(exc).__name__}}")
 
-print(f"EXECUTED:{{executed}}")
+print(f"EXECUTED:{executed}")
 """
 
             with tempfile.NamedTemporaryFile(mode="w", suffix=".knda", delete=False) as f:
@@ -106,9 +106,9 @@ try:
         if count > 10000:  # Safety break
             break
 except Exception as exc:
-    print(f"ERROR:{{type(exc).__name__}}:{{exc}}")
+    print(f"ERROR:{{type(exc).__name__}}:{exc}")
 
-print(f"RESULT:{{count}}")
+print(f"RESULT:{count}")
 """
 
             with tempfile.NamedTemporaryFile(mode="w", suffix=".knda", delete=False) as f:
@@ -188,7 +188,7 @@ iterations = 0
     iterations += 1
 
 print(f"EXPR:{{repr('{expr}')}}")
-print(f"ITERATIONS:{{iterations}}")
+print(f"ITERATIONS:{iterations}")
 """
 
             with tempfile.NamedTemporaryFile(mode="w", suffix=".knda", delete=False) as f:
@@ -245,7 +245,7 @@ total = 0
                 ~kinda_repeat(2):
                     total += 1
 
-print(f"TOTAL:{{total}}")
+print(f"TOTAL:{total}")
 """
 
         with tempfile.NamedTemporaryFile(mode="w", suffix=".knda", delete=False) as f:
@@ -312,7 +312,7 @@ try:
 except Exception as exc:
     print(f"ERROR:{{type(exc).__name__}}")
 
-print(f"ITERATIONS:{{iterations}}")
+print(f"ITERATIONS:{iterations}")
 """
 
             with tempfile.NamedTemporaryFile(mode="w", suffix=".knda", delete=False) as f:
@@ -376,9 +376,9 @@ y = 0
         y += 1
         x = 0
 
-print(f"X:{{x}}")
-print(f"Y:{{y}}")
-print(f"CONDITION_MET:{{{condition}}}")
+print(f"X:{x}")
+print(f"Y:{y}")
+print(f"CONDITION_MET:{{condition}}")
 """
 
             with tempfile.NamedTemporaryFile(mode="w", suffix=".knda", delete=False) as f:
@@ -456,9 +456,9 @@ iterations = 0
     if iterations > 50:  # Safety break
         break
 
-print(f"ITERATIONS:{{iterations}}")
-print(f"STATE_VALUE:{{state.value}}")
-print(f"ACCESS_COUNT:{{state.access_count}}")
+print(f"ITERATIONS:{iterations}")
+print(f"STATE_VALUE:{state.value}")
+print(f"ACCESS_COUNT:{state.access_count}")
 """
 
         with tempfile.NamedTemporaryFile(mode="w", suffix=".knda", delete=False) as f:
@@ -520,7 +520,7 @@ evaluations = 0
     if evaluations > 1000:  # Safety break
         break
 
-print(f"EVALUATIONS:{{evaluations}}")
+print(f"EVALUATIONS:{evaluations}")
 """
 
         with tempfile.NamedTemporaryFile(mode="w", suffix=".knda", delete=False) as f:
@@ -578,7 +578,7 @@ shared_counter = 0
     ~eventually_until shared_counter >= local_target:
         shared_counter += 1
 
-print(f"FINAL_COUNTER:{{shared_counter}}")
+print(f"FINAL_COUNTER:{shared_counter}")
 """
 
         with tempfile.NamedTemporaryFile(mode="w", suffix=".knda", delete=False) as f:
@@ -636,8 +636,8 @@ data_sets = []
         counter += 1
     data_sets.append(len(local_data))
 
-print(f"DATASETS:{{len(data_sets)}}")
-print(f"SIZES:{{data_sets}}")
+print(f"DATASETS:{len(data_sets)}")
+print(f"SIZES:{data_sets}")
 """
 
         with tempfile.NamedTemporaryFile(mode="w", suffix=".knda", delete=False) as f:
@@ -699,7 +699,7 @@ for mood in ["reliable", "chaotic", "cautious"]:
         count += 1
     results.append(count)
 
-print(f"RESULTS:{{results}}")
+print(f"RESULTS:{results}")
 """
 
         with tempfile.NamedTemporaryFile(mode="w", suffix=".knda", delete=False) as f:

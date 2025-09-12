@@ -216,7 +216,7 @@ count = 0
 ~kinda_repeat({input_val}):
     count += 1
 
-print(f"RESULT:{{count}}")
+print(f"RESULT:{count}")
 """
 
             with tempfile.NamedTemporaryFile(mode="w", suffix=".knda", delete=False) as f:
@@ -333,7 +333,7 @@ try:
 except Exception as e:
     print(f"ERROR:{type(e).__name__}")
 
-print(f"RESULT:{{iteration}}")
+print(f"RESULT:{iteration}")
 """
 
         with tempfile.NamedTemporaryFile(mode="w", suffix=".knda", delete=False) as f:

@@ -40,8 +40,8 @@ eventually_count = 0
 ~eventually_until eventually_count >= 20:
     eventually_count += 1
 
-print(f"REPEAT:{{repeat_count}}")
-print(f"EVENTUALLY:{{eventually_count}}")
+print(f"REPEAT:{repeat_count}")
+print(f"EVENTUALLY:{eventually_count}")
 """
 
             with tempfile.NamedTemporaryFile(mode="w", suffix=".knda", delete=False) as f:
@@ -129,8 +129,8 @@ eventually_count = 0
 ~eventually_until eventually_count >= 15:
     eventually_count += 1
 
-print(f"REPEAT:{{repeat_count}}")
-print(f"EVENTUALLY:{{eventually_count}}")
+print(f"REPEAT:{repeat_count}")
+print(f"EVENTUALLY:{eventually_count}")
 """
 
             with tempfile.NamedTemporaryFile(mode="w", suffix=".knda", delete=False) as f:
@@ -213,8 +213,8 @@ eventually_count = 0
 ~eventually_until eventually_count >= 25:
     eventually_count += 1
 
-print(f"REPEAT:{{repeat_count}}")
-print(f"EVENTUALLY:{{eventually_count}}")
+print(f"REPEAT:{repeat_count}")
+print(f"EVENTUALLY:{eventually_count}")
 """
 
             with tempfile.NamedTemporaryFile(mode="w", suffix=".knda", delete=False) as f:
@@ -297,8 +297,8 @@ repeat_count = 0
 ~kinda_repeat(20):
     repeat_count += 1
 
-print(f"CHAOS_LEVEL:{{chaos_level}}")
-print(f"REPEAT:{{repeat_count}}")
+print(f"CHAOS_LEVEL:{chaos_level}")
+print(f"REPEAT:{repeat_count}")
 """
 
             with tempfile.NamedTemporaryFile(mode="w", suffix=".knda", delete=False) as f:
@@ -382,9 +382,9 @@ eventually_count = 0
     if eventually_count > 100:  # Safety break
         break
 
-print(f"CHAOS:{{chaos_level}}")
-print(f"REPEATS:{{repeat_results}}")
-print(f"EVENTUALLY:{{eventually_count}}")
+print(f"CHAOS:{chaos_level}")
+print(f"REPEATS:{repeat_results}")
+print(f"EVENTUALLY:{eventually_count}")
 """
 
             with tempfile.NamedTemporaryFile(mode="w", suffix=".knda", delete=False) as f:
@@ -444,7 +444,8 @@ class TestStatisticalValidation:
 
             # Collect multiple samples for statistical analysis
             for seed in range(15):
-                PersonalityContext.set_seed(seed + 6000 + ord(personality[0]) * 100)
+                current_seed = seed + 6000 + ord(personality[0]) * 100
+                PersonalityContext.set_seed(current_seed)
 
                 test_code = f"""
 import sys
@@ -464,7 +465,7 @@ print(f"RESULT:{{count}}")
 
                     try:
                         result = run(
-                            ["python", "-m", "kinda", "run", f.name],
+                            ["python", "-m", "kinda", "run", "--mood", personality, "--seed", str(current_seed), f.name],
                             capture_output=True,
                             text=True,
                             timeout=10,
@@ -631,8 +632,8 @@ count2 = 0
 ~kinda_repeat(30):
     count2 += 1
 
-print(f"RELIABLE:{{count1}}")
-print(f"CHAOTIC:{{count2}}")
+print(f"RELIABLE:{count1}")
+print(f"CHAOTIC:{count2}")
 """
 
         with tempfile.NamedTemporaryFile(mode="w", suffix=".knda", delete=False) as f:
