@@ -20,16 +20,16 @@ class TestKindaRepeatEdgeCases:
         """Test ~kinda_repeat with various invalid input types"""
         PersonalityContext.set_mood("reliable")
         PersonalityContext.set_seed(1300)
-        
+
         invalid_inputs = [
             '"string"',
-            'None',
-            '[]',
-            '{}',
-            'object()',
-            'lambda x: x',
+            "None",
+            "[]",
+            "{}",
+            "object()",
+            "lambda x: x",
         ]
-        
+
         for invalid_input in invalid_inputs:
             test_code = f"""
 import sys
@@ -40,16 +40,16 @@ executed = 0
 try:
     ~kinda_repeat({invalid_input}):
         executed += 1
-except Exception as e:
-    print(f"ERROR:{type(e).__name__}")
+except Exception as exc:
+    print(f"ERROR:{{type(exc).__name__}}")
 
-print(f"EXECUTED:{executed}")
+print(f"EXECUTED:{{executed}}")
 """
-            
+
             with tempfile.NamedTemporaryFile(mode="w", suffix=".knda", delete=False) as f:
                 f.write(test_code)
                 f.flush()
-                
+
                 try:
                     result = run(
                         ["python", "-m", "kinda", "run", f.name],
@@ -58,20 +58,24 @@ print(f"EXECUTED:{executed}")
                         timeout=10,
                         cwd="/home/kevin/kinda-lang",
                     )
-                    
+
                     # Should not crash - either handle gracefully or provide error
                     output_lines = result.stdout.strip().split("\n")
                     exec_line = [line for line in output_lines if line.startswith("EXECUTED:")]
-                    
+
                     if exec_line:
                         executed = int(exec_line[0].split(":")[1])
                         # Should either execute at least once (fallback) or zero times (handled error)
-                        assert executed >= 0, f"Executed count should be non-negative for {invalid_input}"
-                        assert executed <= 5, f"Should not execute excessively for invalid input {invalid_input}"
-                    
+                        assert (
+                            executed >= 0
+                        ), f"Executed count should be non-negative for {invalid_input}"
+                        assert (
+                            executed <= 5
+                        ), f"Should not execute excessively for invalid input {invalid_input}"
+
                 finally:
                     os.unlink(f.name)
-        
+
         # Reset
         PersonalityContext.set_seed(None)
         PersonalityContext.set_mood("playful")
@@ -80,15 +84,15 @@ print(f"EXECUTED:{executed}")
         """Test ~kinda_repeat with extremely large and small values"""
         PersonalityContext.set_mood("cautious")
         PersonalityContext.set_seed(1400)
-        
+
         extreme_cases = [
             ("1000000", 30),  # Very large - should be handled efficiently
-            ("0.1", 10),      # Fractional - should be converted to int
-            ("0.9", 10),      # Fractional close to 1
-            ("-5", 10),       # Negative - should handle gracefully
+            ("0.1", 10),  # Fractional - should be converted to int
+            ("0.9", 10),  # Fractional close to 1
+            ("-5", 10),  # Negative - should handle gracefully
             ("float('inf')", 10),  # Infinity - should handle gracefully
         ]
-        
+
         for test_value, timeout in extreme_cases:
             test_code = f"""
 import sys
@@ -101,16 +105,16 @@ try:
         count += 1
         if count > 10000:  # Safety break
             break
-except Exception as e:
-    print(f"ERROR:{type(e).__name__}:{e}")
+except Exception as exc:
+    print(f"ERROR:{{type(exc).__name__}}:{{exc}}")
 
-print(f"RESULT:{count}")
+print(f"RESULT:{{count}}")
 """
-            
+
             with tempfile.NamedTemporaryFile(mode="w", suffix=".knda", delete=False) as f:
                 f.write(test_code)
                 f.flush()
-                
+
                 try:
                     start_time = time.time()
                     result = run(
@@ -121,34 +125,40 @@ print(f"RESULT:{count}")
                         cwd="/home/kevin/kinda-lang",
                     )
                     execution_time = time.time() - start_time
-                    
+
                     # Should handle extreme cases without crashing
                     if result.returncode == 0:
                         output_lines = result.stdout.strip().split("\n")
                         result_line = [line for line in output_lines if line.startswith("RESULT:")]
-                        
+
                         if result_line:
                             count = int(result_line[0].split(":")[1])
-                            
+
                             if test_value == "1000000":
                                 # Should not actually run a million times
                                 assert count <= 50000, f"Should limit extreme large values: {count}"
                             elif test_value in ["0.1", "0.9"]:
                                 # Fractional should be converted to int
-                                assert 0 <= count <= 5, f"Fractional conversion should result in small count: {count}"
+                                assert (
+                                    0 <= count <= 5
+                                ), f"Fractional conversion should result in small count: {count}"
                             elif test_value == "-5":
                                 # Negative should be handled (likely 0 or error fallback)
-                                assert count >= 0, f"Negative input should not cause negative executions: {count}"
-                    
+                                assert (
+                                    count >= 0
+                                ), f"Negative input should not cause negative executions: {count}"
+
                     # Should not take too long regardless of input
-                    assert execution_time < timeout - 1, f"Execution too slow for {test_value}: {execution_time:.2f}s"
-                    
+                    assert (
+                        execution_time < timeout - 1
+                    ), f"Execution too slow for {test_value}: {execution_time:.2f}s"
+
                 except TimeoutExpired:
                     # This is acceptable for extreme values
                     pass
                 finally:
                     os.unlink(f.name)
-        
+
         # Reset
         PersonalityContext.set_seed(None)
         PersonalityContext.set_mood("playful")
@@ -157,7 +167,7 @@ print(f"RESULT:{count}")
         """Test ~kinda_repeat with complex mathematical expressions"""
         PersonalityContext.set_mood("playful")
         PersonalityContext.set_seed(1500)
-        
+
         complex_expressions = [
             "2 + 3",
             "int(7.8)",
@@ -166,7 +176,7 @@ print(f"RESULT:{count}")
             "abs(-8)",
             "10 if True else 2",
         ]
-        
+
         for expr in complex_expressions:
             test_code = f"""
 import sys
@@ -177,14 +187,14 @@ iterations = 0
 ~kinda_repeat({expr}):
     iterations += 1
 
-print(f"EXPR:{repr("{expr}")}")
-print(f"ITERATIONS:{iterations}")
+print(f"EXPR:{{repr('{expr}')}}")
+print(f"ITERATIONS:{{iterations}}")
 """
-            
+
             with tempfile.NamedTemporaryFile(mode="w", suffix=".knda", delete=False) as f:
                 f.write(test_code)
                 f.flush()
-                
+
                 try:
                     result = run(
                         ["python", "-m", "kinda", "run", f.name],
@@ -193,22 +203,26 @@ print(f"ITERATIONS:{iterations}")
                         timeout=10,
                         cwd="/home/kevin/kinda-lang",
                     )
-                    
-                    assert result.returncode == 0, f"Complex expression failed: {expr}\n{result.stderr}"
-                    
+
+                    assert (
+                        result.returncode == 0
+                    ), f"Complex expression failed: {expr}\n{result.stderr}"
+
                     output_lines = result.stdout.strip().split("\n")
                     iter_line = [line for line in output_lines if line.startswith("ITERATIONS:")]
                     assert len(iter_line) == 1
-                    
+
                     iterations = int(iter_line[0].split(":")[1])
-                    
+
                     # Should execute reasonable number of times based on expression value
                     assert iterations >= 1, f"Should execute at least once for {expr}"
-                    assert iterations <= 50, f"Should not execute excessively for {expr}: {iterations}"
-                    
+                    assert (
+                        iterations <= 50
+                    ), f"Should not execute excessively for {expr}: {iterations}"
+
                 finally:
                     os.unlink(f.name)
-        
+
         # Reset
         PersonalityContext.set_seed(None)
         PersonalityContext.set_mood("playful")
@@ -217,7 +231,7 @@ print(f"ITERATIONS:{iterations}")
         """Test deeply nested ~kinda_repeat constructs"""
         PersonalityContext.set_mood("reliable")
         PersonalityContext.set_seed(1600)
-        
+
         test_code = """
 import sys
 import os
@@ -231,13 +245,13 @@ total = 0
                 ~kinda_repeat(2):
                     total += 1
 
-print(f"TOTAL:{total}")
+print(f"TOTAL:{{total}}")
 """
-        
+
         with tempfile.NamedTemporaryFile(mode="w", suffix=".knda", delete=False) as f:
             f.write(test_code)
             f.flush()
-            
+
             try:
                 result = run(
                     ["python", "-m", "kinda", "run", f.name],
@@ -246,22 +260,22 @@ print(f"TOTAL:{total}")
                     timeout=30,
                     cwd="/home/kevin/kinda-lang",
                 )
-                
+
                 assert result.returncode == 0, f"Deep nesting failed: {result.stderr}"
-                
+
                 output_lines = result.stdout.strip().split("\n")
                 total_line = [line for line in output_lines if line.startswith("TOTAL:")]
                 assert len(total_line) == 1
-                
+
                 total = int(total_line[0].split(":")[1])
-                
+
                 # Expected: ~3^5 * 2 = ~162 * 2 = ~324 with reliable personality
                 # Allow significant variance due to compounding
                 assert 100 <= total <= 700, f"Deep nesting result out of range: {total}"
-                
+
             finally:
                 os.unlink(f.name)
-        
+
         # Reset
         PersonalityContext.set_seed(None)
         PersonalityContext.set_mood("playful")
@@ -274,7 +288,7 @@ class TestEventuallyUntilEdgeCases:
         """Test ~eventually_until with malformed or dangerous conditions"""
         PersonalityContext.set_mood("reliable")
         PersonalityContext.set_seed(1700)
-        
+
         malformed_conditions = [
             "invalid_variable > 5",
             "1/0 > 0",  # Division by zero
@@ -282,7 +296,7 @@ class TestEventuallyUntilEdgeCases:
             "''[0]",  # Index error
             "undefined_function()",  # Name error
         ]
-        
+
         for condition in malformed_conditions:
             test_code = f"""
 import sys
@@ -295,16 +309,16 @@ try:
         iterations += 1
         if iterations > 20:  # Safety break
             break
-except Exception as e:
-    print(f"ERROR:{type(e).__name__}")
+except Exception as exc:
+    print(f"ERROR:{{type(exc).__name__}}")
 
-print(f"ITERATIONS:{iterations}")
+print(f"ITERATIONS:{{iterations}}")
 """
-            
+
             with tempfile.NamedTemporaryFile(mode="w", suffix=".knda", delete=False) as f:
                 f.write(test_code)
                 f.flush()
-                
+
                 try:
                     result = run(
                         ["python", "-m", "kinda", "run", f.name],
@@ -313,22 +327,24 @@ print(f"ITERATIONS:{iterations}")
                         timeout=15,
                         cwd="/home/kevin/kinda-lang",
                     )
-                    
+
                     # Should handle malformed conditions gracefully
                     output_lines = result.stdout.strip().split("\n")
                     iter_line = [line for line in output_lines if line.startswith("ITERATIONS:")]
-                    
+
                     if iter_line:
                         iterations = int(iter_line[0].split(":")[1])
                         # Should either terminate quickly (error handling) or hit safety break
-                        assert 0 <= iterations <= 25, f"Iterations should be reasonable for malformed condition: {iterations}"
-                    
+                        assert (
+                            0 <= iterations <= 25
+                        ), f"Iterations should be reasonable for malformed condition: {iterations}"
+
                     # Should not crash the interpreter
                     # (Some non-zero exit codes are acceptable for malformed input)
-                    
+
                 finally:
                     os.unlink(f.name)
-        
+
         # Reset
         PersonalityContext.set_seed(None)
         PersonalityContext.set_mood("playful")
@@ -337,7 +353,7 @@ print(f"ITERATIONS:{iterations}")
         """Test ~eventually_until with complex logical conditions"""
         PersonalityContext.set_mood("cautious")
         PersonalityContext.set_seed(1800)
-        
+
         complex_conditions = [
             "x > 10 and y < 5",
             "x % 7 == 0 or y > 15",
@@ -345,7 +361,7 @@ print(f"ITERATIONS:{iterations}")
             "x in [20, 21, 22] and y not in [3, 4]",
             "len(str(x)) >= 2",
         ]
-        
+
         for condition in complex_conditions:
             test_code = f"""
 import sys
@@ -360,15 +376,15 @@ y = 0
         y += 1
         x = 0
 
-print(f"X:{x}")
-print(f"Y:{y}")
+print(f"X:{{x}}")
+print(f"Y:{{y}}")
 print(f"CONDITION_MET:{{{condition}}}")
 """
-            
+
             with tempfile.NamedTemporaryFile(mode="w", suffix=".knda", delete=False) as f:
                 f.write(test_code)
                 f.flush()
-                
+
                 try:
                     result = run(
                         ["python", "-m", "kinda", "run", f.name],
@@ -377,31 +393,35 @@ print(f"CONDITION_MET:{{{condition}}}")
                         timeout=20,
                         cwd="/home/kevin/kinda-lang",
                     )
-                    
-                    assert result.returncode == 0, f"Complex condition failed: {condition}\n{result.stderr}"
-                    
+
+                    assert (
+                        result.returncode == 0
+                    ), f"Complex condition failed: {condition}\n{result.stderr}"
+
                     output_lines = result.stdout.strip().split("\n")
                     x_line = [line for line in output_lines if line.startswith("X:")]
                     y_line = [line for line in output_lines if line.startswith("Y:")]
-                    condition_line = [line for line in output_lines if line.startswith("CONDITION_MET:")]
-                    
+                    condition_line = [
+                        line for line in output_lines if line.startswith("CONDITION_MET:")
+                    ]
+
                     assert len(x_line) == 1 and len(y_line) == 1
-                    
+
                     x = int(x_line[0].split(":")[1])
                     y = int(y_line[0].split(":")[1])
-                    
+
                     # Verify the condition is actually met when loop terminates
                     if condition_line:
                         condition_met = eval(condition_line[0].split(":", 1)[1])
                         # Note: condition might be evaluated in different context
-                    
+
                     # Check that variables progressed reasonably
                     assert x >= 0 and y >= 0, f"Variables should be non-negative: x={x}, y={y}"
                     assert x + y * 10 <= 300, f"Should terminate in reasonable time: x={x}, y={y}"
-                    
+
                 finally:
                     os.unlink(f.name)
-        
+
         # Reset
         PersonalityContext.set_seed(None)
         PersonalityContext.set_mood("playful")
@@ -410,7 +430,7 @@ print(f"CONDITION_MET:{{{condition}}}")
         """Test ~eventually_until with state that changes during evaluation"""
         PersonalityContext.set_mood("chaotic")
         PersonalityContext.set_seed(1900)
-        
+
         test_code = """
 import sys
 import os
@@ -436,15 +456,15 @@ iterations = 0
     if iterations > 50:  # Safety break
         break
 
-print(f"ITERATIONS:{iterations}")
-print(f"STATE_VALUE:{state.value}")
-print(f"ACCESS_COUNT:{state.access_count}")
+print(f"ITERATIONS:{{iterations}}")
+print(f"STATE_VALUE:{{state.value}}")
+print(f"ACCESS_COUNT:{{state.access_count}}")
 """
-        
+
         with tempfile.NamedTemporaryFile(mode="w", suffix=".knda", delete=False) as f:
             f.write(test_code)
             f.flush()
-            
+
             try:
                 result = run(
                     ["python", "-m", "kinda", "run", f.name],
@@ -453,27 +473,29 @@ print(f"ACCESS_COUNT:{state.access_count}")
                     timeout=25,
                     cwd="/home/kevin/kinda-lang",
                 )
-                
+
                 assert result.returncode == 0, f"Unstable state test failed: {result.stderr}"
-                
+
                 output_lines = result.stdout.strip().split("\n")
                 iter_line = [line for line in output_lines if line.startswith("ITERATIONS:")]
                 state_line = [line for line in output_lines if line.startswith("STATE_VALUE:")]
                 access_line = [line for line in output_lines if line.startswith("ACCESS_COUNT:")]
-                
+
                 assert len(iter_line) == 1 and len(state_line) == 1 and len(access_line) == 1
-                
+
                 iterations = int(iter_line[0].split(":")[1])
                 state_value = int(state_line[0].split(":")[1])
                 access_count = int(access_line[0].split(":")[1])
-                
+
                 # Should eventually terminate despite unstable state
                 assert 1 <= iterations <= 55, f"Should terminate reasonably: {iterations}"
-                assert access_count >= iterations, f"Should have accessed state multiple times: {access_count} vs {iterations}"
-                
+                assert (
+                    access_count >= iterations
+                ), f"Should have accessed state multiple times: {access_count} vs {iterations}"
+
             finally:
                 os.unlink(f.name)
-        
+
         # Reset
         PersonalityContext.set_seed(None)
         PersonalityContext.set_mood("playful")
@@ -482,7 +504,7 @@ print(f"ACCESS_COUNT:{state.access_count}")
         """Test ~eventually_until with statistical edge cases"""
         PersonalityContext.set_mood("reliable")
         PersonalityContext.set_seed(2000)
-        
+
         # Test case where condition is true exactly 50% of the time
         test_code = """
 import sys
@@ -498,13 +520,13 @@ evaluations = 0
     if evaluations > 1000:  # Safety break
         break
 
-print(f"EVALUATIONS:{evaluations}")
+print(f"EVALUATIONS:{{evaluations}}")
 """
-        
+
         with tempfile.NamedTemporaryFile(mode="w", suffix=".knda", delete=False) as f:
             f.write(test_code)
             f.flush()
-            
+
             try:
                 result = run(
                     ["python", "-m", "kinda", "run", f.name],
@@ -513,21 +535,23 @@ print(f"EVALUATIONS:{evaluations}")
                     timeout=30,
                     cwd="/home/kevin/kinda-lang",
                 )
-                
+
                 assert result.returncode == 0, f"Statistical edge case failed: {result.stderr}"
-                
+
                 output_lines = result.stdout.strip().split("\n")
                 eval_line = [line for line in output_lines if line.startswith("EVALUATIONS:")]
                 assert len(eval_line) == 1
-                
+
                 evaluations = int(eval_line[0].split(":")[1])
-                
+
                 # With 50% probability and 95% confidence (reliable), should need multiple samples
-                assert 3 <= evaluations <= 1000, f"Statistical sampling should be reasonable: {evaluations}"
-                
+                assert (
+                    3 <= evaluations <= 1000
+                ), f"Statistical sampling should be reasonable: {evaluations}"
+
             finally:
                 os.unlink(f.name)
-        
+
         # Reset
         PersonalityContext.set_seed(None)
         PersonalityContext.set_mood("playful")
@@ -540,7 +564,7 @@ class TestBoundaryInteractions:
         """Test interaction between ~kinda_repeat and ~eventually_until with shared state"""
         PersonalityContext.set_mood("playful")
         PersonalityContext.set_seed(2100)
-        
+
         test_code = """
 import sys
 import os
@@ -554,13 +578,13 @@ shared_counter = 0
     ~eventually_until shared_counter >= local_target:
         shared_counter += 1
 
-print(f"FINAL_COUNTER:{shared_counter}")
+print(f"FINAL_COUNTER:{{shared_counter}}")
 """
-        
+
         with tempfile.NamedTemporaryFile(mode="w", suffix=".knda", delete=False) as f:
             f.write(test_code)
             f.flush()
-            
+
             try:
                 result = run(
                     ["python", "-m", "kinda", "run", f.name],
@@ -569,22 +593,24 @@ print(f"FINAL_COUNTER:{shared_counter}")
                     timeout=20,
                     cwd="/home/kevin/kinda-lang",
                 )
-                
+
                 assert result.returncode == 0, f"Shared state interaction failed: {result.stderr}"
-                
+
                 output_lines = result.stdout.strip().split("\n")
                 counter_line = [line for line in output_lines if line.startswith("FINAL_COUNTER:")]
                 assert len(counter_line) == 1
-                
+
                 final_counter = int(counter_line[0].split(":")[1])
-                
+
                 # Each outer loop should add ~5 to counter, with 3 loops total
                 # Expected: ~15 with some variance
-                assert 10 <= final_counter <= 25, f"Shared state result out of range: {final_counter}"
-                
+                assert (
+                    10 <= final_counter <= 25
+                ), f"Shared state result out of range: {final_counter}"
+
             finally:
                 os.unlink(f.name)
-        
+
         # Reset
         PersonalityContext.set_seed(None)
         PersonalityContext.set_mood("playful")
@@ -593,7 +619,7 @@ print(f"FINAL_COUNTER:{shared_counter}")
         """Test memory management at boundaries of repetition constructs"""
         PersonalityContext.set_mood("cautious")
         PersonalityContext.set_seed(2200)
-        
+
         test_code = """
 import sys
 import os
@@ -610,14 +636,14 @@ data_sets = []
         counter += 1
     data_sets.append(len(local_data))
 
-print(f"DATASETS:{len(data_sets)}")
-print(f"SIZES:{data_sets}")
+print(f"DATASETS:{{len(data_sets)}}")
+print(f"SIZES:{{data_sets}}")
 """
-        
+
         with tempfile.NamedTemporaryFile(mode="w", suffix=".knda", delete=False) as f:
             f.write(test_code)
             f.flush()
-            
+
             try:
                 result = run(
                     ["python", "-m", "kinda", "run", f.name],
@@ -626,28 +652,30 @@ print(f"SIZES:{data_sets}")
                     timeout=15,
                     cwd="/home/kevin/kinda-lang",
                 )
-                
+
                 assert result.returncode == 0, f"Memory boundary test failed: {result.stderr}"
-                
+
                 output_lines = result.stdout.strip().split("\n")
                 datasets_line = [line for line in output_lines if line.startswith("DATASETS:")]
                 sizes_line = [line for line in output_lines if line.startswith("SIZES:")]
-                
+
                 assert len(datasets_line) == 1 and len(sizes_line) == 1
-                
+
                 num_datasets = int(datasets_line[0].split(":")[1])
-                
+
                 # Should have created reasonable number of datasets
                 assert 3 <= num_datasets <= 8, f"Dataset count out of range: {num_datasets}"
-                
+
                 # Each dataset should have reached the target size
                 sizes_str = sizes_line[0].split(":", 1)[1]
                 # Basic validation that sizes are reasonable
-                assert "20" in sizes_str or "21" in sizes_str, "Should have datasets near target size"
-                
+                assert (
+                    "20" in sizes_str or "21" in sizes_str
+                ), "Should have datasets near target size"
+
             finally:
                 os.unlink(f.name)
-        
+
         # Reset
         PersonalityContext.set_seed(None)
         PersonalityContext.set_mood("playful")
@@ -671,13 +699,13 @@ for mood in ["reliable", "chaotic", "cautious"]:
         count += 1
     results.append(count)
 
-print(f"RESULTS:{results}")
+print(f"RESULTS:{{results}}")
 """
-        
+
         with tempfile.NamedTemporaryFile(mode="w", suffix=".knda", delete=False) as f:
             f.write(test_code)
             f.flush()
-            
+
             try:
                 result = run(
                     ["python", "-m", "kinda", "run", f.name],
@@ -686,23 +714,25 @@ print(f"RESULTS:{results}")
                     timeout=15,
                     cwd="/home/kevin/kinda-lang",
                 )
-                
+
                 assert result.returncode == 0, f"Personality change test failed: {result.stderr}"
-                
+
                 output_lines = result.stdout.strip().split("\n")
                 results_line = [line for line in output_lines if line.startswith("RESULTS:")]
                 assert len(results_line) == 1
-                
+
                 results_str = results_line[0].split(":", 1)[1]
-                
+
                 # Should show different behavior for different personalities
                 # All results should be positive
                 assert "[" in results_str and "]" in results_str, "Should have list of results"
-                assert not "0" in results_str or results_str.count("0") <= 1, "Should have mostly non-zero results"
-                
+                assert (
+                    not "0" in results_str or results_str.count("0") <= 1
+                ), "Should have mostly non-zero results"
+
             finally:
                 os.unlink(f.name)
-        
+
         # Reset
         PersonalityContext.set_mood("playful")
 
