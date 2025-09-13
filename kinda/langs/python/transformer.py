@@ -72,6 +72,8 @@ def _process_conditional_block(
                 or stripped.startswith("~rarely")
                 or stripped.startswith("~sometimes_while")
                 or stripped.startswith("~maybe_for")
+                or stripped.startswith("~kinda_repeat")
+                or stripped.startswith("~eventually_until")
             ):
                 if not _validate_conditional_syntax(stripped, line_number, file_path):
                     i += 1
@@ -407,6 +409,18 @@ def transform_line(line: str) -> List[str]:
         # Transform ~maybe_for into a for loop - conditional logic will be handled specially
         transformed_code = f"for {var_name} in {collection}:"
 
+    elif key == "kinda_repeat":
+        used_helpers.add("kinda_repeat_count")
+        n_expr = groups[0].strip() if groups and groups[0] else "1"
+        # Transform ~kinda_repeat(n) into a for loop with fuzzy count
+        transformed_code = f"for _ in range(kinda_repeat_count({n_expr})):"
+
+    elif key == "eventually_until":
+        used_helpers.add("eventually_until_condition")
+        condition = groups[0].strip() if groups and groups[0] else "True"
+        # Transform ~eventually_until into a while loop with statistical termination
+        transformed_code = f"while eventually_until_condition({condition}):"
+
     elif key == "fuzzy_reassign":
         var, val = groups
         used_helpers.add("fuzzy_assign")
@@ -498,6 +512,8 @@ def transform_file(path: Path, target_language="python") -> str:
                 or stripped.startswith("~rarely")
                 or stripped.startswith("~sometimes_while")
                 or stripped.startswith("~maybe_for")
+                or stripped.startswith("~kinda_repeat")
+                or stripped.startswith("~eventually_until")
             ):
                 # Validate conditional syntax
                 if not _validate_conditional_syntax(stripped, line_number, str(path)):
@@ -535,7 +551,12 @@ def transform_file(path: Path, target_language="python") -> str:
 def _validate_conditional_syntax(line: str, line_number: int, file_path: str) -> bool:
     """Validate ~sometimes, ~maybe, ~probably, and ~rarely syntax with helpful error messages"""
     # Skip validation for loop constructs
-    if line.startswith("~sometimes_while") or line.startswith("~maybe_for"):
+    if (
+        line.startswith("~sometimes_while")
+        or line.startswith("~maybe_for")
+        or line.startswith("~kinda_repeat")
+        or line.startswith("~eventually_until")
+    ):
         return True
 
     if line.startswith("~sometimes"):

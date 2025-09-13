@@ -177,6 +177,53 @@ def _parse_statistical_arguments(line: str, construct_name: str):
     return None
 
 
+def _parse_loop_arguments(line: str, construct_name: str):
+    """
+    Parse loop constructs with complex expression parsing.
+    Handles nested parentheses in expressions like kinda_repeat(int(7.8))
+    """
+    import re
+
+    # Match the construct pattern
+    if construct_name == "kinda_repeat":
+        pattern = re.compile(f"^~{construct_name}\\s*\\(")
+    elif construct_name == "eventually_until":
+        # eventually_until doesn't use parentheses, it uses condition directly
+        # Handle it differently - find condition up to colon
+        colon_pos = line.find(":")
+        if colon_pos == -1:
+            return None
+        prefix = f"~{construct_name}\\s+"
+        if not re.match(prefix, line):
+            return None
+        # Extract condition between construct name and colon
+        condition_start = re.match(prefix, line).end()
+        condition = line[condition_start:colon_pos].strip()
+        return (condition,) if condition else None
+    else:
+        return None
+
+    # For kinda_repeat, parse the parentheses
+    match = pattern.match(line)
+    if not match:
+        return None
+
+    # Find the opening parenthesis
+    start_idx = match.end() - 1  # -1 to include the opening paren
+    content, is_balanced = _parse_balanced_parentheses(line, start_idx)
+
+    # Only return content if parentheses are properly balanced and line ends with colon
+    if content is not None and is_balanced:
+        # Check if line ends with colon (with possible whitespace)
+        remaining = line[
+            match.end() - 1 + len(content) + 2 :
+        ].strip()  # +2 for opening and closing parens
+        if remaining.startswith(":"):
+            return (content.strip(),)
+
+    return None
+
+
 def _parse_assert_eventually_args(content: str):
     """Parse assert_eventually arguments: condition, timeout=5.0, confidence=0.95"""
     import re
@@ -301,18 +348,25 @@ def match_python_construct(line: str):
     """
     # Clean matching - no debug spam
     # Check loop constructs first to avoid conflicts with conditional constructs
-    for key in ["sometimes_while", "maybe_for"]:
+    for key in ["sometimes_while", "maybe_for", "kinda_repeat", "eventually_until"]:
         if key in KindaPythonConstructs:
-            data = KindaPythonConstructs[key]
-            pattern = data["pattern"]
-            match = pattern.match(line.strip())
-            if match:
-                return key, match.groups()
+            # Use enhanced parsing for kinda_repeat and eventually_until
+            if key in ["kinda_repeat", "eventually_until"]:
+                content = _parse_loop_arguments(line, key)
+                if content is not None:
+                    return key, content
+            else:
+                # Use original pattern matching for sometimes_while and maybe_for
+                data = KindaPythonConstructs[key]
+                pattern = data["pattern"]
+                match = pattern.match(line.strip())
+                if match:
+                    return key, match.groups()
 
     # Then check other constructs
     for key, data in KindaPythonConstructs.items():
         # Skip loop constructs as they were already checked
-        if key in ["sometimes_while", "maybe_for"]:
+        if key in ["sometimes_while", "maybe_for", "kinda_repeat", "eventually_until"]:
             continue
         elif key == "sorta_print":
             # Use enhanced sorta_print parsing
@@ -632,7 +686,9 @@ def find_welp_constructs(line: str):
                     brace_depth += 1
                 elif char == "}":
                     brace_depth -= 1
-                elif char in ",:;" and paren_depth == 0 and bracket_depth == 0 and brace_depth == 0:
+                elif (
+                    char in ",:;#" and paren_depth == 0 and bracket_depth == 0 and brace_depth == 0
+                ):
                     fallback_end = i
                     break
             else:
