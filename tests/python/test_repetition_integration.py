@@ -49,7 +49,7 @@ print(f"EXECUTIONS:{executed_count}")
 
             try:
                 result = run(
-                    ["python", "-m", "kinda", "run", f.name],
+                    ["python3", "-m", "kinda", "run", f.name],
                     capture_output=True,
                     text=True,
                     timeout=15,
@@ -111,7 +111,7 @@ print(f"RESULT:{attempt}")
 
             try:
                 result = run(
-                    ["python", "-m", "kinda", "run", f.name],
+                    ["python3", "-m", "kinda", "run", f.name],
                     capture_output=True,
                     text=True,
                     timeout=30,
@@ -166,7 +166,7 @@ print(f"RARE:{rare_executions}")
 
             try:
                 result = run(
-                    ["python", "-m", "kinda", "run", f.name],
+                    ["python3", "-m", "kinda", "run", f.name],
                     capture_output=True,
                     text=True,
                     timeout=20,
@@ -229,7 +229,7 @@ print(f"AVERAGE:{avg_value:.2f}")
 
             try:
                 result = run(
-                    ["python", "-m", "kinda", "run", f.name],
+                    ["python3", "-m", "kinda", "run", f.name],
                     capture_output=True,
                     text=True,
                     timeout=15,
@@ -286,7 +286,7 @@ print(f"TARGET:{target:.2f}")
 
             try:
                 result = run(
-                    ["python", "-m", "kinda", "run", f.name],
+                    ["python3", "-m", "kinda", "run", f.name],
                     capture_output=True,
                     text=True,
                     timeout=25,
@@ -348,7 +348,7 @@ print(f"AVG_VALUE:{sum(fuzzy_values) / len(fuzzy_values):.2f}")
 
             try:
                 result = run(
-                    ["python", "-m", "kinda", "run", f.name],
+                    ["python3", "-m", "kinda", "run", f.name],
                     capture_output=True,
                     text=True,
                     timeout=15,
@@ -419,7 +419,7 @@ print(f"TOTAL:{total_iterations}")
 
             try:
                 result = run(
-                    ["python", "-m", "kinda", "run", f.name],
+                    ["python3", "-m", "kinda", "run", f.name],
                     capture_output=True,
                     text=True,
                     timeout=20,
@@ -483,7 +483,7 @@ print(f"EXECUTIONS:{total_executions}")
 
             try:
                 result = run(
-                    ["python", "-m", "kinda", "run", f.name],
+                    ["python3", "-m", "kinda", "run", f.name],
                     capture_output=True,
                     text=True,
                     timeout=25,
@@ -549,7 +549,7 @@ print(f"RESULT:{loop_count}")
 
             try:
                 result = run(
-                    ["python", "-m", "kinda", "run", f.name],
+                    ["python3", "-m", "kinda", "run", f.name],
                     capture_output=True,
                     text=True,
                     timeout=15,
@@ -605,7 +605,7 @@ print(f"FINAL:{progress}")
 
             try:
                 result = run(
-                    ["python", "-m", "kinda", "run", f.name],
+                    ["python3", "-m", "kinda", "run", f.name],
                     capture_output=True,
                     text=True,
                     timeout=20,
@@ -667,7 +667,7 @@ print(f"SUCCESS:{successful_operations}")
 
             try:
                 result = run(
-                    ["python", "-m", "kinda", "run", f.name],
+                    ["python3", "-m", "kinda", "run", f.name],
                     capture_output=True,
                     text=True,
                     timeout=15,
@@ -731,7 +731,7 @@ print(f"SUCCESSES:{successes}")
 
             try:
                 result = run(
-                    ["python", "-m", "kinda", "run", f.name],
+                    ["python3", "-m", "kinda", "run", f.name],
                     capture_output=True,
                     text=True,
                     timeout=20,

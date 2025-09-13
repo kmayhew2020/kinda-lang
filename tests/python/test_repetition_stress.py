@@ -54,7 +54,7 @@ print(f"RESULT:{total}")
             try:
                 # Run with timeout to prevent infinite loops
                 result = run(
-                    ["python", "-m", "kinda", "run", f.name],
+                    ["python3", "-m", "kinda", "run", f.name],
                     capture_output=True,
                     text=True,
                     timeout=30,
@@ -105,7 +105,7 @@ print(f"RESULT:{total}")
             try:
                 start_time = time.time()
                 result = run(
-                    ["python", "-m", "kinda", "run", f.name],
+                    ["python3", "-m", "kinda", "run", f.name],
                     capture_output=True,
                     text=True,
                     timeout=45,
@@ -167,7 +167,7 @@ print(f"RESULT:{len(data)}")
 
             try:
                 result = run(
-                    ["python", "-m", "kinda", "run", f.name],
+                    ["python3", "-m", "kinda", "run", f.name],
                     capture_output=True,
                     text=True,
                     timeout=60,
@@ -230,7 +230,7 @@ print(f"RESULT:{{counter[0]}}")
 
                 try:
                     result = run(
-                        ["python", "-m", "kinda", "run", f.name],
+                        ["python3", "-m", "kinda", "run", f.name],
                         capture_output=True,
                         text=True,
                         timeout=10,
@@ -287,7 +287,7 @@ print(f"RESULT:{iteration}")
             try:
                 start_time = time.time()
                 result = run(
-                    ["python", "-m", "kinda", "run", f.name],
+                    ["python3", "-m", "kinda", "run", f.name],
                     capture_output=True,
                     text=True,
                     timeout=60,
@@ -348,7 +348,7 @@ print(f"RESULT:{iteration}")
             try:
                 start_time = time.time()
                 result = run(
-                    ["python", "-m", "kinda", "run", f.name],
+                    ["python3", "-m", "kinda", "run", f.name],
                     capture_output=True,
                     text=True,
                     timeout=30,
@@ -410,7 +410,7 @@ print(f"RESULT:{counter}")
 
                 try:
                     result = run(
-                        ["python", "-m", "kinda", "run", f.name],
+                        ["python3", "-m", "kinda", "run", f.name],
                         capture_output=True,
                         text=True,
                         timeout=20,
@@ -484,7 +484,7 @@ print(f"RESULT:{sum(results)}")
 
             try:
                 result = run(
-                    ["python", "-m", "kinda", "run", f.name],
+                    ["python3", "-m", "kinda", "run", f.name],
                     capture_output=True,
                     text=True,
                     timeout=30,
@@ -552,7 +552,7 @@ print(f"RESULT:{total}")
             try:
                 start_time = time.time()
                 result = run(
-                    ["python", "-m", "kinda", "run", f.name],
+                    ["python3", "-m", "kinda", "run", f.name],
                     capture_output=True,
                     text=True,
                     timeout=45,
@@ -615,7 +615,7 @@ print(f"RESULT:{state[0]}")
             try:
                 start_time = time.time()
                 result = run(
-                    ["python", "-m", "kinda", "run", f.name],
+                    ["python3", "-m", "kinda", "run", f.name],
                     capture_output=True,
                     text=True,
                     timeout=60,

@@ -50,7 +50,7 @@ print(f"EVENTUALLY:{eventually_counter[0]}")
 
                 try:
                     result = run(
-                        ["python", "-m", "kinda", "run", f.name],
+                        ["python3", "-m", "kinda", "run", f.name],
                         capture_output=True,
                         text=True,
                         timeout=20,
@@ -139,7 +139,7 @@ print(f"EVENTUALLY:{eventually_counter[0]}")
 
                 try:
                     result = run(
-                        ["python", "-m", "kinda", "run", f.name],
+                        ["python3", "-m", "kinda", "run", f.name],
                         capture_output=True,
                         text=True,
                         timeout=25,
@@ -228,7 +228,7 @@ print(f"EVENTUALLY:{{eventually_counter[0]}}")
 
                 try:
                     result = run(
-                        ["python", "-m", "kinda", "run", f.name],
+                        ["python3", "-m", "kinda", "run", f.name],
                         capture_output=True,
                         text=True,
                         timeout=20,
@@ -312,7 +312,7 @@ print(f"REPEAT:{{repeat_counter[0]}}")
 
                 try:
                     result = run(
-                        ["python", "-m", "kinda", "run", f.name],
+                        ["python3", "-m", "kinda", "run", f.name],
                         capture_output=True,
                         text=True,
                         timeout=15,
@@ -406,7 +406,7 @@ print(f"EVENTUALLY:{{eventually_counter[0]}}")
 
                 try:
                     result = run(
-                        ["python", "-m", "kinda", "run", f.name],
+                        ["python3", "-m", "kinda", "run", f.name],
                         capture_output=True,
                         text=True,
                         timeout=25,
@@ -574,7 +574,7 @@ print(f"RESULT:{{counter}}")
 
                     try:
                         result = run(
-                            ["python", "-m", "kinda", "run", f.name],
+                            ["python3", "-m", "kinda", "run", f.name],
                             capture_output=True,
                             text=True,
                             timeout=15,
@@ -665,7 +665,7 @@ print(f"CHAOTIC:{count2}")
 
             try:
                 result = run(
-                    ["python", "-m", "kinda", "run", f.name],
+                    ["python3", "-m", "kinda", "run", f.name],
                     capture_output=True,
                     text=True,
                     timeout=15,
@@ -736,7 +736,7 @@ print(f"RESULT:{{counter[0]}}")
 
                     try:
                         result = run(
-                            ["python", "-m", "kinda", "run", f.name],
+                            ["python3", "-m", "kinda", "run", f.name],
                             capture_output=True,
                             text=True,
                             timeout=10,

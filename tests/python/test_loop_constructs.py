@@ -17,7 +17,7 @@ from kinda.cli import setup_personality
 def run_kinda_test(path):
     """Helper function to run kinda files and capture output."""
     result = subprocess.run(
-        ["python", "-m", "kinda", "interpret", str(path)],
+        ["python3", "-m", "kinda", "interpret", str(path)],
         capture_output=True,
         text=True,
         check=True,

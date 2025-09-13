@@ -194,7 +194,7 @@ print(f"RESULT:{count}")
         try:
             # Run the test through kinda
             result = subprocess.run(
-                ["python", "-m", "kinda", "run", f.name],
+                ["python3", "-m", "kinda", "run", f.name],
                 capture_output=True,
                 text=True,
                 cwd=os.getcwd(),
@@ -248,7 +248,7 @@ print(f"RESULT:{count}")
         try:
             # Run the test through kinda
             result = subprocess.run(
-                ["python", "-m", "kinda", "run", f.name],
+                ["python3", "-m", "kinda", "run", f.name],
                 capture_output=True,
                 text=True,
                 cwd=os.getcwd(),

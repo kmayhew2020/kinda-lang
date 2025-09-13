@@ -52,7 +52,7 @@ print(f"EXECUTED:{{counter[0]}}")
 
                 try:
                     result = run(
-                        ["python", "-m", "kinda", "run", f.name],
+                        ["python3", "-m", "kinda", "run", f.name],
                         capture_output=True,
                         text=True,
                         timeout=10,
@@ -118,7 +118,7 @@ print(f"RESULT:{{counter[0]}}")
                 try:
                     start_time = time.time()
                     result = run(
-                        ["python", "-m", "kinda", "run", f.name],
+                        ["python3", "-m", "kinda", "run", f.name],
                         capture_output=True,
                         text=True,
                         timeout=timeout,
@@ -197,7 +197,7 @@ print(f"ITERATIONS:{{counter[0]}}")
 
                 try:
                     result = run(
-                        ["python", "-m", "kinda", "run", f.name],
+                        ["python3", "-m", "kinda", "run", f.name],
                         capture_output=True,
                         text=True,
                         timeout=10,
@@ -259,7 +259,7 @@ print(f"TOTAL:{total}")
 
             try:
                 result = run(
-                    ["python", "-m", "kinda", "run", f.name],
+                    ["python3", "-m", "kinda", "run", f.name],
                     capture_output=True,
                     text=True,
                     timeout=30,
@@ -326,7 +326,7 @@ print(f"ITERATIONS:{{counter[0]}}")
 
                 try:
                     result = run(
-                        ["python", "-m", "kinda", "run", f.name],
+                        ["python3", "-m", "kinda", "run", f.name],
                         capture_output=True,
                         text=True,
                         timeout=15,
@@ -400,7 +400,7 @@ print(f"CONDITION_MET:{original_condition}")
 
                 try:
                     result = run(
-                        ["python", "-m", "kinda", "run", f.name],
+                        ["python3", "-m", "kinda", "run", f.name],
                         capture_output=True,
                         text=True,
                         timeout=20,
@@ -480,7 +480,7 @@ print(f"ACCESS_COUNT:{state.access_count}")
 
             try:
                 result = run(
-                    ["python", "-m", "kinda", "run", f.name],
+                    ["python3", "-m", "kinda", "run", f.name],
                     capture_output=True,
                     text=True,
                     timeout=25,
@@ -542,7 +542,7 @@ print(f"EVALUATIONS:{evaluations}")
 
             try:
                 result = run(
-                    ["python", "-m", "kinda", "run", f.name],
+                    ["python3", "-m", "kinda", "run", f.name],
                     capture_output=True,
                     text=True,
                     timeout=30,
@@ -600,7 +600,7 @@ print(f"FINAL_COUNTER:{shared_counter}")
 
             try:
                 result = run(
-                    ["python", "-m", "kinda", "run", f.name],
+                    ["python3", "-m", "kinda", "run", f.name],
                     capture_output=True,
                     text=True,
                     timeout=20,
@@ -659,7 +659,7 @@ print(f"SIZES:{data_sets}")
 
             try:
                 result = run(
-                    ["python", "-m", "kinda", "run", f.name],
+                    ["python3", "-m", "kinda", "run", f.name],
                     capture_output=True,
                     text=True,
                     timeout=15,
@@ -721,7 +721,7 @@ print(f"RESULTS:{results}")
 
             try:
                 result = run(
-                    ["python", "-m", "kinda", "run", f.name],
+                    ["python3", "-m", "kinda", "run", f.name],
                     capture_output=True,
                     text=True,
                     timeout=15,

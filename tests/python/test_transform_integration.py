@@ -228,7 +228,7 @@ class TestTransformCLI:
         # This uses the existing runner from test_runner.py
         try:
             result = subprocess.run(
-                ["python", "-m", "kinda", "interpret", str(knda_file)],
+                ["python3", "-m", "kinda", "interpret", str(knda_file)],
                 capture_output=True,
                 text=True,
                 timeout=10,
