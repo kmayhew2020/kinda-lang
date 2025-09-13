@@ -360,52 +360,79 @@ KindaPythonConstructs = {
     "ish_value": {
         "type": "value",
         "pattern": re.compile(r"(\d+(?:\.\d+)?)~ish"),
-        "description": "Fuzzy value with personality-adjusted variance",
+        "description": "Epic #124 Task 3: Fuzzy value using ~kinda float + variance composition",
         "body": (
-            "def ish_value(val, variance=None):\n"
-            '    """Create a fuzzy value with personality-adjusted variance"""\n'
-            "    from kinda.personality import chaos_variance, update_chaos_state, chaos_uniform\n"
+            "def ish_value(val, target_val=None):\n"
+            '    """Epic #124 Task 3: ~ish variable modification using composed constructs"""\n'
+            "    from kinda.personality import chaos_variance, update_chaos_state\n"
             "    try:\n"
-            "        # Use personality-adjusted variance if not specified\n"
-            "        if variance is None:\n"
-            "            variance = chaos_variance()\n"
-            "        \n"
-            "        # Convert to float for processing\n"
+            "        # Convert val to numeric\n"
             "        if not isinstance(val, (int, float)):\n"
             "            try:\n"
             "                val = float(val)\n"
             "            except (ValueError, TypeError):\n"
-            '                print(f"[?] ish value got something weird: {repr(val)}")\n'
+            '                print(f"[?] ish value got weird value: {repr(val)}")\n'
             '                print(f"[tip] Expected a number but got {type(val).__name__}")\n'
             "                update_chaos_state(failed=True)\n"
-            "                return chaos_uniform(-variance, variance)\n"
+            "                return kinda_float(0)\n"
             "        \n"
-            "        # Generate fuzzy variance\n"
-            "        fuzz = chaos_uniform(-variance, variance)\n"
-            "        result = val + fuzz\n"
+            "        # Epic #124 Task 3: Handle both standalone (5~ish) and assignment (var ~ish target) cases\n"
+            "        if target_val is None:\n"
+            "            # Standalone case: 5~ish → create fuzzy value using ~kinda float + variance\n"
+            "            variance_base = chaos_variance()\n"
+            "            fuzzy_variance = kinda_float(variance_base)\n"
+            "            result = val + fuzzy_variance\n"
+            "        else:\n"
+            "            # Assignment case: var ~ish target → adjust var towards target using composition\n"
+            "            if not isinstance(target_val, (int, float)):\n"
+            "                try:\n"
+            "                    target_val = float(target_val)\n"
+            "                except (ValueError, TypeError):\n"
+            '                    print(f"[?] ish value got weird target: {repr(target_val)}")\n'
+            '                    print(f"[tip] Expected a number but got {type(target_val).__name__}")\n'
+            "                    update_chaos_state(failed=True)\n"
+            "                    return kinda_float(val)\n"
+            "            \n"
+            "            # Show how ~ish variable modification emerges from simpler constructs\n"
+            "            adjustment_factor = kinda_float(0.5)  # Fuzzy adjustment factor\n"
+            "            difference = kinda_float(target_val - val)\n"
+            "            \n"
+            "            # Build ~ish behavior: sometimes adjust towards target, sometimes random variance\n"
+            "            if sometimes(True):\n"
+            "                # Adjust towards target using fuzzy factors\n"
+            "                result = val + (difference * adjustment_factor)\n"
+            "            else:\n"
+            "                # Apply direct fuzzy variance (fallback behavior)\n"
+            "                variance_base = chaos_variance()\n"
+            "                fuzzy_variance = kinda_float(variance_base)\n"
+            "                result = val + fuzzy_variance\n"
+            "        \n"
             "        update_chaos_state(failed=False)\n"
             "        \n"
-            "        # Return integer if input was integer, float otherwise\n"
-            "        return int(result) if isinstance(val, int) else result\n"
+            "        # Maintain type consistency using fuzzy conversion\n"
+            "        if isinstance(val, int) and (target_val is None or isinstance(target_val, int)):\n"
+            "            return int(kinda_float(result))\n"
+            "        else:\n"
+            "            return kinda_float(result)\n"
             "    except Exception as e:\n"
-            '        print(f"[shrug] Ish value kinda confused: {e}")\n'
-            '        print(f"[tip] Returning random value with variance +/-{variance}")\n'
+            '        print(f"[shrug] Composed ish value got confused: {e}")\n'
+            '        print(f"[tip] Falling back to basic fuzzy adjustment")\n'
             "        update_chaos_state(failed=True)\n"
-            "        return chaos_uniform(-variance, variance)"
+            "        return kinda_float(val if val is not None else target_val if target_val is not None else 0)"
         ),
     },
     "ish_comparison": {
         "type": "comparison",
         "pattern": re.compile(r"(\w+)\s*~ish\s*([^#;\s]+)"),
-        "description": "Fuzzy comparison with personality-adjusted tolerance",
+        "description": "Epic #124 Task 3: Fuzzy comparison using ~kinda float + tolerance composition",
         "body": (
-            "def ish_comparison(left_val, right_val, tolerance=None):\n"
-            '    """Check if values are approximately equal within personality-adjusted tolerance"""\n'
-            "    from kinda.personality import chaos_tolerance, update_chaos_state, chaos_choice\n"
+            "def ish_comparison(left_val, right_val, tolerance_base=None):\n"
+            '    """Epic #124 Task 3: ~ish comparison built from ~kinda float + tolerance logic"""\n'
+            "    from kinda.personality import chaos_tolerance, update_chaos_state, chaos_probability\n"
             "    try:\n"
-            "        # Use personality-adjusted tolerance if not specified\n"
-            "        if tolerance is None:\n"
-            "            tolerance = chaos_tolerance()\n"
+            "        # Use personality-adjusted tolerance base if not specified\n"
+            "        if tolerance_base is None:\n"
+            "            tolerance_base = chaos_tolerance()\n"
             "        \n"
             "        # Convert both values to numeric\n"
             "        if not isinstance(left_val, (int, float)):\n"
@@ -415,7 +442,7 @@ KindaPythonConstructs = {
             '                print(f"[?] ish comparison got weird left value: {repr(left_val)}")\n'
             '                print(f"[tip] Expected a number but got {type(left_val).__name__}")\n'
             "                update_chaos_state(failed=True)\n"
-            "                return chaos_choice([True, False])\n"
+            "                return probably(False)\n"
             "        \n"
             "        if not isinstance(right_val, (int, float)):\n"
             "            try:\n"
@@ -424,18 +451,23 @@ KindaPythonConstructs = {
             '                print(f"[?] ish comparison got weird right value: {repr(right_val)}")\n'
             '                print(f"[tip] Expected a number but got {type(right_val).__name__}")\n'
             "                update_chaos_state(failed=True)\n"
-            "                return chaos_choice([True, False])\n"
+            "                return probably(False)\n"
             "        \n"
-            "        # Check if values are within tolerance\n"
-            "        difference = abs(left_val - right_val)\n"
-            "        result = difference <= tolerance\n"
+            "        # Epic #124 Task 3: Use ~kinda float to add uncertainty to tolerance\n"
+            "        fuzzy_tolerance = kinda_float(tolerance_base)\n"
+            "        difference = kinda_float(abs(left_val - right_val))\n"
+            "        \n"
+            "        # Build ~ish behavior from basic constructs using ~probably\n"
+            "        base_result = difference <= fuzzy_tolerance\n"
+            "        result = probably(base_result)\n"
+            "        \n"
             "        update_chaos_state(failed=False)\n"
             "        return result\n"
             "    except Exception as e:\n"
-            '        print(f"[shrug] Ish comparison kinda broke: {e}")\n'
-            '        print(f"[tip] Flipping a coin instead")\n'
+            '        print(f"[shrug] Composed ish comparison kinda broke: {e}")\n'
+            '        print(f"[tip] Falling back to basic fuzzy choice")\n'
             "        update_chaos_state(failed=True)\n"
-            "        return chaos_choice([True, False])"
+            "        return maybe(False)"
         ),
     },
     "welp": {
