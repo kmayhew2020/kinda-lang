@@ -197,7 +197,7 @@ print(f"RESULT:{count}")
                 ["python", "-m", "kinda", "run", f.name],
                 capture_output=True,
                 text=True,
-                cwd="/home/kevin/kinda-lang",
+                cwd=os.getcwd(),
             )
 
             # Extract the count from output
@@ -251,7 +251,7 @@ print(f"RESULT:{count}")
                 ["python", "-m", "kinda", "run", f.name],
                 capture_output=True,
                 text=True,
-                cwd="/home/kevin/kinda-lang",
+                cwd=os.getcwd(),
             )
 
             # Extract the count from output

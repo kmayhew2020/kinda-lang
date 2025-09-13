@@ -53,7 +53,7 @@ print(f"EXECUTIONS:{executed_count}")
                     capture_output=True,
                     text=True,
                     timeout=15,
-                    cwd="/home/kevin/kinda-lang",
+                    cwd=os.getcwd(),
                 )
 
                 assert result.returncode == 0, f"Script failed: {result.stderr}"
@@ -115,7 +115,7 @@ print(f"RESULT:{attempt}")
                     capture_output=True,
                     text=True,
                     timeout=30,
-                    cwd="/home/kevin/kinda-lang",
+                    cwd=os.getcwd(),
                 )
 
                 assert result.returncode == 0, f"Script failed: {result.stderr}"
@@ -170,7 +170,7 @@ print(f"RARE:{rare_executions}")
                     capture_output=True,
                     text=True,
                     timeout=20,
-                    cwd="/home/kevin/kinda-lang",
+                    cwd=os.getcwd(),
                 )
 
                 assert result.returncode == 0, f"Script failed: {result.stderr}"
@@ -233,7 +233,7 @@ print(f"AVERAGE:{avg_value:.2f}")
                     capture_output=True,
                     text=True,
                     timeout=15,
-                    cwd="/home/kevin/kinda-lang",
+                    cwd=os.getcwd(),
                 )
 
                 assert result.returncode == 0, f"Script failed: {result.stderr}"
@@ -290,7 +290,7 @@ print(f"TARGET:{target:.2f}")
                     capture_output=True,
                     text=True,
                     timeout=25,
-                    cwd="/home/kevin/kinda-lang",
+                    cwd=os.getcwd(),
                 )
 
                 assert result.returncode == 0, f"Script failed: {result.stderr}"
@@ -352,7 +352,7 @@ print(f"AVG_VALUE:{sum(fuzzy_values) / len(fuzzy_values):.2f}")
                     capture_output=True,
                     text=True,
                     timeout=15,
-                    cwd="/home/kevin/kinda-lang",
+                    cwd=os.getcwd(),
                 )
 
                 assert result.returncode == 0, f"Script failed: {result.stderr}"
@@ -423,7 +423,7 @@ print(f"TOTAL:{total_iterations}")
                     capture_output=True,
                     text=True,
                     timeout=20,
-                    cwd="/home/kevin/kinda-lang",
+                    cwd=os.getcwd(),
                 )
 
                 assert result.returncode == 0, f"Script failed: {result.stderr}"
@@ -442,9 +442,7 @@ print(f"TOTAL:{total_iterations}")
                 assert 3 <= outer_loops <= 8, f"Outer loops out of range: {outer_loops}"
 
                 # Each sometimes_while should run some iterations (reliable = 90% continuation)
-                assert (
-                    total_iterations >= 0
-                ), f"Too few inner iterations: {total_iterations}"
+                assert total_iterations >= 0, f"Too few inner iterations: {total_iterations}"
                 assert (
                     total_iterations <= outer_loops * 15
                 ), f"Too many inner iterations: {total_iterations}"
@@ -489,7 +487,7 @@ print(f"EXECUTIONS:{total_executions}")
                     capture_output=True,
                     text=True,
                     timeout=25,
-                    cwd="/home/kevin/kinda-lang",
+                    cwd=os.getcwd(),
                 )
 
                 assert result.returncode == 0, f"Script failed: {result.stderr}"
@@ -555,7 +553,7 @@ print(f"RESULT:{loop_count}")
                     capture_output=True,
                     text=True,
                     timeout=15,
-                    cwd="/home/kevin/kinda-lang",
+                    cwd=os.getcwd(),
                 )
 
                 assert result.returncode == 0, f"Script failed: {result.stderr}"
@@ -611,7 +609,7 @@ print(f"FINAL:{progress}")
                     capture_output=True,
                     text=True,
                     timeout=20,
-                    cwd="/home/kevin/kinda-lang",
+                    cwd=os.getcwd(),
                 )
 
                 assert result.returncode == 0, f"Script failed: {result.stderr}"
@@ -673,7 +671,7 @@ print(f"SUCCESS:{successful_operations}")
                     capture_output=True,
                     text=True,
                     timeout=15,
-                    cwd="/home/kevin/kinda-lang",
+                    cwd=os.getcwd(),
                 )
 
                 assert result.returncode == 0, f"Script failed: {result.stderr}"
@@ -737,7 +735,7 @@ print(f"SUCCESSES:{successes}")
                     capture_output=True,
                     text=True,
                     timeout=20,
-                    cwd="/home/kevin/kinda-lang",
+                    cwd=os.getcwd(),
                 )
 
                 assert result.returncode == 0, f"Script failed: {result.stderr}"

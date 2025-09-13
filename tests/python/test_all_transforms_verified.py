@@ -18,9 +18,12 @@ def run_transform_and_execute(knda_content, tmp_path):
 
     # Execute and capture output with PYTHONPATH set to find kinda modules
     import os
+
     env = os.environ.copy()
-    env['PYTHONPATH'] = '/home/kevin/kinda-lang'
-    result = subprocess.run(["python", str(py_file)], capture_output=True, text=True, timeout=5, env=env)
+    env["PYTHONPATH"] = os.getcwd()
+    result = subprocess.run(
+        ["python", str(py_file)], capture_output=True, text=True, timeout=5, env=env
+    )
     return result.stdout, result.stderr, result.returncode, py_file.read_text()
 
 

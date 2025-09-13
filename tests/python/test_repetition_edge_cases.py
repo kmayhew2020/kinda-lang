@@ -56,7 +56,7 @@ print(f"EXECUTED:{{counter[0]}}")
                         capture_output=True,
                         text=True,
                         timeout=10,
-                        cwd="/home/kevin/kinda-lang",
+                        cwd=os.getcwd(),
                     )
 
                     # Should not crash - either handle gracefully or provide error
@@ -122,7 +122,7 @@ print(f"RESULT:{{counter[0]}}")
                         capture_output=True,
                         text=True,
                         timeout=timeout,
-                        cwd="/home/kevin/kinda-lang",
+                        cwd=os.getcwd(),
                     )
                     execution_time = time.time() - start_time
 
@@ -201,7 +201,7 @@ print(f"ITERATIONS:{{counter[0]}}")
                         capture_output=True,
                         text=True,
                         timeout=10,
-                        cwd="/home/kevin/kinda-lang",
+                        cwd=os.getcwd(),
                     )
 
                     assert (
@@ -263,7 +263,7 @@ print(f"TOTAL:{total}")
                     capture_output=True,
                     text=True,
                     timeout=30,
-                    cwd="/home/kevin/kinda-lang",
+                    cwd=os.getcwd(),
                 )
 
                 assert result.returncode == 0, f"Deep nesting failed: {result.stderr}"
@@ -330,7 +330,7 @@ print(f"ITERATIONS:{{counter[0]}}")
                         capture_output=True,
                         text=True,
                         timeout=15,
-                        cwd="/home/kevin/kinda-lang",
+                        cwd=os.getcwd(),
                     )
 
                     # Should handle malformed conditions gracefully
@@ -363,7 +363,10 @@ print(f"ITERATIONS:{{counter[0]}}")
             ("x > 10 and y < 5", "state[0] > 10 and state[1] < 5"),
             ("x % 7 == 0 or y > 15", "state[0] % 7 == 0 or state[1] > 15"),
             ("(x + y) * 2 > 50", "(state[0] + state[1]) * 2 > 50"),
-            ("x in [20, 21, 22] and y not in [3, 4]", "state[0] in [20, 21, 22] and state[1] not in [3, 4]"),
+            (
+                "x in [20, 21, 22] and y not in [3, 4]",
+                "state[0] in [20, 21, 22] and state[1] not in [3, 4]",
+            ),
             ("len(str(x)) >= 2", "len(str(state[0])) >= 2"),
         ]
 
@@ -401,7 +404,7 @@ print(f"CONDITION_MET:{original_condition}")
                         capture_output=True,
                         text=True,
                         timeout=20,
-                        cwd="/home/kevin/kinda-lang",
+                        cwd=os.getcwd(),
                     )
 
                     assert (
@@ -481,7 +484,7 @@ print(f"ACCESS_COUNT:{state.access_count}")
                     capture_output=True,
                     text=True,
                     timeout=25,
-                    cwd="/home/kevin/kinda-lang",
+                    cwd=os.getcwd(),
                 )
 
                 assert result.returncode == 0, f"Unstable state test failed: {result.stderr}"
@@ -543,7 +546,7 @@ print(f"EVALUATIONS:{evaluations}")
                     capture_output=True,
                     text=True,
                     timeout=30,
-                    cwd="/home/kevin/kinda-lang",
+                    cwd=os.getcwd(),
                 )
 
                 assert result.returncode == 0, f"Statistical edge case failed: {result.stderr}"
@@ -601,7 +604,7 @@ print(f"FINAL_COUNTER:{shared_counter}")
                     capture_output=True,
                     text=True,
                     timeout=20,
-                    cwd="/home/kevin/kinda-lang",
+                    cwd=os.getcwd(),
                 )
 
                 assert result.returncode == 0, f"Shared state interaction failed: {result.stderr}"
@@ -660,7 +663,7 @@ print(f"SIZES:{data_sets}")
                     capture_output=True,
                     text=True,
                     timeout=15,
-                    cwd="/home/kevin/kinda-lang",
+                    cwd=os.getcwd(),
                 )
 
                 assert result.returncode == 0, f"Memory boundary test failed: {result.stderr}"
@@ -722,7 +725,7 @@ print(f"RESULTS:{results}")
                     capture_output=True,
                     text=True,
                     timeout=15,
-                    cwd="/home/kevin/kinda-lang",
+                    cwd=os.getcwd(),
                 )
 
                 assert result.returncode == 0, f"Personality change test failed: {result.stderr}"
@@ -734,11 +737,21 @@ print(f"RESULTS:{results}")
                 results_str = results_line[0].split(":", 1)[1]
 
                 # Should show different behavior for different personalities
-                # All results should be positive
+                # All results should be positive (not zero)
                 assert "[" in results_str and "]" in results_str, "Should have list of results"
-                assert (
-                    not "0" in results_str or results_str.count("0") <= 1
-                ), "Should have mostly non-zero results"
+
+                # Parse the results properly to check for actual zero values, not string "0"
+                import ast
+
+                try:
+                    actual_results = ast.literal_eval(results_str)
+                    zero_count = actual_results.count(0)
+                    assert zero_count == 0, f"Should have no zero results, got: {actual_results}"
+                except (ValueError, SyntaxError):
+                    # Fallback for malformed results - should still be mostly non-zero
+                    assert (
+                        results_str.count("0,") <= 1
+                    ), f"Should have mostly non-zero results: {results_str}"
 
             finally:
                 os.unlink(f.name)

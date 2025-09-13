@@ -58,7 +58,7 @@ print(f"RESULT:{total}")
                     capture_output=True,
                     text=True,
                     timeout=30,
-                    cwd="/home/kevin/kinda-lang",
+                    cwd=os.getcwd(),
                 )
 
                 assert result.returncode == 0, f"Script failed: {result.stderr}"
@@ -109,7 +109,7 @@ print(f"RESULT:{total}")
                     capture_output=True,
                     text=True,
                     timeout=45,
-                    cwd="/home/kevin/kinda-lang",
+                    cwd=os.getcwd(),
                 )
                 execution_time = time.time() - start_time
 
@@ -171,7 +171,7 @@ print(f"RESULT:{len(data)}")
                     capture_output=True,
                     text=True,
                     timeout=60,
-                    cwd="/home/kevin/kinda-lang",
+                    cwd=os.getcwd(),
                 )
 
                 assert result.returncode == 0, f"Script failed: {result.stderr}"
@@ -234,7 +234,7 @@ print(f"RESULT:{{counter[0]}}")
                         capture_output=True,
                         text=True,
                         timeout=10,
-                        cwd="/home/kevin/kinda-lang",
+                        cwd=os.getcwd(),
                     )
 
                     assert (
@@ -291,7 +291,7 @@ print(f"RESULT:{iteration}")
                     capture_output=True,
                     text=True,
                     timeout=60,
-                    cwd="/home/kevin/kinda-lang",
+                    cwd=os.getcwd(),
                 )
                 execution_time = time.time() - start_time
 
@@ -352,7 +352,7 @@ print(f"RESULT:{iteration}")
                     capture_output=True,
                     text=True,
                     timeout=30,
-                    cwd="/home/kevin/kinda-lang",
+                    cwd=os.getcwd(),
                 )
                 execution_time = time.time() - start_time
 
@@ -414,7 +414,7 @@ print(f"RESULT:{counter}")
                         capture_output=True,
                         text=True,
                         timeout=20,
-                        cwd="/home/kevin/kinda-lang",
+                        cwd=os.getcwd(),
                     )
 
                     if result.returncode == 0:
@@ -488,7 +488,7 @@ print(f"RESULT:{sum(results)}")
                     capture_output=True,
                     text=True,
                     timeout=30,
-                    cwd="/home/kevin/kinda-lang",
+                    cwd=os.getcwd(),
                 )
 
                 assert result.returncode == 0, f"Script failed: {result.stderr}"
@@ -556,7 +556,7 @@ print(f"RESULT:{total}")
                     capture_output=True,
                     text=True,
                     timeout=45,
-                    cwd="/home/kevin/kinda-lang",
+                    cwd=os.getcwd(),
                 )
                 execution_time = time.time() - start_time
 
@@ -619,7 +619,7 @@ print(f"RESULT:{state[0]}")
                     capture_output=True,
                     text=True,
                     timeout=60,
-                    cwd="/home/kevin/kinda-lang",
+                    cwd=os.getcwd(),
                 )
                 execution_time = time.time() - start_time
 

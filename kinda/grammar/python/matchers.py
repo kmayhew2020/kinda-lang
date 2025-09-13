@@ -190,7 +190,7 @@ def _parse_loop_arguments(line: str, construct_name: str):
     elif construct_name == "eventually_until":
         # eventually_until doesn't use parentheses, it uses condition directly
         # Handle it differently - find condition up to colon
-        colon_pos = line.find(':')
+        colon_pos = line.find(":")
         if colon_pos == -1:
             return None
         prefix = f"~{construct_name}\\s+"
@@ -215,8 +215,10 @@ def _parse_loop_arguments(line: str, construct_name: str):
     # Only return content if parentheses are properly balanced and line ends with colon
     if content is not None and is_balanced:
         # Check if line ends with colon (with possible whitespace)
-        remaining = line[match.end() - 1 + len(content) + 2:].strip()  # +2 for opening and closing parens
-        if remaining.startswith(':'):
+        remaining = line[
+            match.end() - 1 + len(content) + 2 :
+        ].strip()  # +2 for opening and closing parens
+        if remaining.startswith(":"):
             return (content.strip(),)
 
     return None
@@ -684,7 +686,9 @@ def find_welp_constructs(line: str):
                     brace_depth += 1
                 elif char == "}":
                     brace_depth -= 1
-                elif char in ",:;#" and paren_depth == 0 and bracket_depth == 0 and brace_depth == 0:
+                elif (
+                    char in ",:;#" and paren_depth == 0 and bracket_depth == 0 and brace_depth == 0
+                ):
                     fallback_end = i
                     break
             else:
