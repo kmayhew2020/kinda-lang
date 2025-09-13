@@ -775,4 +775,229 @@ KindaPythonConstructs = {
             "        raise AssertionError(f'assert_probability failed with error: {e}')"
         ),
     },
+    "sometimes_while": {
+        "type": "loop",
+        "pattern": re.compile(r"~sometimes_while\s+(.+?)\s*:"),
+        "description": "Fuzzy while loop with personality-adjusted continuation probability",
+        "body": (
+            "def sometimes_while(condition, body_func=None):\n"
+            '    """Sometimes while loop - executes while condition is true with personality-adjusted probability"""\n'
+            "    from kinda.personality import get_personality, chaos_probability, update_chaos_state, chaos_random\n"
+            "    try:\n"
+            "        personality = get_personality()\n"
+            "\n"
+            "        # Use cached probability for performance optimization (Epic #125 Task 3)\n"
+            "        cached_prob = personality.get_cached_probability('sometimes_while')\n"
+            "        if cached_prob is not None:\n"
+            "            prob = cached_prob\n"
+            "        else:\n"
+            "            prob = chaos_probability('sometimes_while')\n"
+            "\n"
+            "        iterations = 0\n"
+            "        max_iterations = 10000  # Safety limit\n"
+            "\n"
+            "        # SECURITY: Use secure condition checking\n"
+            "        from kinda.security import secure_condition_check\n"
+            "\n"
+            "        while iterations < max_iterations:\n"
+            "            should_proceed, condition_result = secure_condition_check(condition, 'Sometimes While')\n"
+            "            if not should_proceed or not condition_result:\n"
+            "                break\n"
+            "\n"
+            "            # Sometimes decide to continue the loop\n"
+            "            if personality.get_optimized_random() >= prob:\n"
+            "                break\n"
+            "\n"
+            "            # Execute body if provided\n"
+            "            if body_func is not None:\n"
+            "                try:\n"
+            "                    body_func()\n"
+            "                except StopIteration:\n"
+            "                    break\n"
+            "                except Exception as e:\n"
+            '                    print(f"[loop-chaos] Sometimes while body failed: {e}")\n'
+            "                    update_chaos_state(failed=True)\n"
+            "                    break\n"
+            "\n"
+            "            iterations += 1\n"
+            "\n"
+            "        update_chaos_state(failed=False)\n"
+            "        return iterations\n"
+            "\n"
+            "    except Exception as e:\n"
+            '        print(f"[shrug] Sometimes while loop got confused: {e}")\n'
+            "        update_chaos_state(failed=True)\n"
+            "        return 0"
+        ),
+    },
+    "maybe_for": {
+        "type": "loop",
+        "pattern": re.compile(r"~maybe_for\s+(\w+)\s+in\s+(.+?)\s*:"),
+        "description": "Fuzzy for loop with personality-adjusted item execution probability",
+        "body": (
+            "def maybe_for(iterable, body_func=None):\n"
+            '    """Maybe for loop - executes for each item with personality-adjusted probability"""\n'
+            "    from kinda.personality import get_personality, chaos_probability, update_chaos_state\n"
+            "    try:\n"
+            "        personality = get_personality()\n"
+            "\n"
+            "        # Use cached probability for performance optimization (Epic #125 Task 3)\n"
+            "        cached_prob = personality.get_cached_probability('maybe_for')\n"
+            "        if cached_prob is not None:\n"
+            "            prob = cached_prob\n"
+            "        else:\n"
+            "            prob = chaos_probability('maybe_for')\n"
+            "\n"
+            "        executed_count = 0\n"
+            "\n"
+            "        # SECURITY: Validate iterable\n"
+            "        if not hasattr(iterable, '__iter__'):\n"
+            '            print(f"[welp] Maybe for got non-iterable: {type(iterable)}")\n'
+            "            update_chaos_state(failed=True)\n"
+            "            return 0\n"
+            "\n"
+            "        try:\n"
+            "            for item in iterable:\n"
+            "                # Maybe execute this iteration\n"
+            "                if personality.get_optimized_random() < prob:\n"
+            "                    if body_func is not None:\n"
+            "                        try:\n"
+            "                            body_func(item)\n"
+            "                            executed_count += 1\n"
+            "                        except StopIteration:\n"
+            "                            break\n"
+            "                        except Exception as e:\n"
+            '                            print(f"[loop-chaos] Maybe for body failed for {item}: {e}")\n'
+            "                            update_chaos_state(failed=True)\n"
+            "                            break\n"
+            "                    else:\n"
+            "                        executed_count += 1\n"
+            "        except Exception as e:\n"
+            '            print(f"[welp] Maybe for iteration failed: {e}")\n'
+            "            update_chaos_state(failed=True)\n"
+            "\n"
+            "        update_chaos_state(failed=False)\n"
+            "        return executed_count\n"
+            "\n"
+            "    except Exception as e:\n"
+            '        print(f"[shrug] Maybe for loop got confused: {e}")\n'
+            "        update_chaos_state(failed=True)\n"
+            "        return 0"
+        ),
+    },
+    "kinda_repeat": {
+        "type": "loop",
+        "pattern": re.compile(r"~kinda_repeat\s*\(\s*(.+?)\s*\)\s*:"),
+        "description": "Fuzzy repetition loop with personality-adjusted variance",
+        "body": (
+            "def kinda_repeat(n, body_func=None):\n"
+            '    """Kinda repeat - repeats approximately n times with personality-adjusted variance"""\n'
+            "    from kinda.personality import get_personality, chaos_gauss, update_chaos_state\n"
+            "    try:\n"
+            "        personality = get_personality()\n"
+            "\n"
+            "        # Use cached variance for performance optimization (Epic #125 Task 3)\n"
+            "        cache = personality._get_probability_cache()\n"
+            "        cached_variance = cache.get_cached_value('kinda_repeat_variance')\n"
+            "        if cached_variance is not None:\n"
+            "            variance = cached_variance\n"
+            "        else:\n"
+            "            variance = personality.profile.kinda_repeat_variance * personality.profile.chaos_amplifier * personality.chaos_multiplier\n"
+            "\n"
+            "        # Calculate fuzzy repetition count using Gaussian distribution\n"
+            "        if isinstance(n, (int, float)) and n > 0:\n"
+            "            actual_n = max(0, int(chaos_gauss(n, n * variance)))\n"
+            "        else:\n"
+            '            print(f"[welp] Kinda repeat got invalid count: {n}")\n'
+            "            update_chaos_state(failed=True)\n"
+            "            return 0\n"
+            "\n"
+            "        # Safety limit\n"
+            "        actual_n = min(actual_n, max(n * 3, 10000))\n"
+            "\n"
+            "        executed_count = 0\n"
+            "\n"
+            "        for i in range(actual_n):\n"
+            "            if body_func is not None:\n"
+            "                try:\n"
+            "                    body_func(i)\n"
+            "                    executed_count += 1\n"
+            "                except StopIteration:\n"
+            "                    break\n"
+            "                except Exception as e:\n"
+            '                    print(f"[loop-chaos] Kinda repeat body failed at iteration {i}: {e}")\n'
+            "                    update_chaos_state(failed=True)\n"
+            "                    break\n"
+            "            else:\n"
+            "                executed_count += 1\n"
+            "\n"
+            "        update_chaos_state(failed=False)\n"
+            "        return executed_count\n"
+            "\n"
+            "    except Exception as e:\n"
+            '        print(f"[shrug] Kinda repeat got confused: {e}")\n'
+            "        update_chaos_state(failed=True)\n"
+            "        return 0"
+        ),
+    },
+    "eventually_until": {
+        "type": "loop",
+        "pattern": re.compile(r"~eventually_until\s+(.+?)\s*:"),
+        "description": "Loop that executes until condition becomes consistently true with memory optimization",
+        "body": (
+            "def eventually_until(condition, body_func=None, context_id='default'):\n"
+            '    """Eventually until - executes until condition becomes consistently true"""\n'
+            "    from kinda.personality import get_eventually_until_evaluator, update_chaos_state\n"
+            "    try:\n"
+            "        # Get memory-optimized evaluator (Epic #125 Task 3)\n"
+            "        evaluator = get_eventually_until_evaluator(context_id)\n"
+            "\n"
+            "        iterations = 0\n"
+            "        max_iterations = 10000  # Safety limit\n"
+            "\n"
+            "        # SECURITY: Use secure condition checking\n"
+            "        from kinda.security import secure_condition_check\n"
+            "\n"
+            "        while iterations < max_iterations:\n"
+            "            # Evaluate condition\n"
+            "            should_proceed, condition_result = secure_condition_check(condition, 'Eventually Until')\n"
+            "            if not should_proceed:\n"
+            "                break\n"
+            "\n"
+            "            # Add evaluation to memory-optimized tracker\n"
+            "            should_continue = evaluator.add_evaluation(condition_result)\n"
+            "\n"
+            "            if not should_continue:\n"
+            "                # Convergence achieved\n"
+            "                break\n"
+            "\n"
+            "            # Execute body if provided\n"
+            "            if body_func is not None:\n"
+            "                try:\n"
+            "                    body_func()\n"
+            "                except StopIteration:\n"
+            "                    break\n"
+            "                except Exception as e:\n"
+            '                    print(f"[loop-chaos] Eventually until body failed: {e}")\n'
+            "                    update_chaos_state(failed=True)\n"
+            "                    break\n"
+            "\n"
+            "            iterations += 1\n"
+            "\n"
+            "        # Get final stats\n"
+            "        stats = evaluator.get_stats()\n"
+            "        update_chaos_state(failed=(iterations >= max_iterations))\n"
+            "\n"
+            "        return {\n"
+            "            'iterations': iterations,\n"
+            "            'converged': iterations < max_iterations,\n"
+            "            'stats': stats\n"
+            "        }\n"
+            "\n"
+            "    except Exception as e:\n"
+            '        print(f"[shrug] Eventually until got confused: {e}")\n'
+            "        update_chaos_state(failed=True)\n"
+            "        return {'iterations': 0, 'converged': False, 'stats': {}}"
+        ),
+    },
 }

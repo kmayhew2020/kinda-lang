@@ -64,12 +64,16 @@ def _process_conditional_block(
             continue
 
         try:
-            # Handle nested conditional constructs
+            # Handle nested conditional constructs and loops
             if (
                 stripped.startswith("~sometimes")
                 or stripped.startswith("~maybe")
                 or stripped.startswith("~probably")
                 or stripped.startswith("~rarely")
+                or stripped.startswith("~sometimes_while")
+                or stripped.startswith("~maybe_for")
+                or stripped.startswith("~kinda_repeat")
+                or stripped.startswith("~eventually_until")
             ):
                 if not _validate_conditional_syntax(stripped, line_number, file_path):
                     i += 1
@@ -407,6 +411,30 @@ def transform_line(line: str) -> List[str]:
 
         transformed_code = f"assert_probability({', '.join(args)})"
 
+    elif key == "sometimes_while":
+        used_helpers.add("sometimes")
+        (condition,) = groups
+        transformed_code = f"while sometimes() and ({condition}):"
+
+    elif key == "maybe_for":
+        used_helpers.add("maybe")
+        var_name, iterable = groups
+        # For maybe_for, we generate a Python for loop with maybe() checks inside the body
+        transformed_code = f"for {var_name} in ({iterable}):"
+
+    elif key == "kinda_repeat":
+        used_helpers.add("kinda_int")
+        (count,) = groups
+        # Use kinda_int to fuzz the repeat count
+        transformed_code = f"for _i in range(kinda_int({count})):"
+
+    elif key == "eventually_until":
+        used_helpers.add("sometimes")
+        (condition,) = groups
+        # For eventually_until, we use a simplified approach with sometimes()
+        # This is a basic implementation that terminates with some probability when condition is true
+        transformed_code = f"while not (({condition}) and sometimes()):"
+
     else:
         transformed_code = stripped  # fallback
 
@@ -463,6 +491,10 @@ def transform_file(path: Path, target_language="python") -> str:
                 or stripped.startswith("~maybe")
                 or stripped.startswith("~probably")
                 or stripped.startswith("~rarely")
+                or stripped.startswith("~sometimes_while")
+                or stripped.startswith("~maybe_for")
+                or stripped.startswith("~kinda_repeat")
+                or stripped.startswith("~eventually_until")
             ):
                 # Validate conditional syntax
                 if not _validate_conditional_syntax(stripped, line_number, str(path)):
@@ -498,8 +530,40 @@ def transform_file(path: Path, target_language="python") -> str:
 
 
 def _validate_conditional_syntax(line: str, line_number: int, file_path: str) -> bool:
-    """Validate ~sometimes, ~maybe, ~probably, and ~rarely syntax with helpful error messages"""
-    if line.startswith("~sometimes"):
+    """Validate ~sometimes, ~maybe, ~probably, ~rarely, and loop syntax with helpful error messages"""
+    if line.startswith("~sometimes_while"):
+        if ":" not in line:
+            raise KindaParseError(
+                "~sometimes_while needs a colon. Try: ~sometimes_while condition:",
+                line_number,
+                line,
+                file_path,
+            )
+    elif line.startswith("~maybe_for"):
+        if ":" not in line or " in " not in line:
+            raise KindaParseError(
+                "~maybe_for needs 'in' and colon. Try: ~maybe_for item in iterable:",
+                line_number,
+                line,
+                file_path,
+            )
+    elif line.startswith("~kinda_repeat"):
+        if ":" not in line or "(" not in line:
+            raise KindaParseError(
+                "~kinda_repeat needs parentheses and colon. Try: ~kinda_repeat(count):",
+                line_number,
+                line,
+                file_path,
+            )
+    elif line.startswith("~eventually_until"):
+        if ":" not in line:
+            raise KindaParseError(
+                "~eventually_until needs a colon. Try: ~eventually_until condition:",
+                line_number,
+                line,
+                file_path,
+            )
+    elif line.startswith("~sometimes"):
         if "(" not in line:
             raise KindaParseError(
                 "~sometimes needs parentheses. Try: ~sometimes() or ~sometimes(condition)",
