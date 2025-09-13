@@ -22,9 +22,11 @@ def run_transform_and_execute(knda_content, tmp_path):
     # Set up environment to ensure kinda module can be imported
     env = os.environ.copy()
     project_root = Path(__file__).parent.parent.parent  # Go up from tests/python/ to project root
-    env['PYTHONPATH'] = str(project_root)
+    env["PYTHONPATH"] = str(project_root)
 
-    result = subprocess.run([sys.executable, str(py_file)], capture_output=True, text=True, timeout=5, env=env)
+    result = subprocess.run(
+        [sys.executable, str(py_file)], capture_output=True, text=True, timeout=5, env=env
+    )
     return result.stdout, result.stderr, result.returncode, py_file.read_text()
 
 
