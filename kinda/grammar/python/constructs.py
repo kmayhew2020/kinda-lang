@@ -1066,4 +1066,170 @@ KindaPythonConstructs = {
             "        return {'iterations': 0, 'converged': False, 'stats': {}}"
         ),
     },
+    # Wrapper functions for dev branch transformer compatibility
+    # These provide simplified interfaces to the Epic #125 Task 3 advanced functions
+    "sometimes_while_condition": {
+        "type": "helper",
+        "description": "Wrapper function for sometimes_while loop condition checking",
+        "body": (
+            "def sometimes_while_condition(condition):\n"
+            '    """Check if sometimes_while loop should continue with probabilistic decision."""\n'
+            "    from kinda.personality import chaos_probability, update_chaos_state, chaos_random\n"
+            "    from kinda.security import secure_condition_check\n"
+            "    try:\n"
+            "        # First check the actual condition using secure checking\n"
+            "        should_proceed, condition_result = secure_condition_check(condition, 'sometimes_while')\n"
+            "        if not should_proceed:\n"
+            "            update_chaos_state(failed=True)\n"
+            "            return False\n"
+            "\n"
+            "        # If condition is false, definitely don't continue\n"
+            "        if not condition_result:\n"
+            "            update_chaos_state(failed=False)\n"
+            "            return False\n"
+            "\n"
+            "        # Condition is true, now apply personality-based probability\n"
+            "        prob = chaos_probability('sometimes_while')\n"
+            "        should_continue = chaos_random() < prob\n"
+            "        update_chaos_state(failed=not should_continue)\n"
+            "        return should_continue\n"
+            "    except Exception as e:\n"
+            '        print(f"[shrug] sometimes_while condition check failed: {e}")\n'
+            '        print(f"[tip] Defaulting to False for safety")\n'
+            "        update_chaos_state(failed=True)\n"
+            "        return False\n"
+            "\n"
+            'env["sometimes_while_condition"] = sometimes_while_condition'
+        ),
+    },
+    "maybe_for_item_execute": {
+        "type": "helper",
+        "description": "Wrapper function for maybe_for item execution checking",
+        "body": (
+            "def maybe_for_item_execute():\n"
+            '    """Check if maybe_for should execute current iteration with probabilistic decision."""\n'
+            "    from kinda.personality import chaos_probability, update_chaos_state, chaos_random\n"
+            "    try:\n"
+            "        # Apply personality-based probability for this iteration\n"
+            "        prob = chaos_probability('maybe_for')\n"
+            "        should_execute = chaos_random() < prob\n"
+            "        update_chaos_state(failed=not should_execute)\n"
+            "        return should_execute\n"
+            "    except Exception as e:\n"
+            '        print(f"[shrug] maybe_for execution check failed: {e}")\n'
+            '        print(f"[tip] Defaulting to True for safety")\n'
+            "        update_chaos_state(failed=True)\n"
+            "        return True\n"
+            "\n"
+            'env["maybe_for_item_execute"] = maybe_for_item_execute'
+        ),
+    },
+    "kinda_repeat_count": {
+        "type": "helper",
+        "description": "Wrapper function for kinda_repeat count calculation",
+        "body": (
+            "def kinda_repeat_count(n):\n"
+            '    """Calculate fuzzy repetition count with personality-based variance."""\n'
+            "    from kinda.personality import get_kinda_repeat_variance, update_chaos_state, chaos_gauss\n"
+            "    try:\n"
+            "        # Convert n to integer\n"
+            "        if not isinstance(n, (int, float)):\n"
+            "            try:\n"
+            "                n = int(float(n))\n"
+            "            except (ValueError, TypeError):\n"
+            '                print(f"[?] kinda_repeat got weird count: {repr(n)}")\n'
+            '                print(f"[tip] Expected a number but got {type(n).__name__}, using 1")\n'
+            "                update_chaos_state(failed=True)\n"
+            "                return 1\n"
+            "\n"
+            "        base_n = int(n)\n"
+            "\n"
+            "        # Handle edge cases\n"
+            "        if base_n <= 0:\n"
+            "            update_chaos_state(failed=False)\n"
+            "            return max(0, base_n)  # Return 0 for n=0, but ensure no negative\n"
+            "\n"
+            "        # Get personality-based variance (as fraction of n)\n"
+            "        variance_fraction = get_kinda_repeat_variance()\n"
+            "        sigma = base_n * variance_fraction\n"
+            "\n"
+            "        # Generate count using normal distribution centered on n\n"
+            "        fuzzy_count = chaos_gauss(base_n, sigma)\n"
+            "        result_count = max(1, int(round(fuzzy_count)))  # Always at least 1 (unless n=0)\n"
+            "\n"
+            "        update_chaos_state(failed=False)\n"
+            "        return result_count\n"
+            "    except Exception as e:\n"
+            '        print(f"[shrug] kinda_repeat count calculation failed: {e}")\n'
+            '        print(f"[tip] Falling back to original count or 1")\n'
+            "        update_chaos_state(failed=True)\n"
+            "        return max(1, int(n) if isinstance(n, (int, float)) else 1)\n"
+            "\n"
+            'env["kinda_repeat_count"] = kinda_repeat_count'
+        ),
+    },
+    "eventually_until_condition": {
+        "type": "helper",
+        "description": "Wrapper function for eventually_until condition checking",
+        "body": (
+            "def eventually_until_condition(condition):\n"
+            '    """Check eventually_until condition with statistical confidence."""\n'
+            "    from kinda.personality import get_eventually_until_confidence, update_chaos_state\n"
+            "    from kinda.security import secure_condition_check\n"
+            "\n"
+            "    # Create evaluator if it doesn't exist in globals\n"
+            "    if 'eventually_until_evaluator' not in globals():\n"
+            "        confidence = get_eventually_until_confidence()\n"
+            "        globals()['eventually_until_evaluator'] = {\n"
+            "            'confidence_threshold': confidence,\n"
+            "            'evaluations': [],\n"
+            "            'min_samples': 3\n"
+            "        }\n"
+            "\n"
+            "    evaluator = globals()['eventually_until_evaluator']\n"
+            "\n"
+            "    try:\n"
+            "        # Security check for condition\n"
+            "        should_proceed, condition_result = secure_condition_check(condition, 'eventually_until')\n"
+            "        if not should_proceed:\n"
+            "            update_chaos_state(failed=True)\n"
+            "            return True  # Terminate unsafe conditions\n"
+            "\n"
+            "        # Add evaluation result\n"
+            "        evaluator['evaluations'].append(bool(condition_result))\n"
+            "        n = len(evaluator['evaluations'])\n"
+            "\n"
+            "        # Need minimum sample size for statistics\n"
+            "        if n < evaluator['min_samples']:\n"
+            "            update_chaos_state(failed=False)\n"
+            "            return True  # Continue until we have enough data\n"
+            "\n"
+            "        # For fuzzy conditions like ~ish comparisons, use a simpler approach:\n"
+            "        # Check if we've had recent consecutive successes (indicating condition is met)\n"
+            "        consecutive_successes = 0\n"
+            "        for i in range(len(evaluator['evaluations']) - 1, -1, -1):\n"
+            "            if evaluator['evaluations'][i]:\n"
+            "                consecutive_successes += 1\n"
+            "            else:\n"
+            "                break\n"
+            "\n"
+            "        # Also check recent success rate (last 5-10 evaluations)\n"
+            "        recent_window = min(5, n)\n"
+            "        recent_evaluations = evaluator['evaluations'][-recent_window:]\n"
+            "        recent_successes = sum(recent_evaluations)\n"
+            "        recent_success_rate = recent_successes / recent_window if recent_window > 0 else 0\n"
+            "\n"
+            "        # Terminate if we have 2+ consecutive successes OR high recent success rate\n"
+            "        should_terminate = (consecutive_successes >= 2) or (recent_success_rate >= 0.8)\n"
+            "        update_chaos_state(failed=not should_terminate)\n"
+            "        return not should_terminate  # Continue while not terminated\n"
+            "\n"
+            "    except Exception as e:\n"
+            '        print(f"[shrug] eventually_until condition check failed: {e}")\n'
+            "        update_chaos_state(failed=True)\n"
+            "        return False  # Terminate on errors for safety\n"
+            "\n"
+            'env["eventually_until_condition"] = eventually_until_condition'
+        ),
+    },
 }
