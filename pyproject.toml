@@ -54,9 +54,8 @@ python_functions = ["test_*"]
 line-length = 100
 target-version = ['py38']
 
-[tool.setuptools.packages.find]
-where = ["."]
-include = ["kinda*"]
+[tool.setuptools]
+packages = ["kinda", "kinda.grammar", "kinda.interpreter", "kinda.langs", "kinda.langs.python"]
 
 [tool.mypy]
 python_version = "3.10"
