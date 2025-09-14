@@ -146,7 +146,7 @@ class MemoryOptimizedEventuallyUntil:
 
     def __init__(self, confidence_threshold: float, max_history: int = 100):
         self.confidence_threshold = confidence_threshold
-        self.evaluations = deque(maxlen=max_history)  # Circular buffer
+        self.evaluations: deque[bool] = deque(maxlen=max_history)  # Circular buffer
         self.min_samples = 3
 
     def add_evaluation(self, result: bool) -> bool:
@@ -202,7 +202,7 @@ class OptimizedRandomState:
     def __init__(self, seed: Optional[int] = None, batch_size: int = 1000):
         self.rng = random.Random(seed)
         self.batch_size = batch_size
-        self._float_batch = []
+        self._float_batch: List[float] = []
         self._int_ranges: Dict[Tuple[int, int], List[int]] = defaultdict(list)
 
     def _refill_float_batch(self):
@@ -363,10 +363,10 @@ class PersonalityContext:
         self.chaos_multiplier = self._calculate_chaos_multiplier(chaos_level)
         self.execution_count = 0
         self.instability_level = 0.0  # For cascade failures
-        self.drift_accumulator = {}  # For time-based drift
+        self.drift_accumulator: Dict[str, Dict[str, Any]] = {}  # For time-based drift
 
         # Performance optimizations (Epic #125 Task 3)
-        self._probability_cache = None  # Lazy initialization
+        self._probability_cache: Optional[ProbabilityCache] = None  # Lazy initialization
         self._optimized_rng = OptimizedRandomState(seed)  # Pre-generate batches of random numbers
 
         # Centralized random number generator for reproducibility (keeping for backward compatibility)
@@ -668,7 +668,10 @@ class PersonalityContext:
         """Get the age of a variable in seconds."""
         if var_name not in self.drift_accumulator:
             return 0.0
-        return time.time() - self.drift_accumulator[var_name]["creation_time"]
+        creation_time = self.drift_accumulator[var_name]["creation_time"]
+        if isinstance(creation_time, (int, float)):
+            return float(time.time() - creation_time)
+        return 0.0
 
     def get_variable_drift_stats(self, var_name: str) -> Dict[str, Any]:
         """Get drift statistics for a variable."""
@@ -677,7 +680,7 @@ class PersonalityContext:
 
         var_info = self.drift_accumulator[var_name].copy()
         var_info["age_seconds"] = self.get_variable_age(var_name)
-        return var_info
+        return dict(var_info)
 
     # Centralized random number generation methods for reproducibility
     def random(self) -> float:

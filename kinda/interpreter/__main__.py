@@ -1,4 +1,4 @@
-from kinda.interpreter import cli
+from kinda import cli
 
 if __name__ == "__main__":
     cli.main()

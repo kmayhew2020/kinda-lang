@@ -1,8 +1,11 @@
 from pathlib import Path
+from typing import Dict, Any, Set
 from kinda.grammar.python.constructs import KindaPythonConstructs as KindaConstructs
 
 
-def generate_runtime_helpers(used_keys, output_path: Path, constructs):
+def generate_runtime_helpers(
+    used_keys: Set[str], output_path: Path, constructs: Dict[str, Any]
+) -> str:
     """
     Dynamically appends helpers to fuzzy.py based on what was actually used during transformation.
     """
@@ -10,7 +13,7 @@ def generate_runtime_helpers(used_keys, output_path: Path, constructs):
 
     for key in sorted(used_keys):
         construct = constructs.get(key)
-        if construct and "body" in construct:
+        if construct and isinstance(construct, dict) and "body" in construct:
             code.append(construct["body"])
 
     if code:
@@ -21,7 +24,7 @@ def generate_runtime_helpers(used_keys, output_path: Path, constructs):
     return "\n\n".join(code) + "\n"
 
 
-def generate_runtime(output_dir: Path):
+def generate_runtime(output_dir: Path) -> None:
     """
     Auto-generates the core fuzzy.py file using all known construct definitions.
     Typically writes to: kinda/langs/python/runtime/
@@ -52,20 +55,27 @@ def generate_runtime(output_dir: Path):
     for key in sorted(KindaConstructs.keys()):
         meta = KindaConstructs[key]
 
-        runtime_code = meta.get("runtime", {}).get("python")
-        if runtime_code:
-            lines.append(runtime_code.strip() + "\n\n")
-            lines.append(f'env["{key}"] = {key}\n\n')
-            already_added.add(key)
-        elif "body" in meta:
-            body = meta["body"].strip()
-            lines.append(body + "\n\n")
-            if "def " in body:
-                func_name = body.split("def ")[1].split("(")[0].strip()
-                lines.append(f'env["{func_name}"] = {func_name}\n\n')
+        if not isinstance(meta, dict):
+            continue
+
+        runtime_info = meta.get("runtime")
+        if isinstance(runtime_info, dict):
+            runtime_code = runtime_info.get("python")
+            if runtime_code and isinstance(runtime_code, str):
+                lines.append(runtime_code.strip() + "\n\n")
+                lines.append(f'env["{key}"] = {key}\n\n')
                 already_added.add(key)
-            else:
-                print(f"⚠️ No 'def' found in body for key: {key}, skipping env assignment")
+        elif "body" in meta:
+            body = meta["body"]
+            if isinstance(body, str):
+                body_stripped = body.strip()
+                lines.append(body_stripped + "\n\n")
+                if "def " in body_stripped:
+                    func_name = body_stripped.split("def ")[1].split("(")[0].strip()
+                    lines.append(f'env["{func_name}"] = {func_name}\n\n')
+                    already_added.add(key)
+                else:
+                    print(f"⚠️ No 'def' found in body for key: {key}, skipping env assignment")
 
     # Add built-ins if not already defined
     if "sorta_print" not in already_added:

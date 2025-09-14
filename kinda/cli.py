@@ -4,11 +4,11 @@ import argparse
 import os
 import sys
 from pathlib import Path
-from typing import Union, Optional
+from typing import Union, Optional, Dict
 
 # Optional chardet import for encoding detection
 try:
-    import chardet
+    import chardet  # type: ignore[import-not-found]
 
     HAS_CHARDET = True
 except ImportError:
@@ -66,7 +66,7 @@ def safe_read_file(file_path: Path) -> str:
         encoding = "utf-8"  # default
         if HAS_CHARDET:
             detected = chardet.detect(raw_data)
-            encoding = detected.get("encoding", "utf-8")
+            encoding = detected.get("encoding") or "utf-8"
             confidence = detected.get("confidence", 0)
 
             if confidence < 0.7:
@@ -507,7 +507,7 @@ def main(argv=None) -> int:
     if args.command == "transform":
         # Setup personality for transform
         setup_personality(
-            getattr(args, "mood", None),
+            getattr(args, "mood", None) or "playful",
             getattr(args, "chaos_level", 5),
             getattr(args, "seed", None),
         )
@@ -590,7 +590,7 @@ def main(argv=None) -> int:
     if args.command == "run":
         # Setup personality for run
         setup_personality(
-            getattr(args, "mood", None),
+            getattr(args, "mood", None) or "playful",
             getattr(args, "chaos_level", 5),
             getattr(args, "seed", None),
         )
@@ -684,7 +684,7 @@ def main(argv=None) -> int:
     if args.command == "interpret":
         # Setup personality for interpret
         setup_personality(
-            getattr(args, "mood", None),
+            getattr(args, "mood", None) or "playful",
             getattr(args, "chaos_level", 5),
             getattr(args, "seed", None),
         )
@@ -726,7 +726,7 @@ def main(argv=None) -> int:
         if args.record_command == "run":
             # Setup personality for record run
             setup_personality(
-                getattr(args, "mood", None),
+                getattr(args, "mood", None) or "playful",
                 getattr(args, "chaos_level", 5),
                 getattr(args, "seed", None),
             )
@@ -1057,7 +1057,7 @@ def main(argv=None) -> int:
                     return 0
 
                 # Group calls by construct type over time
-                time_buckets = {}
+                time_buckets: Dict[float, Dict[str, int]] = {}
                 start_time = session.rng_calls[0].timestamp
 
                 for call in session.rng_calls:

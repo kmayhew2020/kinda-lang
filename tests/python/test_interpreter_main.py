@@ -11,11 +11,11 @@ class TestInterpreterMain:
     """Test interpreter/__main__.py module execution"""
 
     def test_interpreter_main_import_error_handling(self):
-        """Test that interpreter __main__ handles import errors gracefully"""
+        """Test that interpreter __main__ imports and runs CLI correctly"""
         # Get project root dynamically
         project_root = Path(__file__).parent.parent.parent
 
-        # Test that the module fails to import due to missing cli module
+        # Test that the module imports successfully and runs the CLI
         result = subprocess.run(
             [sys.executable, "-m", "kinda.interpreter"],
             capture_output=True,
@@ -23,10 +23,11 @@ class TestInterpreterMain:
             cwd=str(project_root),
         )
 
-        # Should fail with import error
-        assert result.returncode == 1
-        assert "ImportError" in result.stderr
-        assert "cannot import name 'cli'" in result.stderr
+        # Should fail with CLI usage error (not import error) because no command provided
+        assert result.returncode == 2  # CLI usage error, not import error
+        assert "the following arguments are required: command" in result.stderr
+        # Should not have import errors
+        assert "ImportError" not in result.stderr
 
     def test_interpreter_main_with_mock_cli(self):
         """Test interpreter __main__ execution with mocked cli module"""
@@ -39,7 +40,7 @@ class TestInterpreterMain:
         mock_cli.main = MagicMock()
 
         # Mock the import and execution
-        with patch.dict("sys.modules", {"kinda.interpreter.cli": mock_cli}):
+        with patch.dict("sys.modules", {"kinda.cli": mock_cli}):
             # Import the __main__ module, which should execute cli.main()
             import importlib.util
 
@@ -62,7 +63,7 @@ class TestInterpreterMain:
 
         content = main_file.read_text()
         # Should contain the import and main execution
-        assert "from kinda.interpreter import cli" in content
+        assert "from kinda import cli" in content
         assert "cli.main()" in content
         assert 'if __name__ == "__main__":' in content
 
