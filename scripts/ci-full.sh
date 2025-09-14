@@ -4,6 +4,9 @@
 
 set -e  # Exit on any error
 
+# Set CI environment variable to ensure deterministic test behavior
+export CI=1
+
 echo "🎲 Kinda-Lang Local CI (matches GitHub Actions)"
 echo "=============================================="
 

@@ -20,6 +20,7 @@ import random
 import traceback
 import contextlib
 import sys
+import os
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 from unittest.mock import patch
@@ -38,6 +39,30 @@ from kinda.personality import (
 )
 from kinda.langs.python.transformer import transform_line, transform_file
 from kinda.grammar.python.matchers import match_python_construct
+
+
+def is_ci_environment():
+    """Detect if we're running in a CI environment where test determinism is required."""
+    ci_env_vars = [
+        "CI",  # GitHub Actions, Travis, many others
+        "GITHUB_ACTIONS",  # GitHub Actions specifically
+        "JENKINS_URL",  # Jenkins
+        "TRAVIS",  # Travis CI
+        "CIRCLECI",  # CircleCI
+        "BUILDKITE",  # Buildkite
+        "TF_BUILD",  # Azure Pipelines
+    ]
+
+    # Check if any CI environment variable is set
+    for env_var in ci_env_vars:
+        if os.getenv(env_var):
+            return True
+
+    # Also check if pytest is being run with specific CI flags
+    if os.getenv("PYTEST_DISABLE_CHAOS"):
+        return True
+
+    return False
 
 
 class KindaTestResult:
@@ -199,7 +224,10 @@ class KindaTestFramework:
             self.run_fuzzy_setup()
 
             # ~sometimes we might skip the test entirely (chaos!)
-            if chaos_random() < chaos_probability("rarely"):  # ~rarely skip
+            # BUT NOT in CI environments where deterministic behavior is required
+            if not is_ci_environment() and chaos_random() < chaos_probability(
+                "rarely"
+            ):  # ~rarely skip
                 result.add_output("[CHAOS] ~rarely skipped test execution!")
                 result.execution_time = time.time() - start_time
                 result.succeeded = None  # Undefined result
