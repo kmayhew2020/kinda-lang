@@ -1,0 +1,321 @@
+# kinda/composition/patterns.py
+
+"""
+Kinda-Lang Composition Patterns Library
+
+Provides common composition patterns for building composite constructs
+from basic probabilistic primitives.
+"""
+
+from typing import Any, Dict, List, Optional, Callable
+from kinda.composition.framework import (
+    CompositeConstruct, CompositionStrategy, CompositionConfig,
+    CompositionEngine, PersonalityBridge
+)
+
+
+class UnionComposition(CompositeConstruct):
+    """Template for union-based compositions (like Task 1 sorta_print)."""
+
+    def __init__(self, name: str, basic_constructs: List[str],
+                 bridge_config: Dict[str, float] = None):
+        config = CompositionConfig(
+            strategy=CompositionStrategy.UNION,
+            personality_bridges=bridge_config or {}
+        )
+        super().__init__(name, config)
+        self.basic_constructs = basic_constructs
+
+    def get_basic_constructs(self) -> List[str]:
+        return self.basic_constructs
+
+    def compose(self, *args, **kwargs) -> bool:
+        """Execute union composition."""
+        from kinda.composition.framework import get_composition_engine
+
+        engine = get_composition_engine()
+
+        # Get basic construct functions from global scope
+        gates = []
+        for construct_name in self.basic_constructs:
+            gate_func = globals().get(construct_name)
+            if gate_func is None:
+                # Try importing from kinda runtime
+                try:
+                    from kinda.langs.python.runtime import fuzzy
+                    gate_func = getattr(fuzzy, construct_name, None)
+                except ImportError:
+                    pass
+
+            if gate_func is None:
+                raise RuntimeError(f"Basic construct '{construct_name}' not available")
+            gates.append(gate_func)
+
+        # Execute union strategy
+        base_result = engine._execute_union(gates, *args, **kwargs)
+
+        # Apply personality bridge if configured
+        return PersonalityBridge.apply_personality_bridge(
+            base_result, self.name, self.config.personality_bridges
+        )
+
+    def get_target_probabilities(self) -> Dict[str, float]:
+        """Calculate target probabilities for each personality."""
+        from kinda.personality import get_personality, chaos_probability
+
+        personality = get_personality()
+        basic_probs = []
+
+        for construct in self.basic_constructs:
+            prob = chaos_probability(construct.replace('_base', ''))
+            basic_probs.append(prob)
+
+        composite_prob = PersonalityBridge.calculate_composite_probability(
+            basic_probs, CompositionStrategy.UNION
+        )
+
+        return {personality.mood: composite_prob}
+
+
+class ThresholdComposition(CompositeConstruct):
+    """Pattern for threshold-based compositions."""
+
+    def __init__(self, name: str, basic_constructs: List[str],
+                 threshold: float = 0.5):
+        config = CompositionConfig(
+            strategy=CompositionStrategy.WEIGHTED,
+            personality_bridges={}
+        )
+        super().__init__(name, config)
+        self.basic_constructs = basic_constructs
+        self.threshold = threshold
+
+    def get_basic_constructs(self) -> List[str]:
+        return self.basic_constructs
+
+    def compose(self, *args, **kwargs) -> bool:
+        """Execute threshold composition."""
+        total_votes = 0
+        positive_votes = 0
+
+        for construct_name in self.basic_constructs:
+            gate_func = globals().get(construct_name)
+            if gate_func is None:
+                # Try importing from kinda runtime
+                try:
+                    from kinda.langs.python.runtime import fuzzy
+                    gate_func = getattr(fuzzy, construct_name, None)
+                except ImportError:
+                    pass
+
+            if gate_func:
+                try:
+                    if gate_func(*args, **kwargs):
+                        positive_votes += 1
+                    total_votes += 1
+                except Exception:
+                    pass  # Skip failed constructs
+
+        if total_votes == 0:
+            return False
+
+        vote_ratio = positive_votes / total_votes
+        return vote_ratio >= self.threshold
+
+    def get_target_probabilities(self) -> Dict[str, float]:
+        """Calculate target probabilities for threshold composition."""
+        from kinda.personality import get_personality, chaos_probability
+
+        personality = get_personality()
+        basic_probs = []
+
+        for construct in self.basic_constructs:
+            prob = chaos_probability(construct.replace('_base', ''))
+            basic_probs.append(prob)
+
+        # For threshold composition, estimate probability based on threshold
+        avg_prob = sum(basic_probs) / len(basic_probs) if basic_probs else 0.5
+        # Threshold probability is roughly the average probability
+        # adjusted by how strict the threshold is
+        threshold_prob = avg_prob * (1 - abs(self.threshold - 0.5))
+
+        return {personality.mood: threshold_prob}
+
+
+class ToleranceComposition(CompositeConstruct):
+    """Pattern for tolerance-based compositions (for ~ish patterns)."""
+
+    def __init__(self, name: str, base_construct: str, tolerance_func: str):
+        config = CompositionConfig(
+            strategy=CompositionStrategy.CONDITIONAL,
+            personality_bridges={}
+        )
+        super().__init__(name, config)
+        self.base_construct = base_construct
+        self.tolerance_func = tolerance_func
+
+    def get_basic_constructs(self) -> List[str]:
+        return [self.base_construct, self.tolerance_func]
+
+    def compose(self, value_a: Any, value_b: Any, tolerance: float = None) -> bool:
+        """Execute tolerance-based comparison composition."""
+        from kinda.personality import chaos_tolerance
+
+        # Get fuzzy value using base construct
+        base_func = globals().get(self.base_construct)
+        if base_func is None:
+            # Try importing from kinda runtime
+            try:
+                from kinda.langs.python.runtime import fuzzy
+                base_func = getattr(fuzzy, self.base_construct, None)
+            except ImportError:
+                pass
+
+        if not base_func:
+            raise RuntimeError(f"Base construct '{self.base_construct}' not available")
+
+        # For tolerance composition, we compare fuzzy values
+        try:
+            fuzzy_a = float(base_func(value_a) if callable(base_func) else value_a)
+            fuzzy_b = float(base_func(value_b) if callable(base_func) else value_b)
+        except (TypeError, ValueError):
+            # If conversion fails, fall back to direct comparison
+            fuzzy_a = float(value_a) if isinstance(value_a, (int, float)) else 0.0
+            fuzzy_b = float(value_b) if isinstance(value_b, (int, float)) else 0.0
+
+        # Calculate tolerance-based comparison
+        if tolerance is None:
+            tolerance = chaos_tolerance()  # From personality system
+
+        difference = abs(fuzzy_a - fuzzy_b)
+        return difference <= tolerance
+
+    def get_target_probabilities(self) -> Dict[str, float]:
+        """Calculate target probabilities for tolerance composition."""
+        from kinda.personality import get_personality
+
+        personality = get_personality()
+
+        # Tolerance compositions have variable probability based on input values
+        # Return a reasonable default for the personality
+        base_prob = {
+            'reliable': 0.8,    # High precision, stricter tolerance
+            'cautious': 0.7,    # Moderate tolerance
+            'playful': 0.6,     # More relaxed tolerance
+            'chaotic': 0.5      # Very loose tolerance
+        }.get(personality.mood, 0.65)
+
+        return {personality.mood: base_prob}
+
+
+class CompositionPatternFactory:
+    """Factory for creating common composition patterns."""
+
+    @staticmethod
+    def create_union_pattern(name: str,
+                           basic_constructs: List[str],
+                           bridge_probabilities: Dict[str, float] = None) -> UnionComposition:
+        """Create a union composition pattern."""
+        return UnionComposition(name, basic_constructs, bridge_probabilities)
+
+    @staticmethod
+    def create_threshold_pattern(name: str,
+                               basic_constructs: List[str],
+                               threshold: float = 0.5) -> ThresholdComposition:
+        """Create a threshold-based composition pattern."""
+        return ThresholdComposition(name, basic_constructs, threshold)
+
+    @staticmethod
+    def create_tolerance_pattern(name: str,
+                               base_construct: str,
+                               tolerance_func: str = "kinda_float") -> ToleranceComposition:
+        """Create a tolerance-based composition pattern."""
+        return ToleranceComposition(name, base_construct, tolerance_func)
+
+    @staticmethod
+    def create_custom_pattern(name: str,
+                            strategy: CompositionStrategy,
+                            basic_constructs: List[str],
+                            config: CompositionConfig = None) -> CompositeConstruct:
+        """Create a custom composition pattern."""
+        if config is None:
+            config = CompositionConfig(strategy=strategy)
+
+        class CustomComposition(CompositeConstruct):
+            def __init__(self):
+                super().__init__(name, config)
+                self.basic_constructs = basic_constructs
+
+            def get_basic_constructs(self) -> List[str]:
+                return self.basic_constructs
+
+            def compose(self, *args, **kwargs) -> Any:
+                from kinda.composition.framework import get_composition_engine
+
+                engine = get_composition_engine()
+                gates = []
+
+                for construct_name in self.basic_constructs:
+                    gate_func = globals().get(construct_name)
+                    if gate_func is None:
+                        # Try importing from kinda runtime
+                        try:
+                            from kinda.langs.python.runtime import fuzzy
+                            gate_func = getattr(fuzzy, construct_name, None)
+                        except ImportError:
+                            pass
+
+                    if gate_func is not None:
+                        gates.append(gate_func)
+
+                if not gates:
+                    raise RuntimeError(f"No valid constructs found from {self.basic_constructs}")
+
+                return engine._execute_strategy(strategy, gates, *args, **kwargs)
+
+            def get_target_probabilities(self) -> Dict[str, float]:
+                # Calculate based on basic construct probabilities
+                from kinda.personality import get_personality, chaos_probability
+
+                personality = get_personality()
+                basic_probs = []
+                for construct in self.basic_constructs:
+                    prob = chaos_probability(construct.replace('_base', ''))
+                    basic_probs.append(prob)
+
+                composite_prob = PersonalityBridge.calculate_composite_probability(
+                    basic_probs, strategy
+                )
+
+                return {personality.mood: composite_prob}
+
+        return CustomComposition()
+
+
+# Pre-defined composition patterns for common use cases
+
+def create_sorta_pattern() -> UnionComposition:
+    """Create the sorta pattern used in Task 1 (sometimes OR maybe)."""
+    bridge_config = {
+        'reliable': 0.0,    # No bridge needed for reliable
+        'cautious': 0.0,    # No bridge needed for cautious
+        'playful': 0.2,     # Bridge gap for playful personality
+        'chaotic': 0.2      # Bridge gap for chaotic personality
+    }
+    return CompositionPatternFactory.create_union_pattern(
+        "sorta_composition", ["sometimes", "maybe"], bridge_config
+    )
+
+
+def create_ish_pattern() -> ToleranceComposition:
+    """Create the ~ish tolerance pattern for Task 3."""
+    return CompositionPatternFactory.create_tolerance_pattern(
+        "ish_comparison", "kinda_float", "chaos_tolerance"
+    )
+
+
+def create_consensus_pattern(constructs: List[str], threshold: float = 0.6) -> ThresholdComposition:
+    """Create a consensus pattern requiring majority agreement."""
+    return CompositionPatternFactory.create_threshold_pattern(
+        f"consensus_{len(constructs)}", constructs, threshold
+    )
