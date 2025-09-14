@@ -20,8 +20,12 @@ LANG_DISPATCH = {
 
 def load_fuzzy_runtime(runtime_path: Path):
     spec = importlib.util.spec_from_file_location("fuzzy", runtime_path)
+    if spec is None:
+        raise RuntimeError(f"Could not load spec from {runtime_path}")
     fuzzy = importlib.util.module_from_spec(spec)
     sys.modules["fuzzy"] = fuzzy
+    if spec.loader is None:
+        raise RuntimeError(f"Loader is None for spec {spec}")
     spec.loader.exec_module(fuzzy)
     return fuzzy
 

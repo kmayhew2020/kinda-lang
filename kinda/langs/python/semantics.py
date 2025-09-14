@@ -1,8 +1,9 @@
 # kinda/core/semantics.py
 
+from typing import Dict, Any
 from kinda.personality import chaos_random, chaos_choice
 
-env = {}
+env: Dict[str, Any] = {}
 
 
 def evaluate(expr):

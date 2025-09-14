@@ -3,6 +3,7 @@ import shutil
 from pathlib import Path
 import pytest
 import sys
+import os
 
 # ✅ Rename imported function to avoid name conflict
 from kinda.langs.python.runtime_gen import generate_runtime as generate_runtime_code
@@ -49,6 +50,30 @@ def safe_emoji_print(text):
         for emoji, fallback in emoji_fallbacks.items():
             safe_text = safe_text.replace(emoji, fallback)
         print(safe_text)
+
+
+def is_ci_environment():
+    """Detect if we're running in a CI environment where test determinism is required."""
+    ci_env_vars = [
+        "CI",  # GitHub Actions, Travis, many others
+        "GITHUB_ACTIONS",  # GitHub Actions specifically
+        "JENKINS_URL",  # Jenkins
+        "TRAVIS",  # Travis CI
+        "CIRCLECI",  # CircleCI
+        "BUILDKITE",  # Buildkite
+        "TF_BUILD",  # Azure Pipelines
+    ]
+
+    # Check if any CI environment variable is set
+    for env_var in ci_env_vars:
+        if os.getenv(env_var):
+            return True
+
+    # Also check if pytest is being run with specific CI flags
+    if os.getenv("PYTEST_DISABLE_CHAOS"):
+        return True
+
+    return False
 
 
 # Global meta-testing framework for ~kinda test environment configuration
@@ -330,7 +355,10 @@ def pytest_runtest_setup(item):
         )
 
     # ~rarely we might skip a test entirely (controlled chaos!)
-    if chaos_random() < chaos_probability("rarely") * 0.1:  # Very rare, just 1.5% chance typically
+    # BUT NOT in CI environments where deterministic behavior is required
+    if (
+        not is_ci_environment() and chaos_random() < chaos_probability("rarely") * 0.1
+    ):  # Very rare, just 1.5% chance typically
         safe_emoji_print(f"[PYTEST] 🎭 ~rarely skipping test {item.name} due to chaos factor!")
         pytest.skip("~rarely skipped due to chaos factor")
 

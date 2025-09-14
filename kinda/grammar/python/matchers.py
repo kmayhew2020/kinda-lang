@@ -1,6 +1,7 @@
 # kinda/grammar/python/matchers.py
 
 import re
+from typing import Optional, Tuple, Any
 from kinda.grammar.python.constructs import KindaPythonConstructs
 
 # Compiled regex patterns for performance optimization
@@ -342,7 +343,7 @@ def _split_function_arguments(content: str):
     return [arg.strip() for arg in args if arg.strip()]
 
 
-def match_python_construct(line: str):
+def match_python_construct(line: str) -> Tuple[Optional[str], Optional[Tuple[Any, ...]]]:
     """
     Enhanced Python construct matcher with robust parsing for all constructs.
     """
@@ -384,10 +385,12 @@ def match_python_construct(line: str):
             if content is not None:
                 return key, content
         else:
-            pattern = data["pattern"]
-            match = pattern.match(line)
-            if match:
-                return key, match.groups()
+            if isinstance(data, dict) and "pattern" in data:
+                pattern = data["pattern"]
+                if hasattr(pattern, "match"):
+                    match = pattern.match(line)
+                    if match:
+                        return key, match.groups()
 
     return None, None
 

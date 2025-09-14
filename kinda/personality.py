@@ -5,12 +5,19 @@ Kinda-Lang Personality and Chaos Control System
 
 Provides configurable chaos levels through personality profiles that affect
 fuzzy construct behavior, randomness, and error message tone.
+
+Advanced Performance Optimization (Epic #125 Task 3):
+- Pre-computed probability caches
+- Optimized random number generation
+- Memory-efficient state management
 """
 
 import random
 import time
+import weakref
 from dataclasses import dataclass
-from typing import Dict, Optional, Any, Tuple
+from typing import Dict, Optional, Any, Tuple, List
+from collections import deque, defaultdict
 
 
 @dataclass
@@ -55,6 +62,212 @@ class ChaosProfile:
 
     # Error message personality
     error_snark_level: float = 0.5  # How snarky error messages are (0-1)
+
+
+class ProbabilityCache:
+    """
+    Optimized probability cache for Epic #125 Task 3 performance requirements.
+    Pre-computes and caches personality-specific probabilities to avoid
+    repeated calculations in performance-critical scenarios.
+    """
+
+    def __init__(self, personality_context):
+        self.context = weakref.ref(personality_context)  # Avoid circular references
+        self._cache: Dict[str, float] = {}
+        self._cache_generation = 0
+        self._build_cache()
+
+    def _build_cache(self):
+        """Pre-compute all commonly used probabilities."""
+        ctx = self.context()
+        if not ctx:
+            return
+
+        # Cache all construct probabilities with chaos adjustments
+        constructs = [
+            "sometimes",
+            "maybe",
+            "probably",
+            "rarely",
+            "sorta_print",
+            "sometimes_while",
+            "maybe_for",
+        ]
+
+        for construct in constructs:
+            self._cache[construct] = ctx.get_chaos_probability(construct)
+
+        # Cache chaos-adjusted ranges and variances
+        self._cache["int_fuzz_range"] = ctx.get_fuzz_range("int")
+        self._cache["float_drift_range"] = ctx.get_float_drift_range()
+        self._cache["ish_variance"] = ctx.get_ish_variance()
+        self._cache["ish_tolerance"] = ctx.get_ish_tolerance()
+        self._cache["bool_uncertainty"] = ctx.get_bool_uncertainty()
+        self._cache["binary_probs"] = ctx.get_binary_probabilities()
+
+        # Cache repetition construct parameters
+        self._cache["kinda_repeat_variance"] = (
+            ctx.profile.kinda_repeat_variance * ctx.profile.chaos_amplifier * ctx.chaos_multiplier
+        )
+        self._cache["eventually_until_confidence"] = self._get_eventually_until_confidence(ctx)
+
+    def _get_eventually_until_confidence(self, ctx):
+        """Calculate cached eventually_until confidence threshold."""
+        base_confidence = ctx.profile.eventually_until_confidence
+        combined_amplifier = ctx.profile.chaos_amplifier * ctx.chaos_multiplier
+        if combined_amplifier > 1.0:
+            factor = min(0.3, (combined_amplifier - 1.0) * 0.2)
+            adjusted = base_confidence - factor
+        else:
+            factor = (1.0 - combined_amplifier) * 0.1
+            adjusted = base_confidence + factor
+        return max(0.5, min(0.99, adjusted))
+
+    def get_cached_probability(self, construct_name: str) -> Optional[float]:
+        """Get cached probability or None if not cached."""
+        return self._cache.get(construct_name)
+
+    def get_cached_value(self, key: str) -> Optional[Any]:
+        """Get any cached value by key."""
+        return self._cache.get(key)
+
+    def invalidate(self):
+        """Invalidate cache when personality changes."""
+        self._cache.clear()
+        self._cache_generation += 1
+        self._build_cache()
+
+
+class MemoryOptimizedEventuallyUntil:
+    """
+    Memory-optimized eventually_until evaluator with circular buffer.
+    Implements bounded memory usage for long-running loops per Epic #125 Task 3 requirements.
+    """
+
+    def __init__(self, confidence_threshold: float, max_history: int = 100):
+        self.confidence_threshold = confidence_threshold
+        self.evaluations: deque[bool] = deque(maxlen=max_history)  # Circular buffer
+        self.min_samples = 3
+
+    def add_evaluation(self, result: bool) -> bool:
+        """
+        Add evaluation and return whether loop should continue.
+        Returns True to continue, False to terminate.
+        """
+        self.evaluations.append(bool(result))
+        n = len(self.evaluations)
+
+        if n < self.min_samples:
+            return True  # Continue until we have enough data
+
+        # Count recent consecutive successes
+        consecutive_successes = 0
+        for i in range(len(self.evaluations) - 1, -1, -1):
+            if self.evaluations[i]:
+                consecutive_successes += 1
+            else:
+                break
+
+        # Check recent success rate (last 5-10 evaluations)
+        recent_window = min(5, n)
+        recent_evaluations = list(self.evaluations)[-recent_window:]
+        recent_successes = sum(recent_evaluations)
+        recent_success_rate = recent_successes / recent_window if recent_window > 0 else 0
+
+        # Terminate if we have 2+ consecutive successes OR high recent success rate
+        should_terminate = (consecutive_successes >= 2) or (recent_success_rate >= 0.8)
+        return not should_terminate  # Continue while not terminated
+
+    def get_stats(self) -> Dict[str, Any]:
+        """Get evaluator statistics for debugging."""
+        if not self.evaluations:
+            return {"total": 0, "success_rate": 0.0}
+
+        total = len(self.evaluations)
+        successes = sum(self.evaluations)
+        return {
+            "total": total,
+            "successes": successes,
+            "success_rate": successes / total,
+            "recent_5": list(self.evaluations)[-5:] if total >= 5 else list(self.evaluations),
+        }
+
+
+class OptimizedRandomState:
+    """
+    Fast random number generator optimized for personality-based chaos.
+    Pre-generates random numbers in batches for improved performance.
+    """
+
+    def __init__(self, seed: Optional[int] = None, batch_size: int = 1000):
+        self.rng = random.Random(seed)
+        self.batch_size = batch_size
+        self._float_batch: List[float] = []
+        self._int_ranges: Dict[Tuple[int, int], List[int]] = defaultdict(list)
+
+    def _refill_float_batch(self):
+        """Pre-generate a batch of random floats."""
+        self._float_batch = [self.rng.random() for _ in range(self.batch_size)]
+
+    def _refill_int_batch(self, a: int, b: int):
+        """Pre-generate a batch of random integers for a given range."""
+        key = (a, b)
+        self._int_ranges[key] = [self.rng.randint(a, b) for _ in range(self.batch_size)]
+
+    def random(self) -> float:
+        """Get next random float from batch."""
+        if not self._float_batch:
+            self._refill_float_batch()
+        return self._float_batch.pop()
+
+    def randint(self, a: int, b: int) -> int:
+        """Get next random integer from batch."""
+        key = (a, b)
+        if not self._int_ranges[key]:
+            self._refill_int_batch(a, b)
+        return self._int_ranges[key].pop()
+
+    def uniform(self, a: float, b: float) -> float:
+        """Generate uniform random float."""
+        return a + (b - a) * self.random()
+
+    def choice(self, seq):
+        """Choose random element from sequence."""
+        if not seq:
+            raise IndexError("Cannot choose from empty sequence")
+        return seq[self.randint(0, len(seq) - 1)]
+
+    def gauss(self, mu: float, sigma: float) -> float:
+        """Generate Gaussian random number."""
+        return self.rng.gauss(mu, sigma)
+
+    def getstate(self):
+        """Get RNG state."""
+        return self.rng.getstate()
+
+    def setstate(self, state):
+        """Set RNG state."""
+        self.rng.setstate(state)
+
+
+# Global eventually_until evaluator registry for memory optimization
+_eventually_until_evaluators: Dict[str, MemoryOptimizedEventuallyUntil] = {}
+
+
+def get_eventually_until_evaluator(context_id: str = "default") -> MemoryOptimizedEventuallyUntil:
+    """Get or create a memory-optimized eventually_until evaluator."""
+    from kinda.personality import get_personality
+
+    if context_id not in _eventually_until_evaluators:
+        confidence = get_personality().profile.eventually_until_confidence
+        _eventually_until_evaluators[context_id] = MemoryOptimizedEventuallyUntil(confidence)
+
+    return _eventually_until_evaluators[context_id]
+
+
+def clear_eventually_until_evaluators():
+    """Clear all evaluators (useful for testing)."""
+    _eventually_until_evaluators.clear()
 
 
 # Pre-defined personality profiles based on user feedback requirements
@@ -166,9 +379,13 @@ class PersonalityContext:
         self.chaos_multiplier = self._calculate_chaos_multiplier(chaos_level)
         self.execution_count = 0
         self.instability_level = 0.0  # For cascade failures
-        self.drift_accumulator = {}  # For time-based drift
+        self.drift_accumulator: Dict[str, Dict[str, Any]] = {}  # For time-based drift
 
-        # Centralized random number generator for reproducibility
+        # Performance optimizations (Epic #125 Task 3)
+        self._probability_cache: Optional[ProbabilityCache] = None  # Lazy initialization
+        self._optimized_rng = OptimizedRandomState(seed)  # Pre-generate batches of random numbers
+
+        # Centralized random number generator for reproducibility (keeping for backward compatibility)
         self.seed = seed
         self.rng = random.Random(seed)  # Create seeded RNG instance
 
@@ -204,12 +421,52 @@ class PersonalityContext:
             # Maximum chaos (highly unpredictable)
             return 1.8 + (chaos_level - 8) * 0.2  # 1.8 to 2.2
 
+    def _get_probability_cache(self) -> ProbabilityCache:
+        """Get or create the probability cache for performance optimization."""
+        if self._probability_cache is None:
+            self._probability_cache = ProbabilityCache(self)
+        return self._probability_cache
+
+    def _invalidate_caches(self):
+        """Invalidate all performance caches when personality changes."""
+        if self._probability_cache is not None:
+            self._probability_cache.invalidate()
+        # Reset optimized RNG with new seed
+        self._optimized_rng = OptimizedRandomState(self.seed)
+
+    def get_cached_probability(self, construct_name: str) -> Optional[float]:
+        """Get cached probability for performance optimization (Epic #125 Task 3)."""
+        cache = self._get_probability_cache()
+        return cache.get_cached_probability(construct_name)
+
+    def get_optimized_random(self) -> float:
+        """Get optimized random float for performance (Epic #125 Task 3)."""
+        return self._optimized_rng.random()
+
+    def get_optimized_randint(self, a: int, b: int) -> int:
+        """Get optimized random integer for performance (Epic #125 Task 3)."""
+        return self._optimized_rng.randint(a, b)
+
+    def get_optimized_uniform(self, a: float, b: float) -> float:
+        """Get optimized uniform random float for performance (Epic #125 Task 3)."""
+        return self._optimized_rng.uniform(a, b)
+
+    def get_optimized_choice(self, seq):
+        """Get optimized random choice for performance (Epic #125 Task 3)."""
+        return self._optimized_rng.choice(seq)
+
+    def get_optimized_gauss(self, mu: float, sigma: float) -> float:
+        """Get optimized Gaussian random number for performance (Epic #125 Task 3)."""
+        return self._optimized_rng.gauss(mu, sigma)
+
     @classmethod
     def set_mood(cls, mood: str) -> None:
         """Set the global mood/personality."""
         current_chaos_level = cls._instance.chaos_level if cls._instance else 5
         current_seed = cls._instance.seed if cls._instance else None
         cls._instance = cls(mood, current_chaos_level, current_seed)
+        # Clear performance optimization state when personality changes
+        clear_eventually_until_evaluators()
 
     @classmethod
     def set_chaos_level(cls, chaos_level: int) -> None:
@@ -217,6 +474,8 @@ class PersonalityContext:
         current_mood = cls._instance.mood if cls._instance else "playful"
         current_seed = cls._instance.seed if cls._instance else None
         cls._instance = cls(current_mood, chaos_level, current_seed)
+        # Clear performance optimization state when personality changes
+        clear_eventually_until_evaluators()
 
     @classmethod
     def set_seed(cls, seed: Optional[int]) -> None:
@@ -224,6 +483,8 @@ class PersonalityContext:
         current_mood = cls._instance.mood if cls._instance else "playful"
         current_chaos_level = cls._instance.chaos_level if cls._instance else 5
         cls._instance = cls(current_mood, current_chaos_level, seed)
+        # Clear performance optimization state when personality changes
+        clear_eventually_until_evaluators()
 
     def get_chaos_probability(self, base_key: str, condition: Any = True) -> float:
         """Get chaos-adjusted probability for a construct."""
@@ -423,7 +684,10 @@ class PersonalityContext:
         """Get the age of a variable in seconds."""
         if var_name not in self.drift_accumulator:
             return 0.0
-        return time.time() - self.drift_accumulator[var_name]["creation_time"]
+        creation_time = self.drift_accumulator[var_name]["creation_time"]
+        if isinstance(creation_time, (int, float)):
+            return float(time.time() - creation_time)
+        return 0.0
 
     def get_variable_drift_stats(self, var_name: str) -> Dict[str, Any]:
         """Get drift statistics for a variable."""
@@ -432,7 +696,7 @@ class PersonalityContext:
 
         var_info = self.drift_accumulator[var_name].copy()
         var_info["age_seconds"] = self.get_variable_age(var_name)
-        return var_info
+        return dict(var_info)
 
     # Centralized random number generation methods for reproducibility
     def random(self) -> float:

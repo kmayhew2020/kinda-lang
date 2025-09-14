@@ -66,7 +66,7 @@ class RecordingSession:
     duration: Optional[float] = None
     total_calls: int = 0
     notes: str = ""
-    tags: List[str] = None
+    tags: Optional[List[str]] = None
 
     def __post_init__(self):
         if self.tags is None:
@@ -186,6 +186,9 @@ class ExecutionRecorder:
         """
         if not self.recording:
             raise RuntimeError("No recording session in progress")
+
+        if self.session is None:
+            raise RuntimeError("Recording session is None")
 
         # Validate hook integrity before stopping
         if not self._validate_hook_integrity():
@@ -319,9 +322,9 @@ class ExecutionRecorder:
             return result
 
         # Add security metadata to the hooked method
-        hooked_method._kinda_hook_token = self._security_token
-        hooked_method._kinda_hook_checksum = method_checksum
-        hooked_method._kinda_original_method = original_method
+        setattr(hooked_method, "_kinda_hook_token", self._security_token)
+        setattr(hooked_method, "_kinda_hook_checksum", method_checksum)
+        setattr(hooked_method, "_kinda_original_method", original_method)
 
         return hooked_method
 
@@ -340,10 +343,9 @@ class ExecutionRecorder:
             return False
 
         # Validate security token and checksum
-        return (
-            current_method._kinda_hook_token == self._security_token
-            and current_method._kinda_hook_checksum == expected_checksum
-        )
+        hook_token = getattr(current_method, "_kinda_hook_token", None)
+        hook_checksum = getattr(current_method, "_kinda_hook_checksum", None)
+        return hook_token == self._security_token and hook_checksum == expected_checksum
 
     def _validate_hook_integrity(self) -> bool:
         """Validate the integrity of all installed hooks."""
@@ -464,13 +466,14 @@ class ExecutionRecorder:
             )
 
             # Add to session
-            self.session.rng_calls.append(call_record)
+            if self.session is not None:
+                self.session.rng_calls.append(call_record)
 
-            # Update construct usage stats
-            if call_record.construct_type:
-                self.session.construct_usage[call_record.construct_type] = (
-                    self.session.construct_usage.get(call_record.construct_type, 0) + 1
-                )
+                # Update construct usage stats
+                if call_record.construct_type:
+                    self.session.construct_usage[call_record.construct_type] = (
+                        self.session.construct_usage.get(call_record.construct_type, 0) + 1
+                    )
 
     def _infer_construct_context(self, stack_trace: List[str]) -> Dict[str, Optional[str]]:
         """
