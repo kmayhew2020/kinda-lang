@@ -121,25 +121,59 @@ KindaPythonConstructs = {
     "sorta_print": {
         "type": "print",
         "pattern": re.compile(r"~sorta print\s*\((.*)\)\s*(?:;|$)"),
-        "description": "Print with personality-adjusted probability",
+        "description": "Print with composition of ~sometimes and ~maybe constructs",
         "body": (
             "def sorta_print(*args):\n"
-            '    """Sorta prints with personality-adjusted probability and chaos tracking"""\n'
-            "    from kinda.personality import chaos_probability, update_chaos_state, chaos_random, chaos_choice\n"
+            '    """Sorta prints using composition of basic probabilistic constructs"""\n'
+            "    from kinda.personality import update_chaos_state, get_personality, chaos_random, chaos_choice\n"
+            "    \n"
+            "    # Validate basic constructs are available for composition\n"
+            "    if 'sometimes' not in globals():\n"
+            "        print('[error] Basic construct \\'sometimes\\' not available - check loading order')\n"
+            "        print('[fallback]', *args)\n"
+            "        update_chaos_state(failed=True)\n"
+            "        return\n"
+            "    if 'maybe' not in globals():\n"
+            "        print('[error] Basic construct \\'maybe\\' not available - check loading order')\n"
+            "        print('[fallback]', *args)\n"
+            "        update_chaos_state(failed=True)\n"
+            "        return\n"
+            "    \n"
             "    try:\n"
             "        if not args:\n"
-            "            prob = chaos_probability('sorta_print')\n"
-            "            if chaos_random() < prob:\n"
+            "            # Apply composition gates for empty args case\n"
+            "            gate1 = sometimes(True)  # First probabilistic gate\n"
+            "            gate2 = maybe(True)      # Second probabilistic gate\n"
+            "            should_execute = gate1 or gate2  # Union composition\n"
+            "            \n"
+            "            # Personality-specific tuning for compatibility\n"
+            "            personality = get_personality()\n"
+            "            if personality.mood in ['playful', 'chaotic'] and not should_execute:\n"
+            "                # Bridge probability gap with personality-aware adjustment\n"
+            "                bridge_prob = 0.2 if personality.mood == 'playful' else 0.2\n"
+            "                should_execute = chaos_random() < bridge_prob\n"
+            "            \n"
+            "            if should_execute:\n"
             "                print('[shrug] Nothing to print, I guess?')\n"
-            "            update_chaos_state(failed=False)\n"
+            "            update_chaos_state(failed=not should_execute)\n"
             "            return\n"
             "        \n"
-            "        prob = chaos_probability('sorta_print')\n"
-            "        if chaos_random() < prob:\n"
+            "        # Main execution path with composition\n"
+            "        gate1 = sometimes(True)  # Basic construct 1\n"
+            "        gate2 = maybe(True)      # Basic construct 2\n"
+            "        should_execute = gate1 or gate2  # Composition logic\n"
+            "        \n"
+            "        # Personality tuning for behavioral compatibility\n"
+            "        personality = get_personality()\n"
+            "        if personality.mood in ['playful', 'chaotic'] and not should_execute:\n"
+            "            bridge_prob = 0.2 if personality.mood == 'playful' else 0.2\n"
+            "            should_execute = chaos_random() < bridge_prob\n"
+            "        \n"
+            "        if should_execute:\n"
             "            print('[print]', *args)\n"
             "            update_chaos_state(failed=False)\n"
             "        else:\n"
-            '            # Add some personality to the "shrug" responses\n'
+            "            # Preserve existing fallback behavior\n"
             "            shrug_responses = [\n"
             "                '[shrug] Meh...',\n"
             "                '[shrug] Not feeling it right now',\n"
@@ -809,7 +843,7 @@ KindaPythonConstructs = {
     },
     "sometimes_while": {
         "type": "loop",
-        "pattern": re.compile(r"~sometimes_while\s+(.+?)\s*:"),
+        "pattern": re.compile(r"~sometimes_while\s+(.+):\s*"),
         "description": "Fuzzy while loop with personality-adjusted continuation probability",
         "body": (
             "def sometimes_while(condition, body_func=None):\n"
@@ -864,7 +898,7 @@ KindaPythonConstructs = {
     },
     "maybe_for": {
         "type": "loop",
-        "pattern": re.compile(r"~maybe_for\s+(\w+)\s+in\s+(.+?)\s*:"),
+        "pattern": re.compile(r"~maybe_for\s+(\w+)\s+in\s+(.+):\s*"),
         "description": "Fuzzy for loop with personality-adjusted item execution probability",
         "body": (
             "def maybe_for(iterable, body_func=None):\n"
@@ -919,7 +953,7 @@ KindaPythonConstructs = {
     },
     "kinda_repeat": {
         "type": "loop",
-        "pattern": re.compile(r"~kinda_repeat\s*\(\s*(.+?)\s*\)\s*:"),
+        "pattern": re.compile(r"~kinda_repeat\s*\(\s*([^)]+)\s*\):\s*"),
         "description": "Fuzzy repetition loop with personality-adjusted variance",
         "body": (
             "def kinda_repeat(n, body_func=None):\n"
@@ -974,7 +1008,7 @@ KindaPythonConstructs = {
     },
     "eventually_until": {
         "type": "loop",
-        "pattern": re.compile(r"~eventually_until\s+(.+?)\s*:"),
+        "pattern": re.compile(r"~eventually_until\s+(.+):\s*"),
         "description": "Loop that executes until condition becomes consistently true with memory optimization",
         "body": (
             "def eventually_until(condition, body_func=None, context_id='default'):\n"

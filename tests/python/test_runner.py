@@ -3,7 +3,7 @@ import subprocess
 
 def run_kinda_test(path):
     result = subprocess.run(
-        ["python", "-m", "kinda", "interpret", path],
+        ["python3", "-m", "kinda", "interpret", path],
         capture_output=True,
         text=True,
         check=True,

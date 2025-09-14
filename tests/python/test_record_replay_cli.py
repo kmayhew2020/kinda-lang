@@ -9,6 +9,7 @@ recording system and produces valid session files when running kinda programs.
 
 import pytest
 import json
+import os
 import tempfile
 import subprocess
 import sys
@@ -474,7 +475,7 @@ for i in range(3):
                 [
                     sys.executable,
                     "-m",
-                    "kinda.cli",
+                    "kinda",
                     "record",
                     "run",
                     str(test_file),
@@ -483,7 +484,7 @@ for i in range(3):
                 ],
                 capture_output=True,
                 text=True,
-                cwd=temp_dir,
+                cwd=os.getcwd(),
             )
 
             # Should fail with error about invalid chaos level

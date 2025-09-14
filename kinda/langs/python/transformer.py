@@ -68,7 +68,7 @@ def _process_conditional_block(
             continue
 
         try:
-            # Handle nested conditional constructs and loops
+            # Handle nested conditional and loop constructs
             if (
                 stripped.startswith("~sometimes")
                 or stripped.startswith("~maybe")
@@ -132,6 +132,13 @@ def _process_python_indented_block(
     i = start_index
     base_indent = len(conditional_line) - len(conditional_line.lstrip())
 
+    # Check if this is a ~maybe_for construct that needs special handling
+    is_maybe_for = conditional_line.strip().startswith("~maybe_for")
+    if is_maybe_for:
+        # Add the conditional check for ~maybe_for
+        indent_str = " " * (base_indent + 4)  # Standard 4-space indentation
+        output_lines.append(f"{indent_str}if maybe_for_item_execute():")
+
     while i < len(lines):
         line = lines[i]
         stripped = line.strip()
@@ -154,8 +161,19 @@ def _process_python_indented_block(
         try:
             transformed = transform_line(line)
             if not transformed:
-                _warn_about_line(stripped, line_number, file_path or "unknown")
-            output_lines.extend(transformed)
+                _warn_about_line(stripped, line_number, file_path)
+
+            # For ~maybe_for, add extra indentation for the conditional block
+            if is_maybe_for:
+                extra_indented_lines = []
+                for t_line in transformed:
+                    if t_line.strip():  # Only add extra indent to non-empty lines
+                        extra_indented_lines.append("    " + t_line)
+                    else:
+                        extra_indented_lines.append(t_line)
+                output_lines.extend(extra_indented_lines)
+            else:
+                output_lines.extend(transformed)
             i += 1
         except Exception as e:
             raise KindaParseError(
@@ -381,6 +399,31 @@ def transform_line(line: str) -> List[str]:
         used_helpers.add("rarely")
         cond = groups[0].strip() if groups and groups[0] else ""
         transformed_code = f"if rarely({cond}):" if cond else "if rarely():"
+
+    elif key == "sometimes_while":
+        used_helpers.add("sometimes_while_condition")
+        condition = groups[0].strip() if groups and groups[0] else "True"
+        transformed_code = f"while sometimes_while_condition({condition}):"
+
+    elif key == "maybe_for":
+        used_helpers.add("maybe_for_item_execute")
+        var_name, collection = groups
+        var_name = var_name.strip()
+        collection = collection.strip()
+        # Transform ~maybe_for into a for loop - conditional logic will be handled specially
+        transformed_code = f"for {var_name} in {collection}:"
+
+    elif key == "kinda_repeat":
+        used_helpers.add("kinda_repeat_count")
+        n_expr = groups[0].strip() if groups and groups[0] else "1"
+        # Transform ~kinda_repeat(n) into a for loop with fuzzy count
+        transformed_code = f"for _ in range(kinda_repeat_count({n_expr})):"
+
+    elif key == "eventually_until":
+        used_helpers.add("eventually_until_condition")
+        condition = groups[0].strip() if groups and groups[0] else "True"
+        # Transform ~eventually_until into a while loop with statistical termination
+        transformed_code = f"while eventually_until_condition({condition}):"
 
     elif key == "fuzzy_reassign" and groups:
         var, val = groups
