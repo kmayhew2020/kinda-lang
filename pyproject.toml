@@ -1,7 +1,7 @@
 # pyproject.toml
 
 [build-system]
-requires = ["setuptools>=61.0"]
+requires = ["setuptools>=70.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -54,9 +54,8 @@ python_functions = ["test_*"]
 line-length = 100
 target-version = ['py38']
 
-[tool.setuptools.packages.find]
-where = ["."]
-include = ["kinda*"]
+[tool.setuptools]
+packages = ["kinda", "kinda.grammar", "kinda.grammar.python", "kinda.grammar.c", "kinda.interpreter", "kinda.langs"]
 
 [tool.mypy]
 python_version = "3.8"
