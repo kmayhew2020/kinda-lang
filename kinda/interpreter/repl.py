@@ -52,7 +52,7 @@ def run_interpreter(filepath, lang="python"):
     if not hasattr(fuzzy, "env"):
         fuzzy.env = {}
 
-    exec(helper_imports, {}, fuzzy.env)
+    exec(helper_imports, {"env": fuzzy.env}, fuzzy.env)
 
     try:
         exec(code, fuzzy.env, fuzzy.env)
