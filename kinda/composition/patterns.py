@@ -233,6 +233,7 @@ class IshToleranceComposition(ToleranceComposition):
         if construct_name not in self._construct_cache:
             try:
                 from kinda.langs.python.runtime import fuzzy
+
                 self._construct_cache[construct_name] = getattr(fuzzy, construct_name)
             except ImportError:
                 raise RuntimeError(f"Basic construct '{construct_name}' not available")
@@ -250,8 +251,8 @@ class IshToleranceComposition(ToleranceComposition):
         """
         try:
             # Get basic construct functions
-            kinda_float = self._get_basic_construct('kinda_float')
-            probably = self._get_basic_construct('probably')
+            kinda_float = self._get_basic_construct("kinda_float")
+            probably = self._get_basic_construct("probably")
 
             # Convert inputs to numeric with error handling (preserve existing behavior)
             try:
@@ -259,12 +260,14 @@ class IshToleranceComposition(ToleranceComposition):
                 right_val = float(right_val)
             except (ValueError, TypeError) as e:
                 from kinda.personality import update_chaos_state
+
                 update_chaos_state(failed=True)
                 return probably(False)  # Fallback behavior
 
             # Get tolerance using personality system if not provided
             if tolerance is None:
                 from kinda.personality import chaos_tolerance
+
                 tolerance = chaos_tolerance()
 
             # Apply composition: ~kinda_float adds uncertainty to calculation
@@ -278,6 +281,7 @@ class IshToleranceComposition(ToleranceComposition):
         except Exception as e:
             # Fallback to legacy implementation on any error
             from kinda.langs.python.runtime.fuzzy import ish_comparison
+
             return ish_comparison(left_val, right_val, tolerance)
 
     def compose_assignment(self, current_val: Any, target_val: Any = None) -> Any:
@@ -290,20 +294,22 @@ class IshToleranceComposition(ToleranceComposition):
         """
         try:
             # Get basic construct functions
-            kinda_float = self._get_basic_construct('kinda_float')
-            sometimes = self._get_basic_construct('sometimes')
+            kinda_float = self._get_basic_construct("kinda_float")
+            sometimes = self._get_basic_construct("sometimes")
 
             # Convert to numeric with error handling
             try:
                 current_val = float(current_val)
             except (ValueError, TypeError) as e:
                 from kinda.personality import update_chaos_state
+
                 update_chaos_state(failed=True)
                 return kinda_float(0 if current_val is None else current_val)
 
             if target_val is None:
                 # Standalone case: var~ish → create fuzzy value using composition
                 from kinda.personality import chaos_variance
+
                 variance_base = chaos_variance()
                 fuzzy_variance = kinda_float(variance_base)
                 result = current_val + fuzzy_variance
@@ -313,6 +319,7 @@ class IshToleranceComposition(ToleranceComposition):
                     target_val = float(target_val)
                 except (ValueError, TypeError):
                     from kinda.personality import update_chaos_state
+
                     update_chaos_state(failed=True)
                     return kinda_float(current_val)
 
@@ -327,6 +334,7 @@ class IshToleranceComposition(ToleranceComposition):
                 else:
                     # Apply direct fuzzy variance (fallback behavior)
                     from kinda.personality import chaos_variance
+
                     variance_base = chaos_variance()
                     fuzzy_variance = kinda_float(variance_base)
                     result = current_val + fuzzy_variance
@@ -340,6 +348,7 @@ class IshToleranceComposition(ToleranceComposition):
         except Exception as e:
             # Fallback to legacy implementation on any error
             from kinda.langs.python.runtime.fuzzy import ish_value
+
             return ish_value(current_val, target_val)
 
     def get_target_probabilities(self) -> Dict[str, float]:
@@ -350,10 +359,10 @@ class IshToleranceComposition(ToleranceComposition):
 
         # ~ish patterns have personality-dependent behavior
         base_prob = {
-            "reliable": 0.8,    # High precision, stricter tolerance
-            "cautious": 0.75,   # Moderately strict tolerance
-            "playful": 0.65,    # More relaxed tolerance
-            "chaotic": 0.55,    # Very loose tolerance
+            "reliable": 0.8,  # High precision, stricter tolerance
+            "cautious": 0.75,  # Moderately strict tolerance
+            "playful": 0.65,  # More relaxed tolerance
+            "chaotic": 0.55,  # Very loose tolerance
         }.get(personality.mood, 0.7)
 
         return {personality.mood: base_prob}

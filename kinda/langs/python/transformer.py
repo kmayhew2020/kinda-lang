@@ -12,7 +12,7 @@ from kinda.grammar.python.matchers import (
 from kinda.cli import safe_read_file
 
 # Feature flag for composition framework integration
-USE_COMPOSITION_FRAMEWORK = os.getenv('KINDA_USE_COMPOSITION_ISH', 'true').lower() == 'true'
+USE_COMPOSITION_FRAMEWORK = os.getenv("KINDA_USE_COMPOSITION_ISH", "true").lower() == "true"
 
 used_helpers = set()
 

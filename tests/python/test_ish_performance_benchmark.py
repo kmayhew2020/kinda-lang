@@ -11,11 +11,13 @@ import statistics
 import os
 from contextlib import contextmanager
 
+
 @contextmanager
 def performance_timer():
     """Context manager for timing operations."""
     start = time.perf_counter()
     yield lambda: time.perf_counter() - start
+
 
 class TestIshPerformanceBenchmark:
     """Benchmark composition framework performance vs legacy."""
@@ -94,7 +96,9 @@ class TestIshPerformanceBenchmark:
         creation_time = timer()
 
         # Test pattern registration time
-        patterns = [IshToleranceComposition(f"reg_pattern_{i}", "comparison") for i in range(iterations)]
+        patterns = [
+            IshToleranceComposition(f"reg_pattern_{i}", "comparison") for i in range(iterations)
+        ]
         with performance_timer() as timer:
             for pattern in patterns:
                 engine.register_composite(pattern)
@@ -108,7 +112,9 @@ class TestIshPerformanceBenchmark:
 
         # Each operation should be under 10ms
         assert avg_creation_time < 10.0, f"Pattern creation too slow: {avg_creation_time:.3f}ms"
-        assert avg_registration_time < 10.0, f"Pattern registration too slow: {avg_registration_time:.3f}ms"
+        assert (
+            avg_registration_time < 10.0
+        ), f"Pattern registration too slow: {avg_registration_time:.3f}ms"
 
     @pytest.mark.performance
     def test_construct_caching_performance(self):
@@ -121,7 +127,7 @@ class TestIshPerformanceBenchmark:
         # First call (populates cache)
         with performance_timer() as timer:
             for _ in range(iterations):
-                pattern._get_basic_construct('kinda_float')
+                pattern._get_basic_construct("kinda_float")
         first_call_time = timer()
 
         # Clear cache and test again
@@ -130,15 +136,15 @@ class TestIshPerformanceBenchmark:
         # Second call (cache miss each time)
         with performance_timer() as timer:
             for _ in range(iterations):
-                pattern._get_basic_construct('kinda_float')
+                pattern._get_basic_construct("kinda_float")
                 pattern._construct_cache.clear()  # Clear after each call
         uncached_time = timer()
 
         # Third call (cache hits)
-        pattern._get_basic_construct('kinda_float')  # Populate cache once
+        pattern._get_basic_construct("kinda_float")  # Populate cache once
         with performance_timer() as timer:
             for _ in range(iterations):
-                pattern._get_basic_construct('kinda_float')
+                pattern._get_basic_construct("kinda_float")
         cached_time = timer()
 
         print(f"First call time: {first_call_time:.4f}s")
@@ -146,10 +152,11 @@ class TestIshPerformanceBenchmark:
         print(f"Cached calls time: {cached_time:.4f}s")
 
         # Cached calls should be significantly faster
-        speedup = uncached_time / cached_time if cached_time > 0 else float('inf')
+        speedup = uncached_time / cached_time if cached_time > 0 else float("inf")
         print(f"Cache speedup: {speedup:.2f}x")
 
         assert speedup > 2.0, f"Caching not providing sufficient speedup: {speedup:.2f}x"
+
 
 class TestPerformanceRegression:
     """Test for performance regressions in composition framework."""
@@ -227,6 +234,7 @@ class TestPerformanceRegression:
 
         # Pattern retrieval should be very fast (<100 microseconds)
         assert avg_retrieval_time < 100.0, f"Pattern retrieval too slow: {avg_retrieval_time:.2f}μs"
+
 
 if __name__ == "__main__":
     pytest.main([__file__, "-v", "-m", "performance"])
