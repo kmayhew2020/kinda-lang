@@ -381,47 +381,56 @@ def pytest_runtest_teardown(item):
             personality.update_instability(failed=False)  # Probably succeeded
 
 
-@pytest.fixture
+@pytest.fixture(autouse=True, scope="function")
 def reset_transformer_state():
-    """Reset transformer global state for tests that need clean isolation."""
+    """Reset transformer global state for ALL tests to ensure clean isolation."""
+    import sys
+    import os
+
     # Import here to avoid circular imports
     from kinda.langs.python.transformer import used_helpers
 
     # Save original state
     original_helpers = set(used_helpers)
 
-    # Clear transformer state before test
-    used_helpers.clear()
+    # For transformer tests, be extra aggressive about isolation
+    test_name = getattr(
+        sys, "_getframe", lambda: type("", (), {"f_code": type("", (), {"co_filename": ""})})
+    )(1).f_code.co_filename
+    is_transformer_test = "test_transformer_missing_coverage" in test_name
+
+    if is_transformer_test:
+        # Force complete module state reset for problematic tests
+        used_helpers.clear()
+
+        # Temporarily disable any chaos that might interfere
+        original_env = os.environ.get("PYTEST_DISABLE_CHAOS")
+        os.environ["PYTEST_DISABLE_CHAOS"] = "1"
+    else:
+        # Clear transformer state before test (normal behavior)
+        used_helpers.clear()
 
     yield
 
-    # Restore original state after test
+    # Restore state after test
     used_helpers.clear()
-    used_helpers.update(original_helpers)
+    if not is_transformer_test:
+        used_helpers.update(original_helpers)
+
+    # Restore environment
+    if is_transformer_test:
+        if original_env is None:
+            os.environ.pop("PYTEST_DISABLE_CHAOS", None)
+        else:
+            os.environ["PYTEST_DISABLE_CHAOS"] = original_env
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="session", autouse=False)  # Disabled to fix test isolation
 def ensure_transformer_baseline():
     """Ensure transformer has a baseline set of helpers for tests that depend on them."""
-    # Import here to avoid circular imports
-    from kinda.langs.python.transformer import used_helpers
-
-    # Add baseline helpers that many tests expect to be present
-    baseline_helpers = {
-        "sorta_print",
-        "sometimes",
-        "maybe",
-        "kinda_int",
-        "kinda_float",
-        "fuzzy_assign",
-    }
-
-    # Only add if not already present
-    for helper in baseline_helpers:
-        if helper not in used_helpers:
-            used_helpers.add(helper)
-
-    yield
+    # DISABLED: This fixture was causing test isolation issues with transformer tests
+    # Tests should not depend on pre-existing helper state
+    pass
 
 
 def pytest_sessionfinish(session, exitstatus):

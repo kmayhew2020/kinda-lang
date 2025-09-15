@@ -23,11 +23,6 @@ from kinda.langs.python.transformer import (
 class TestValidateConditionalSyntax:
     """Test _validate_conditional_syntax function."""
 
-    @pytest.fixture(autouse=True)
-    def setup_test(self, reset_transformer_state):
-        """Use the transformer state reset fixture for this test class."""
-        pass
-
     def test_valid_sometimes_syntax(self):
         """Test valid ~sometimes syntax passes validation."""
         result = _validate_conditional_syntax("~sometimes()", 1, "test.knda")
@@ -52,10 +47,21 @@ class TestValidateConditionalSyntax:
 
     def test_invalid_sometimes_syntax(self):
         """Test invalid ~sometimes syntax raises KindaParseError."""
-        with pytest.raises(KindaParseError) as exc_info:
-            _validate_conditional_syntax("~sometimes", 5, "test.knda")
+        exception_raised = False
+        error = None
 
-        error = exc_info.value
+        try:
+            _validate_conditional_syntax("~sometimes", 5, "test.knda")
+        except KindaParseError as e:
+            exception_raised = True
+            error = e
+        except Exception as e:
+            pytest.fail(f"Expected KindaParseError but got {type(e).__name__}: {e}")
+
+        if not exception_raised:
+            pytest.fail("Expected KindaParseError to be raised but no exception was raised")
+
+        assert error is not None
         assert "~sometimes needs parentheses" in str(error)
         assert "Try: ~sometimes() or ~sometimes(condition)" in str(error)
         assert error.line_number == 5
@@ -63,10 +69,21 @@ class TestValidateConditionalSyntax:
 
     def test_invalid_maybe_syntax(self):
         """Test invalid ~maybe syntax raises KindaParseError."""
-        with pytest.raises(KindaParseError) as exc_info:
-            _validate_conditional_syntax("~maybe", 10, "example.knda")
+        exception_raised = False
+        error = None
 
-        error = exc_info.value
+        try:
+            _validate_conditional_syntax("~maybe", 10, "example.knda")
+        except KindaParseError as e:
+            exception_raised = True
+            error = e
+        except Exception as e:
+            pytest.fail(f"Expected KindaParseError but got {type(e).__name__}: {e}")
+
+        if not exception_raised:
+            pytest.fail("Expected KindaParseError to be raised but no exception was raised")
+
+        assert error is not None
         assert "~maybe needs parentheses" in str(error)
         assert "Try: ~maybe() or ~maybe(condition)" in str(error)
         assert error.line_number == 10
@@ -175,11 +192,6 @@ class TestWarnAboutLine:
 class TestTransformFileErrorHandling:
     """Test transform_file function error handling."""
 
-    @pytest.fixture(autouse=True)
-    def setup_test(self, reset_transformer_state):
-        """Use the transformer state reset fixture for this test class."""
-        pass
-
     def test_unicode_decode_error_simulation(self):
         """Test that the error handling code path exists for encoding issues."""
         # Since it's hard to trigger actual encoding errors reliably,
@@ -200,10 +212,21 @@ class TestTransformFileErrorHandling:
         """Test handling of missing files."""
         non_existent_path = Path("/non/existent/file.knda")
 
-        with pytest.raises(KindaParseError) as exc_info:
-            transform_file(non_existent_path)
+        exception_raised = False
+        error = None
 
-        error = exc_info.value
+        try:
+            transform_file(non_existent_path)
+        except KindaParseError as e:
+            exception_raised = True
+            error = e
+        except Exception as e:
+            pytest.fail(f"Expected KindaParseError but got {type(e).__name__}: {e}")
+
+        if not exception_raised:
+            pytest.fail("Expected KindaParseError to be raised but no exception was raised")
+
+        assert error is not None
         assert "Cannot read file:" in str(error)
         assert error.line_number == 0
         assert str(non_existent_path) in error.file_path
@@ -213,14 +236,40 @@ class TestTransformFileErrorHandling:
         # Test the validation functions that are called by transform_file
 
         # Test invalid ~sometimes syntax
-        with pytest.raises(KindaParseError) as exc_info:
+        exception_raised = False
+        error = None
+
+        try:
             _validate_conditional_syntax("~sometimes", 5, "test.knda")
-        assert "~sometimes needs parentheses" in str(exc_info.value)
+        except KindaParseError as e:
+            exception_raised = True
+            error = e
+        except Exception as e:
+            pytest.fail(f"Expected KindaParseError but got {type(e).__name__}: {e}")
+
+        if not exception_raised:
+            pytest.fail("Expected KindaParseError to be raised but no exception was raised")
+
+        assert error is not None
+        assert "~sometimes needs parentheses" in str(error)
 
         # Test invalid ~maybe syntax
-        with pytest.raises(KindaParseError) as exc_info:
+        exception_raised = False
+        error = None
+
+        try:
             _validate_conditional_syntax("~maybe", 8, "test.knda")
-        assert "~maybe needs parentheses" in str(exc_info.value)
+        except KindaParseError as e:
+            exception_raised = True
+            error = e
+        except Exception as e:
+            pytest.fail(f"Expected KindaParseError but got {type(e).__name__}: {e}")
+
+        if not exception_raised:
+            pytest.fail("Expected KindaParseError to be raised but no exception was raised")
+
+        assert error is not None
+        assert "~maybe needs parentheses" in str(error)
 
 
 class TestTransformLineErrorHandling:
@@ -285,11 +334,6 @@ class TestTransformLineErrorHandling:
 class TestEdgeCasesAndIntegration:
     """Test edge cases and integration scenarios."""
 
-    @pytest.fixture(autouse=True)
-    def setup_test(self, reset_transformer_state):
-        """Use the transformer state reset fixture for this test class."""
-        pass
-
     def test_file_with_mixed_constructs(self):
         """Test file with mixed kinda constructs and regular Python."""
         content = """# Test file
@@ -346,17 +390,39 @@ sometimes (True) {  # Missing ~
     def test_transform_line_with_validation_failure(self):
         """Test transform_line when validation fails."""
         # Test validation function directly since it's hard to trigger via transform_file
-        with pytest.raises(KindaParseError) as exc_info:
-            _validate_conditional_syntax("~sometimes", 10, "test.knda")
+        exception_raised = False
+        error = None
 
-        error = exc_info.value
+        try:
+            _validate_conditional_syntax("~sometimes", 10, "test.knda")
+        except KindaParseError as e:
+            exception_raised = True
+            error = e
+        except Exception as e:
+            pytest.fail(f"Expected KindaParseError but got {type(e).__name__}: {e}")
+
+        if not exception_raised:
+            pytest.fail("Expected KindaParseError to be raised but no exception was raised")
+
+        assert error is not None
         assert "~sometimes needs parentheses" in str(error)
         assert error.line_number == 10
 
         # Also test ~maybe validation failure
-        with pytest.raises(KindaParseError) as exc_info:
-            _validate_conditional_syntax("~maybe", 15, "example.knda")
+        exception_raised = False
+        error = None
 
-        error = exc_info.value
+        try:
+            _validate_conditional_syntax("~maybe", 15, "example.knda")
+        except KindaParseError as e:
+            exception_raised = True
+            error = e
+        except Exception as e:
+            pytest.fail(f"Expected KindaParseError but got {type(e).__name__}: {e}")
+
+        if not exception_raised:
+            pytest.fail("Expected KindaParseError to be raised but no exception was raised")
+
+        assert error is not None
         assert "~maybe needs parentheses" in str(error)
         assert error.line_number == 15
