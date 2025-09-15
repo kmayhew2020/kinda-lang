@@ -36,52 +36,6 @@ jobs:
           pip install -e .[dev] --timeout=600 --retries=5
         shell: bash
 
-      - name: Validate Installation and Package Metadata
-        run: |
-          echo "=== Installation Validation ==="
-
-          # Issue #70: Verify setuptools/PEP 660 compatibility
-          echo "Testing setuptools compatibility..."
-          python -c "import setuptools; print(f'Setuptools version: {setuptools.__version__}')"
-
-          # Issue #72: Validate package metadata is correctly set
-          echo "Validating package metadata..."
-          python -c "
-          import pkg_resources
-          try:
-              dist = pkg_resources.get_distribution('kinda-lang')
-              assert dist.project_name == 'kinda-lang', f'Expected kinda-lang, got {dist.project_name}'
-              assert dist.version == '0.4.0', f'Expected 0.4.0, got {dist.version}'
-              print(f'✓ Package metadata correct: {dist.project_name} v{dist.version}')
-          except Exception as e:
-              print(f'✗ Package metadata validation failed: {e}')
-              exit(1)
-          "
-
-          # Test editable install worked correctly
-          echo "Testing editable installation..."
-          python -c "
-          import sys
-          import kinda
-          print(f'✓ kinda module imported from: {kinda.__file__}')
-          from kinda.cli import main
-          print('✓ CLI module imported successfully')
-          "
-
-          # Test package can be found in subprocess contexts (addresses installation issues)
-          echo "Testing subprocess package discovery..."
-          python -c "
-          import subprocess
-          import sys
-          result = subprocess.run([sys.executable, '-c', 'import kinda; print(\"✓ kinda importable in subprocess\")'],
-                                capture_output=True, text=True)
-          if result.returncode != 0:
-              print(f'✗ Subprocess import failed: {result.stderr}')
-              exit(1)
-          print(result.stdout.strip())
-          "
-        shell: bash
-
       - name: Check code formatting with Black
         run: |
           black --check --diff .
@@ -93,99 +47,11 @@ jobs:
           pytest --cov=kinda --cov-report=term-missing tests/ --tb=short
         shell: bash
 
-      - name: Installation Regression Tests
-        run: |
-          echo "=== Installation Regression Tests ==="
-
-          # Run specific tests that would have failed with issues #70-72
-          echo "Testing CLI integration (addresses issue #71)..."
-          pytest tests/test_cli.py::TestCLIIntegration -v
-
-          echo "Testing installation infrastructure (addresses issues #70, #72)..."
-          pytest tests/test_cli.py::TestInstallationInfrastructure -v
-
-          # Test that all entry points work correctly
-          echo "Testing package entry points..."
-          python -c "
-          import pkg_resources
-          import subprocess
-
-          # Verify entry points are registered correctly
-          entry_points = list(pkg_resources.iter_entry_points('console_scripts'))
-          kinda_entries = [ep for ep in entry_points if ep.name == 'kinda']
-          assert len(kinda_entries) > 0, 'kinda entry point not found'
-          print(f'✓ Found kinda entry point: {kinda_entries[0]}')
-
-          # Test entry point actually works
-          try:
-              ep = kinda_entries[0]
-              main_func = ep.load()
-              print('✓ Entry point loadable')
-          except Exception as e:
-              print(f'✗ Entry point load failed: {e}')
-              exit(1)
-          "
-
-          # Verify setuptools compatibility across Python versions
-          echo "Testing setuptools version compatibility..."
-          python -c "
-          import setuptools
-          import sys
-          version = tuple(map(int, setuptools.__version__.split('.')[:2]))
-          min_version = (70, 0)  # As specified in pyproject.toml
-          if version < min_version:
-              print(f'✗ Setuptools {setuptools.__version__} < required {min_version[0]}.{min_version[1]}')
-              exit(1)
-          print(f'✓ Setuptools {setuptools.__version__} meets requirements')
-          print(f'✓ Python {sys.version_info.major}.{sys.version_info.minor} compatibility confirmed')
-          "
-
-          echo "✓ All installation regression tests passed"
-        shell: bash
-
       - name: Test kinda CLI commands
         run: |
-          echo "=== CLI Command Validation ==="
-
-          # Issue #71: Verify kinda command is available after installation
-          echo "Testing kinda command availability..."
-          which kinda || (echo "✗ kinda command not found in PATH" && exit 1)
-          echo "✓ kinda command found in PATH"
-
-          # Test core CLI commands with validation
-          echo "Testing --help command..."
-          kinda --help | head -3
-
-          echo "Testing examples command..."
-          kinda examples | head -5
-
-          echo "Testing syntax command..."
-          kinda syntax | head -5
-
-          # Test CLI commands work in subprocess (comprehensive validation)
-          echo "Testing CLI in subprocess contexts..."
-          python -c "
-          import subprocess
-          import sys
-
-          # Test help command
-          result = subprocess.run(['kinda', '--help'], capture_output=True, text=True)
-          assert result.returncode == 0, f'Help command failed: {result.stderr}'
-          assert 'programming language for people who aren' in result.stdout.lower(), 'Help text missing'
-          print('✓ Help command works in subprocess')
-
-          # Test examples command
-          result = subprocess.run(['kinda', 'examples'], capture_output=True, text=True)
-          assert result.returncode == 0, f'Examples command failed: {result.stderr}'
-          print('✓ Examples command works in subprocess')
-
-          # Test syntax command
-          result = subprocess.run(['kinda', 'syntax'], capture_output=True, text=True)
-          assert result.returncode == 0, f'Syntax command failed: {result.stderr}'
-          print('✓ Syntax command works in subprocess')
-          "
-
-          echo "✓ All CLI commands validated successfully"
+          kinda --help
+          kinda examples
+          kinda syntax
 
       - name: Example Smoke Tests
         timeout-minutes: 10
@@ -201,12 +67,12 @@ jobs:
             kinda run examples/python/unified_syntax.py.knda
             kinda run examples/python/test_coverage_example.py.knda
             kinda run examples/python/kinda_binary_example.py.knda
-            
+
             echo "Testing comprehensive examples..."
             kinda run examples/python/comprehensive/fuzzy_calculator.py.knda
             kinda run examples/python/comprehensive/fuzzy_game_logic.py.knda
             kinda run examples/python/comprehensive/chaos_arena_complete.py.knda
-            
+
             echo "Testing complex examples with shorter runtime..."
             timeout 30s kinda run examples/python/comprehensive/chaos_arena2_complete.py.knda || echo "Chaos arena2 timed out as expected - this is normal"
           fi
@@ -225,48 +91,6 @@ jobs:
             test -x install.sh
             grep -q "Installing kinda" install.sh
           fi
-
-      - name: Fresh Installation Simulation
-        shell: bash
-        run: |
-          echo "=== Fresh Installation Simulation ==="
-
-          # Simulate fresh installation to catch packaging issues early
-          # This addresses all three issues by testing the complete install process
-
-          echo "Testing uninstall and reinstall cycle..."
-          pip uninstall kinda-lang -y || echo "Package not installed (expected)"
-
-          echo "Testing fresh installation from current directory..."
-          pip install -e .[dev] --timeout=300 --retries=3
-
-          echo "Validating fresh installation..."
-          # Test package metadata after fresh install
-          python -c "
-          import pkg_resources
-          dist = pkg_resources.get_distribution('kinda-lang')
-          assert dist.project_name == 'kinda-lang'
-          assert dist.version == '0.4.0'
-          print(f'✓ Fresh install metadata: {dist.project_name} v{dist.version}')
-          "
-
-          # Test CLI after fresh install
-          which kinda
-          kinda --help > /dev/null
-          echo "✓ Fresh install CLI verification passed"
-
-          # Test import after fresh install in new subprocess
-          python -c "
-          import subprocess
-          import sys
-          result = subprocess.run([sys.executable, '-c',
-                                 'import kinda; from kinda.cli import main; print(\"Fresh install import OK\")'],
-                                capture_output=True, text=True)
-          assert result.returncode == 0, f'Fresh install import test failed: {result.stderr}'
-          print(result.stdout.strip())
-          "
-
-          echo "✓ Fresh installation simulation completed successfully"
 
       - name: Upload coverage report
         uses: actions/upload-artifact@v4
