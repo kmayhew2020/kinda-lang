@@ -23,6 +23,11 @@ from kinda.langs.python.transformer import (
 class TestValidateConditionalSyntax:
     """Test _validate_conditional_syntax function."""
 
+    @pytest.fixture(autouse=True)
+    def setup_test(self, reset_transformer_state):
+        """Use the transformer state reset fixture for this test class."""
+        pass
+
     def test_valid_sometimes_syntax(self):
         """Test valid ~sometimes syntax passes validation."""
         result = _validate_conditional_syntax("~sometimes()", 1, "test.knda")
@@ -170,6 +175,11 @@ class TestWarnAboutLine:
 class TestTransformFileErrorHandling:
     """Test transform_file function error handling."""
 
+    @pytest.fixture(autouse=True)
+    def setup_test(self, reset_transformer_state):
+        """Use the transformer state reset fixture for this test class."""
+        pass
+
     def test_unicode_decode_error_simulation(self):
         """Test that the error handling code path exists for encoding issues."""
         # Since it's hard to trigger actual encoding errors reliably,
@@ -274,6 +284,11 @@ class TestTransformLineErrorHandling:
 
 class TestEdgeCasesAndIntegration:
     """Test edge cases and integration scenarios."""
+
+    @pytest.fixture(autouse=True)
+    def setup_test(self, reset_transformer_state):
+        """Use the transformer state reset fixture for this test class."""
+        pass
 
     def test_file_with_mixed_constructs(self):
         """Test file with mixed kinda constructs and regular Python."""

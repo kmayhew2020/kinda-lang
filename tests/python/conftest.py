@@ -381,6 +381,49 @@ def pytest_runtest_teardown(item):
             personality.update_instability(failed=False)  # Probably succeeded
 
 
+@pytest.fixture
+def reset_transformer_state():
+    """Reset transformer global state for tests that need clean isolation."""
+    # Import here to avoid circular imports
+    from kinda.langs.python.transformer import used_helpers
+
+    # Save original state
+    original_helpers = set(used_helpers)
+
+    # Clear transformer state before test
+    used_helpers.clear()
+
+    yield
+
+    # Restore original state after test
+    used_helpers.clear()
+    used_helpers.update(original_helpers)
+
+
+@pytest.fixture(scope="session", autouse=True)
+def ensure_transformer_baseline():
+    """Ensure transformer has a baseline set of helpers for tests that depend on them."""
+    # Import here to avoid circular imports
+    from kinda.langs.python.transformer import used_helpers
+
+    # Add baseline helpers that many tests expect to be present
+    baseline_helpers = {
+        "sorta_print",
+        "sometimes",
+        "maybe",
+        "kinda_int",
+        "kinda_float",
+        "fuzzy_assign",
+    }
+
+    # Only add if not already present
+    for helper in baseline_helpers:
+        if helper not in used_helpers:
+            used_helpers.add(helper)
+
+    yield
+
+
 def pytest_sessionfinish(session, exitstatus):
     """Session-level hook that provides final ~kinda meta-analysis."""
     global GLOBAL_KINDA_FRAMEWORK
