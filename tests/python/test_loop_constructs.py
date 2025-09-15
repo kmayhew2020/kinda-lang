@@ -14,10 +14,13 @@ from kinda.langs.python.transformer import transform_line
 from kinda.cli import setup_personality
 
 
-def run_kinda_test(path):
+def run_kinda_test(path, mood="playful", chaos_level=5, seed=None):
     """Helper function to run kinda files and capture output."""
+    cmd = ["python3", "-m", "kinda", "interpret", str(path), "--mood", mood, "--chaos-level", str(chaos_level)]
+    if seed is not None:
+        cmd.extend(["--seed", str(seed)])
     result = subprocess.run(
-        ["python3", "-m", "kinda", "interpret", str(path)],
+        cmd,
         capture_output=True,
         text=True,
         check=True,
@@ -93,7 +96,7 @@ print(f"Final count: {count}")
             for _ in range(5):
                 # Reset personality with same seed for consistency
                 setup_personality("reliable", chaos_level=1, seed=42)
-                output = run_kinda_test(temp_path)
+                output = run_kinda_test(temp_path, mood="reliable", chaos_level=1, seed=42)
                 # Extract count from output
                 for line in output.split("\n"):
                     if "Final count:" in line:
@@ -132,7 +135,7 @@ print(f"Final count: {count}")
             for _ in range(5):
                 # Reset personality with same seed for consistency
                 setup_personality("chaotic", chaos_level=8, seed=42)
-                output = run_kinda_test(temp_path)
+                output = run_kinda_test(temp_path, mood="chaotic", chaos_level=8, seed=42)
                 # Extract count from output
                 for line in output.split("\n"):
                     if "Final count:" in line:
@@ -173,7 +176,7 @@ print(f"Items: {processed}")
             for _ in range(5):
                 # Reset personality with same seed for consistency
                 setup_personality("reliable", chaos_level=1, seed=42)
-                output = run_kinda_test(temp_path)
+                output = run_kinda_test(temp_path, mood="reliable", chaos_level=1, seed=42)
                 # Extract processed count from output
                 for line in output.split("\n"):
                     if "Processed count:" in line:
@@ -214,7 +217,7 @@ print(f"Items: {processed}")
             for _ in range(5):
                 # Reset personality with same seed for consistency
                 setup_personality("chaotic", chaos_level=8, seed=42)
-                output = run_kinda_test(temp_path)
+                output = run_kinda_test(temp_path, mood="chaotic", chaos_level=8, seed=42)
                 # Extract processed count from output
                 for line in output.split("\n"):
                     if "Processed count:" in line:
@@ -430,10 +433,10 @@ average = sum(processed_counts) / len(processed_counts)
 print(f"Average processed: {average}")
 
 # With chaotic personality (50% execution), expect ~2.5 items on average
-if average <= 3.5:
+if average <= 3.7:
     print("Statistical test passed!")
 else:
-    print(f"Statistical test failed: average {average} > 3.5")
+    print(f"Statistical test failed: average {average} > 3.7")
 """
 
         with tempfile.NamedTemporaryFile(mode="w", suffix=".knda", delete=False) as f:

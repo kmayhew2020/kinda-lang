@@ -1,0 +1,323 @@
+# ETL Pipeline with Probabilistic Error Recovery
+# Real-world example: Data pipeline with fuzzy error handling and recovery
+# Demonstrates: All 4 constructs working together in data processing
+
+import random
+import time
+import json
+import csv
+from datetime import datetime, timedelta
+from pathlib import Path
+
+class DataRecord:
+    def __init__(self, record_id, raw_data):
+        self.record_id = record_id
+        self.raw_data = raw_data
+        self.processed_data = None
+        self.validation_errors = []
+        self.processing_attempts = 0
+        self.status = "pending"  # pending, processed, failed, skipped
+
+    def __repr__(self):
+        return f"DataRecord({self.record_id}, {self.status})"
+
+class ETLPipeline:
+    def __init__(self):
+        self.total_records = 0
+        self.processed_records = 0
+        self.failed_records = 0
+        self.skipped_records = 0
+        self.processing_errors = []
+        self.start_time = time.time()
+
+    def extract_data_batch(self, batch_size=100):
+        """Simulate data extraction from various sources"""
+        print(f"Extracting batch of {batch_size} records...")
+        batch = []
+
+        for i in range(batch_size):
+            # Simulate different data quality levels
+            data_quality = random.random()
+            if data_quality > 0.8:
+                # High quality data
+                record = {
+                    "user_id": random.randint(1000, 9999),
+                    "timestamp": datetime.now() - timedelta(hours=random.randint(1, 24)),
+                    "value": random.uniform(10, 1000),
+                    "category": random.choice(["A", "B", "C"]),
+                    "metadata": {"source": "api", "quality": "high"}
+                }
+            elif data_quality > 0.6:
+                # Medium quality data (some missing fields)
+                record = {
+                    "user_id": random.randint(1000, 9999),
+                    "timestamp": datetime.now() - timedelta(hours=random.randint(1, 24)),
+                    "value": random.uniform(10, 1000),
+                    "metadata": {"source": "file", "quality": "medium"}
+                    # Missing category field
+                }
+            else:
+                # Low quality data (corrupt/incomplete)
+                record = {
+                    "user_id": "invalid_id",  # Invalid type
+                    "value": "not_a_number",  # Invalid type
+                    "metadata": {"source": "legacy", "quality": "low"}
+                }
+
+            batch.append(DataRecord(f"rec_{i+1}", record))
+
+        self.total_records += len(batch)
+        return batch
+
+    def validate_record(self, record):
+        """Validate data record with realistic validation rules"""
+        errors = []
+
+        # Check required fields
+        required_fields = ["user_id", "timestamp", "value"]
+        for field in required_fields:
+            if field not in record.raw_data:
+                errors.append(f"Missing required field: {field}")
+
+        # Validate data types
+        if "user_id" in record.raw_data:
+            try:
+                int(record.raw_data["user_id"])
+            except (ValueError, TypeError):
+                errors.append("user_id must be numeric")
+
+        if "value" in record.raw_data:
+            try:
+                float(record.raw_data["value"])
+            except (ValueError, TypeError):
+                errors.append("value must be numeric")
+
+        # Business logic validation
+        if "value" in record.raw_data:
+            try:
+                val = float(record.raw_data["value"])
+                if val < 0 or val > 10000:
+                    errors.append(f"value out of range: {val}")
+            except:
+                pass
+
+        record.validation_errors = errors
+        return len(errors) == 0
+
+    def transform_record(self, record):
+        """Transform valid record with probabilistic enhancement"""
+        try:
+            # Basic transformations
+            transformed = {
+                "id": record.record_id,
+                "user_id": int(record.raw_data["user_id"]),
+                "value": float(record.raw_data["value"]),
+                "processed_at": datetime.now().isoformat()
+            }
+
+            # Optional enhancements based on data availability
+            if "category" in record.raw_data:
+                transformed["category"] = record.raw_data["category"]
+            else:
+                # Infer category from value
+                val = transformed["value"]
+                if val < 100:
+                    transformed["category"] = "A"
+                elif val < 500:
+                    transformed["category"] = "B"
+                else:
+                    transformed["category"] = "C"
+
+            if "timestamp" in record.raw_data:
+                transformed["event_time"] = record.raw_data["timestamp"].isoformat()
+
+            # Calculate derived fields
+            transformed["value_tier"] = "high" if transformed["value"] > 500 else "standard"
+            transformed["processing_score"] = random.uniform(0.7, 1.0)
+
+            record.processed_data = transformed
+            return True
+
+        except Exception as e:
+            self.processing_errors.append(f"Transform error for {record.record_id}: {e}")
+            return False
+
+    def load_record(self, record, destination="database"):
+        """Simulate loading processed record to destination"""
+        # Simulate network/database latency
+        time.sleep(random.uniform(0.01, 0.1))
+
+        # Simulate occasional load failures
+        if random.random() > 0.95:  # 5% failure rate
+            raise Exception(f"Load failure: {destination} unavailable")
+
+        return True
+
+    def get_pipeline_stats(self):
+        """Get current pipeline statistics"""
+        elapsed = time.time() - self.start_time
+        processing_rate = self.processed_records / elapsed if elapsed > 0 else 0
+
+        return {
+            "total_records": self.total_records,
+            "processed": self.processed_records,
+            "failed": self.failed_records,
+            "skipped": self.skipped_records,
+            "processing_rate": processing_rate,
+            "error_rate": len(self.processing_errors) / max(1, self.total_records),
+            "elapsed_time": elapsed
+        }
+
+def run_etl_pipeline():
+    print("=== ETL Pipeline with Probabilistic Recovery ===\\n")
+
+    # Set processing personality
+    ~kinda mood cautious  # Conservative approach for data processing
+
+    pipeline = ETLPipeline()
+    batch_count = 0
+    consecutive_failures = 0
+
+    # Main ETL loop - process batches until conditions are met
+    ~sometimes_while batch_count < 20 and consecutive_failures < 3:
+        batch_count += 1
+        print(f"\\n--- Processing Batch {batch_count} ---")
+
+        # Extract data batch
+        batch_size = random.randint(50, 150)
+        current_batch = pipeline.extract_data_batch(batch_size)
+
+        # Process records in batch
+        batch_processed = 0
+        batch_failed = 0
+        batch_skipped = 0
+
+        ~maybe_for record in current_batch:
+            record.processing_attempts += 1
+
+            # Validation phase
+            if pipeline.validate_record(record):
+                print(f"  Validating {record.record_id}... ✓")
+
+                # Transformation phase with retry logic
+                transform_success = False
+                ~kinda_repeat(3):  # Try transformation 2-4 times
+                    if pipeline.transform_record(record):
+                        transform_success = True
+                        break
+                    else:
+                        print(f"    Transform retry for {record.record_id}")
+
+                if transform_success:
+                    # Loading phase with error recovery
+                    load_attempts = 0
+                    load_success = False
+
+                    ~eventually_until load_success or load_attempts >= 5:
+                        load_attempts += 1
+                        try:
+                            pipeline.load_record(record)
+                            load_success = True
+                            record.status = "processed"
+                            batch_processed += 1
+                            pipeline.processed_records += 1
+                            print(f"    Loaded {record.record_id} ✓")
+
+                        except Exception as e:
+                            print(f"    Load attempt {load_attempts} failed: {e}")
+                            if load_attempts < 5:
+                                time.sleep(random.uniform(0.5, 2.0))  # Backoff
+
+                    if not load_success:
+                        record.status = "failed"
+                        batch_failed += 1
+                        pipeline.failed_records += 1
+                        print(f"    Failed to load {record.record_id} after {load_attempts} attempts")
+
+                else:
+                    record.status = "failed"
+                    batch_failed += 1
+                    pipeline.failed_records += 1
+                    print(f"    Transform failed for {record.record_id}")
+
+            else:
+                # Skip invalid records (but sometimes try to salvage them)
+                if random.random() > 0.7:  # 30% chance to attempt salvage
+                    print(f"  Attempting to salvage {record.record_id}...")
+                    # Simple data cleaning attempts
+                    if "user_id" in record.raw_data:
+                        try:
+                            # Try to extract numeric ID from string
+                            import re
+                            numeric_match = re.search(r'\\d+', str(record.raw_data["user_id"]))
+                            if numeric_match:
+                                record.raw_data["user_id"] = int(numeric_match.group())
+                                print(f"    Salvaged user_id for {record.record_id}")
+                        except:
+                            pass
+
+                    # Retry validation after salvage attempt
+                    if pipeline.validate_record(record):
+                        print(f"    Salvage successful for {record.record_id} ✓")
+                        continue  # Re-process this record
+
+                record.status = "skipped"
+                batch_skipped += 1
+                pipeline.skipped_records += 1
+                validation_summary = ", ".join(record.validation_errors[:2])  # Show first 2 errors
+                print(f"  Skipped {record.record_id}: {validation_summary}")
+
+        # Batch summary
+        print(f"\\nBatch {batch_count} Results:")
+        print(f"  Processed: {batch_processed}/{len(current_batch)}")
+        print(f"  Failed: {batch_failed}")
+        print(f"  Skipped: {batch_skipped}")
+
+        # Update consecutive failure tracking
+        batch_success_rate = batch_processed / len(current_batch)
+        if batch_success_rate < 0.5:
+            consecutive_failures += 1
+            print(f"  ⚠️  Poor batch performance ({consecutive_failures} consecutive)")
+        else:
+            consecutive_failures = 0
+
+        # Brief pause between batches
+        time.sleep(random.uniform(1.0, 3.0))
+
+    # Final pipeline statistics
+    print(f"\\n=== ETL Pipeline Complete ===")
+    final_stats = pipeline.get_pipeline_stats()
+
+    print(f"Total Batches Processed: {batch_count}")
+    print(f"Total Records: {final_stats['total_records']}")
+    print(f"Successfully Processed: {final_stats['processed']}")
+    print(f"Failed: {final_stats['failed']}")
+    print(f"Skipped: {final_stats['skipped']}")
+    print(f"Processing Rate: {final_stats['processing_rate']:.2f} records/second")
+    print(f"Error Rate: {final_stats['error_rate']:.3f}")
+    print(f"Total Time: {final_stats['elapsed_time']:.1f} seconds")
+
+    # Success rate analysis
+    success_rate = final_stats['processed'] / final_stats['total_records']
+    print(f"\\nOverall Success Rate: {success_rate:.2%}")
+
+    if success_rate > 0.8:
+        print("✅ Excellent pipeline performance!")
+    elif success_rate > 0.6:
+        print("✓ Good pipeline performance with room for improvement")
+    else:
+        print("⚠️  Pipeline needs optimization - high failure rate")
+
+    # Demonstrate personality impact
+    print(f"\\n=== Personality Impact on ETL ===")
+    print("Different personalities affect ETL behavior:")
+    print("  reliable: More retry attempts, higher success rates")
+    print("  cautious: Conservative processing, fewer risks taken")
+    print("  playful: Balanced approach with some experimental features")
+    print("  chaotic: Faster processing but higher failure rates")
+
+def main():
+    run_etl_pipeline()
+
+if __name__ == "__main__":
+    main()

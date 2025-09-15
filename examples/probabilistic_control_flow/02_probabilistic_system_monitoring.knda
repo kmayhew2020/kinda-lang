@@ -1,0 +1,166 @@
+# Probabilistic System Monitoring
+# Real-world example: System health monitoring with adaptive checking
+# Demonstrates: ~eventually_until, ~sometimes_while for monitoring systems
+
+import random
+import time
+import json
+from datetime import datetime
+
+class SystemMetrics:
+    def __init__(self):
+        self.cpu_usage = random.uniform(10, 90)
+        self.memory_usage = random.uniform(20, 80)
+        self.disk_usage = random.uniform(30, 95)
+        self.network_latency = random.uniform(1, 200)
+        self.error_rate = random.uniform(0, 0.1)
+
+    def update(self):
+        """Simulate natural metric fluctuation"""
+        self.cpu_usage += random.uniform(-5, 5)
+        self.cpu_usage = max(0, min(100, self.cpu_usage))
+
+        self.memory_usage += random.uniform(-3, 3)
+        self.memory_usage = max(0, min(100, self.memory_usage))
+
+        self.disk_usage += random.uniform(-1, 1)
+        self.disk_usage = max(0, min(100, self.disk_usage))
+
+        self.network_latency += random.uniform(-10, 10)
+        self.network_latency = max(1, min(500, self.network_latency))
+
+        self.error_rate += random.uniform(-0.01, 0.01)
+        self.error_rate = max(0, min(0.2, self.error_rate))
+
+    def get_health_score(self):
+        """Calculate overall system health (0-1 scale)"""
+        cpu_score = (100 - self.cpu_usage) / 100
+        memory_score = (100 - self.memory_usage) / 100
+        disk_score = (100 - self.disk_usage) / 100
+        latency_score = max(0, (200 - self.network_latency) / 200)
+        error_score = max(0, (0.1 - self.error_rate) / 0.1)
+
+        return (cpu_score + memory_score + disk_score + latency_score + error_score) / 5
+
+    def is_healthy(self, threshold=0.7):
+        """Check if system meets health threshold"""
+        return self.get_health_score() >= threshold
+
+    def __str__(self):
+        return f"CPU: {self.cpu_usage:.1f}%, Mem: {self.memory_usage:.1f}%, " \\
+               f"Disk: {self.disk_usage:.1f}%, Latency: {self.network_latency:.1f}ms, " \\
+               f"Errors: {self.error_rate:.3f}, Health: {self.get_health_score():.3f}"
+
+def log_metrics(metrics, alert_sent=False):
+    """Log system metrics with timestamp"""
+    timestamp = datetime.now().strftime("%H:%M:%S")
+    status = " [ALERT]" if alert_sent else ""
+    print(f"[{timestamp}] {metrics}{status}")
+
+def send_alert(metrics):
+    """Simulate sending system alert"""
+    health_score = metrics.get_health_score()
+    print(f"  🚨 ALERT: System health critical ({health_score:.3f})")
+    return True
+
+def perform_maintenance():
+    """Simulate system maintenance operations"""
+    maintenance_type = random.choice([
+        "Cache cleanup", "Memory optimization", "Process restart",
+        "Network reset", "Disk cleanup", "Service restart"
+    ])
+    print(f"  🔧 Performing maintenance: {maintenance_type}")
+    time.sleep(0.5)
+
+def main():
+    print("=== Probabilistic System Monitoring Demo ===\\n")
+
+    # Set personality for monitoring behavior
+    ~kinda mood cautious  # Conservative monitoring approach
+
+    # Initialize system
+    system = SystemMetrics()
+    monitoring_round = 0
+    alerts_sent = 0
+    maintenance_performed = 0
+
+    print("Starting system monitoring...")
+    print("Monitoring until system achieves stable healthy state\\n")
+
+    # Monitor system until it's consistently healthy
+    ~eventually_until system.is_healthy(threshold=0.75):
+        monitoring_round += 1
+        system.update()
+
+        # Log current state
+        current_health = system.get_health_score()
+        alert_sent = current_health < 0.4
+
+        if alert_sent:
+            send_alert(system)
+            alerts_sent += 1
+
+        log_metrics(system, alert_sent)
+
+        # Probabilistic maintenance when health is low
+        if current_health < 0.6:
+            maintenance_count = 0
+            ~sometimes_while maintenance_count < 3:
+                maintenance_count += 1
+
+                # Maybe perform maintenance (probabilistic)
+                maintenance_actions = ["cleanup", "optimize", "restart", "reset"]
+                ~maybe_for action in maintenance_actions:
+                    if current_health < 0.5:  # More aggressive when critical
+                        perform_maintenance()
+                        maintenance_performed += 1
+
+                        # Simulate improvement from maintenance
+                        improvement = random.uniform(0.05, 0.15)
+                        system.cpu_usage *= (1 - improvement)
+                        system.memory_usage *= (1 - improvement)
+                        system.error_rate *= (1 - improvement)
+                        break  # Exit after one maintenance action
+
+        # Adaptive monitoring frequency based on health
+        if current_health > 0.8:
+            time.sleep(2.0)  # Slow monitoring when healthy
+        elif current_health > 0.6:
+            time.sleep(1.0)  # Normal monitoring
+        else:
+            time.sleep(0.5)  # Fast monitoring when unhealthy
+
+    print(f"\\n=== System Stabilized ===")
+    print(f"Monitoring rounds: {monitoring_round}")
+    print(f"Alerts sent: {alerts_sent}")
+    print(f"Maintenance actions: {maintenance_performed}")
+    print(f"Final health score: {system.get_health_score():.3f}")
+
+    # Optional: Continue monitoring with reduced frequency
+    print("\\nContinuing monitoring with reduced frequency...")
+    stable_monitoring_count = 0
+
+    ~kinda_repeat(5):  # Monitor for a few more cycles
+        stable_monitoring_count += 1
+        system.update()
+        log_metrics(system)
+
+        # Brief health check
+        if not system.is_healthy():
+            print("  ⚠️  Health degraded - would restart intensive monitoring")
+            break
+
+        time.sleep(3.0)  # Relaxed monitoring interval
+
+    print(f"\\nCompleted {stable_monitoring_count} stable monitoring cycles")
+
+    # Demonstrate personality impact on monitoring behavior
+    print(f"\\n=== Personality Impact ===")
+    print("Different personalities affect monitoring behavior:")
+    print("  reliable: Longer monitoring, more maintenance actions")
+    print("  cautious: Conservative thresholds, moderate actions")
+    print("  playful: Balanced approach with some randomness")
+    print("  chaotic: Shorter monitoring, fewer maintenance actions")
+
+if __name__ == "__main__":
+    main()

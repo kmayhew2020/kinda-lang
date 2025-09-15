@@ -52,7 +52,13 @@ def run_interpreter(filepath, lang="python"):
     if not hasattr(fuzzy, "env"):
         fuzzy.env = {}
 
-    exec(helper_imports, {}, fuzzy.env)
+    # Create execution context where 'env' variable points to fuzzy.env
+    exec_context = {"env": fuzzy.env}
+    exec_context.update(fuzzy.env)
+    exec(helper_imports, {}, exec_context)
+
+    # Update fuzzy.env with any new values from execution
+    fuzzy.env.update(exec_context)
 
     try:
         exec(code, fuzzy.env, fuzzy.env)

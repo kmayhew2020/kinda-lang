@@ -1,0 +1,464 @@
+# Adaptive Resource Management
+# Real-world example: Dynamic resource allocation with probabilistic scaling
+# Demonstrates: ~sometimes_while, ~eventually_until for resource optimization
+
+import random
+import time
+from dataclasses import dataclass
+from typing import List, Dict, Optional
+from enum import Enum
+
+class ResourceType(Enum):
+    CPU = "cpu"
+    MEMORY = "memory"
+    STORAGE = "storage"
+    NETWORK = "network"
+
+class TaskPriority(Enum):
+    LOW = 1
+    MEDIUM = 2
+    HIGH = 3
+    CRITICAL = 4
+
+@dataclass
+class ResourceAllocation:
+    cpu_cores: int
+    memory_gb: int
+    storage_gb: int
+    network_mbps: int
+
+    def total_cost(self) -> float:
+        """Calculate resource cost (arbitrary units)"""
+        return (self.cpu_cores * 10 +
+                self.memory_gb * 5 +
+                self.storage_gb * 2 +
+                self.network_mbps * 1)
+
+@dataclass
+class Task:
+    task_id: str
+    priority: TaskPriority
+    resource_requirements: ResourceAllocation
+    estimated_duration: float  # in seconds
+    progress: float = 0.0  # 0.0 to 1.0
+    actual_allocation: Optional[ResourceAllocation] = None
+    start_time: Optional[float] = None
+    completion_time: Optional[float] = None
+
+class ResourcePool:
+    def __init__(self, total_resources: ResourceAllocation):
+        self.total_resources = total_resources
+        self.available_resources = ResourceAllocation(
+            cpu_cores=total_resources.cpu_cores,
+            memory_gb=total_resources.memory_gb,
+            storage_gb=total_resources.storage_gb,
+            network_mbps=total_resources.network_mbps
+        )
+        self.allocated_tasks: List[Task] = []
+
+    def can_allocate(self, requirements: ResourceAllocation) -> bool:
+        """Check if resources can be allocated"""
+        return (self.available_resources.cpu_cores >= requirements.cpu_cores and
+                self.available_resources.memory_gb >= requirements.memory_gb and
+                self.available_resources.storage_gb >= requirements.storage_gb and
+                self.available_resources.network_mbps >= requirements.network_mbps)
+
+    def allocate_resources(self, task: Task) -> bool:
+        """Allocate resources to a task"""
+        if self.can_allocate(task.resource_requirements):
+            # Allocate exact requirements or slightly more
+            actual_allocation = ResourceAllocation(
+                cpu_cores=task.resource_requirements.cpu_cores,
+                memory_gb=task.resource_requirements.memory_gb,
+                storage_gb=task.resource_requirements.storage_gb,
+                network_mbps=task.resource_requirements.network_mbps
+            )
+
+            self.available_resources.cpu_cores -= actual_allocation.cpu_cores
+            self.available_resources.memory_gb -= actual_allocation.memory_gb
+            self.available_resources.storage_gb -= actual_allocation.storage_gb
+            self.available_resources.network_mbps -= actual_allocation.network_mbps
+
+            task.actual_allocation = actual_allocation
+            task.start_time = time.time()
+            self.allocated_tasks.append(task)
+
+            return True
+        return False
+
+    def deallocate_resources(self, task: Task) -> bool:
+        """Deallocate resources from a completed task"""
+        if task in self.allocated_tasks and task.actual_allocation:
+            self.available_resources.cpu_cores += task.actual_allocation.cpu_cores
+            self.available_resources.memory_gb += task.actual_allocation.memory_gb
+            self.available_resources.storage_gb += task.actual_allocation.storage_gb
+            self.available_resources.network_mbps += task.actual_allocation.network_mbps
+
+            task.completion_time = time.time()
+            self.allocated_tasks.remove(task)
+            return True
+        return False
+
+    def get_utilization(self) -> Dict[str, float]:
+        """Get current resource utilization percentages"""
+        return {
+            "cpu": 1.0 - (self.available_resources.cpu_cores / self.total_resources.cpu_cores),
+            "memory": 1.0 - (self.available_resources.memory_gb / self.total_resources.memory_gb),
+            "storage": 1.0 - (self.available_resources.storage_gb / self.total_resources.storage_gb),
+            "network": 1.0 - (self.available_resources.network_mbps / self.total_resources.network_mbps)
+        }
+
+class AdaptiveResourceManager:
+    def __init__(self, initial_resources: ResourceAllocation):
+        self.resource_pool = ResourcePool(initial_resources)
+        self.task_queue: List[Task] = []
+        self.completed_tasks: List[Task] = []
+        self.scaling_history: List[Dict] = []
+        self.total_cost = 0.0
+
+    def generate_workload(self, num_tasks: int) -> List[Task]:
+        """Generate a realistic workload of tasks"""
+        tasks = []
+
+        for i in range(num_tasks):
+            # Vary task characteristics realistically
+            priority_weights = [40, 35, 20, 5]  # Most tasks are low/medium priority
+            priority = random.choices(list(TaskPriority), weights=priority_weights)[0]
+
+            # Resource requirements based on priority
+            if priority == TaskPriority.CRITICAL:
+                cpu = random.randint(8, 16)
+                memory = random.randint(16, 32)
+                storage = random.randint(100, 500)
+                network = random.randint(500, 1000)
+            elif priority == TaskPriority.HIGH:
+                cpu = random.randint(4, 8)
+                memory = random.randint(8, 16)
+                storage = random.randint(50, 200)
+                network = random.randint(200, 500)
+            elif priority == TaskPriority.MEDIUM:
+                cpu = random.randint(2, 4)
+                memory = random.randint(4, 8)
+                storage = random.randint(20, 100)
+                network = random.randint(100, 300)
+            else:  # LOW
+                cpu = random.randint(1, 2)
+                memory = random.randint(1, 4)
+                storage = random.randint(10, 50)
+                network = random.randint(50, 150)
+
+            requirements = ResourceAllocation(
+                cpu_cores=cpu,
+                memory_gb=memory,
+                storage_gb=storage,
+                network_mbps=network
+            )
+
+            estimated_duration = random.uniform(30, 300)  # 30s to 5min
+
+            task = Task(
+                task_id=f"task_{i+1:03d}",
+                priority=priority,
+                resource_requirements=requirements,
+                estimated_duration=estimated_duration
+            )
+
+            tasks.append(task)
+
+        return tasks
+
+    def simulate_task_execution(self, task: Task) -> float:
+        """Simulate task execution and return progress made"""
+        if not task.start_time:
+            return 0.0
+
+        # Simulate variable execution speed based on resource allocation
+        base_speed = 0.1  # Base progress per second
+        if task.actual_allocation:
+            # More resources = faster execution
+            speed_multiplier = (
+                task.actual_allocation.cpu_cores / task.resource_requirements.cpu_cores
+            )
+            base_speed *= speed_multiplier
+
+        # Add some randomness to execution
+        actual_speed = base_speed * random.uniform(0.8, 1.2)
+
+        elapsed_time = time.time() - task.start_time
+        expected_progress = min(1.0, (elapsed_time * actual_speed) / 10)
+
+        # Add progress incrementally with some variance
+        progress_increment = min(0.2, expected_progress - task.progress)
+        task.progress += progress_increment
+
+        return task.progress
+
+    def scale_resources_up(self, scale_factor: float = 1.5) -> bool:
+        """Scale up resources when demand is high"""
+        print(f"📈 Scaling up resources by factor {scale_factor}")
+
+        original_resources = self.resource_pool.total_resources
+        new_resources = ResourceAllocation(
+            cpu_cores=int(original_resources.cpu_cores * scale_factor),
+            memory_gb=int(original_resources.memory_gb * scale_factor),
+            storage_gb=int(original_resources.storage_gb * scale_factor),
+            network_mbps=int(original_resources.network_mbps * scale_factor)
+        )
+
+        # Add the additional resources to available pool
+        additional_cpu = new_resources.cpu_cores - original_resources.cpu_cores
+        additional_memory = new_resources.memory_gb - original_resources.memory_gb
+        additional_storage = new_resources.storage_gb - original_resources.storage_gb
+        additional_network = new_resources.network_mbps - original_resources.network_mbps
+
+        self.resource_pool.total_resources = new_resources
+        self.resource_pool.available_resources.cpu_cores += additional_cpu
+        self.resource_pool.available_resources.memory_gb += additional_memory
+        self.resource_pool.available_resources.storage_gb += additional_storage
+        self.resource_pool.available_resources.network_mbps += additional_network
+
+        # Track scaling cost
+        additional_cost = (additional_cpu * 10 + additional_memory * 5 +
+                          additional_storage * 2 + additional_network * 1)
+        self.total_cost += additional_cost
+
+        self.scaling_history.append({
+            "action": "scale_up",
+            "factor": scale_factor,
+            "cost": additional_cost,
+            "timestamp": time.time()
+        })
+
+        return True
+
+    def scale_resources_down(self, scale_factor: float = 0.8) -> bool:
+        """Scale down resources when utilization is low"""
+        print(f"📉 Scaling down resources by factor {scale_factor}")
+
+        # Only scale down if no critical tasks are running
+        critical_tasks = [t for t in self.resource_pool.allocated_tasks
+                         if t.priority == TaskPriority.CRITICAL]
+        if critical_tasks:
+            print("  ⚠️  Cannot scale down: critical tasks running")
+            return False
+
+        original_resources = self.resource_pool.total_resources
+        new_resources = ResourceAllocation(
+            cpu_cores=max(4, int(original_resources.cpu_cores * scale_factor)),  # Minimum 4 cores
+            memory_gb=max(8, int(original_resources.memory_gb * scale_factor)),   # Minimum 8GB
+            storage_gb=max(100, int(original_resources.storage_gb * scale_factor)), # Minimum 100GB
+            network_mbps=max(100, int(original_resources.network_mbps * scale_factor)) # Minimum 100Mbps
+        )
+
+        # Check if we can scale down without affecting running tasks
+        required_resources = ResourceAllocation(0, 0, 0, 0)
+        for task in self.resource_pool.allocated_tasks:
+            if task.actual_allocation:
+                required_resources.cpu_cores += task.actual_allocation.cpu_cores
+                required_resources.memory_gb += task.actual_allocation.memory_gb
+                required_resources.storage_gb += task.actual_allocation.storage_gb
+                required_resources.network_mbps += task.actual_allocation.network_mbps
+
+        if (new_resources.cpu_cores >= required_resources.cpu_cores and
+            new_resources.memory_gb >= required_resources.memory_gb and
+            new_resources.storage_gb >= required_resources.storage_gb and
+            new_resources.network_mbps >= required_resources.network_mbps):
+
+            # Calculate savings
+            savings = (original_resources.cpu_cores - new_resources.cpu_cores) * 10
+            savings += (original_resources.memory_gb - new_resources.memory_gb) * 5
+            savings += (original_resources.storage_gb - new_resources.storage_gb) * 2
+            savings += (original_resources.network_mbps - new_resources.network_mbps) * 1
+
+            # Update resource pool
+            self.resource_pool.total_resources = new_resources
+            self.resource_pool.available_resources = ResourceAllocation(
+                cpu_cores=new_resources.cpu_cores - required_resources.cpu_cores,
+                memory_gb=new_resources.memory_gb - required_resources.memory_gb,
+                storage_gb=new_resources.storage_gb - required_resources.storage_gb,
+                network_mbps=new_resources.network_mbps - required_resources.network_mbps
+            )
+
+            self.total_cost -= savings
+
+            self.scaling_history.append({
+                "action": "scale_down",
+                "factor": scale_factor,
+                "savings": savings,
+                "timestamp": time.time()
+            })
+
+            return True
+        else:
+            print("  ⚠️  Cannot scale down: would affect running tasks")
+            return False
+
+    def adaptive_resource_management(self, workload: List[Task], management_duration: int = 120):
+        """Run adaptive resource management for a specified duration"""
+        print(f"\\n=== Adaptive Resource Management ({management_duration}s) ===")
+
+        # Set personality for resource management
+        ~kinda mood playful  # Balanced approach to scaling decisions
+
+        self.task_queue.extend(workload)
+        start_time = time.time()
+
+        # Main management loop
+        ~sometimes_while (time.time() - start_time) < management_duration:
+            current_utilization = self.resource_pool.get_utilization()
+            avg_utilization = sum(current_utilization.values()) / len(current_utilization)
+
+            print(f"\\n⏱️  Time: {int(time.time() - start_time)}s | Avg Utilization: {avg_utilization:.2f}")
+            print(f"   CPU: {current_utilization['cpu']:.2f}, Memory: {current_utilization['memory']:.2f}")
+
+            # Task scheduling phase
+            scheduled_this_cycle = 0
+            ~maybe_for task in self.task_queue.copy():
+                if self.resource_pool.can_allocate(task.resource_requirements):
+                    if self.resource_pool.allocate_resources(task):
+                        self.task_queue.remove(task)
+                        scheduled_this_cycle += 1
+                        print(f"  ✓ Scheduled {task.task_id} ({task.priority.name})")
+
+            # Task execution simulation
+            completed_this_cycle = []
+            for task in self.resource_pool.allocated_tasks.copy():
+                progress = self.simulate_task_execution(task)
+
+                if progress >= 1.0:
+                    task.progress = 1.0
+                    self.resource_pool.deallocate_resources(task)
+                    self.completed_tasks.append(task)
+                    completed_this_cycle.append(task)
+                    print(f"  ✅ Completed {task.task_id}")
+
+            # Adaptive scaling decisions
+            queue_pressure = len(self.task_queue) / max(1, len(workload))
+
+            # Scale up decision
+            if avg_utilization > 0.8 or queue_pressure > 0.3:
+                scale_up_decision = False
+                ~kinda_repeat(2):  # Consider scaling multiple times
+                    if avg_utilization > 0.9 or queue_pressure > 0.5:
+                        scale_up_decision = True
+                        break
+
+                if scale_up_decision:
+                    scale_factor = 1.3 if queue_pressure > 0.5 else 1.2
+                    self.scale_resources_up(scale_factor)
+
+            # Scale down decision
+            elif avg_utilization < 0.3 and queue_pressure < 0.1:
+                # Wait for stable low utilization before scaling down
+                stable_low_utilization = True
+                ~eventually_until avg_utilization > 0.4 or not stable_low_utilization:
+                    time.sleep(2)
+                    current_utilization = self.resource_pool.get_utilization()
+                    new_avg = sum(current_utilization.values()) / len(current_utilization)
+
+                    if new_avg > 0.3:
+                        stable_low_utilization = False
+                    else:
+                        # Scale down after confirming low utilization
+                        self.scale_resources_down(0.85)
+                        stable_low_utilization = False
+
+            # Priority-based resource reallocation
+            if self.task_queue:
+                critical_tasks = [t for t in self.task_queue if t.priority == TaskPriority.CRITICAL]
+                if critical_tasks:
+                    print(f"  🚨 {len(critical_tasks)} critical tasks waiting")
+
+                    # Try to free up resources for critical tasks
+                    low_priority_running = [t for t in self.resource_pool.allocated_tasks
+                                          if t.priority == TaskPriority.LOW]
+
+                    ~maybe_for low_priority_task in low_priority_running[:2]:  # Consider preempting up to 2 low priority tasks
+                        # Preempt if critical task can't be scheduled
+                        if critical_tasks and not self.resource_pool.can_allocate(critical_tasks[0].resource_requirements):
+                            print(f"    ⏸️  Preempting {low_priority_task.task_id} for critical task")
+                            self.resource_pool.deallocate_resources(low_priority_task)
+                            self.task_queue.insert(0, low_priority_task)  # Re-queue at front
+
+            # Brief management cycle delay
+            time.sleep(random.uniform(3, 8))
+
+        # Final status
+        print(f"\\n=== Management Session Complete ===")
+        print(f"Tasks completed: {len(self.completed_tasks)}")
+        print(f"Tasks still running: {len(self.resource_pool.allocated_tasks)}")
+        print(f"Tasks queued: {len(self.task_queue)}")
+        print(f"Total cost: {self.total_cost:.2f}")
+
+        # Show scaling history
+        if self.scaling_history:
+            print("\\nScaling Actions:")
+            for action in self.scaling_history[-5:]:  # Show last 5 actions
+                action_type = action['action']
+                factor = action.get('factor', 'N/A')
+                cost_savings = action.get('cost', action.get('savings', 0))
+                print(f"  {action_type}: factor={factor}, cost_impact={cost_savings:.2f}")
+
+def main():
+    print("=== Adaptive Resource Management Demo ===\\n")
+
+    # Initialize resource pool
+    initial_resources = ResourceAllocation(
+        cpu_cores=16,
+        memory_gb=64,
+        storage_gb=1000,
+        network_mbps=1000
+    )
+
+    manager = AdaptiveResourceManager(initial_resources)
+
+    # Generate workload
+    print("Generating workload...")
+    workload = manager.generate_workload(30)
+
+    print(f"Generated {len(workload)} tasks:")
+    priority_counts = {}
+    for task in workload:
+        priority_counts[task.priority.name] = priority_counts.get(task.priority.name, 0) + 1
+
+    for priority, count in priority_counts.items():
+        print(f"  {priority}: {count} tasks")
+
+    # Run adaptive management
+    manager.adaptive_resource_management(workload, management_duration=60)
+
+    # Task completion analysis
+    completed_by_priority = {}
+    total_completion_time = 0
+
+    for task in manager.completed_tasks:
+        if task.completion_time and task.start_time:
+            completion_time = task.completion_time - task.start_time
+            total_completion_time += completion_time
+
+            priority_name = task.priority.name
+            if priority_name not in completed_by_priority:
+                completed_by_priority[priority_name] = []
+            completed_by_priority[priority_name].append(completion_time)
+
+    print(f"\\n=== Performance Analysis ===")
+    for priority, times in completed_by_priority.items():
+        avg_time = sum(times) / len(times)
+        print(f"{priority} tasks: {len(times)} completed, avg time: {avg_time:.1f}s")
+
+    # Resource efficiency
+    final_utilization = manager.resource_pool.get_utilization()
+    print(f"\\nFinal Resource Utilization:")
+    for resource, util in final_utilization.items():
+        print(f"  {resource}: {util:.2%}")
+
+    # Demonstrate personality impact
+    print(f"\\n=== Personality Impact on Resource Management ===")
+    print("Different personalities affect scaling behavior:")
+    print("  reliable: Conservative scaling, maintains higher resource buffers")
+    print("  cautious: Moderate scaling, careful about preemption decisions")
+    print("  playful: Balanced scaling, adaptive to changing conditions")
+    print("  chaotic: Aggressive scaling, more experimental resource allocation")
+
+if __name__ == "__main__":
+    main()
