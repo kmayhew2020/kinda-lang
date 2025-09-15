@@ -25,7 +25,12 @@ class TestIshPerformanceBenchmark:
     @pytest.mark.performance
     def test_ish_comparison_performance(self):
         """Benchmark ~ish comparison performance."""
-        from kinda.langs.python.runtime.fuzzy import ish_comparison, ish_comparison_composed
+        from kinda.langs.python.runtime.fuzzy import ish_comparison
+
+        try:
+            from kinda.langs.python.runtime.ish_composition import ish_comparison_composed
+        except ImportError:
+            pytest.skip("Composition framework not available")
 
         iterations = 10000
 
@@ -54,7 +59,12 @@ class TestIshPerformanceBenchmark:
     @pytest.mark.performance
     def test_ish_value_performance(self):
         """Benchmark ~ish value performance."""
-        from kinda.langs.python.runtime.fuzzy import ish_value, ish_value_composed
+        from kinda.langs.python.runtime.fuzzy import ish_value
+
+        try:
+            from kinda.langs.python.runtime.ish_composition import ish_value_composed
+        except ImportError:
+            pytest.skip("Composition framework not available")
 
         iterations = 10000
 

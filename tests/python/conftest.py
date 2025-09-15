@@ -356,9 +356,9 @@ def pytest_runtest_setup(item):
 
     # ~rarely we might skip a test entirely (controlled chaos!)
     # BUT NOT in CI environments where deterministic behavior is required
-    if (
-        not is_ci_environment() and chaos_random() < chaos_probability("rarely") * 0.1
-    ):  # Very rare, just 1.5% chance typically
+    # ALSO disable if running coverage (since coverage tests should be deterministic)
+    # For now, disable entirely until we have better control over randomness in CI
+    if False:  # Temporarily disabled for CI determinism
         safe_emoji_print(f"[PYTEST] 🎭 ~rarely skipping test {item.name} due to chaos factor!")
         pytest.skip("~rarely skipped due to chaos factor")
 
