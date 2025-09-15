@@ -221,6 +221,42 @@
 16. **Issue #88**: 🔧 Single-source spec.yaml → docs + CLI - **DEFERRED**
 17. **Issue #89**: 🛠️ Source maps for error reporting - **DEFERRED**
 
+**v0.5.5 "Python Enhancement Bridge" (Epic #127):**
+
+🔗 **STRATEGIC POSITIONING: ENHANCEMENT TOOL EVOLUTION**
+
+Epic #127 represents a critical 8-week bridge between v0.5.0 completion and v0.6.0 dual language strategy, positioning kinda-lang as both an enhancement tool AND a complete language solution.
+
+**Target Timeline**: Q4 2025 (8 weeks, parallel development with Epic #124/#125 completion)
+
+**Strategic Rationale**:
+- **Market Positioning Evolution**: Transition from "complete replacement" to "gradual enhancement" approach
+- **Lower Adoption Barrier**: Enable incremental kinda-lang injection into existing Python codebases
+- **Technical Foundation**: Establish transpiler infrastructure patterns for v0.6.0 C/MATLAB support
+- **Competitive Advantage**: First probabilistic programming language with seamless host language injection
+
+**Core Features**:
+- 🎯 **Python Injection Framework**: Seamless integration of kinda-lang constructs within Python code
+- 🔧 **Gradual Migration Path**: Convert Python functions to kinda-lang incrementally
+- 🎲 **Enhanced Probability Control**: Native Python integration with probabilistic constructs
+- 🏗️ **Transpiler Infrastructure**: Foundation for multi-language support in v0.6.0
+
+**Resource Allocation**:
+- **Architect**: Design injection framework and transpiler patterns (2 weeks)
+- **Coder**: Implement Python integration and transpiler infrastructure (4 weeks)
+- **Tester**: Comprehensive testing with Python ecosystem compatibility (2 weeks)
+
+**Success Metrics**:
+- Existing Python codebases can incrementally adopt kinda-lang constructs
+- Seamless interop between Python and kinda-lang probabilistic features
+- Foundation infrastructure ready for v0.6.0 C/MATLAB expansion
+- Market validation of "enhancement tool" positioning strategy
+
+**Dependencies**:
+- Epic #124 (Construct Self-definition) completion
+- Epic #125 (Probabilistic Control Flow) completion
+- v0.5.0 stable release foundation
+
 **v0.6.0 "Production Ready" - Dual Language Strategy:**
 
 🎯 **STRATEGIC PIVOT: DUAL TARGET LANGUAGE APPROACH**
