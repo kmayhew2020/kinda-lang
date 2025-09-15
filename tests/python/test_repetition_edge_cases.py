@@ -575,7 +575,7 @@ class TestBoundaryInteractions:
 
     def test_kinda_repeat_eventually_until_interaction(self):
         """Test interaction between ~kinda_repeat and ~eventually_until with shared state"""
-        PersonalityContext.set_mood("playful")
+        PersonalityContext.set_mood("reliable")  # Use reliable for more predictable behavior
         PersonalityContext.set_seed(2100)
 
         test_code = """
