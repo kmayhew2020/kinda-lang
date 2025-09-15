@@ -1232,4 +1232,82 @@ KindaPythonConstructs = {
             'env["eventually_until_condition"] = eventually_until_condition'
         ),
     },
+    "ish_comparison_composed": {
+        "type": "comparison_composed",
+        "description": "Epic #126 Task 3: Composition framework-based ish comparison",
+        "body": (
+            "def ish_comparison_composed(left_val, right_val, tolerance_base=None):\n"
+            '    """Epic #126 Task 3: ~ish comparison using composition framework."""\n'
+            "    from kinda.personality import update_chaos_state\n"
+            "\n"
+            "    try:\n"
+            "        # Initialize composition framework if needed\n"
+            "        from kinda.composition import get_composition_engine, is_framework_ready\n"
+            "\n"
+            "        if not is_framework_ready():\n"
+            "            # Fallback to legacy implementation if framework not available\n"
+            "            return ish_comparison(left_val, right_val, tolerance_base)\n"
+            "\n"
+            "        # Get or create the ish comparison pattern\n"
+            "        engine = get_composition_engine()\n"
+            "        pattern_name = 'ish_comparison_pattern'\n"
+            "        ish_pattern = engine.get_composite(pattern_name)\n"
+            "\n"
+            "        if ish_pattern is None:\n"
+            "            # Create and register the pattern on first use\n"
+            "            from kinda.composition.patterns import IshToleranceComposition\n"
+            "            ish_pattern = IshToleranceComposition(pattern_name, 'comparison')\n"
+            "            engine.register_composite(ish_pattern)\n"
+            "\n"
+            "        # Delegate to composition framework\n"
+            "        result = ish_pattern.compose_comparison(left_val, right_val, tolerance_base)\n"
+            "        update_chaos_state(failed=False)\n"
+            "        return result\n"
+            "\n"
+            "    except Exception as e:\n"
+            "        # Robust fallback to legacy implementation\n"
+            '        print(f"[composition] ~ish comparison fell back to legacy: {e}")\n'
+            "        update_chaos_state(failed=True)\n"
+            "        return ish_comparison(left_val, right_val, tolerance_base)"
+        ),
+    },
+    "ish_value_composed": {
+        "type": "value_composed",
+        "description": "Epic #126 Task 3: Composition framework-based ish value modification",
+        "body": (
+            "def ish_value_composed(val, target_val=None):\n"
+            '    """Epic #126 Task 3: ~ish value modification using composition framework."""\n'
+            "    from kinda.personality import update_chaos_state\n"
+            "\n"
+            "    try:\n"
+            "        # Initialize composition framework if needed\n"
+            "        from kinda.composition import get_composition_engine, is_framework_ready\n"
+            "\n"
+            "        if not is_framework_ready():\n"
+            "            # Fallback to legacy implementation if framework not available\n"
+            "            return ish_value(val, target_val)\n"
+            "\n"
+            "        # Get or create the ish assignment pattern\n"
+            "        engine = get_composition_engine()\n"
+            "        pattern_name = 'ish_assignment_pattern'\n"
+            "        ish_pattern = engine.get_composite(pattern_name)\n"
+            "\n"
+            "        if ish_pattern is None:\n"
+            "            # Create and register the pattern on first use\n"
+            "            from kinda.composition.patterns import IshToleranceComposition\n"
+            "            ish_pattern = IshToleranceComposition(pattern_name, 'assignment')\n"
+            "            engine.register_composite(ish_pattern)\n"
+            "\n"
+            "        # Delegate to composition framework\n"
+            "        result = ish_pattern.compose_assignment(val, target_val)\n"
+            "        update_chaos_state(failed=False)\n"
+            "        return result\n"
+            "\n"
+            "    except Exception as e:\n"
+            "        # Robust fallback to legacy implementation\n"
+            '        print(f"[composition] ~ish value fell back to legacy: {e}")\n'
+            "        update_chaos_state(failed=True)\n"
+            "        return ish_value(val, target_val)"
+        ),
+    },
 }
