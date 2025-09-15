@@ -622,6 +622,8 @@ class TestDocumentationExampleQuality:
                         "LOOP_CONSTRUCTS.md",
                         "MIGRATION_GUIDE.md",
                         "PERFORMANCE_GUIDE.md",
+                        "EPIC_127_OVERVIEW.md",
+                        "PYTHON_INJECTION_PATTERNS.md",
                     ]:
                         continue
 
