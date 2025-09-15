@@ -254,7 +254,9 @@ class TestRarelyRuntimeBehavior:
                 # Allow for statistical variation in CI environments - rarely should generally trend toward False
                 # but randomness can cause occasional flips in small samples
                 total_calls = len(true_results)
-                assert true_count <= total_calls * 0.8, "rarely(True) should not be true more than 80% of the time"
+                assert (
+                    true_count <= total_calls * 0.8
+                ), "rarely(True) should not be true more than 80% of the time"
 
             finally:
                 sys.path.remove(str(temp_path))
