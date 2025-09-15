@@ -19,12 +19,15 @@ class CompositionTestFramework:
         self.confidence = confidence
         self.test_results = {}
 
-    def validate_composition_probability(self,
-                                       composite: CompositeConstruct,
-                                       personality: str,
-                                       expected_prob: float,
-                                       tolerance: float = 0.05,
-                                       *args, **kwargs) -> bool:
+    def validate_composition_probability(
+        self,
+        composite: CompositeConstruct,
+        personality: str,
+        expected_prob: float,
+        tolerance: float = 0.05,
+        *args,
+        **kwargs,
+    ) -> bool:
         """Validate that composite construct behaves with expected probability."""
         from kinda.personality import get_personality, PersonalityContext
 
@@ -46,13 +49,13 @@ class CompositionTestFramework:
             within_tolerance = abs(actual_prob - expected_prob) <= tolerance
 
             test_result = {
-                'construct': composite.name,
-                'personality': personality,
-                'expected': expected_prob,
-                'actual': actual_prob,
-                'tolerance': tolerance,
-                'samples': self.samples,
-                'passed': within_tolerance
+                "construct": composite.name,
+                "personality": personality,
+                "expected": expected_prob,
+                "actual": actual_prob,
+                "tolerance": tolerance,
+                "samples": self.samples,
+                "passed": within_tolerance,
             }
 
             self.test_results[f"{composite.name}_{personality}"] = test_result
@@ -72,6 +75,7 @@ class CompositionTestFramework:
                 # Try importing from kinda runtime
                 try:
                     from kinda.langs.python.runtime import fuzzy
+
                     if not hasattr(fuzzy, dep):
                         missing_deps.append(dep)
                 except ImportError:
@@ -83,11 +87,13 @@ class CompositionTestFramework:
 
         return True
 
-    def validate_composition_performance(self,
-                                       composite: CompositeConstruct,
-                                       baseline_time: float,
-                                       max_overhead: float = 0.20,
-                                       iterations: int = 1000) -> bool:
+    def validate_composition_performance(
+        self,
+        composite: CompositeConstruct,
+        baseline_time: float,
+        max_overhead: float = 0.20,
+        iterations: int = 1000,
+    ) -> bool:
         """Validate that composition performance is within acceptable bounds."""
 
         start_time = time.perf_counter()
@@ -108,13 +114,13 @@ class CompositionTestFramework:
         within_bounds = overhead_ratio <= max_overhead
 
         performance_result = {
-            'construct': composite.name,
-            'baseline_time': baseline_time,
-            'actual_time': avg_time,
-            'overhead_ratio': overhead_ratio,
-            'max_overhead': max_overhead,
-            'iterations': iterations,
-            'passed': within_bounds
+            "construct": composite.name,
+            "baseline_time": baseline_time,
+            "actual_time": avg_time,
+            "overhead_ratio": overhead_ratio,
+            "max_overhead": max_overhead,
+            "iterations": iterations,
+            "passed": within_bounds,
         }
 
         self.test_results[f"{composite.name}_performance"] = performance_result
@@ -129,30 +135,28 @@ class CompositionTestFramework:
         report += "=" * 50 + "\n\n"
 
         # Probability tests
-        prob_tests = {k: v for k, v in self.test_results.items()
-                     if not k.endswith('_performance')}
+        prob_tests = {k: v for k, v in self.test_results.items() if not k.endswith("_performance")}
 
         if prob_tests:
             report += "Probability Validation Results:\n"
             report += "-" * 30 + "\n"
 
             for test_name, result in prob_tests.items():
-                status = "PASS" if result['passed'] else "FAIL"
+                status = "PASS" if result["passed"] else "FAIL"
                 report += f"{test_name}: {status}\n"
                 report += f"  Expected: {result['expected']:.3f} ± {result['tolerance']:.3f}\n"
                 report += f"  Actual:   {result['actual']:.3f}\n"
                 report += f"  Samples:  {result['samples']}\n\n"
 
         # Performance tests
-        perf_tests = {k: v for k, v in self.test_results.items()
-                     if k.endswith('_performance')}
+        perf_tests = {k: v for k, v in self.test_results.items() if k.endswith("_performance")}
 
         if perf_tests:
             report += "Performance Validation Results:\n"
             report += "-" * 30 + "\n"
 
             for test_name, result in perf_tests.items():
-                status = "PASS" if result['passed'] else "FAIL"
+                status = "PASS" if result["passed"] else "FAIL"
                 report += f"{test_name}: {status}\n"
                 report += f"  Baseline:  {result['baseline_time']:.6f}s\n"
                 report += f"  Actual:    {result['actual_time']:.6f}s\n"
@@ -166,10 +170,12 @@ class CompositionAssertion:
     """Assertion utilities for composite constructs."""
 
     @staticmethod
-    def assert_composition_equivalent(composite: CompositeConstruct,
-                                    reference_behavior: Dict[str, float],
-                                    tolerance: float = 0.05,
-                                    samples: int = 1000):
+    def assert_composition_equivalent(
+        composite: CompositeConstruct,
+        reference_behavior: Dict[str, float],
+        tolerance: float = 0.05,
+        samples: int = 1000,
+    ):
         """Assert that composition behaves equivalently to reference."""
 
         framework = CompositionTestFramework(samples)
@@ -180,7 +186,7 @@ class CompositionAssertion:
             )
 
             if not passed:
-                actual = framework.test_results[f"{composite.name}_{personality}"]['actual']
+                actual = framework.test_results[f"{composite.name}_{personality}"]["actual"]
                 raise AssertionError(
                     f"{composite.name} failed probability test for {personality}: "
                     f"expected {expected_prob:.3f} ± {tolerance:.3f}, "
@@ -188,9 +194,9 @@ class CompositionAssertion:
                 )
 
     @staticmethod
-    def assert_composition_performance(composite: CompositeConstruct,
-                                     max_overhead: float = 0.20,
-                                     baseline_construct: str = None):
+    def assert_composition_performance(
+        composite: CompositeConstruct, max_overhead: float = 0.20, baseline_construct: str = None
+    ):
         """Assert that composition performance is acceptable."""
 
         # Measure baseline if provided
@@ -201,6 +207,7 @@ class CompositionAssertion:
                 # Try importing from kinda runtime
                 try:
                     from kinda.langs.python.runtime import fuzzy
+
                     baseline_func = getattr(fuzzy, baseline_construct, None)
                 except ImportError:
                     pass
@@ -215,9 +222,7 @@ class CompositionAssertion:
                 baseline_time = (time.perf_counter() - start) / 100
 
         framework = CompositionTestFramework()
-        passed = framework.validate_composition_performance(
-            composite, baseline_time, max_overhead
-        )
+        passed = framework.validate_composition_performance(composite, baseline_time, max_overhead)
 
         if not passed:
             result = framework.test_results[f"{composite.name}_performance"]
@@ -234,8 +239,7 @@ class CompositionAssertion:
 
         if not passed:
             raise AssertionError(
-                f"{composite.name} has missing dependencies: "
-                f"{composite.get_basic_constructs()}"
+                f"{composite.name} has missing dependencies: " f"{composite.get_basic_constructs()}"
             )
 
 
@@ -249,12 +253,13 @@ class CompositionIntegrationTester:
         """Test integration with personality system."""
         from kinda.personality import PersonalityContext
 
-        personalities = ['reliable', 'cautious', 'playful', 'chaotic']
+        personalities = ["reliable", "cautious", "playful", "chaotic"]
         results = {}
 
         original_personality = None
         try:
             from kinda.personality import get_personality
+
             original_personality = get_personality().mood
         except:
             pass
@@ -282,9 +287,9 @@ class CompositionIntegrationTester:
             personality_variation = unique_behaviors > 1
 
             self.integration_results[f"{composite.name}_personality"] = {
-                'results': results,
-                'personality_variation': personality_variation,
-                'passed': personality_variation
+                "results": results,
+                "personality_variation": personality_variation,
+                "passed": personality_variation,
             }
 
             return personality_variation
@@ -329,9 +334,9 @@ class CompositionIntegrationTester:
         test_passed = missing_handled and dependencies_work
 
         self.integration_results[f"{composite.name}_loading_order"] = {
-            'missing_handled': missing_handled,
-            'dependencies_work': dependencies_work,
-            'passed': test_passed
+            "missing_handled": missing_handled,
+            "dependencies_work": dependencies_work,
+            "passed": test_passed,
         }
 
         return test_passed
@@ -357,8 +362,8 @@ class CompositionIntegrationTester:
             state_updated = True  # Basic test - if we get here, integration works
 
             self.integration_results[f"{composite.name}_chaos_state"] = {
-                'state_updated': state_updated,
-                'passed': state_updated
+                "state_updated": state_updated,
+                "passed": state_updated,
             }
 
             return state_updated
@@ -376,17 +381,17 @@ class CompositionIntegrationTester:
         report += "=" * 50 + "\n\n"
 
         for test_name, result in self.integration_results.items():
-            status = "PASS" if result.get('passed', False) else "FAIL"
+            status = "PASS" if result.get("passed", False) else "FAIL"
             report += f"{test_name}: {status}\n"
 
             # Add specific details based on test type
-            if 'personality_variation' in result:
+            if "personality_variation" in result:
                 report += f"  Personality Variation: {result['personality_variation']}\n"
                 report += f"  Results: {result['results']}\n"
-            elif 'missing_handled' in result:
+            elif "missing_handled" in result:
                 report += f"  Missing Deps Handled: {result['missing_handled']}\n"
                 report += f"  Dependencies Work: {result['dependencies_work']}\n"
-            elif 'state_updated' in result:
+            elif "state_updated" in result:
                 report += f"  State Integration: {result['state_updated']}\n"
 
             report += "\n"

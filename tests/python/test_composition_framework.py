@@ -33,16 +33,31 @@ from kinda.grammar.python.constructs import KindaPythonConstructs
 
 # Import composition framework components
 from kinda.composition import (
-    CompositeConstruct, CompositionStrategy, CompositionConfig,
-    CompositionEngine, PersonalityBridge, PerformanceMonitor,
-    UnionComposition, ThresholdComposition, ToleranceComposition,
-    CompositionPatternFactory, CompositionTestFramework,
-    CompositionAssertion, CompositionIntegrationTester,
-    DependencyValidator, PerformanceValidator,
-    validate_construct_dependencies, validate_performance_target,
-    validate_composition_integrity, get_composition_engine,
-    get_test_framework, initialize_framework, get_framework_info,
-    create_sorta_pattern, create_ish_pattern, create_consensus_pattern
+    CompositeConstruct,
+    CompositionStrategy,
+    CompositionConfig,
+    CompositionEngine,
+    PersonalityBridge,
+    PerformanceMonitor,
+    UnionComposition,
+    ThresholdComposition,
+    ToleranceComposition,
+    CompositionPatternFactory,
+    CompositionTestFramework,
+    CompositionAssertion,
+    CompositionIntegrationTester,
+    DependencyValidator,
+    PerformanceValidator,
+    validate_construct_dependencies,
+    validate_performance_target,
+    validate_composition_integrity,
+    get_composition_engine,
+    get_test_framework,
+    initialize_framework,
+    get_framework_info,
+    create_sorta_pattern,
+    create_ish_pattern,
+    create_consensus_pattern,
 )
 
 
@@ -73,13 +88,13 @@ class TestCompositionFrameworkCore(unittest.TestCase):
         """Test framework information is correct."""
         info = get_framework_info()
 
-        self.assertEqual(info['name'], 'Kinda-Lang Composition Framework')
-        self.assertIn('version', info)
-        self.assertIn('description', info)
-        self.assertIn('components', info)
-        self.assertIn('capabilities', info)
-        self.assertIsInstance(info['components'], list)
-        self.assertIsInstance(info['capabilities'], list)
+        self.assertEqual(info["name"], "Kinda-Lang Composition Framework")
+        self.assertIn("version", info)
+        self.assertIn("description", info)
+        self.assertIn("components", info)
+        self.assertIn("capabilities", info)
+        self.assertIsInstance(info["components"], list)
+        self.assertIsInstance(info["capabilities"], list)
 
     def test_composition_strategy_enum(self):
         """Test CompositionStrategy enum values."""
@@ -92,8 +107,7 @@ class TestCompositionFrameworkCore(unittest.TestCase):
     def test_composition_config_creation(self):
         """Test CompositionConfig creation and defaults."""
         config = CompositionConfig(
-            strategy=CompositionStrategy.UNION,
-            personality_bridges={"playful": 0.2}
+            strategy=CompositionStrategy.UNION, personality_bridges={"playful": 0.2}
         )
 
         self.assertEqual(config.strategy, CompositionStrategy.UNION)
@@ -114,22 +128,19 @@ class TestCompositionFrameworkCore(unittest.TestCase):
 
         report = monitor.get_performance_report("test_construct")
 
-        self.assertEqual(report['construct'], "test_construct")
-        self.assertEqual(report['total_executions'], 3)
-        self.assertAlmostEqual(report['avg_time'], 0.0015, places=6)
-        self.assertEqual(report['min_time'], 0.001)
-        self.assertEqual(report['max_time'], 0.002)
-        self.assertAlmostEqual(report['error_rate'], 1/3, places=2)
+        self.assertEqual(report["construct"], "test_construct")
+        self.assertEqual(report["total_executions"], 3)
+        self.assertAlmostEqual(report["avg_time"], 0.0015, places=6)
+        self.assertEqual(report["min_time"], 0.001)
+        self.assertEqual(report["max_time"], 0.002)
+        self.assertAlmostEqual(report["error_rate"], 1 / 3, places=2)
 
     def test_composition_engine_registration(self):
         """Test CompositionEngine construct registration."""
         engine = get_composition_engine()
 
         # Create a mock composite construct
-        mock_config = CompositionConfig(
-            strategy=CompositionStrategy.UNION,
-            personality_bridges={}
-        )
+        mock_config = CompositionConfig(strategy=CompositionStrategy.UNION, personality_bridges={})
 
         class MockComposite(CompositeConstruct):
             def __init__(self):
@@ -149,10 +160,7 @@ class TestCompositionFrameworkCore(unittest.TestCase):
 
         self.assertIn("mock_construct", engine.construct_registry)
         self.assertIn("mock_construct", engine.dependency_graph)
-        self.assertEqual(
-            engine.dependency_graph["mock_construct"],
-            ["sometimes", "maybe"]
-        )
+        self.assertEqual(engine.dependency_graph["mock_construct"], ["sometimes", "maybe"])
 
 
 class TestCompositionStrategies(unittest.TestCase):
@@ -259,7 +267,7 @@ class TestCompositionStrategies(unittest.TestCase):
         gates = [
             MagicMock(return_value=False),
             MagicMock(return_value="success"),
-            MagicMock(return_value="fallback")
+            MagicMock(return_value="fallback"),
         ]
         result = self.engine._execute_conditional(gates)
 
@@ -286,9 +294,7 @@ class TestPersonalityBridge(unittest.TestCase):
     def test_apply_personality_bridge_success_no_change(self):
         """Test that successful results are not modified."""
         bridge_config = {"playful": 0.5}
-        result = PersonalityBridge.apply_personality_bridge(
-            True, "test_construct", bridge_config
-        )
+        result = PersonalityBridge.apply_personality_bridge(True, "test_construct", bridge_config)
 
         self.assertTrue(result)  # Success should remain unchanged
 
@@ -307,9 +313,7 @@ class TestPersonalityBridge(unittest.TestCase):
         """Test that failed results remain failed without bridge."""
         bridge_config = {"playful": 0.0}  # No bridge for playful
 
-        result = PersonalityBridge.apply_personality_bridge(
-            False, "test_construct", bridge_config
-        )
+        result = PersonalityBridge.apply_personality_bridge(False, "test_construct", bridge_config)
 
         self.assertFalse(result)  # Should remain failed
 
@@ -363,9 +367,7 @@ class TestCompositionPatterns(unittest.TestCase):
     def test_union_composition_creation(self):
         """Test UnionComposition creation and basic properties."""
         bridge_config = {"playful": 0.2, "chaotic": 0.3}
-        composition = UnionComposition(
-            "test_union", ["sometimes", "maybe"], bridge_config
-        )
+        composition = UnionComposition("test_union", ["sometimes", "maybe"], bridge_config)
 
         self.assertEqual(composition.name, "test_union")
         self.assertEqual(composition.config.strategy, CompositionStrategy.UNION)
@@ -433,9 +435,7 @@ class TestCompositionPatterns(unittest.TestCase):
 
     def test_tolerance_composition_creation(self):
         """Test ToleranceComposition creation and basic properties."""
-        composition = ToleranceComposition(
-            "test_tolerance", "kinda_float", "chaos_tolerance"
-        )
+        composition = ToleranceComposition("test_tolerance", "kinda_float", "chaos_tolerance")
 
         self.assertEqual(composition.name, "test_tolerance")
         self.assertEqual(composition.config.strategy, CompositionStrategy.CONDITIONAL)
@@ -458,9 +458,7 @@ class TestCompositionPatterns(unittest.TestCase):
 
         # Test the basic tolerance comparison logic
         # Create a simpler test that doesn't rely on mocking globals across modules
-        composition2 = ToleranceComposition(
-            "test_tolerance2", "identity", "tolerance_func"
-        )
+        composition2 = ToleranceComposition("test_tolerance2", "identity", "tolerance_func")
 
         # Test that it handles numeric inputs directly
         try:
@@ -513,12 +511,7 @@ class TestCompositionPatterns(unittest.TestCase):
         self.assertEqual(composition.get_basic_constructs(), ["sometimes", "maybe"])
 
         # Check bridge configuration
-        expected_bridges = {
-            'reliable': 0.0,
-            'cautious': 0.0,
-            'playful': 0.2,
-            'chaotic': 0.2
-        }
+        expected_bridges = {"reliable": 0.0, "cautious": 0.0, "playful": 0.2, "chaotic": 0.2}
         self.assertEqual(composition.config.personality_bridges, expected_bridges)
 
     def test_predefined_ish_pattern(self):
@@ -570,8 +563,7 @@ class TestCompositionTestingFramework(unittest.TestCase):
         class DeterministicComposite(CompositeConstruct):
             def __init__(self, prob):
                 config = CompositionConfig(
-                    strategy=CompositionStrategy.UNION,
-                    personality_bridges={}
+                    strategy=CompositionStrategy.UNION, personality_bridges={}
                 )
                 super().__init__("deterministic", config)
                 self.prob = prob
@@ -581,6 +573,7 @@ class TestCompositionTestingFramework(unittest.TestCase):
 
             def compose(self, *args, **kwargs):
                 from kinda.personality import chaos_random
+
                 return chaos_random() < self.prob
 
             def get_target_probabilities(self):
@@ -594,12 +587,12 @@ class TestCompositionTestingFramework(unittest.TestCase):
 
         # Should pass within tolerance
         result = framework.test_results["deterministic_reliable"]
-        self.assertEqual(result['construct'], "deterministic")
-        self.assertEqual(result['personality'], "reliable")
-        self.assertEqual(result['expected'], 0.9)
-        self.assertEqual(result['samples'], 100)
-        self.assertIsInstance(result['actual'], float)
-        self.assertIsInstance(result['passed'], bool)
+        self.assertEqual(result["construct"], "deterministic")
+        self.assertEqual(result["personality"], "reliable")
+        self.assertEqual(result["expected"], 0.9)
+        self.assertEqual(result["samples"], 100)
+        self.assertIsInstance(result["actual"], float)
+        self.assertIsInstance(result["passed"], bool)
 
     def test_validate_composition_dependencies(self):
         """Test composition dependency validation."""
@@ -625,8 +618,7 @@ class TestCompositionTestingFramework(unittest.TestCase):
         class FastComposite(CompositeConstruct):
             def __init__(self):
                 config = CompositionConfig(
-                    strategy=CompositionStrategy.UNION,
-                    personality_bridges={}
+                    strategy=CompositionStrategy.UNION, personality_bridges={}
                 )
                 super().__init__("fast", config)
 
@@ -648,13 +640,13 @@ class TestCompositionTestingFramework(unittest.TestCase):
 
         # Check that performance result was recorded
         perf_result = framework.test_results["fast_performance"]
-        self.assertEqual(perf_result['construct'], "fast")
-        self.assertEqual(perf_result['baseline_time'], baseline_time)
-        self.assertEqual(perf_result['max_overhead'], 0.20)
-        self.assertEqual(perf_result['iterations'], 100)
-        self.assertIsInstance(perf_result['actual_time'], float)
-        self.assertIsInstance(perf_result['overhead_ratio'], float)
-        self.assertIsInstance(perf_result['passed'], bool)
+        self.assertEqual(perf_result["construct"], "fast")
+        self.assertEqual(perf_result["baseline_time"], baseline_time)
+        self.assertEqual(perf_result["max_overhead"], 0.20)
+        self.assertEqual(perf_result["iterations"], 100)
+        self.assertIsInstance(perf_result["actual_time"], float)
+        self.assertIsInstance(perf_result["overhead_ratio"], float)
+        self.assertIsInstance(perf_result["passed"], bool)
 
     def test_generate_test_report(self):
         """Test test report generation."""
@@ -663,23 +655,23 @@ class TestCompositionTestingFramework(unittest.TestCase):
         # Add some mock test results
         framework.test_results = {
             "test_construct_reliable": {
-                'construct': 'test_construct',
-                'personality': 'reliable',
-                'expected': 0.8,
-                'actual': 0.82,
-                'tolerance': 0.05,
-                'samples': 50,
-                'passed': True
+                "construct": "test_construct",
+                "personality": "reliable",
+                "expected": 0.8,
+                "actual": 0.82,
+                "tolerance": 0.05,
+                "samples": 50,
+                "passed": True,
             },
             "test_construct_performance": {
-                'construct': 'test_construct',
-                'baseline_time': 0.001,
-                'actual_time': 0.0012,
-                'overhead_ratio': 0.2,
-                'max_overhead': 0.20,
-                'iterations': 100,
-                'passed': True
-            }
+                "construct": "test_construct",
+                "baseline_time": 0.001,
+                "actual_time": 0.0012,
+                "overhead_ratio": 0.2,
+                "max_overhead": 0.20,
+                "iterations": 100,
+                "passed": True,
+            },
         }
 
         report = framework.generate_test_report()
@@ -701,12 +693,12 @@ class TestCompositionAssertion(unittest.TestCase):
 
     def test_assert_composition_equivalent_success(self):
         """Test successful composition equivalence assertion."""
+
         # Create a deterministic composite for testing
         class DeterministicComposite(CompositeConstruct):
             def __init__(self, prob_map):
                 config = CompositionConfig(
-                    strategy=CompositionStrategy.UNION,
-                    personality_bridges={}
+                    strategy=CompositionStrategy.UNION, personality_bridges={}
                 )
                 super().__init__("deterministic", config)
                 self.prob_map = prob_map
@@ -716,6 +708,7 @@ class TestCompositionAssertion(unittest.TestCase):
 
             def compose(self, *args, **kwargs):
                 from kinda.personality import get_personality, chaos_random
+
                 personality = get_personality().mood
                 prob = self.prob_map.get(personality, 0.5)
                 return chaos_random() < prob
@@ -733,11 +726,11 @@ class TestCompositionAssertion(unittest.TestCase):
 
     def test_assert_composition_equivalent_failure(self):
         """Test failing composition equivalence assertion."""
+
         class DeterministicComposite(CompositeConstruct):
             def __init__(self):
                 config = CompositionConfig(
-                    strategy=CompositionStrategy.UNION,
-                    personality_bridges={}
+                    strategy=CompositionStrategy.UNION, personality_bridges={}
                 )
                 super().__init__("deterministic", config)
 
@@ -799,8 +792,7 @@ class TestCompositionIntegrationTester(unittest.TestCase):
         class PersonalityVaryingComposite(CompositeConstruct):
             def __init__(self):
                 config = CompositionConfig(
-                    strategy=CompositionStrategy.UNION,
-                    personality_bridges={}
+                    strategy=CompositionStrategy.UNION, personality_bridges={}
                 )
                 super().__init__("varying", config)
 
@@ -809,15 +801,11 @@ class TestCompositionIntegrationTester(unittest.TestCase):
 
             def compose(self, *args, **kwargs):
                 from kinda.personality import get_personality, chaos_random
+
                 personality = get_personality().mood
 
                 # Different behavior per personality
-                prob_map = {
-                    "reliable": 0.9,
-                    "cautious": 0.7,
-                    "playful": 0.5,
-                    "chaotic": 0.3
-                }
+                prob_map = {"reliable": 0.9, "cautious": 0.7, "playful": 0.5, "chaotic": 0.3}
 
                 prob = prob_map.get(personality, 0.5)
                 return chaos_random() < prob
@@ -833,10 +821,10 @@ class TestCompositionIntegrationTester(unittest.TestCase):
 
         # Check integration results
         integration_result = tester.integration_results["varying_personality"]
-        self.assertIn('results', integration_result)
-        self.assertIn('personality_variation', integration_result)
-        self.assertTrue(integration_result['personality_variation'])
-        self.assertTrue(integration_result['passed'])
+        self.assertIn("results", integration_result)
+        self.assertIn("personality_variation", integration_result)
+        self.assertTrue(integration_result["personality_variation"])
+        self.assertTrue(integration_result["passed"])
 
     def test_construct_loading_order(self):
         """Test construct loading order handling."""
@@ -847,9 +835,9 @@ class TestCompositionIntegrationTester(unittest.TestCase):
 
         # Should handle missing dependencies gracefully
         integration_result = tester.integration_results["loading_test_loading_order"]
-        self.assertIn('missing_handled', integration_result)
-        self.assertIn('dependencies_work', integration_result)
-        self.assertIsInstance(integration_result['passed'], bool)
+        self.assertIn("missing_handled", integration_result)
+        self.assertIn("dependencies_work", integration_result)
+        self.assertIsInstance(integration_result["passed"], bool)
 
     def test_chaos_state_integration(self):
         """Test chaos state integration."""
@@ -864,12 +852,14 @@ class TestCompositionIntegrationTester(unittest.TestCase):
             # If successful, check integration results
             if "chaos_test_chaos_state" in tester.integration_results:
                 integration_result = tester.integration_results["chaos_test_chaos_state"]
-                self.assertIn('state_updated', integration_result)
-                self.assertIsInstance(integration_result['passed'], bool)
+                self.assertIn("state_updated", integration_result)
+                self.assertIsInstance(integration_result["passed"], bool)
         except AttributeError as e:
             # Expected if chaos_state attribute is not available
             if "chaos_state" in str(e):
-                self.skipTest("Chaos state system not available in current personality implementation")
+                self.skipTest(
+                    "Chaos state system not available in current personality implementation"
+                )
             else:
                 raise
 
@@ -880,15 +870,15 @@ class TestCompositionIntegrationTester(unittest.TestCase):
         # Add some mock results
         tester.integration_results = {
             "test_personality": {
-                'results': {"reliable": 0.9, "chaotic": 0.3},
-                'personality_variation': True,
-                'passed': True
+                "results": {"reliable": 0.9, "chaotic": 0.3},
+                "personality_variation": True,
+                "passed": True,
             },
             "test_loading_order": {
-                'missing_handled': True,
-                'dependencies_work': True,
-                'passed': True
-            }
+                "missing_handled": True,
+                "dependencies_work": True,
+                "passed": True,
+            },
         }
 
         report = tester.generate_integration_report()
@@ -996,8 +986,7 @@ class TestValidationSystem(unittest.TestCase):
         class SimpleComposite(CompositeConstruct):
             def __init__(self):
                 config = CompositionConfig(
-                    strategy=CompositionStrategy.UNION,
-                    personality_bridges={}
+                    strategy=CompositionStrategy.UNION, personality_bridges={}
                 )
                 super().__init__("simple", config)
 
@@ -1025,9 +1014,9 @@ class TestValidationSystem(unittest.TestCase):
             self.assertIn("simple", validator.overhead_measurements)
 
             measurement = validator.overhead_measurements["simple"]
-            self.assertIn('composite_time', measurement)
-            self.assertIn('baseline_time', measurement)
-            self.assertIn('overhead_ratio', measurement)
+            self.assertIn("composite_time", measurement)
+            self.assertIn("baseline_time", measurement)
+            self.assertIn("overhead_ratio", measurement)
 
         finally:
             if "mock_dep" in globals():
@@ -1041,8 +1030,7 @@ class TestValidationSystem(unittest.TestCase):
         class FastComposite(CompositeConstruct):
             def __init__(self):
                 config = CompositionConfig(
-                    strategy=CompositionStrategy.UNION,
-                    personality_bridges={}
+                    strategy=CompositionStrategy.UNION, personality_bridges={}
                 )
                 super().__init__("fast", config)
 
@@ -1071,23 +1059,23 @@ class TestValidationSystem(unittest.TestCase):
 
         results = validate_composition_integrity(composition)
 
-        self.assertEqual(results['construct_name'], "integrity_test")
-        self.assertIn('validation_timestamp', results)
-        self.assertIn('tests_passed', results)
-        self.assertIn('tests_total', results)
-        self.assertIn('issues', results)
-        self.assertIn('dependency_validation', results)
-        self.assertIn('performance_validation', results)
-        self.assertIn('circular_dependencies', results)
-        self.assertIn('execution_test', results)
-        self.assertIn('health_score', results)
-        self.assertIn('overall_status', results)
+        self.assertEqual(results["construct_name"], "integrity_test")
+        self.assertIn("validation_timestamp", results)
+        self.assertIn("tests_passed", results)
+        self.assertIn("tests_total", results)
+        self.assertIn("issues", results)
+        self.assertIn("dependency_validation", results)
+        self.assertIn("performance_validation", results)
+        self.assertIn("circular_dependencies", results)
+        self.assertIn("execution_test", results)
+        self.assertIn("health_score", results)
+        self.assertIn("overall_status", results)
 
         # Should pass most tests with proper setup
-        self.assertIsInstance(results['tests_passed'], int)
-        self.assertIsInstance(results['tests_total'], int)
-        self.assertIsInstance(results['health_score'], float)
-        self.assertIn(results['overall_status'], ['PASS', 'FAIL'])
+        self.assertIsInstance(results["tests_passed"], int)
+        self.assertIsInstance(results["tests_total"], int)
+        self.assertIsInstance(results["health_score"], float)
+        self.assertIn(results["overall_status"], ["PASS", "FAIL"])
 
 
 class TestPerformanceRegression(unittest.TestCase):
@@ -1118,8 +1106,7 @@ class TestPerformanceRegression(unittest.TestCase):
 
         # Should be within 20% overhead target
         self.assertLessEqual(
-            overhead, 0.20,
-            f"Framework overhead {overhead:.1%} exceeds 20% target"
+            overhead, 0.20, f"Framework overhead {overhead:.1%} exceeds 20% target"
         )
 
     def test_union_composition_performance(self):
@@ -1138,8 +1125,9 @@ class TestPerformanceRegression(unittest.TestCase):
         # Should complete reasonably quickly
         max_acceptable_time = 0.001  # 1ms per call
         self.assertLess(
-            avg_time, max_acceptable_time,
-            f"UnionComposition too slow: {avg_time:.6f}s > {max_acceptable_time:.6f}s"
+            avg_time,
+            max_acceptable_time,
+            f"UnionComposition too slow: {avg_time:.6f}s > {max_acceptable_time:.6f}s",
         )
 
     def test_threshold_composition_performance(self):
@@ -1158,8 +1146,9 @@ class TestPerformanceRegression(unittest.TestCase):
         # Should complete reasonably quickly
         max_acceptable_time = 0.002  # 2ms per call (more work than union)
         self.assertLess(
-            avg_time, max_acceptable_time,
-            f"ThresholdComposition too slow: {avg_time:.6f}s > {max_acceptable_time:.6f}s"
+            avg_time,
+            max_acceptable_time,
+            f"ThresholdComposition too slow: {avg_time:.6f}s > {max_acceptable_time:.6f}s",
         )
 
     def test_tolerance_composition_performance(self):
@@ -1181,8 +1170,9 @@ class TestPerformanceRegression(unittest.TestCase):
         # Should complete reasonably quickly even with error handling
         max_acceptable_time = 0.01  # 10ms per call (including exception handling)
         self.assertLess(
-            avg_time, max_acceptable_time,
-            f"ToleranceComposition too slow: {avg_time:.6f}s > {max_acceptable_time:.6f}s"
+            avg_time,
+            max_acceptable_time,
+            f"ToleranceComposition too slow: {avg_time:.6f}s > {max_acceptable_time:.6f}s",
         )
 
 
@@ -1263,8 +1253,7 @@ class TestTask3Readiness(unittest.TestCase):
         # Should have different probabilities for different personalities
         unique_probs = set(f"{p:.2f}" for p in target_probs.values())
         self.assertGreaterEqual(
-            len(unique_probs), 2,
-            "~ish pattern should vary behavior by personality"
+            len(unique_probs), 2, "~ish pattern should vary behavior by personality"
         )
 
     def test_tolerance_composition_comprehensive_validation(self):
@@ -1275,9 +1264,9 @@ class TestTask3Readiness(unittest.TestCase):
         integrity = validate_composition_integrity(composition)
 
         # Composition should fail dependency validation but other tests may pass
-        self.assertEqual(integrity['construct_name'], "task3_ready")
-        self.assertIsInstance(integrity['health_score'], float)
-        self.assertIn(integrity['overall_status'], ['PASS', 'FAIL'])
+        self.assertEqual(integrity["construct_name"], "task3_ready")
+        self.assertIsInstance(integrity["health_score"], float)
+        self.assertIn(integrity["overall_status"], ["PASS", "FAIL"])
 
         # Even if dependencies are missing, the composition should be structurally valid
         self.assertIsInstance(composition.base_construct, str)
@@ -1319,29 +1308,24 @@ class TestStatisticalBehaviorValidation(unittest.TestCase):
 
             test_result = framework.test_results[f"sorta_composition_{personality}"]
             results[personality] = {
-                'expected': expected_prob,
-                'actual': test_result['actual'],
-                'passed': passed
+                "expected": expected_prob,
+                "actual": test_result["actual"],
+                "passed": passed,
             }
 
         # Verify statistical validity across personalities
         for personality, result in results.items():
             with self.subTest(personality=personality):
                 self.assertTrue(
-                    result['passed'],
+                    result["passed"],
                     f"{personality} personality failed statistical validation: "
-                    f"expected {result['expected']:.3f}, got {result['actual']:.3f}"
+                    f"expected {result['expected']:.3f}, got {result['actual']:.3f}",
                 )
 
     def test_bridge_probability_statistical_validation(self):
         """Test bridge probability behavior statistically."""
         # Create composition with significant bridge probabilities
-        bridge_config = {
-            'reliable': 0.0,
-            'cautious': 0.1,
-            'playful': 0.3,
-            'chaotic': 0.4
-        }
+        bridge_config = {"reliable": 0.0, "cautious": 0.1, "playful": 0.3, "chaotic": 0.4}
 
         composition = UnionComposition("bridge_test", ["rarely", "rarely"], bridge_config)
 
@@ -1411,8 +1395,7 @@ class TestStatisticalBehaviorValidation(unittest.TestCase):
         class KnownProbComposite(CompositeConstruct):
             def __init__(self, prob):
                 config = CompositionConfig(
-                    strategy=CompositionStrategy.UNION,
-                    personality_bridges={}
+                    strategy=CompositionStrategy.UNION, personality_bridges={}
                 )
                 super().__init__("known_prob", config)
                 self.prob = prob
@@ -1422,6 +1405,7 @@ class TestStatisticalBehaviorValidation(unittest.TestCase):
 
             def compose(self, *args, **kwargs):
                 from kinda.personality import chaos_random
+
                 return chaos_random() < self.prob
 
             def get_target_probabilities(self):
@@ -1449,7 +1433,7 @@ class TestStatisticalBehaviorValidation(unittest.TestCase):
                     passed,
                     f"Statistical validation failed for prob={prob}: "
                     f"expected {prob:.3f}, got {result['actual']:.3f} "
-                    f"(tolerance {tolerance:.3f})"
+                    f"(tolerance {tolerance:.3f})",
                 )
 
 
@@ -1498,9 +1482,10 @@ class TestComprehensiveIntegration(unittest.TestCase):
         # Should have similar success rates (within tolerance)
         tolerance = 0.2  # Allow some variation due to different implementations
         self.assertLessEqual(
-            abs(sorta_rate - comp_rate), tolerance,
+            abs(sorta_rate - comp_rate),
+            tolerance,
             f"Composition behavior differs too much from sorta_print: "
-            f"sorta={sorta_rate:.2f}, composition={comp_rate:.2f}"
+            f"sorta={sorta_rate:.2f}, composition={comp_rate:.2f}",
         )
 
     def test_framework_coexistence_with_existing_constructs(self):
@@ -1547,8 +1532,9 @@ class TestComprehensiveIntegration(unittest.TestCase):
         # Should have different behaviors for different personalities
         unique_behaviors = len(set(f"{r:.1f}" for r in behavior_by_personality.values()))
         self.assertGreaterEqual(
-            unique_behaviors, 2,
-            f"Should have personality variation, got: {behavior_by_personality}"
+            unique_behaviors,
+            2,
+            f"Should have personality variation, got: {behavior_by_personality}",
         )
 
     def test_error_handling_integration(self):
@@ -1592,9 +1578,10 @@ class TestComprehensiveIntegration(unittest.TestCase):
             max_acceptable_ratio = 5.0  # Allow 5x overhead for composition logic
 
             self.assertLess(
-                composition_time / max_baseline, max_acceptable_ratio,
+                composition_time / max_baseline,
+                max_acceptable_ratio,
                 f"Composition too slow vs baselines: "
-                f"{composition_time:.6f}s vs max baseline {max_baseline:.6f}s"
+                f"{composition_time:.6f}s vs max baseline {max_baseline:.6f}s",
             )
 
 
@@ -1610,27 +1597,36 @@ class TestCIValidation(unittest.TestCase):
         """Test that all framework components can be imported."""
         # Test core framework imports
         from kinda.composition import (
-            CompositeConstruct, CompositionStrategy, CompositionConfig,
-            CompositionEngine, PersonalityBridge, PerformanceMonitor
+            CompositeConstruct,
+            CompositionStrategy,
+            CompositionConfig,
+            CompositionEngine,
+            PersonalityBridge,
+            PerformanceMonitor,
         )
 
         # Test pattern imports
         from kinda.composition import (
-            UnionComposition, ThresholdComposition, ToleranceComposition,
-            CompositionPatternFactory
+            UnionComposition,
+            ThresholdComposition,
+            ToleranceComposition,
+            CompositionPatternFactory,
         )
 
         # Test testing framework imports
         from kinda.composition import (
-            CompositionTestFramework, CompositionAssertion,
-            CompositionIntegrationTester
+            CompositionTestFramework,
+            CompositionAssertion,
+            CompositionIntegrationTester,
         )
 
         # Test validation imports
         from kinda.composition import (
-            DependencyValidator, PerformanceValidator,
-            validate_construct_dependencies, validate_performance_target,
-            validate_composition_integrity
+            DependencyValidator,
+            PerformanceValidator,
+            validate_construct_dependencies,
+            validate_performance_target,
+            validate_composition_integrity,
         )
 
         # All imports should succeed without errors
@@ -1649,13 +1645,13 @@ class TestCIValidation(unittest.TestCase):
         from kinda.composition import FRAMEWORK_STATUS, is_framework_ready
 
         self.assertIsInstance(FRAMEWORK_STATUS, dict)
-        self.assertIn('initialized', FRAMEWORK_STATUS)
-        self.assertIn('version', FRAMEWORK_STATUS)
-        self.assertIn('components_loaded', FRAMEWORK_STATUS)
-        self.assertIn('ready_for_task_3', FRAMEWORK_STATUS)
+        self.assertIn("initialized", FRAMEWORK_STATUS)
+        self.assertIn("version", FRAMEWORK_STATUS)
+        self.assertIn("components_loaded", FRAMEWORK_STATUS)
+        self.assertIn("ready_for_task_3", FRAMEWORK_STATUS)
 
         # Should be ready for Task 3
-        self.assertTrue(FRAMEWORK_STATUS['ready_for_task_3'])
+        self.assertTrue(FRAMEWORK_STATUS["ready_for_task_3"])
         self.assertTrue(is_framework_ready())
 
     def test_comprehensive_framework_validation(self):
@@ -1665,12 +1661,12 @@ class TestCIValidation(unittest.TestCase):
         validation_results = validate_framework_installation()
 
         self.assertIsInstance(validation_results, dict)
-        self.assertIn('overall_status', validation_results)
+        self.assertIn("overall_status", validation_results)
 
         # Framework should be properly installed
         self.assertTrue(
-            validation_results['overall_status'],
-            f"Framework validation failed: {validation_results}"
+            validation_results["overall_status"],
+            f"Framework validation failed: {validation_results}",
         )
 
     def test_no_import_side_effects(self):
@@ -1686,12 +1682,11 @@ class TestCIValidation(unittest.TestCase):
         new_globals = final_globals - initial_globals
 
         # Should only add the import
-        expected_new = {'kinda'}
+        expected_new = {"kinda"}
         unexpected_new = new_globals - expected_new
 
         self.assertEqual(
-            len(unexpected_new), 0,
-            f"Unexpected globals added by import: {unexpected_new}"
+            len(unexpected_new), 0, f"Unexpected globals added by import: {unexpected_new}"
         )
 
     def test_framework_ready_for_production(self):
@@ -1706,11 +1701,11 @@ class TestCIValidation(unittest.TestCase):
         from kinda.composition import __version__
 
         self.assertIsInstance(__version__, str)
-        self.assertRegex(__version__, r'^\d+\.\d+\.\d+$')  # Semantic versioning
+        self.assertRegex(__version__, r"^\d+\.\d+\.\d+$")  # Semantic versioning
 
         # Test 3: Framework info complete
         info = get_framework_info()
-        required_info_fields = ['name', 'version', 'description', 'components', 'capabilities']
+        required_info_fields = ["name", "version", "description", "components", "capabilities"]
 
         for field in required_info_fields:
             self.assertIn(field, info, f"Framework info missing {field}")
