@@ -243,7 +243,9 @@ class TestEpic124125Integration:
             max_cycles = 20
 
             # Simulate ~sometimes_while resource management
-            while len(allocated_resources) < 12 and management_cycles < max_cycles:  # Reduced from 15 to 12
+            while (
+                len(allocated_resources) < 12 and management_cycles < max_cycles
+            ):  # Reduced from 15 to 12
                 management_cycles += 1
 
                 # Epic #124: Fuzzy resource requests
@@ -425,11 +427,14 @@ class TestEpic124125Integration:
                 "avg_processed": statistics.mean(r["processed_count"] for r in results),
                 "avg_variance": statistics.mean(r["data_variance"] for r in results),
                 "avg_ratio": statistics.mean(r["processing_ratio"] for r in results),
-                "consistency_score": max(0.0, 1.0
-                - (
-                    statistics.stdev(r["processing_ratio"] for r in results)
-                    / max(0.1, statistics.mean(r["processing_ratio"] for r in results))
-                )),
+                "consistency_score": max(
+                    0.0,
+                    1.0
+                    - (
+                        statistics.stdev(r["processing_ratio"] for r in results)
+                        / max(0.1, statistics.mean(r["processing_ratio"] for r in results))
+                    ),
+                ),
             }
 
         # Verify personality consistency

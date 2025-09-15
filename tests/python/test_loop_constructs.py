@@ -16,7 +16,17 @@ from kinda.cli import setup_personality
 
 def run_kinda_test(path, mood="playful", chaos_level=5, seed=None):
     """Helper function to run kinda files and capture output."""
-    cmd = ["python3", "-m", "kinda", "interpret", str(path), "--mood", mood, "--chaos-level", str(chaos_level)]
+    cmd = [
+        "python3",
+        "-m",
+        "kinda",
+        "interpret",
+        str(path),
+        "--mood",
+        mood,
+        "--chaos-level",
+        str(chaos_level),
+    ]
     if seed is not None:
         cmd.extend(["--seed", str(seed)])
     result = subprocess.run(

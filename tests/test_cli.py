@@ -117,13 +117,17 @@ class TestCLIIntegration:
 
     def test_kinda_command_exists(self):
         """Test that kinda command is available after installation"""
-        result = subprocess.run(["kinda", "--help"], capture_output=True, text=True, env=get_test_env())
+        result = subprocess.run(
+            ["kinda", "--help"], capture_output=True, text=True, env=get_test_env()
+        )
         assert result.returncode == 0
         assert "A programming language for people who aren't totally sure" in result.stdout
 
     def test_examples_command_integration(self):
         """Test examples command via subprocess"""
-        result = subprocess.run(["kinda", "examples"], capture_output=True, text=True, env=get_test_env())
+        result = subprocess.run(
+            ["kinda", "examples"], capture_output=True, text=True, env=get_test_env()
+        )
         assert result.returncode == 0
         expected = normalize_emoji_output("🎲 Here are some kinda programs")
         assert expected in normalize_emoji_output(result.stdout)
@@ -131,7 +135,9 @@ class TestCLIIntegration:
 
     def test_syntax_command_integration(self):
         """Test syntax command via subprocess"""
-        result = subprocess.run(["kinda", "syntax"], capture_output=True, text=True, env=get_test_env())
+        result = subprocess.run(
+            ["kinda", "syntax"], capture_output=True, text=True, env=get_test_env()
+        )
         assert result.returncode == 0
         expected = normalize_emoji_output("📚 Kinda Syntax Reference")
         assert expected in normalize_emoji_output(result.stdout)
@@ -140,7 +146,10 @@ class TestCLIIntegration:
     def test_transform_nonexistent_file(self):
         """Test transform command with nonexistent file"""
         result = subprocess.run(
-            ["kinda", "transform", "does_not_exist.knda"], capture_output=True, text=True, env=get_test_env()
+            ["kinda", "transform", "does_not_exist.knda"],
+            capture_output=True,
+            text=True,
+            env=get_test_env(),
         )
         assert result.returncode != 0
         # Should show error message (in stdout for kinda)
@@ -151,7 +160,10 @@ class TestCLIIntegration:
         example_file = Path("examples/hello.py.knda")
         if example_file.exists():
             result = subprocess.run(
-                ["kinda", "transform", str(example_file)], capture_output=True, text=True, env=get_test_env()
+                ["kinda", "transform", str(example_file)],
+                capture_output=True,
+                text=True,
+                env=get_test_env(),
             )
             # Should not crash (return code 0 or at least not crash completely)
             assert result.returncode == 0 or "Traceback" not in result.stderr
