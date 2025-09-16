@@ -173,7 +173,13 @@ class TestFuzzyAssign:
 
     def setup_method(self):
         """Set up deterministic PersonalityContext for each test."""
+        # Save the original session-level instance
+        self._original_instance = PersonalityContext._instance
         PersonalityContext._instance = None
+
+    def teardown_method(self):
+        """Restore the original PersonalityContext after each test."""
+        PersonalityContext._instance = self._original_instance
 
     def test_fuzzy_assign_with_integer(self):
         """Test fuzzy assignment with integer values."""
@@ -266,7 +272,13 @@ class TestKindaBinary:
 
     def setup_method(self):
         """Set up deterministic PersonalityContext for each test."""
+        # Save the original session-level instance
+        self._original_instance = PersonalityContext._instance
         PersonalityContext._instance = None
+
+    def teardown_method(self):
+        """Restore the original PersonalityContext after each test."""
+        PersonalityContext._instance = self._original_instance
 
     def test_kinda_binary_default_probabilities(self):
         """Test kinda_binary with default probabilities."""
@@ -336,7 +348,13 @@ class TestKindaInt:
 
     def setup_method(self):
         """Set up deterministic PersonalityContext for each test."""
+        # Save the original session-level instance
+        self._original_instance = PersonalityContext._instance
         PersonalityContext._instance = None
+
+    def teardown_method(self):
+        """Restore the original PersonalityContext after each test."""
+        PersonalityContext._instance = self._original_instance
 
     def test_kinda_int_with_integer(self):
         """Test kinda_int with integer input."""
@@ -404,7 +422,13 @@ class TestMaybe:
 
     def setup_method(self):
         """Set up deterministic PersonalityContext for each test."""
+        # Save the original session-level instance
+        self._original_instance = PersonalityContext._instance
         PersonalityContext._instance = None
+
+    def teardown_method(self):
+        """Restore the original PersonalityContext after each test."""
+        PersonalityContext._instance = self._original_instance
 
     def test_maybe_true_condition(self):
         """Test maybe with True condition."""
@@ -466,7 +490,13 @@ class TestSometimes:
 
     def setup_method(self):
         """Set up deterministic PersonalityContext for each test."""
+        # Save the original session-level instance
+        self._original_instance = PersonalityContext._instance
         PersonalityContext._instance = None
+
+    def teardown_method(self):
+        """Restore the original PersonalityContext after each test."""
+        PersonalityContext._instance = self._original_instance
 
     def test_sometimes_true_condition(self):
         """Test sometimes with True condition."""
@@ -531,7 +561,13 @@ class TestSortaPrint:
 
     def setup_method(self):
         """Set up deterministic PersonalityContext for each test."""
+        # Save the original session-level instance
+        self._original_instance = PersonalityContext._instance
         PersonalityContext._instance = None
+
+    def teardown_method(self):
+        """Restore the original PersonalityContext after each test."""
+        PersonalityContext._instance = self._original_instance
 
     def test_sorta_print_with_args(self):
         """Test sorta_print with normal arguments."""

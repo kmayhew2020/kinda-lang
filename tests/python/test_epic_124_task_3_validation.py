@@ -56,13 +56,24 @@ class TestEpic124Task3Validation:
 
     def test_transformation_still_works_correctly(self):
         """Test that transformation works correctly with composed implementation."""
+        import os
+
+        # Check if composition framework is enabled
+        use_composition = os.getenv("KINDA_USE_COMPOSITION_ISH", "true").lower() == "true"
+
         # Test ish_comparison in conditional
         result = transform_line("if value ~ish 10:")
-        assert "if ish_comparison(value, 10):" in result[0]
+        if use_composition:
+            assert "if ish_comparison_composed(value, 10):" in result[0]
+        else:
+            assert "if ish_comparison(value, 10):" in result[0]
 
         # Test ish_value in assignment
         result = transform_line("value ~ish 100")
-        assert "value = ish_value(value, 100)" in result[0]
+        if use_composition:
+            assert "value = ish_value_composed(value, 100)" in result[0]
+        else:
+            assert "value = ish_value(value, 100)" in result[0]
 
     def test_composition_documentation_clear(self):
         """Test that composition is clearly documented in the implementations."""
@@ -88,6 +99,11 @@ class TestEpic124Task3Validation:
 
     def test_composed_implementations_functional_equivalence(self):
         """Test that composed implementations maintain functional equivalence."""
+        import os
+
+        # Check if composition framework is enabled
+        use_composition = os.getenv("KINDA_USE_COMPOSITION_ISH", "true").lower() == "true"
+
         # These test cases should all still work the same way
         test_cases = [
             ("value ~ish 10", "ish_value"),
@@ -99,4 +115,10 @@ class TestEpic124Task3Validation:
         for input_code, expected_function in test_cases:
             result = transform_line(input_code)
             assert len(result) == 1
-            assert f"{expected_function}(" in result[0]
+            if use_composition:
+                # When composition is enabled, expect composed function names
+                expected_composed = f"{expected_function}_composed"
+                assert f"{expected_composed}(" in result[0]
+            else:
+                # When composition is disabled, expect legacy function names
+                assert f"{expected_function}(" in result[0]
