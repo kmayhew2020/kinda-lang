@@ -1,0 +1,544 @@
+# Distributed Consensus with Probabilistic Agreement
+# Real-world example: Consensus algorithm with fuzzy agreement thresholds
+# Demonstrates: ~eventually_until, ~maybe_for for distributed systems
+
+import random
+import time
+import json
+from dataclasses import dataclass
+from typing import Dict, List, Optional, Set
+from enum import Enum
+
+class NodeState(Enum):
+    FOLLOWER = "follower"
+    CANDIDATE = "candidate"
+    LEADER = "leader"
+    CRASHED = "crashed"
+
+class MessageType(Enum):
+    VOTE_REQUEST = "vote_request"
+    VOTE_RESPONSE = "vote_response"
+    APPEND_ENTRIES = "append_entries"
+    APPEND_RESPONSE = "append_response"
+    HEARTBEAT = "heartbeat"
+
+@dataclass
+class Message:
+    sender_id: str
+    receiver_id: str
+    message_type: MessageType
+    term: int
+    data: Dict = None
+    timestamp: float = None
+
+    def __post_init__(self):
+        if self.timestamp is None:
+            self.timestamp = time.time()
+
+@dataclass
+class LogEntry:
+    term: int
+    command: str
+    timestamp: float
+    committed: bool = False
+
+class DistributedNode:
+    def __init__(self, node_id: str, cluster_size: int):
+        self.node_id = node_id
+        self.cluster_size = cluster_size
+        self.state = NodeState.FOLLOWER
+        self.current_term = 0
+        self.voted_for = None
+        self.log: List[LogEntry] = []
+        self.commit_index = -1
+
+        # Network simulation
+        self.message_queue: List[Message] = []
+        self.network_partition = False
+        self.crash_probability = 0.02  # 2% chance of temporary crash
+
+        # Consensus tracking
+        self.votes_received: Set[str] = set()
+        self.leader_id = None
+        self.last_heartbeat = time.time()
+
+        # Statistics
+        self.elections_participated = 0
+        self.messages_sent = 0
+        self.messages_received = 0
+
+    def simulate_network_delay(self) -> float:
+        """Simulate realistic network conditions"""
+        if self.network_partition:
+            return float('inf')  # Message won't arrive
+
+        # Variable network delay
+        base_delay = random.uniform(0.01, 0.1)  # 10-100ms
+        if random.random() < 0.1:  # 10% chance of high latency
+            base_delay *= random.uniform(5, 20)
+
+        return base_delay
+
+    def simulate_node_failure(self) -> bool:
+        """Simulate temporary node failures"""
+        if random.random() < self.crash_probability:
+            self.state = NodeState.CRASHED
+            print(f"  💥 Node {self.node_id} crashed!")
+            return True
+        return False
+
+    def recover_from_crash(self):
+        """Recover from crash state"""
+        if self.state == NodeState.CRASHED and random.random() < 0.3:  # 30% chance to recover
+            self.state = NodeState.FOLLOWER
+            print(f"  🔄 Node {self.node_id} recovered!")
+            return True
+        return False
+
+    def send_message(self, receiver_id: str, message_type: MessageType, data: Dict = None):
+        """Send message to another node (simulated)"""
+        if self.state == NodeState.CRASHED:
+            return False
+
+        message = Message(
+            sender_id=self.node_id,
+            receiver_id=receiver_id,
+            message_type=message_type,
+            term=self.current_term,
+            data=data or {}
+        )
+
+        # Simulate network delay and potential message loss
+        network_delay = self.simulate_network_delay()
+        if network_delay == float('inf') or random.random() < 0.05:  # 5% message loss
+            return False
+
+        # In real system, this would be sent over network
+        # Here we simulate by adding to a global message queue
+        self.messages_sent += 1
+        return True
+
+    def receive_message(self, message: Message) -> bool:
+        """Receive and process a message"""
+        if self.state == NodeState.CRASHED:
+            return False
+
+        self.messages_received += 1
+        self.message_queue.append(message)
+        return True
+
+    def process_messages(self):
+        """Process all pending messages"""
+        while self.message_queue and self.state != NodeState.CRASHED:
+            message = self.message_queue.pop(0)
+            self._handle_message(message)
+
+    def _handle_message(self, message: Message):
+        """Handle individual message based on type and current state"""
+        # Term consistency check
+        if message.term > self.current_term:
+            self.current_term = message.term
+            self.voted_for = None
+            if self.state != NodeState.FOLLOWER:
+                self.state = NodeState.FOLLOWER
+
+        if message.message_type == MessageType.VOTE_REQUEST:
+            self._handle_vote_request(message)
+        elif message.message_type == MessageType.VOTE_RESPONSE:
+            self._handle_vote_response(message)
+        elif message.message_type == MessageType.HEARTBEAT:
+            self._handle_heartbeat(message)
+        elif message.message_type == MessageType.APPEND_ENTRIES:
+            self._handle_append_entries(message)
+
+    def _handle_vote_request(self, message: Message):
+        """Handle vote request during election"""
+        grant_vote = False
+
+        if (message.term >= self.current_term and
+            (self.voted_for is None or self.voted_for == message.sender_id)):
+
+            # Check if candidate's log is at least as up-to-date
+            candidate_log_length = message.data.get('log_length', 0)
+            if candidate_log_length >= len(self.log):
+                grant_vote = True
+                self.voted_for = message.sender_id
+                self.current_term = message.term
+
+        # Send vote response
+        self.send_message(message.sender_id, MessageType.VOTE_RESPONSE, {
+            'vote_granted': grant_vote
+        })
+
+    def _handle_vote_response(self, message: Message):
+        """Handle vote response during election"""
+        if (self.state == NodeState.CANDIDATE and
+            message.term == self.current_term and
+            message.data.get('vote_granted', False)):
+
+            self.votes_received.add(message.sender_id)
+            print(f"    Node {self.node_id} received vote from {message.sender_id} ({len(self.votes_received)}/{self.cluster_size})")
+
+    def _handle_heartbeat(self, message: Message):
+        """Handle heartbeat from leader"""
+        if message.term >= self.current_term:
+            self.current_term = message.term
+            self.state = NodeState.FOLLOWER
+            self.leader_id = message.sender_id
+            self.last_heartbeat = time.time()
+
+    def _handle_append_entries(self, message: Message):
+        """Handle log replication from leader"""
+        # Simplified log replication
+        if message.term >= self.current_term:
+            self.last_heartbeat = time.time()
+            entries = message.data.get('entries', [])
+            for entry_data in entries:
+                entry = LogEntry(
+                    term=entry_data['term'],
+                    command=entry_data['command'],
+                    timestamp=entry_data['timestamp']
+                )
+                self.log.append(entry)
+
+    def start_election(self):
+        """Start leader election"""
+        if self.state == NodeState.CRASHED:
+            return False
+
+        print(f"  🗳️  Node {self.node_id} starting election for term {self.current_term + 1}")
+
+        self.current_term += 1
+        self.state = NodeState.CANDIDATE
+        self.voted_for = self.node_id
+        self.votes_received = {self.node_id}  # Vote for self
+        self.elections_participated += 1
+
+        return True
+
+    def become_leader(self):
+        """Become leader after winning election"""
+        print(f"  👑 Node {self.node_id} became leader for term {self.current_term}")
+        self.state = NodeState.LEADER
+        self.leader_id = self.node_id
+
+    def send_heartbeats(self, cluster: List['DistributedNode']):
+        """Send heartbeats to all other nodes"""
+        if self.state != NodeState.LEADER:
+            return
+
+        ~maybe_for node in cluster:
+            if node.node_id != self.node_id:
+                self.send_message(node.node_id, MessageType.HEARTBEAT)
+
+    def replicate_log_entry(self, command: str, cluster: List['DistributedNode']):
+        """Replicate a log entry to followers"""
+        if self.state != NodeState.LEADER:
+            return False
+
+        entry = LogEntry(
+            term=self.current_term,
+            command=command,
+            timestamp=time.time()
+        )
+        self.log.append(entry)
+
+        # Send to followers
+        entry_data = {
+            'term': entry.term,
+            'command': entry.command,
+            'timestamp': entry.timestamp
+        }
+
+        successful_replications = 0
+        ~maybe_for node in cluster:
+            if node.node_id != self.node_id:
+                if self.send_message(node.node_id, MessageType.APPEND_ENTRIES, {
+                    'entries': [entry_data]
+                }):
+                    successful_replications += 1
+
+        # Commit if majority replicated
+        if successful_replications >= (self.cluster_size // 2):
+            entry.committed = True
+            self.commit_index = len(self.log) - 1
+            return True
+
+        return False
+
+class DistributedConsensusCluster:
+    def __init__(self, cluster_size: int = 5):
+        self.cluster_size = cluster_size
+        self.nodes = [
+            DistributedNode(f"node_{i}", cluster_size)
+            for i in range(cluster_size)
+        ]
+        self.global_message_queue: List[tuple] = []  # (message, delay, target_node)
+        self.simulation_time = 0
+
+        # Consensus metrics
+        self.successful_elections = 0
+        self.split_votes = 0
+        self.leader_changes = 0
+        self.total_commands_committed = 0
+
+    def simulate_network_partition(self, partition_probability: float = 0.1):
+        """Simulate network partitions affecting some nodes"""
+        ~maybe_for node in self.nodes:
+            if random.random() < partition_probability:
+                node.network_partition = True
+                print(f"  🌐 Network partition affects {node.node_id}")
+            elif node.network_partition and random.random() < 0.3:  # 30% chance to heal
+                node.network_partition = False
+                print(f"  🔗 Network partition healed for {node.node_id}")
+
+    def get_cluster_state(self) -> Dict:
+        """Get current state of the cluster"""
+        state_counts = {}
+        leader_nodes = []
+
+        for node in self.nodes:
+            state = node.state.value
+            state_counts[state] = state_counts.get(state, 0) + 1
+
+            if node.state == NodeState.LEADER:
+                leader_nodes.append(node.node_id)
+
+        return {
+            'state_distribution': state_counts,
+            'leaders': leader_nodes,
+            'has_consensus': len(leader_nodes) == 1,
+            'total_messages': sum(node.messages_sent for node in self.nodes)
+        }
+
+    def run_consensus_simulation(self, duration: int = 60):
+        """Run distributed consensus simulation"""
+        print(f"\\n=== Distributed Consensus Simulation ({duration}s) ===")
+
+        # Set personality for consensus behavior
+        ~kinda mood cautious  # Conservative approach for distributed consensus
+
+        start_time = time.time()
+        last_election_check = start_time
+        election_timeout = 5.0  # Election timeout in seconds
+
+        # Main consensus loop
+        ~sometimes_while (time.time() - start_time) < duration:
+            current_time = time.time()
+            elapsed = current_time - start_time
+
+            print(f"\\n⏱️  Simulation time: {elapsed:.1f}s")
+
+            # Simulate node failures and recoveries
+            ~maybe_for node in self.nodes:
+                if node.state != NodeState.CRASHED:
+                    node.simulate_node_failure()
+                else:
+                    node.recover_from_crash()
+
+            # Simulate network partitions
+            self.simulate_network_partition(0.05)
+
+            # Process messages for all nodes
+            for node in self.nodes:
+                node.process_messages()
+
+            # Check for election timeout
+            if current_time - last_election_check > election_timeout:
+                active_nodes = [n for n in self.nodes if n.state != NodeState.CRASHED]
+                leader_nodes = [n for n in active_nodes if n.state == NodeState.LEADER]
+
+                if not leader_nodes:
+                    # No leader - start elections
+                    print("\\n  🚨 No leader detected - triggering elections")
+
+                    # Candidates start elections probabilistically
+                    potential_candidates = [n for n in active_nodes if n.state == NodeState.FOLLOWER]
+
+                    ~maybe_for candidate in potential_candidates:
+                        if (current_time - candidate.last_heartbeat) > election_timeout:
+                            if candidate.start_election():
+                                # Send vote requests
+                                ~maybe_for target_node in self.nodes:
+                                    if target_node.node_id != candidate.node_id:
+                                        candidate.send_message(
+                                            target_node.node_id,
+                                            MessageType.VOTE_REQUEST,
+                                            {'log_length': len(candidate.log)}
+                                        )
+
+                last_election_check = current_time
+
+            # Process elections - check for winners
+            candidates = [n for n in self.nodes if n.state == NodeState.CANDIDATE]
+            for candidate in candidates:
+                majority_threshold = (self.cluster_size // 2) + 1
+
+                if len(candidate.votes_received) >= majority_threshold:
+                    candidate.become_leader()
+                    self.successful_elections += 1
+                    self.leader_changes += 1
+
+                    # Reset other candidates
+                    for other_node in self.nodes:
+                        if other_node.node_id != candidate.node_id and other_node.state == NodeState.CANDIDATE:
+                            other_node.state = NodeState.FOLLOWER
+
+            # Leader sends heartbeats and replicates commands
+            leaders = [n for n in self.nodes if n.state == NodeState.LEADER]
+
+            ~maybe_for leader in leaders:
+                leader.send_heartbeats(self.nodes)
+
+                # Simulate commands to replicate
+                ~kinda_repeat(2):  # Replicate 1-3 commands per cycle
+                    if random.random() < 0.3:  # 30% chance to have a command
+                        command = f"cmd_{random.randint(1000, 9999)}"
+                        if leader.replicate_log_entry(command, self.nodes):
+                            self.total_commands_committed += 1
+                            print(f"    ✅ Command '{command}' committed by leader {leader.node_id}")
+
+            # Wait for eventual consensus
+            cluster_state = self.get_cluster_state()
+            if not cluster_state['has_consensus'] and len(candidates) > 1:
+                print(f"    ⚠️  Split vote detected - {len(candidates)} candidates")
+                self.split_votes += 1
+
+                # Wait for eventual resolution
+                split_resolution_start = time.time()
+                ~eventually_until cluster_state['has_consensus'] or (time.time() - split_resolution_start) > 10:
+                    time.sleep(0.5)
+                    cluster_state = self.get_cluster_state()
+
+                    if cluster_state['has_consensus']:
+                        print(f"    ✅ Split vote resolved!")
+                        break
+
+            # Brief simulation step delay
+            time.sleep(random.uniform(1, 3))
+
+        # Final consensus state
+        final_state = self.get_cluster_state()
+        print(f"\\n=== Consensus Simulation Complete ===")
+        print(f"Final state: {final_state['state_distribution']}")
+        print(f"Has consensus: {final_state['has_consensus']}")
+        print(f"Current leaders: {final_state['leaders']}")
+        print(f"Successful elections: {self.successful_elections}")
+        print(f"Split votes: {self.split_votes}")
+        print(f"Total commands committed: {self.total_commands_committed}")
+        print(f"Total messages sent: {final_state['total_messages']}")
+
+    def demonstrate_fault_tolerance(self):
+        """Demonstrate fault tolerance by introducing controlled failures"""
+        print(f"\\n=== Fault Tolerance Demonstration ===")
+
+        # Ensure we have a leader
+        if not any(n.state == NodeState.LEADER for n in self.nodes):
+            # Start an election
+            candidate = random.choice([n for n in self.nodes if n.state == NodeState.FOLLOWER])
+            candidate.start_election()
+
+            # Simulate election process
+            ~eventually_until any(n.state == NodeState.LEADER for n in self.nodes):
+                for node in self.nodes:
+                    node.process_messages()
+                time.sleep(0.1)
+
+        current_leader = next((n for n in self.nodes if n.state == NodeState.LEADER), None)
+        if current_leader:
+            print(f"Current leader: {current_leader.node_id}")
+
+            # Simulate leader failure
+            print(f"💥 Simulating leader failure...")
+            current_leader.state = NodeState.CRASHED
+
+            # Wait for new leader election
+            print(f"⏳ Waiting for new leader election...")
+
+            recovery_start = time.time()
+            ~eventually_until any(n.state == NodeState.LEADER and n.node_id != current_leader.node_id for n in self.nodes):
+                # Trigger elections
+                ~maybe_for node in self.nodes:
+                    if (node.state == NodeState.FOLLOWER and
+                        node.node_id != current_leader.node_id and
+                        time.time() - recovery_start > 2):
+
+                        node.start_election()
+
+                        # Send vote requests
+                        ~maybe_for target in self.nodes:
+                            if target.node_id != node.node_id:
+                                node.send_message(
+                                    target.node_id,
+                                    MessageType.VOTE_REQUEST,
+                                    {'log_length': len(node.log)}
+                                )
+
+                # Process all messages
+                for node in self.nodes:
+                    node.process_messages()
+
+                # Check for election winners
+                candidates = [n for n in self.nodes if n.state == NodeState.CANDIDATE]
+                for candidate in candidates:
+                    majority = (self.cluster_size // 2) + 1
+                    if len(candidate.votes_received) >= majority:
+                        candidate.become_leader()
+                        self.successful_elections += 1
+
+                if time.time() - recovery_start > 20:  # Timeout after 20s
+                    print("⚠️  Election timeout - manual intervention needed")
+                    break
+
+                time.sleep(0.5)
+
+            new_leader = next((n for n in self.nodes if n.state == NodeState.LEADER and n.node_id != current_leader.node_id), None)
+            if new_leader:
+                print(f"✅ New leader elected: {new_leader.node_id}")
+
+                # Test command replication with new leader
+                print(f"🔄 Testing command replication with new leader...")
+                test_commands = ["test_cmd_1", "test_cmd_2", "test_cmd_3"]
+
+                ~maybe_for command in test_commands:
+                    if new_leader.replicate_log_entry(command, self.nodes):
+                        print(f"    ✅ '{command}' replicated successfully")
+                        self.total_commands_committed += 1
+                    else:
+                        print(f"    ❌ '{command}' replication failed")
+            else:
+                print("❌ Failed to elect new leader")
+
+def main():
+    print("=== Distributed Consensus with Probabilistic Agreement ===\\n")
+
+    # Create consensus cluster
+    cluster = DistributedConsensusCluster(cluster_size=5)
+
+    # Run main consensus simulation
+    cluster.run_consensus_simulation(duration=45)
+
+    # Demonstrate fault tolerance
+    cluster.demonstrate_fault_tolerance()
+
+    # Final statistics
+    print(f"\\n=== Final Statistics ===")
+    for i, node in enumerate(cluster.nodes):
+        print(f"Node {node.node_id}:")
+        print(f"  State: {node.state.value}")
+        print(f"  Elections participated: {node.elections_participated}")
+        print(f"  Messages sent: {node.messages_sent}")
+        print(f"  Messages received: {node.messages_received}")
+        print(f"  Log entries: {len(node.log)}")
+        print(f"  Committed entries: {sum(1 for e in node.log if e.committed)}")
+
+    # Demonstrate personality impact
+    print(f"\\n=== Personality Impact on Consensus ===")
+    print("Different personalities affect consensus behavior:")
+    print("  reliable: More conservative election timeouts, thorough message processing")
+    print("  cautious: Moderate election frequency, careful vote decisions")
+    print("  playful: Balanced consensus with adaptive timeouts")
+    print("  chaotic: Faster elections, more aggressive leader changes")
+
+if __name__ == "__main__":
+    main()

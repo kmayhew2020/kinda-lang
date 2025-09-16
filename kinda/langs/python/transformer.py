@@ -497,6 +497,11 @@ def transform_line(line: str) -> List[str]:
         # This is a basic implementation that terminates with some probability when condition is true
         transformed_code = f"while not (({condition}) and sometimes()):"
 
+    elif key == "kinda_mood" and groups:
+        used_helpers.add("kinda_mood")
+        mood = groups[0]
+        transformed_code = f"kinda_mood('{mood}')"
+
     else:
         transformed_code = stripped  # fallback
 

@@ -1066,6 +1066,33 @@ KindaPythonConstructs = {
             "        return {'iterations': 0, 'converged': False, 'stats': {}}"
         ),
     },
+    "kinda_mood": {
+        "type": "personality",
+        "pattern": re.compile(r"~kinda mood\s+(\w+)"),
+        "description": "Set personality mood for probabilistic behavior control",
+        "body": (
+            "def kinda_mood(mood):\n"
+            '    """Set the personality mood for controlling probabilistic behavior."""\n'
+            "    from kinda.personality import PersonalityContext, update_chaos_state\n"
+            "    try:\n"
+            "        # Validate mood is a string\n"
+            "        if not isinstance(mood, str):\n"
+            "            mood = str(mood)\n"
+            "        \n"
+            "        # Set the mood in personality context\n"
+            "        PersonalityContext.set_mood(mood)\n"
+            "        update_chaos_state(failed=False)\n"
+            "        \n"
+            "        # Return None (this is a control construct, not a value)\n"
+            "        return None\n"
+            "    except Exception as e:\n"
+            '        print(f"[shrug] kinda mood setting failed: {e}")\n'
+            '        print(f"[tip] Using default mood instead")\n'
+            "        update_chaos_state(failed=True)\n"
+            '        PersonalityContext.set_mood("playful")\n'
+            "        return None"
+        ),
+    },
     # Wrapper functions for dev branch transformer compatibility
     # These provide simplified interfaces to the Epic #125 Task 3 advanced functions
     "sometimes_while_condition": {

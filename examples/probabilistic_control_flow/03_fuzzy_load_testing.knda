@@ -1,0 +1,243 @@
+# Fuzzy Load Testing Scenarios
+# Real-world example: Load testing with probabilistic user behavior
+# Demonstrates: ~kinda_repeat, ~maybe_for for realistic load simulation
+
+import random
+import time
+import threading
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from collections import defaultdict
+
+class UserSession:
+    def __init__(self, user_id, personality="playful"):
+        self.user_id = user_id
+        self.personality = personality
+        self.actions_performed = []
+        self.session_duration = 0
+        self.errors_encountered = 0
+
+class LoadTester:
+    def __init__(self):
+        self.results = defaultdict(list)
+        self.total_requests = 0
+        self.total_errors = 0
+        self.start_time = time.time()
+
+    def simulate_api_request(self, endpoint, user_id):
+        """Simulate API request with realistic response times and failure rates"""
+        # Simulate network latency
+        response_time = random.uniform(0.1, 2.0)
+        time.sleep(response_time)
+
+        # Simulate failure probability
+        success = random.random() > 0.05  # 95% success rate
+
+        self.total_requests += 1
+        if not success:
+            self.total_errors += 1
+
+        return {
+            'endpoint': endpoint,
+            'user_id': user_id,
+            'response_time': response_time,
+            'success': success,
+            'timestamp': time.time()
+        }
+
+    def get_metrics(self):
+        """Get current performance metrics"""
+        elapsed = time.time() - self.start_time
+        rps = self.total_requests / elapsed if elapsed > 0 else 0
+        error_rate = self.total_errors / self.total_requests if self.total_requests > 0 else 0
+
+        return {
+            'requests_per_second': rps,
+            'total_requests': self.total_requests,
+            'error_rate': error_rate,
+            'elapsed_time': elapsed
+        }
+
+def simulate_user_behavior(user_id, load_tester, target_actions=10):
+    """Simulate realistic user behavior patterns"""
+    session = UserSession(user_id)
+    session_start = time.time()
+
+    # Set personality for this user session
+    personalities = ["reliable", "cautious", "playful", "chaotic"]
+    session_personality = random.choice(personalities)
+    ~kinda mood {session_personality}
+
+    print(f"User {user_id} starting session ({session_personality} personality)")
+
+    # User performs fuzzy number of actions
+    actions_completed = 0
+    ~kinda_repeat(target_actions):
+        actions_completed += 1
+
+        # Define possible user actions
+        user_actions = [
+            ("login", "/api/auth/login"),
+            ("browse", "/api/products/list"),
+            ("search", "/api/search"),
+            ("view_item", "/api/products/detail"),
+            ("add_to_cart", "/api/cart/add"),
+            ("checkout", "/api/orders/create"),
+            ("profile", "/api/user/profile"),
+            ("logout", "/api/auth/logout")
+        ]
+
+        # User might perform several actions in sequence
+        ~maybe_for action_name, endpoint in user_actions:
+            # Simulate user thinking time
+            think_time = random.uniform(0.5, 5.0)
+            time.sleep(think_time)
+
+            # Perform API request
+            try:
+                result = load_tester.simulate_api_request(endpoint, user_id)
+                session.actions_performed.append((action_name, result))
+
+                if not result['success']:
+                    session.errors_encountered += 1
+                    print(f"  User {user_id}: {action_name} failed ({endpoint})")
+                else:
+                    print(f"  User {user_id}: {action_name} success ({result['response_time']:.2f}s)")
+
+            except Exception as e:
+                session.errors_encountered += 1
+                print(f"  User {user_id}: {action_name} error - {e}")
+
+            # Users might stop after certain actions (realistic behavior)
+            if action_name in ["logout", "checkout"] and random.random() > 0.3:
+                break
+
+    session.session_duration = time.time() - session_start
+    print(f"User {user_id} session complete: {actions_completed} actions, "
+          f"{session.session_duration:.1f}s, {session.errors_encountered} errors")
+
+    return session
+
+def ramp_up_users(load_tester, max_users=50, ramp_duration=30):
+    """Gradually ramp up concurrent users"""
+    print(f"\\n=== Ramping up to {max_users} concurrent users over {ramp_duration}s ===")
+
+    users_started = 0
+    ramp_start = time.time()
+
+    ~sometimes_while users_started < max_users and (time.time() - ramp_start) < ramp_duration:
+        # Start new user batch
+        batch_size = random.randint(1, 5)
+        current_batch = []
+
+        ~maybe_for i in range(batch_size):
+            if users_started < max_users:
+                users_started += 1
+                user_thread = threading.Thread(
+                    target=simulate_user_behavior,
+                    args=(users_started, load_tester, random.randint(5, 15))
+                )
+                current_batch.append(user_thread)
+
+        # Start batch of users
+        for thread in current_batch:
+            thread.start()
+
+        print(f"Started {len(current_batch)} users (total: {users_started})")
+
+        # Wait before next batch
+        time.sleep(random.uniform(1.0, 3.0))
+
+    return users_started
+
+def sustained_load_test(load_tester, duration=60):
+    """Run sustained load test with monitoring"""
+    print(f"\\n=== Sustained Load Test ({duration}s) ===")
+
+    test_start = time.time()
+    monitoring_interval = 5
+    last_monitor = test_start
+
+    ~sometimes_while (time.time() - test_start) < duration:
+        # Continuously start new user sessions
+        ~kinda_repeat(3):  # Start 2-4 users per cycle
+            user_id = f"sustained_{int(time.time()*1000)}"
+            thread = threading.Thread(
+                target=simulate_user_behavior,
+                args=(user_id, load_tester, random.randint(3, 8))
+            )
+            thread.daemon = True  # Don't block program exit
+            thread.start()
+
+        # Periodic monitoring
+        if time.time() - last_monitor >= monitoring_interval:
+            metrics = load_tester.get_metrics()
+            print(f"\\nLoad Test Metrics:")
+            print(f"  RPS: {metrics['requests_per_second']:.2f}")
+            print(f"  Total Requests: {metrics['total_requests']}")
+            print(f"  Error Rate: {metrics['error_rate']:.3f}")
+            print(f"  Elapsed: {metrics['elapsed_time']:.1f}s")
+            last_monitor = time.time()
+
+        # Brief pause between cycles
+        time.sleep(random.uniform(0.5, 2.0))
+
+def main():
+    print("=== Fuzzy Load Testing Demo ===\\n")
+
+    # Set overall testing personality
+    ~kinda mood playful
+
+    load_tester = LoadTester()
+
+    # Phase 1: Gradual ramp-up
+    users_started = ramp_up_users(load_tester, max_users=20, ramp_duration=15)
+
+    # Brief monitoring period
+    print("\\n=== Monitoring ramp-up completion ===")
+    ~eventually_until load_tester.total_requests > 50:
+        metrics = load_tester.get_metrics()
+        print(f"Waiting for sufficient load... ({metrics['total_requests']} requests so far)")
+        time.sleep(2)
+
+    # Phase 2: Sustained load testing
+    sustained_load_test(load_tester, duration=30)
+
+    # Phase 3: Spike testing (burst of users)
+    print("\\n=== Spike Test (Burst Load) ===")
+    spike_threads = []
+
+    ~kinda_repeat(15):  # Create 10-20 concurrent spike users
+        spike_user_id = f"spike_{random.randint(1000, 9999)}"
+        thread = threading.Thread(
+            target=simulate_user_behavior,
+            args=(spike_user_id, load_tester, random.randint(2, 6))
+        )
+        spike_threads.append(thread)
+        thread.start()
+
+    # Wait for spike to complete
+    for thread in spike_threads:
+        thread.join(timeout=10)  # Don't wait too long
+
+    # Final results
+    print("\\n=== Final Load Test Results ===")
+    time.sleep(2)  # Allow final requests to complete
+
+    final_metrics = load_tester.get_metrics()
+    print(f"Total Duration: {final_metrics['elapsed_time']:.1f}s")
+    print(f"Total Requests: {final_metrics['total_requests']}")
+    print(f"Average RPS: {final_metrics['requests_per_second']:.2f}")
+    print(f"Error Rate: {final_metrics['error_rate']:.3f}")
+    print(f"Peak Concurrent Users: ~{users_started + len(spike_threads)}")
+
+    # Demonstrate personality impact on load patterns
+    print(f"\\n=== Personality Impact on Load Testing ===")
+    print("Different personalities create different load patterns:")
+    print("  reliable: More consistent user actions, higher sustained load")
+    print("  cautious: Fewer actions per user, more conservative load")
+    print("  playful: Balanced load with natural variation")
+    print("  chaotic: Highly variable load, more realistic user behavior")
+    print("\\nRerun with different ~kinda mood settings to see variations!")
+
+if __name__ == "__main__":
+    main()

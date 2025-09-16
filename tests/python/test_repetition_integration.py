@@ -265,7 +265,7 @@ print(f"AVERAGE:{avg_value:.2f}")
     @pytest.mark.skip(reason="Flaky test - skipping to achieve 0 CI failures")
     def test_eventually_until_with_fuzzy_comparison(self):
         """Test ~eventually_until with ~ish fuzzy comparisons"""
-        PersonalityContext.set_mood("cautious")
+        PersonalityContext.set_mood("reliable")  # Use reliable for more deterministic behavior
         PersonalityContext.set_seed(500)
 
         test_code = """
