@@ -7,13 +7,25 @@
 ## ⚡ Quick Start
 
 ```bash
-# Install
-pip install kinda-lang
+# Install (recommended)
+pipx install kinda-lang
 
-# Try it out 
+# Try it out
 kinda examples
 kinda syntax
 kinda run examples/hello.py.knda
+```
+
+### Alternative Installation Methods
+
+```bash
+# With pip (if you prefer)
+pip install kinda-lang
+
+# From source
+git clone https://github.com/kinda-lang-dev/kinda-lang.git
+cd kinda-lang
+pip install -e .
 ```
 
 ## 🎲 What Makes Kinda Special?
@@ -60,25 +72,43 @@ for i in range(10) {
 
 ## 🚀 Installation
 
-### Option 1: pip (recommended)
+### Recommended (pipx - modern standard)
 ```bash
-pip install kinda-lang
+# Install pipx if needed
+sudo apt install pipx  # Ubuntu/Debian
+brew install pipx      # macOS
+# Windows: pip install --user pipx
+
+# Install kinda-lang
+pipx install kinda-lang
+kinda --help           # Works immediately!
 ```
 
-### Option 2: From source  
+### Alternative (pip)
 ```bash
-git clone https://github.com/kmayhew2020/kinda-lang.git
+# User installation
+pip install --user kinda-lang
+
+# If kinda command not found, add ~/.local/bin to PATH:
+export PATH="$HOME/.local/bin:$PATH"
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
+```
+
+### For Developers
+```bash
+git clone https://github.com/kinda-lang-dev/kinda-lang.git
 cd kinda-lang
-pip install -e .
+./install.sh --dev    # Complete development setup
 ```
 
-### Verify installation
+### Verify Installation
 ```bash
-kinda --help    # Should show snarky help messages
-kinda examples  # Try some examples
+kinda --help          # Should show snarky help messages
+kinda examples        # Try some examples
+kinda syntax          # Quick syntax reference
 ```
 
-**Supports:** Linux, macOS, Windows • Python 3.8+
+**Supports:** Linux, macOS, Windows • Python 3.9+ • pipx recommended
 
 ## 📖 Usage
 

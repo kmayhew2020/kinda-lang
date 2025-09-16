@@ -4,11 +4,11 @@ import argparse
 import os
 import sys
 from pathlib import Path
-from typing import Union, Optional, Dict
+from typing import Union, Optional, Dict, Any
 
 # Optional chardet import for encoding detection
 try:
-    import chardet  # type: ignore[import-not-found]
+    import chardet
 
     HAS_CHARDET = True
 except ImportError:
@@ -125,7 +125,7 @@ def validate_knda_file(file_path: Path) -> bool:
         return False
 
 
-def show_examples():
+def show_examples() -> None:
     """Show example kinda programs with attitude"""
     safe_print("🎲 Here are some kinda programs to get you started:")
     print()
@@ -204,7 +204,7 @@ def show_examples():
     safe_print("[shrug] Pro tip: Run any example with 'interpret' for maximum chaos")
 
 
-def show_syntax_reference():
+def show_syntax_reference() -> None:
     """Show syntax reference with snark"""
     safe_print("📚 Kinda Syntax Reference (your cheat sheet)")
     print()
@@ -231,7 +231,7 @@ def show_syntax_reference():
     print("   • Use 'kinda examples' to see it in action")
 
 
-def get_transformer(lang: str):
+def get_transformer(lang: str) -> Any:
     if lang == "python":
         from kinda.langs.python import transformer
 

@@ -7,7 +7,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "kinda-lang"
 version = "0.4.0"
-description = "🤷 A programming language for people who aren't totally sure"
+description = "🤷 A programming language for people who aren't totally sure - install with pipx"
 authors = [
     { name = "Kevin Mayhew", email = "kevin@example.com" }
 ]
@@ -26,7 +26,7 @@ classifiers = [
     "Topic :: Software Development :: Compilers",
     "Topic :: Software Development :: Interpreters",
 ]
-keywords = ["programming-language", "fuzzy-logic", "chaos", "humor", "transpiler"]
+keywords = ["programming-language", "fuzzy-logic", "chaos", "humor", "transpiler", "cli-tool", "pipx"]
 
 [project.urls]
 Homepage = "https://github.com/kmayhew2020/kinda-lang"
@@ -62,3 +62,5 @@ packages = ["kinda", "kinda.grammar", "kinda.interpreter", "kinda.langs", "kinda
 python_version = "3.10"
 warn_return_any = true
 warn_unused_configs = true
+explicit_package_bases = true
+exclude = ["build/", "kinda/langs/python/runtime/fuzzy.py"]

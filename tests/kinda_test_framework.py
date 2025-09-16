@@ -72,8 +72,8 @@ class KindaTestResult:
         self.test_name = test_name
         self.succeeded = None  # Will be determined probabilistically
         self.execution_time = 0.0
-        self.outputs = []
-        self.errors = []
+        self.outputs: List[str] = []
+        self.errors: List[str] = []
         self.fuzzy_score = 0.0
         self.probably_passed = False
         self.maybe_failed = False
@@ -441,7 +441,7 @@ class KindaTestFramework:
 
 def assert_eventually_meta(
     condition_func: Callable,
-    timeout: float = None,
+    timeout: Optional[float] = None,
     confidence: float = 0.8,
     description: str = "condition",
 ) -> bool:
@@ -499,9 +499,9 @@ def assert_eventually_meta(
 
 def assert_probability_meta(
     event_func: Callable,
-    expected_prob: float = None,
+    expected_prob: Optional[float] = None,
     tolerance: float = 0.1,
-    samples: int = None,
+    samples: Optional[int] = None,
     description: str = "event",
 ) -> bool:
     """

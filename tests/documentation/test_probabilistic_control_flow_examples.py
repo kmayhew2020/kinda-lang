@@ -21,7 +21,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 # Import kinda personality system for testing
 try:
-    from kinda.personality import Personality, PERSONALITY_PROFILES
+    from kinda.personality import PersonalityContext, get_personality
 except ImportError:
     # Fallback for testing environment
     pass

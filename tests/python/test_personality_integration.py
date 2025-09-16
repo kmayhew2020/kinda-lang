@@ -22,7 +22,15 @@ class TestPersonalityProfiles:
 
     def test_personality_profiles_exist(self):
         """Ensure all expected personality profiles are defined."""
-        expected_moods = {"reliable", "cautious", "playful", "chaotic"}
+        expected_moods = {
+            "reliable",
+            "cautious",
+            "playful",
+            "chaotic",
+            "professional",
+            "friendly",
+            "snarky",
+        }
         assert set(PERSONALITY_PROFILES.keys()) == expected_moods
 
     def test_reliable_mood_settings(self):

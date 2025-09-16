@@ -1,7 +1,7 @@
 import re
 import os
 from pathlib import Path
-from typing import List, Optional
+from typing import List, Optional, Any
 from kinda.langs.python.runtime_gen import generate_runtime_helpers, generate_runtime
 from kinda.grammar.python.constructs import KindaPythonConstructs
 from kinda.grammar.python.matchers import (
@@ -165,7 +165,7 @@ def _process_python_indented_block(
         try:
             transformed = transform_line(line)
             if not transformed:
-                _warn_about_line(stripped, line_number, file_path)
+                _warn_about_line(stripped, line_number, file_path or "unknown")
 
             # For ~maybe_for, add extra indentation for the conditional block
             if is_maybe_for:
@@ -277,7 +277,7 @@ def _transform_drift_constructs(line: str) -> str:
     drift_pattern = re.compile(r"\b([a-zA-Z_][a-zA-Z0-9_]*)\s*~\s*drift\b")
 
     # First handle the special case of drift + ish
-    def replace_drift_ish(match):
+    def replace_drift_ish(match: Any) -> str:
         var_name = match.group(1)
         comparison_val = match.group(2).strip()
         used_helpers.add("drift_access")
@@ -288,7 +288,7 @@ def _transform_drift_constructs(line: str) -> str:
     transformed_line = drift_ish_pattern.sub(replace_drift_ish, line)
 
     # Then apply general drift pattern to remaining cases
-    def replace_drift(match):
+    def replace_drift(match: Any) -> str:
         var_name = match.group(1)
         used_helpers.add("drift_access")
         return f"drift_access('{var_name}', {var_name})"
@@ -422,11 +422,15 @@ def transform_line(line: str) -> List[str]:
 
     elif key == "maybe_for":
         used_helpers.add("maybe_for_item_execute")
-        var_name, collection = groups
-        var_name = var_name.strip()
-        collection = collection.strip()
-        # Transform ~maybe_for into a for loop - conditional logic will be handled specially
-        transformed_code = f"for {var_name} in {collection}:"
+        if groups and len(groups) >= 2:
+            var_name, collection = groups[0], groups[1]
+            var_name = var_name.strip()
+            collection = collection.strip()
+            # Transform ~maybe_for into a for loop - conditional logic will be handled specially
+            transformed_code = f"for {var_name} in {collection}:"
+        else:
+            # Fallback for malformed maybe_for
+            transformed_code = "# Error: malformed ~maybe_for syntax"
 
     elif key == "kinda_repeat":
         used_helpers.add("kinda_repeat_count")
@@ -522,7 +526,7 @@ class KindaParseError(Exception):
         self.file_path = file_path
         super().__init__(self._format_message())
 
-    def _format_message(self):
+    def _format_message(self) -> str:
         location = f"line {self.line_number}"
         if self.file_path:
             location = f"{self.file_path}:{self.line_number}"
@@ -676,7 +680,7 @@ def _validate_conditional_syntax(line: str, line_number: int, file_path: str) ->
     return True
 
 
-def _warn_about_line(line: str, line_number: int, file_path: str):
+def _warn_about_line(line: str, line_number: int, file_path: str) -> None:
     """Warn about potentially problematic lines"""
     if line and not line.startswith("#"):
         # Check for common mistakes

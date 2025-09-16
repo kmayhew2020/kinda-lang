@@ -160,7 +160,7 @@ def safe_bool_eval(condition: Any, timeout_seconds: int = 1) -> bool:
     # Check if SIGALRM is available (Unix-only)
     if hasattr(signal, "SIGALRM"):
 
-        def timeout_handler(signum, frame):
+        def timeout_handler(signum: int, frame: Any) -> None:
             raise TimeoutError("Condition evaluation timed out")
 
         # Set up timeout protection
@@ -168,7 +168,11 @@ def safe_bool_eval(condition: Any, timeout_seconds: int = 1) -> bool:
         signal.alarm(timeout_seconds)
 
         try:
-            result = bool(condition)
+            # If condition is callable, call it; otherwise just convert to bool
+            if callable(condition):
+                result = bool(condition())
+            else:
+                result = bool(condition)
             return result
         finally:
             # Always restore the original handler and cancel the alarm
@@ -177,7 +181,10 @@ def safe_bool_eval(condition: Any, timeout_seconds: int = 1) -> bool:
     else:
         # Windows or other systems without SIGALRM - just evaluate directly
         # This is less secure but maintains compatibility
-        result = bool(condition)
+        if callable(condition):
+            result = bool(condition())
+        else:
+            result = bool(condition)
         return result
 
 
@@ -270,3 +277,6 @@ def secure_condition_check(condition: Any, construct_name: str) -> Tuple[bool, b
     except TimeoutError:
         print(f"[security] {construct_name} blocked slow condition evaluation - keeping it snappy")
         return False, False
+    except Exception:
+        # Let exceptions propagate to the calling function to handle appropriately
+        raise
