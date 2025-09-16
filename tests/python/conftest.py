@@ -199,6 +199,9 @@ def regenerate_build():
     yield  # Make this a generator function - yield after all build is complete
 
 
+# Removed global personality reset fixture to avoid interference with specific test setup methods
+
+
 # Additional kinda-based pytest fixtures and hooks for meta-programming test patterns
 # This will be appended to conftest.py
 

@@ -22,6 +22,13 @@ def performance_timer():
 class TestIshPerformanceBenchmark:
     """Benchmark composition framework performance vs legacy."""
 
+    def setup_method(self):
+        """Reset global state before each test for isolation."""
+        # Reset PersonalityContext to default state
+        from kinda.personality import PersonalityContext
+
+        PersonalityContext._instance = PersonalityContext("playful", 5, 42)
+
     @pytest.mark.performance
     def test_ish_comparison_performance(self):
         """Benchmark ~ish comparison performance."""
