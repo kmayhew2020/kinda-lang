@@ -16,19 +16,21 @@ from enum import Enum
 
 class CompositionStrategy(Enum):
     """Strategy patterns for construct composition."""
-    UNION = "union"              # gate1 OR gate2 (like Task 1 sorta)
-    INTERSECTION = "intersection" # gate1 AND gate2
-    SEQUENTIAL = "sequential"     # gate1 then gate2 if gate1 succeeds
-    WEIGHTED = "weighted"         # Weighted combination of results
-    CONDITIONAL = "conditional"   # Execute gate2 based on gate1 result
+
+    UNION = "union"  # gate1 OR gate2 (like Task 1 sorta)
+    INTERSECTION = "intersection"  # gate1 AND gate2
+    SEQUENTIAL = "sequential"  # gate1 then gate2 if gate1 succeeds
+    WEIGHTED = "weighted"  # Weighted combination of results
+    CONDITIONAL = "conditional"  # Execute gate2 based on gate1 result
 
 
 @dataclass
 class CompositionConfig:
     """Configuration for construct composition."""
+
     strategy: CompositionStrategy
     personality_bridges: Dict[str, float]  # Bridge probabilities per personality
-    performance_target: float = 0.20      # Max 20% overhead
+    performance_target: float = 0.20  # Max 20% overhead
     dependency_validation: bool = True
     statistical_validation: bool = True
     debug_tracing: bool = False
@@ -62,6 +64,7 @@ class CompositeConstruct(ABC):
     def validate_dependencies(self) -> bool:
         """Validate that all required basic constructs are available."""
         from kinda.composition.validation import validate_construct_dependencies
+
         return validate_construct_dependencies(self.get_basic_constructs())
 
     def execute_with_tracing(self, *args, **kwargs) -> Any:
@@ -75,16 +78,16 @@ class CompositeConstruct(ABC):
         from kinda.personality import get_personality
 
         trace_data = {
-            'construct': self.name,
-            'inputs': args,
-            'personality': get_personality().mood,
-            'timestamp': time.time()
+            "construct": self.name,
+            "inputs": args,
+            "personality": get_personality().mood,
+            "timestamp": time.time(),
         }
 
         result = self.compose(*args, **kwargs)
 
-        trace_data['result'] = result
-        trace_data['duration'] = time.time() - trace_data['timestamp']
+        trace_data["result"] = result
+        trace_data["duration"] = time.time() - trace_data["timestamp"]
         self.composition_history.append(trace_data)
 
         return result
@@ -98,19 +101,18 @@ class PerformanceMonitor:
         self.memory_usage = {}
         self.error_rates = {}
 
-    def record_execution(self, construct_name: str,
-                        execution_time: float, success: bool):
+    def record_execution(self, construct_name: str, execution_time: float, success: bool):
         """Record execution metrics."""
 
         if construct_name not in self.execution_times:
             self.execution_times[construct_name] = []
-            self.error_rates[construct_name] = {'total': 0, 'errors': 0}
+            self.error_rates[construct_name] = {"total": 0, "errors": 0}
 
         self.execution_times[construct_name].append(execution_time)
-        self.error_rates[construct_name]['total'] += 1
+        self.error_rates[construct_name]["total"] += 1
 
         if not success:
-            self.error_rates[construct_name]['errors'] += 1
+            self.error_rates[construct_name]["errors"] += 1
 
     def get_performance_report(self, construct_name: str) -> Dict[str, Any]:
         """Get performance report for a construct."""
@@ -122,12 +124,12 @@ class PerformanceMonitor:
         errors = self.error_rates[construct_name]
 
         return {
-            'construct': construct_name,
-            'total_executions': len(times),
-            'avg_time': sum(times) / len(times),
-            'min_time': min(times),
-            'max_time': max(times),
-            'error_rate': errors['errors'] / errors['total'] if errors['total'] > 0 else 0.0
+            "construct": construct_name,
+            "total_executions": len(times),
+            "avg_time": sum(times) / len(times),
+            "min_time": min(times),
+            "max_time": max(times),
+            "error_rate": errors["errors"] / errors["total"] if errors["total"] > 0 else 0.0,
         }
 
 
@@ -144,14 +146,22 @@ class CompositionEngine:
         self.construct_registry[construct.name] = construct
         self._update_dependency_graph(construct)
 
+    def get_composite(self, name: str) -> Optional[CompositeConstruct]:
+        """Get a registered composite construct by name."""
+        return self.construct_registry.get(name)
+
     def _update_dependency_graph(self, construct: CompositeConstruct):
         """Update dependency graph with new construct."""
         self.dependency_graph[construct.name] = construct.get_basic_constructs()
 
-    def execute_composition(self, construct_name: str,
-                          strategy: CompositionStrategy,
-                          gates: List[Callable],
-                          *args, **kwargs) -> Any:
+    def execute_composition(
+        self,
+        construct_name: str,
+        strategy: CompositionStrategy,
+        gates: List[Callable],
+        *args,
+        **kwargs,
+    ) -> Any:
         """Execute a composition using specified strategy."""
 
         # Performance monitoring
@@ -162,21 +172,18 @@ class CompositionEngine:
 
             # Record performance metrics
             execution_time = time.perf_counter() - start_time
-            self.performance_monitor.record_execution(
-                construct_name, execution_time, True
-            )
+            self.performance_monitor.record_execution(construct_name, execution_time, True)
 
             return result
 
         except Exception as e:
             execution_time = time.perf_counter() - start_time
-            self.performance_monitor.record_execution(
-                construct_name, execution_time, False
-            )
+            self.performance_monitor.record_execution(construct_name, execution_time, False)
             raise
 
-    def _execute_strategy(self, strategy: CompositionStrategy,
-                         gates: List[Callable], *args, **kwargs) -> Any:
+    def _execute_strategy(
+        self, strategy: CompositionStrategy, gates: List[Callable], *args, **kwargs
+    ) -> Any:
         """Execute specific composition strategy."""
 
         if strategy == CompositionStrategy.UNION:
@@ -224,8 +231,9 @@ class CompositionEngine:
                 return result
         return result  # Return last successful result
 
-    def _execute_weighted(self, gates: List[Callable],
-                         weights: List[float] = None, *args, **kwargs) -> float:
+    def _execute_weighted(
+        self, gates: List[Callable], weights: List[float] = None, *args, **kwargs
+    ) -> float:
         """Execute weighted composition."""
         if weights is None:
             weights = [1.0] * len(gates)
@@ -266,9 +274,9 @@ class PersonalityBridge:
     """Handles personality-aware adjustments for composite constructs."""
 
     @staticmethod
-    def apply_personality_bridge(base_result: bool,
-                               construct_name: str,
-                               bridge_config: Dict[str, float]) -> bool:
+    def apply_personality_bridge(
+        base_result: bool, construct_name: str, bridge_config: Dict[str, float]
+    ) -> bool:
         """Apply personality-specific bridge probability adjustments."""
         from kinda.personality import get_personality, chaos_random
 
@@ -284,8 +292,9 @@ class PersonalityBridge:
         return base_result
 
     @staticmethod
-    def calculate_composite_probability(basic_probs: List[float],
-                                      strategy: CompositionStrategy) -> float:
+    def calculate_composite_probability(
+        basic_probs: List[float], strategy: CompositionStrategy
+    ) -> float:
         """Calculate expected probability for composite construct."""
         if strategy == CompositionStrategy.UNION:
             # P(A ∪ B) = P(A) + P(B) - P(A ∩ B)

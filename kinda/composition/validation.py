@@ -37,6 +37,7 @@ class DependencyValidator:
                 available = False
                 try:
                     from kinda.langs.python.runtime import fuzzy
+
                     if hasattr(fuzzy, construct):
                         available = True
                 except ImportError:
@@ -46,6 +47,7 @@ class DependencyValidator:
                 if not available:
                     try:
                         from kinda.personality import chaos_probability
+
                         # If we can get a probability for it, the construct exists
                         chaos_probability(construct)
                         available = True
@@ -150,8 +152,7 @@ class PerformanceValidator:
         self.performance_baselines = {}
         self.overhead_measurements = {}
 
-    def establish_baseline(self, construct_name: str,
-                          iterations: int = 1000) -> float:
+    def establish_baseline(self, construct_name: str, iterations: int = 1000) -> float:
         """Establish performance baseline for a basic construct."""
 
         if construct_name in self.performance_baselines:
@@ -162,6 +163,7 @@ class PerformanceValidator:
             # Try importing from kinda runtime
             try:
                 from kinda.langs.python.runtime import fuzzy
+
                 construct_func = getattr(fuzzy, construct_name, None)
             except ImportError:
                 pass
@@ -183,9 +185,9 @@ class PerformanceValidator:
         self.performance_baselines[construct_name] = baseline
         return baseline
 
-    def measure_composition_overhead(self,
-                                   composite: CompositeConstruct,
-                                   iterations: int = 1000) -> float:
+    def measure_composition_overhead(
+        self, composite: CompositeConstruct, iterations: int = 1000
+    ) -> float:
         """Measure overhead of composition vs basic constructs."""
 
         # Measure composite performance
@@ -211,40 +213,38 @@ class PerformanceValidator:
             overhead_ratio = 0.0
 
         self.overhead_measurements[composite.name] = {
-            'composite_time': composite_time,
-            'baseline_time': total_baseline,
-            'overhead_ratio': overhead_ratio
+            "composite_time": composite_time,
+            "baseline_time": total_baseline,
+            "overhead_ratio": overhead_ratio,
         }
 
         return overhead_ratio
 
-    def validate_performance_target(self,
-                                  composite: CompositeConstruct,
-                                  max_overhead: float = 0.20) -> bool:
+    def validate_performance_target(
+        self, composite: CompositeConstruct, max_overhead: float = 0.20
+    ) -> bool:
         """Validate that composition meets performance targets."""
 
         overhead = self.measure_composition_overhead(composite)
         meets_target = overhead <= max_overhead
 
         if not meets_target:
-            print(f"[performance] {composite.name} overhead {overhead:.1%} "
-                  f"exceeds target {max_overhead:.1%}")
+            print(
+                f"[performance] {composite.name} overhead {overhead:.1%} "
+                f"exceeds target {max_overhead:.1%}"
+            )
 
         return meets_target
 
-    def benchmark_against_existing(self, composite: CompositeConstruct,
-                                 comparison_construct: str = None) -> Dict[str, Any]:
+    def benchmark_against_existing(
+        self, composite: CompositeConstruct, comparison_construct: str = None
+    ) -> Dict[str, Any]:
         """Benchmark composite against existing construct performance."""
 
         # Measure composite performance
-        composite_perf = self._measure_construct_performance(
-            composite.compose, iterations=1000
-        )
+        composite_perf = self._measure_construct_performance(composite.compose, iterations=1000)
 
-        results = {
-            'composite_performance': composite_perf,
-            'composite_name': composite.name
-        }
+        results = {"composite_performance": composite_perf, "composite_name": composite.name}
 
         if comparison_construct:
             # Try to find the comparison construct
@@ -252,6 +252,7 @@ class PerformanceValidator:
             if comparison_func is None:
                 try:
                     from kinda.langs.python.runtime import fuzzy
+
                     comparison_func = getattr(fuzzy, comparison_construct, None)
                 except ImportError:
                     pass
@@ -260,12 +261,12 @@ class PerformanceValidator:
                 comparison_perf = self._measure_construct_performance(
                     comparison_func, iterations=1000
                 )
-                results['comparison_performance'] = comparison_perf
-                results['comparison_name'] = comparison_construct
+                results["comparison_performance"] = comparison_perf
+                results["comparison_name"] = comparison_construct
 
                 if comparison_perf > 0:
-                    results['relative_performance'] = composite_perf / comparison_perf
-                    results['performance_ratio'] = f"{results['relative_performance']:.2f}x"
+                    results["relative_performance"] = composite_perf / comparison_perf
+                    results["performance_ratio"] = f"{results['relative_performance']:.2f}x"
 
         # Compare with basic construct baselines
         baseline_perfs = []
@@ -276,9 +277,9 @@ class PerformanceValidator:
 
         if baseline_perfs:
             total_baseline = sum(baseline_perfs)
-            results['baseline_performance'] = total_baseline
-            results['overhead_ratio'] = (composite_perf - total_baseline) / total_baseline
-            results['meets_target'] = results['overhead_ratio'] <= 0.20
+            results["baseline_performance"] = total_baseline
+            results["overhead_ratio"] = (composite_perf - total_baseline) / total_baseline
+            results["meets_target"] = results["overhead_ratio"] <= 0.20
 
         return results
 
@@ -312,7 +313,7 @@ class PerformanceValidator:
             report += f"  Baseline Time:   {measurements['baseline_time']:.6f}s\n"
             report += f"  Overhead Ratio:  {measurements['overhead_ratio']:.1%}\n"
 
-            if measurements['overhead_ratio'] <= 0.20:
+            if measurements["overhead_ratio"] <= 0.20:
                 report += f"  Status:          PASS (within 20% target)\n"
             else:
                 report += f"  Status:          FAIL (exceeds 20% target)\n"
@@ -339,8 +340,7 @@ def validate_construct_dependencies(construct_names: List[str]) -> bool:
     return dependency_validator.validate_construct_dependencies(construct_names)
 
 
-def validate_performance_target(composite: CompositeConstruct,
-                              max_overhead: float = 0.20) -> bool:
+def validate_performance_target(composite: CompositeConstruct, max_overhead: float = 0.20) -> bool:
     """Convenience function for performance validation."""
     return performance_validator.validate_performance_target(composite, max_overhead)
 
@@ -359,54 +359,54 @@ def validate_composition_integrity(composite: CompositeConstruct) -> Dict[str, A
     """Comprehensive validation of composition integrity."""
 
     results = {
-        'construct_name': composite.name,
-        'validation_timestamp': time.time(),
-        'tests_passed': 0,
-        'tests_total': 0,
-        'issues': []
+        "construct_name": composite.name,
+        "validation_timestamp": time.time(),
+        "tests_passed": 0,
+        "tests_total": 0,
+        "issues": [],
     }
 
     # Test 1: Dependency validation
-    results['tests_total'] += 1
+    results["tests_total"] += 1
     deps_valid = validate_construct_dependencies(composite.get_basic_constructs())
-    results['dependency_validation'] = deps_valid
+    results["dependency_validation"] = deps_valid
     if deps_valid:
-        results['tests_passed'] += 1
+        results["tests_passed"] += 1
     else:
-        results['issues'].append("Missing or unavailable dependencies")
+        results["issues"].append("Missing or unavailable dependencies")
 
     # Test 2: Performance validation
-    results['tests_total'] += 1
+    results["tests_total"] += 1
     perf_valid = validate_performance_target(composite)
-    results['performance_validation'] = perf_valid
+    results["performance_validation"] = perf_valid
     if perf_valid:
-        results['tests_passed'] += 1
+        results["tests_passed"] += 1
     else:
-        results['issues'].append("Performance overhead exceeds 20% target")
+        results["issues"].append("Performance overhead exceeds 20% target")
 
     # Test 3: Circular dependency detection
-    results['tests_total'] += 1
+    results["tests_total"] += 1
     register_construct_dependencies(composite.name, composite.get_basic_constructs())
     circular_deps = dependency_validator.detect_circular_dependencies()
-    results['circular_dependencies'] = circular_deps
+    results["circular_dependencies"] = circular_deps
     if not circular_deps:
-        results['tests_passed'] += 1
+        results["tests_passed"] += 1
     else:
-        results['issues'].append(f"Circular dependencies detected: {circular_deps}")
+        results["issues"].append(f"Circular dependencies detected: {circular_deps}")
 
     # Test 4: Basic execution test
-    results['tests_total'] += 1
+    results["tests_total"] += 1
     try:
         # Try a simple execution to ensure basic functionality works
         composite.compose(True)
-        results['execution_test'] = True
-        results['tests_passed'] += 1
+        results["execution_test"] = True
+        results["tests_passed"] += 1
     except Exception as e:
-        results['execution_test'] = False
-        results['issues'].append(f"Basic execution failed: {str(e)}")
+        results["execution_test"] = False
+        results["issues"].append(f"Basic execution failed: {str(e)}")
 
     # Calculate overall health score
-    results['health_score'] = results['tests_passed'] / results['tests_total']
-    results['overall_status'] = "PASS" if results['health_score'] >= 0.75 else "FAIL"
+    results["health_score"] = results["tests_passed"] / results["tests_total"]
+    results["overall_status"] = "PASS" if results["health_score"] >= 0.75 else "FAIL"
 
     return results
