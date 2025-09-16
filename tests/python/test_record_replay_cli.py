@@ -14,14 +14,15 @@ import tempfile
 import subprocess
 import sys
 from pathlib import Path
+from typing import Optional, Any
 
 from kinda.cli import main as cli_main
 from kinda.record_replay import ExecutionRecorder
 
 try:
-    import psutil
+    import psutil  # type: ignore[import-untyped]
 except ImportError:
-    psutil = None
+    psutil = None  # type: ignore[assignment]
 
 
 class TestRecordCLI:

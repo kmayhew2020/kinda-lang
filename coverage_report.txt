@@ -1,0 +1,1078 @@
+============================= test session starts ==============================
+platform linux -- Python 3.10.12, pytest-8.4.2, pluggy-1.6.0
+rootdir: /home/testuser/kinda-lang
+configfile: pyproject.toml
+plugins: cov-7.0.0
+collected 1154 items
+
+tests/documentation/test_integration_examples.py ......                  [  0%]
+tests/documentation/test_performance_examples.py .......                 [  1%]
+tests/documentation/test_probabilistic_control_flow_examples.py ........ [  1%]
+.......                                                                  [  2%]
+tests/python/test_advanced_integration_optimization.py ...........       [  3%]
+tests/python/test_all_examples.py ........s....ss..............s........ [  6%]
+.....ss..........s..s......s........s.s...                               [ 10%]
+tests/python/test_all_transforms_verified.py ........                    [ 11%]
+tests/python/test_block_else_syntax.py .s....                            [ 11%]
+tests/python/test_build_output.py .                                      [ 11%]
+tests/python/test_chaos_level.py ss.................s..                  [ 13%]
+tests/python/test_cli_additional_coverage.py ...........                 [ 14%]
+tests/python/test_cli_comprehensive.py .....................             [ 16%]
+tests/python/test_cli_coverage.py .................                      [ 17%]
+tests/python/test_cli_enhanced.py ..........................             [ 20%]
+tests/python/test_codegen_python.py .                                    [ 20%]
+tests/python/test_core_coverage.py ............s......                   [ 21%]
+tests/python/test_edge_cases_fixed.py ........................           [ 23%]
+tests/python/test_epic_124_task_3_validation.py .....                    [ 24%]
+tests/python/test_error_handling.py ..........                           [ 25%]
+tests/python/test_fuzzy_runtime.py ......................s.......        [ 27%]
+tests/python/test_fuzzy_runtime_comprehensive.py sssssssssssssssssssssss [ 29%]
+sssss                                                                    [ 30%]
+tests/python/test_fuzzy_runtime_comprehensive_coverage.py .F..FFFFF....F [ 31%]
+..FF......F.................F.....F...........F.......FF.F.F............ [ 37%]
+............F...FsF.                                                     [ 39%]
+tests/python/test_fuzzy_runtime_coverage.py ..........                   [ 40%]
+tests/python/test_fuzzy_runtime_missing_coverage.py ssssssssssssssssssss [ 41%]
+ssssss                                                                   [ 42%]
+tests/python/test_interpreter_main.py ....                               [ 42%]
+tests/python/test_interpreter_repl.py ....                               [ 43%]
+tests/python/test_ish_construct.py ..............                        [ 44%]
+tests/python/test_ish_construct_comprehensive.py ....................    [ 46%]
+tests/python/test_kinda_binary.py ..............                         [ 47%]
+tests/python/test_kinda_bool_construct.py .............................  [ 49%]
+tests/python/test_kinda_float.py ...s...........s....................... [ 53%]
+.....                                                                    [ 53%]
+tests/python/test_loop_constructs.py ......................              [ 55%]
+tests/python/test_maybe_construct.py ........s...........                [ 57%]
+tests/python/test_nested_constructs_fix.py ...s.....                     [ 58%]
+tests/python/test_personality_integration.py ..............              [ 59%]
+tests/python/test_precision_coverage_gaps.py ............                [ 60%]
+tests/python/test_probably_construct.py ........................s...     [ 62%]
+tests/python/test_rarely_construct.py ............s...............       [ 65%]
+tests/python/test_record_replay_basic.py .........ss......               [ 66%]
+tests/python/test_record_replay_cli.py ..sss.sss....s                    [ 67%]
+tests/python/test_record_replay_phase2.py ....s...s....                  [ 68%]
+tests/python/test_repetition_constructs.py ..........                    [ 69%]
+tests/python/test_repetition_edge_cases.py ........Fs.                   [ 70%]
+tests/python/test_repetition_integration.py ....F..s....                 [ 71%]
+tests/python/test_repetition_personality.py .........                    [ 72%]
+tests/python/test_repetition_stress.py ..s....s..                        [ 73%]
+tests/python/test_run_module.py ..........                               [ 74%]
+tests/python/test_runner.py ....                                         [ 74%]
+tests/python/test_runtime_gen_coverage.py ........                       [ 75%]
+tests/python/test_runtime_generation.py .                                [ 75%]
+tests/python/test_security_enhancements.py ............................. [ 77%]
+.....                                                                    [ 78%]
+tests/python/test_seed_cli_integration.py ..................             [ 79%]
+tests/python/test_semantics.py ..................                        [ 81%]
+tests/python/test_simple_coverage_boost.py .......                       [ 82%]
+tests/python/test_sorta_print_composition.py ..............              [ 83%]
+tests/python/test_sorta_print_robustness.py ...........s....s..          [ 85%]
+tests/python/test_statistical_assertions.py ...s...................s..   [ 87%]
+tests/python/test_time_drift.py ....................................     [ 90%]
+tests/python/test_transform_execution.py ..............                  [ 91%]
+tests/python/test_transform_integration.py ...........                   [ 92%]
+tests/python/test_transformer.py ........                                [ 93%]
+tests/python/test_transformer_missing_coverage.py ...................... [ 95%]
+.                                                                        [ 95%]
+tests/python/test_welp_construct.py .......................              [ 97%]
+tests/test_cli.py ................                                       [ 98%]
+tests/test_installation.py ..........s.....                              [100%]
+🎯 KINDA TEST SESSION FINAL REPORT
+==================================================
+Session Personality: playful
+Chaos Level: 5/10
+Seed: None
+Exit Status: 1
+Meta-Framework 'Kinda Tests Kinda' Score: 61.0%
+✨ GOOD: Strong meta-programming patterns
+🎭 Playful testing session complete - balanced chaos and order
+
+
+=================================== FAILURES ===================================
+_________ TestAssertEventually.test_assert_eventually_timeout_failure __________
+
+self = <tests.python.test_fuzzy_runtime_comprehensive_coverage.TestAssertEventually object at 0x77ceaa6515d0>
+
+    def test_assert_eventually_timeout_failure(self):
+        """Test assert_eventually with condition that never becomes true."""
+        from kinda.langs.python.runtime.fuzzy import assert_eventually
+    
+        with pytest.raises(AssertionError) as exc_info:
+            assert_eventually(lambda: False, timeout=0.1, confidence=0.9)
+>       assert "Statistical assertion failed" in str(exc_info.value)
+E       assert 'Statistical assertion failed' in 'Surprise! Your "eventually" condition was kinda flaky: 2/2 (1.000) in 0.1s. Try lowering your standards.'
+E        +  where 'Surprise! Your "eventually" condition was kinda flaky: 2/2 (1.000) in 0.1s. Try lowering your standards.' = str(AssertionError('Surprise! Your "eventually" condition was kinda flaky: 2/2 (1.000) in 0.1s. Try lowering your standards.'))
+E        +    where AssertionError('Surprise! Your "eventually" condition was kinda flaky: 2/2 (1.000) in 0.1s. Try lowering your standards.') = <ExceptionInfo AssertionError('Surprise! Your "eventually" condition was kinda flaky: 2/2 (1.000) in 0.1s. Try lowering your standards.') tblen=2>.value
+
+tests/python/test_fuzzy_runtime_comprehensive_coverage.py:40: AssertionError
+---------------------------- Captured stdout setup -----------------------------
+
+[PYTEST] 🎲 Running test_assert_eventually_timeout_failure with professional personality (chaos: 3)
+--------------------------- Captured stdout teardown ---------------------------
+[PYTEST] ✨ ~sorta completed test_assert_eventually_timeout_failure (personality: professional)
+________ TestAssertEventually.test_assert_eventually_exception_handling ________
+
+self = <tests.python.test_fuzzy_runtime_comprehensive_coverage.TestAssertEventually object at 0x77ceaa651030>
+
+    def test_assert_eventually_exception_handling(self):
+        """Test assert_eventually exception handling."""
+        from kinda.langs.python.runtime.fuzzy import assert_eventually
+    
+        def failing_condition():
+            raise ValueError("Condition failed")
+    
+        with patch("builtins.print") as mock_print:
+            with pytest.raises(AssertionError):
+                assert_eventually(failing_condition, timeout=0.1)
+>           assert mock_print.call_count > 0
+E           AssertionError: assert 0 > 0
+E            +  where 0 = <MagicMock name='print' id='131729499343552'>.call_count
+
+tests/python/test_fuzzy_runtime_comprehensive_coverage.py:71: AssertionError
+---------------------------- Captured stdout setup -----------------------------
+
+[PYTEST] 🎲 Running test_assert_eventually_exception_handling with professional personality (chaos: 3)
+--------------------------- Captured stdout teardown ---------------------------
+[PYTEST] ✨ ~sorta completed test_assert_eventually_exception_handling (personality: professional)
+____________ TestAssertProbability.test_assert_probability_success _____________
+
+self = <tests.python.test_fuzzy_runtime_comprehensive_coverage.TestAssertProbability object at 0x77ceaa650c70>
+
+    def test_assert_probability_success(self):
+        """Test assert_probability with matching probability."""
+        from kinda.langs.python.runtime.fuzzy import assert_probability
+    
+        counter = [0]
+    
+        def event():
+            counter[0] += 1
+            return counter[0] % 2 == 0  # Should be about 50%
+    
+>       result = assert_probability(event, expected_prob=0.5, tolerance=0.2, samples=100)
+
+tests/python/test_fuzzy_runtime_comprehensive_coverage.py:91: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+event = <function TestAssertProbability.test_assert_probability_success.<locals>.event at 0x77ceaa2e30a0>
+expected_prob = 0.5, tolerance = 0.2, samples = 100
+
+    def assert_probability(event, expected_prob=0.5, tolerance=0.1, samples=1000):
+        """Validate probability distributions with statistical testing"""
+        from kinda.personality import update_chaos_state, get_personality
+        from kinda.security import secure_condition_check
+        import math
+        try:
+            # Validate parameters
+            if not isinstance(expected_prob, (int, float)) or not (0 <= expected_prob <= 1):
+                print(f"[?] assert_probability got weird expected_prob: {expected_prob}")
+                print(f"[tip] Using default expected_prob of 0.5")
+                expected_prob = 0.5
+    
+            if not isinstance(tolerance, (int, float)) or tolerance <= 0:
+                print(f"[?] assert_probability got weird tolerance: {tolerance}")
+                print(f"[tip] Using default tolerance of 0.1")
+                tolerance = 0.1
+    
+            if not isinstance(samples, int) or samples <= 0:
+                print(f"[?] assert_probability got weird samples: {samples}")
+                print(f"[tip] Using default samples of 1000")
+                samples = 1000
+    
+            # Limit samples for performance and security
+            if samples > 10000:
+                print(f"[?] Limiting samples to 10000 for performance (requested {samples})")
+                samples = 10000
+    
+            # Run statistical sampling
+            successes = 0
+            for i in range(samples):
+                # Security check for event condition
+                should_proceed, event_result = secure_condition_check(event, 'assert_probability')
+                if not should_proceed:
+                    update_chaos_state(failed=True)
+                    raise AssertionError(f'Unsafe event condition in assert_probability')
+    
+                if event_result:
+                    successes += 1
+    
+            observed_prob = successes / samples
+            difference = abs(observed_prob - expected_prob)
+    
+            # Calculate statistical significance (binomial test approximation)
+            # Standard error for binomial proportion
+            se = math.sqrt(expected_prob * (1 - expected_prob) / samples)
+            z_score = abs(observed_prob - expected_prob) / se if se > 0 else 0
+    
+            # Get personality for error messages
+            personality = get_personality()
+            style = personality.get_error_message_style()
+    
+            if difference <= tolerance:
+                print(f"[stat] assert_probability passed: {observed_prob:.3f} vs expected {expected_prob:.3f} (diff: {difference:.3f}, tolerance: {tolerance:.3f})")
+                update_chaos_state(failed=False)
+                return True
+            else:
+                # Statistical failure
+                if style == 'professional':
+                    error_msg = f'Probability assertion failed: observed {observed_prob:.3f}, expected {expected_prob:.3f} ± {tolerance:.3f} (difference: {difference:.3f}, z-score: {z_score:.2f})'
+                elif style == 'friendly':
+                    error_msg = f'Oops! Got probability {observed_prob:.3f} but expected around {expected_prob:.3f} ± {tolerance:.3f} (off by {difference:.3f})'
+                elif style == 'snarky':
+                    error_msg = f'Your random event is apparently not very random: {observed_prob:.3f} vs {expected_prob:.3f} ± {tolerance:.3f}. Maybe check your math?'
+                else:  # chaotic
+                    error_msg = f'PROBABILITY FAIL! [DICE]*CRASH* Got {observed_prob:.3f}, wanted ~{expected_prob:.3f}. That\'s a {difference:.3f} swing, which is NOT kinda close!'
+    
+                update_chaos_state(failed=True)
+>               raise AssertionError(error_msg)
+E               AssertionError: Your random event is apparently not very random: 1.000 vs 0.500 ± 0.200. Maybe check your math?
+
+kinda/langs/python/runtime/fuzzy.py:162: AssertionError
+---------------------------- Captured stdout setup -----------------------------
+
+[PYTEST] 🎲 Running test_assert_probability_success with professional personality (chaos: 3)
+--------------------------- Captured stdout teardown ---------------------------
+[PYTEST] ✨ ~sorta completed test_assert_probability_success (personality: friendly)
+____________ TestAssertProbability.test_assert_probability_failure _____________
+
+self = <tests.python.test_fuzzy_runtime_comprehensive_coverage.TestAssertProbability object at 0x77ceaa650a90>
+
+    def test_assert_probability_failure(self):
+        """Test assert_probability with mismatched probability."""
+        from kinda.langs.python.runtime.fuzzy import assert_probability
+    
+        with pytest.raises(AssertionError) as exc_info:
+            assert_probability(lambda: True, expected_prob=0.1, tolerance=0.05, samples=100)
+>       assert "Probability assertion failed" in str(exc_info.value)
+E       AssertionError: assert 'Probability assertion failed' in 'Your random event is apparently not very random: 1.000 vs 0.100 ± 0.050. Maybe check your math?'
+E        +  where 'Your random event is apparently not very random: 1.000 vs 0.100 ± 0.050. Maybe check your math?' = str(AssertionError('Your random event is apparently not very random: 1.000 vs 0.100 ± 0.050. Maybe check your math?'))
+E        +    where AssertionError('Your random event is apparently not very random: 1.000 vs 0.100 ± 0.050. Maybe check your math?') = <ExceptionInfo AssertionError('Your random event is apparently not very random: 1.000 vs 0.100 ± 0.050. Maybe check your math?') tblen=2>.value
+
+tests/python/test_fuzzy_runtime_comprehensive_coverage.py:100: AssertionError
+---------------------------- Captured stdout setup -----------------------------
+
+[PYTEST] 🎲 Running test_assert_probability_failure with friendly personality (chaos: 4)
+--------------------------- Captured stdout teardown ---------------------------
+[PYTEST] ✨ ~sorta completed test_assert_probability_failure (personality: friendly)
+_______ TestAssertProbability.test_assert_probability_invalid_parameters _______
+
+self = <tests.python.test_fuzzy_runtime_comprehensive_coverage.TestAssertProbability object at 0x77ceaa6508b0>
+
+    def test_assert_probability_invalid_parameters(self):
+        """Test assert_probability with invalid parameters."""
+        from kinda.langs.python.runtime.fuzzy import assert_probability
+    
+        with patch("builtins.print") as mock_print:
+>           result = assert_probability(lambda: True, expected_prob=2.0, tolerance=-1, samples=-10)
+
+tests/python/test_fuzzy_runtime_comprehensive_coverage.py:107: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+event = <function TestAssertProbability.test_assert_probability_invalid_parameters.<locals>.<lambda> at 0x77ceaa032170>
+expected_prob = 0.5, tolerance = 0.1, samples = 1000
+
+    def assert_probability(event, expected_prob=0.5, tolerance=0.1, samples=1000):
+        """Validate probability distributions with statistical testing"""
+        from kinda.personality import update_chaos_state, get_personality
+        from kinda.security import secure_condition_check
+        import math
+        try:
+            # Validate parameters
+            if not isinstance(expected_prob, (int, float)) or not (0 <= expected_prob <= 1):
+                print(f"[?] assert_probability got weird expected_prob: {expected_prob}")
+                print(f"[tip] Using default expected_prob of 0.5")
+                expected_prob = 0.5
+    
+            if not isinstance(tolerance, (int, float)) or tolerance <= 0:
+                print(f"[?] assert_probability got weird tolerance: {tolerance}")
+                print(f"[tip] Using default tolerance of 0.1")
+                tolerance = 0.1
+    
+            if not isinstance(samples, int) or samples <= 0:
+                print(f"[?] assert_probability got weird samples: {samples}")
+                print(f"[tip] Using default samples of 1000")
+                samples = 1000
+    
+            # Limit samples for performance and security
+            if samples > 10000:
+                print(f"[?] Limiting samples to 10000 for performance (requested {samples})")
+                samples = 10000
+    
+            # Run statistical sampling
+            successes = 0
+            for i in range(samples):
+                # Security check for event condition
+                should_proceed, event_result = secure_condition_check(event, 'assert_probability')
+                if not should_proceed:
+                    update_chaos_state(failed=True)
+                    raise AssertionError(f'Unsafe event condition in assert_probability')
+    
+                if event_result:
+                    successes += 1
+    
+            observed_prob = successes / samples
+            difference = abs(observed_prob - expected_prob)
+    
+            # Calculate statistical significance (binomial test approximation)
+            # Standard error for binomial proportion
+            se = math.sqrt(expected_prob * (1 - expected_prob) / samples)
+            z_score = abs(observed_prob - expected_prob) / se if se > 0 else 0
+    
+            # Get personality for error messages
+            personality = get_personality()
+            style = personality.get_error_message_style()
+    
+            if difference <= tolerance:
+                print(f"[stat] assert_probability passed: {observed_prob:.3f} vs expected {expected_prob:.3f} (diff: {difference:.3f}, tolerance: {tolerance:.3f})")
+                update_chaos_state(failed=False)
+                return True
+            else:
+                # Statistical failure
+                if style == 'professional':
+                    error_msg = f'Probability assertion failed: observed {observed_prob:.3f}, expected {expected_prob:.3f} ± {tolerance:.3f} (difference: {difference:.3f}, z-score: {z_score:.2f})'
+                elif style == 'friendly':
+                    error_msg = f'Oops! Got probability {observed_prob:.3f} but expected around {expected_prob:.3f} ± {tolerance:.3f} (off by {difference:.3f})'
+                elif style == 'snarky':
+                    error_msg = f'Your random event is apparently not very random: {observed_prob:.3f} vs {expected_prob:.3f} ± {tolerance:.3f}. Maybe check your math?'
+                else:  # chaotic
+                    error_msg = f'PROBABILITY FAIL! [DICE]*CRASH* Got {observed_prob:.3f}, wanted ~{expected_prob:.3f}. That\'s a {difference:.3f} swing, which is NOT kinda close!'
+    
+                update_chaos_state(failed=True)
+>               raise AssertionError(error_msg)
+E               AssertionError: Your random event is apparently not very random: 1.000 vs 0.500 ± 0.100. Maybe check your math?
+
+kinda/langs/python/runtime/fuzzy.py:162: AssertionError
+---------------------------- Captured stdout setup -----------------------------
+
+[PYTEST] 🎲 Running test_assert_probability_invalid_parameters with friendly personality (chaos: 4)
+--------------------------- Captured stdout teardown ---------------------------
+[PYTEST] ✨ ~sorta completed test_assert_probability_invalid_parameters (personality: friendly)
+_________ TestAssertProbability.test_assert_probability_samples_limit __________
+
+self = <tests.python.test_fuzzy_runtime_comprehensive_coverage.TestAssertProbability object at 0x77ceaa6506d0>
+
+    def test_assert_probability_samples_limit(self):
+        """Test assert_probability with too many samples."""
+        from kinda.langs.python.runtime.fuzzy import assert_probability
+    
+        with patch("builtins.print") as mock_print:
+>           result = assert_probability(lambda: True, samples=20000)
+
+tests/python/test_fuzzy_runtime_comprehensive_coverage.py:116: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+event = <function TestAssertProbability.test_assert_probability_samples_limit.<locals>.<lambda> at 0x77ceaa030d30>
+expected_prob = 0.5, tolerance = 0.1, samples = 10000
+
+    def assert_probability(event, expected_prob=0.5, tolerance=0.1, samples=1000):
+        """Validate probability distributions with statistical testing"""
+        from kinda.personality import update_chaos_state, get_personality
+        from kinda.security import secure_condition_check
+        import math
+        try:
+            # Validate parameters
+            if not isinstance(expected_prob, (int, float)) or not (0 <= expected_prob <= 1):
+                print(f"[?] assert_probability got weird expected_prob: {expected_prob}")
+                print(f"[tip] Using default expected_prob of 0.5")
+                expected_prob = 0.5
+    
+            if not isinstance(tolerance, (int, float)) or tolerance <= 0:
+                print(f"[?] assert_probability got weird tolerance: {tolerance}")
+                print(f"[tip] Using default tolerance of 0.1")
+                tolerance = 0.1
+    
+            if not isinstance(samples, int) or samples <= 0:
+                print(f"[?] assert_probability got weird samples: {samples}")
+                print(f"[tip] Using default samples of 1000")
+                samples = 1000
+    
+            # Limit samples for performance and security
+            if samples > 10000:
+                print(f"[?] Limiting samples to 10000 for performance (requested {samples})")
+                samples = 10000
+    
+            # Run statistical sampling
+            successes = 0
+            for i in range(samples):
+                # Security check for event condition
+                should_proceed, event_result = secure_condition_check(event, 'assert_probability')
+                if not should_proceed:
+                    update_chaos_state(failed=True)
+                    raise AssertionError(f'Unsafe event condition in assert_probability')
+    
+                if event_result:
+                    successes += 1
+    
+            observed_prob = successes / samples
+            difference = abs(observed_prob - expected_prob)
+    
+            # Calculate statistical significance (binomial test approximation)
+            # Standard error for binomial proportion
+            se = math.sqrt(expected_prob * (1 - expected_prob) / samples)
+            z_score = abs(observed_prob - expected_prob) / se if se > 0 else 0
+    
+            # Get personality for error messages
+            personality = get_personality()
+            style = personality.get_error_message_style()
+    
+            if difference <= tolerance:
+                print(f"[stat] assert_probability passed: {observed_prob:.3f} vs expected {expected_prob:.3f} (diff: {difference:.3f}, tolerance: {tolerance:.3f})")
+                update_chaos_state(failed=False)
+                return True
+            else:
+                # Statistical failure
+                if style == 'professional':
+                    error_msg = f'Probability assertion failed: observed {observed_prob:.3f}, expected {expected_prob:.3f} ± {tolerance:.3f} (difference: {difference:.3f}, z-score: {z_score:.2f})'
+                elif style == 'friendly':
+                    error_msg = f'Oops! Got probability {observed_prob:.3f} but expected around {expected_prob:.3f} ± {tolerance:.3f} (off by {difference:.3f})'
+                elif style == 'snarky':
+                    error_msg = f'Your random event is apparently not very random: {observed_prob:.3f} vs {expected_prob:.3f} ± {tolerance:.3f}. Maybe check your math?'
+                else:  # chaotic
+                    error_msg = f'PROBABILITY FAIL! [DICE]*CRASH* Got {observed_prob:.3f}, wanted ~{expected_prob:.3f}. That\'s a {difference:.3f} swing, which is NOT kinda close!'
+    
+                update_chaos_state(failed=True)
+>               raise AssertionError(error_msg)
+E               AssertionError: Your random event is apparently not very random: 1.000 vs 0.500 ± 0.100. Maybe check your math?
+
+kinda/langs/python/runtime/fuzzy.py:162: AssertionError
+---------------------------- Captured stdout setup -----------------------------
+
+[PYTEST] 🎲 Running test_assert_probability_samples_limit with friendly personality (chaos: 4)
+--------------------------- Captured stdout teardown ---------------------------
+[PYTEST] ✨ ~sorta completed test_assert_probability_samples_limit (personality: friendly)
+_________________ TestDriftAccess.test_drift_access_none_value _________________
+
+self = <tests.python.test_fuzzy_runtime_comprehensive_coverage.TestDriftAccess object at 0x77ceaa64c4f0>
+
+    def test_drift_access_none_value(self):
+        """Test drift_access with None value."""
+        from kinda.langs.python.runtime.fuzzy import drift_access
+    
+        with patch("builtins.print") as mock_print:
+            result = drift_access("none_var", None)
+>           assert result == 0
+E           assert None == 0
+
+tests/python/test_fuzzy_runtime_comprehensive_coverage.py:174: AssertionError
+___________ TestEventuallyUntil.test_eventually_until_max_iterations ___________
+
+self = <tests.python.test_fuzzy_runtime_comprehensive_coverage.TestEventuallyUntil object at 0x77ceaa6511e0>
+
+    def test_eventually_until_max_iterations(self):
+        """Test eventually_until hitting max iterations."""
+        from kinda.langs.python.runtime.fuzzy import eventually_until
+    
+>       result = eventually_until(lambda: False, max_iterations=5)
+E       TypeError: eventually_until() got an unexpected keyword argument 'max_iterations'
+
+tests/python/test_fuzzy_runtime_comprehensive_coverage.py:221: TypeError
+---------------------------- Captured stdout setup -----------------------------
+
+[PYTEST] 🎲 Running test_eventually_until_max_iterations with chaotic personality (chaos: 7)
+___________ TestEventuallyUntil.test_eventually_until_body_exception ___________
+
+self = <tests.python.test_fuzzy_runtime_comprehensive_coverage.TestEventuallyUntil object at 0x77ceaa6516c0>
+
+    def test_eventually_until_body_exception(self):
+        """Test eventually_until with body that raises exception."""
+        from kinda.langs.python.runtime.fuzzy import eventually_until
+    
+        def failing_body():
+            raise ValueError("Body failed")
+    
+        with patch("builtins.print") as mock_print:
+            result = eventually_until(lambda: False, failing_body)
+            assert isinstance(result, dict)
+>           assert mock_print.call_count > 0
+E           AssertionError: assert 0 > 0
+E            +  where 0 = <MagicMock name='print' id='131729500978288'>.call_count
+
+tests/python/test_fuzzy_runtime_comprehensive_coverage.py:235: AssertionError
+---------------------------- Captured stdout setup -----------------------------
+
+[PYTEST] 🎲 Running test_eventually_until_body_exception with chaotic personality (chaos: 7)
+_ TestEventuallyUntilCondition.test_eventually_until_condition_exception_handling _
+
+self = <tests.python.test_fuzzy_runtime_comprehensive_coverage.TestEventuallyUntilCondition object at 0x77ceaa64fbb0>
+
+    def test_eventually_until_condition_exception_handling(self):
+        """Test eventually_until_condition exception handling."""
+        from kinda.langs.python.runtime.fuzzy import eventually_until_condition
+    
+        def failing_condition():
+            raise ValueError("Condition failed")
+    
+        with patch("builtins.print") as mock_print:
+            result = eventually_until_condition(failing_condition)
+            assert result is False  # Should terminate on errors
+>           assert mock_print.call_count > 0
+E           AssertionError: assert 0 > 0
+E            +  where 0 = <MagicMock name='print' id='131729502064928'>.call_count
+
+tests/python/test_fuzzy_runtime_comprehensive_coverage.py:320: AssertionError
+---------------------------- Captured stdout setup -----------------------------
+
+[PYTEST] 🎲 Running test_eventually_until_condition_exception_handling with playful personality (chaos: 5)
+_______________ TestKindaMood.test_kinda_mood_exception_handling _______________
+
+self = <tests.python.test_fuzzy_runtime_comprehensive_coverage.TestKindaMood object at 0x77ceaa64db70>
+
+    def test_kinda_mood_exception_handling(self):
+        """Test kinda_mood exception handling."""
+        from kinda.langs.python.runtime.fuzzy import kinda_mood
+    
+        with patch(
+            "kinda.personality.PersonalityContext.set_mood", side_effect=Exception("Mood failed")
+        ):
+            with patch("builtins.print") as mock_print:
+>               result = kinda_mood("sad")
+
+tests/python/test_fuzzy_runtime_comprehensive_coverage.py:528: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+kinda/langs/python/runtime/fuzzy.py:605: in kinda_mood
+    PersonalityContext.set_mood("playful")
+/usr/lib/python3.10/unittest/mock.py:1114: in __call__
+    return self._mock_call(*args, **kwargs)
+/usr/lib/python3.10/unittest/mock.py:1118: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+/usr/lib/python3.10/unittest/mock.py:1173: in _execute_mock_call
+    raise effect
+kinda/langs/python/runtime/fuzzy.py:596: in kinda_mood
+    PersonalityContext.set_mood(mood)
+/usr/lib/python3.10/unittest/mock.py:1114: in __call__
+    return self._mock_call(*args, **kwargs)
+/usr/lib/python3.10/unittest/mock.py:1118: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <MagicMock name='set_mood' id='131729501071456'>, args = ('sad',)
+kwargs = {}, effect = Exception('Mood failed')
+
+    def _execute_mock_call(self, /, *args, **kwargs):
+        # separate from _increment_mock_call so that awaited functions are
+        # executed separately from their call, also AsyncMock overrides this method
+    
+        effect = self.side_effect
+        if effect is not None:
+            if _is_exception(effect):
+>               raise effect
+E               Exception: Mood failed
+
+/usr/lib/python3.10/unittest/mock.py:1173: Exception
+--------------------------- Captured stdout teardown ---------------------------
+[PYTEST] ✨ ~sorta completed test_kinda_mood_exception_handling (personality: playful)
+_____________ TestKindaRepeat.test_kinda_repeat_exception_handling _____________
+
+self = <tests.python.test_fuzzy_runtime_comprehensive_coverage.TestKindaRepeat object at 0x77ceaa6486d0>
+
+    def test_kinda_repeat_exception_handling(self):
+        """Test kinda_repeat exception handling."""
+        from kinda.langs.python.runtime.fuzzy import kinda_repeat
+    
+        with patch(
+            "kinda.personality.get_personality", side_effect=Exception("Personality failed")
+        ):
+            with patch("builtins.print") as mock_print:
+>               result = kinda_repeat(3)
+
+tests/python/test_fuzzy_runtime_comprehensive_coverage.py:601: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+kinda/langs/python/runtime/fuzzy.py:656: in kinda_repeat
+    update_chaos_state(failed=True)
+kinda/personality.py:797: in update_chaos_state
+    personality = get_personality()
+/usr/lib/python3.10/unittest/mock.py:1114: in __call__
+    return self._mock_call(*args, **kwargs)
+/usr/lib/python3.10/unittest/mock.py:1118: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+/usr/lib/python3.10/unittest/mock.py:1173: in _execute_mock_call
+    raise effect
+kinda/langs/python/runtime/fuzzy.py:614: in kinda_repeat
+    personality = get_personality()
+/usr/lib/python3.10/unittest/mock.py:1114: in __call__
+    return self._mock_call(*args, **kwargs)
+/usr/lib/python3.10/unittest/mock.py:1118: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <MagicMock name='get_personality' id='131729499571488'>, args = ()
+kwargs = {}, effect = Exception('Personality failed')
+
+    def _execute_mock_call(self, /, *args, **kwargs):
+        # separate from _increment_mock_call so that awaited functions are
+        # executed separately from their call, also AsyncMock overrides this method
+    
+        effect = self.side_effect
+        if effect is not None:
+            if _is_exception(effect):
+>               raise effect
+E               Exception: Personality failed
+
+/usr/lib/python3.10/unittest/mock.py:1173: Exception
+---------------------------- Captured stdout setup -----------------------------
+
+[PYTEST] 🎲 Running test_kinda_repeat_exception_handling with professional personality (chaos: 3)
+--------------------------- Captured stdout teardown ---------------------------
+[PYTEST] ✨ ~sorta completed test_kinda_repeat_exception_handling (personality: professional)
+________________ TestMaybeFor.test_maybe_for_exception_handling ________________
+
+self = <tests.python.test_fuzzy_runtime_comprehensive_coverage.TestMaybeFor object at 0x77ceaa64b520>
+
+    def test_maybe_for_exception_handling(self):
+        """Test maybe_for exception handling."""
+        from kinda.langs.python.runtime.fuzzy import maybe_for
+    
+        with patch(
+            "kinda.personality.get_personality", side_effect=Exception("Personality failed")
+        ):
+            with patch("builtins.print") as mock_print:
+>               result = maybe_for([1, 2, 3])
+
+tests/python/test_fuzzy_runtime_comprehensive_coverage.py:740: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+kinda/langs/python/runtime/fuzzy.py:776: in maybe_for
+    update_chaos_state(failed=True)
+kinda/personality.py:797: in update_chaos_state
+    personality = get_personality()
+/usr/lib/python3.10/unittest/mock.py:1114: in __call__
+    return self._mock_call(*args, **kwargs)
+/usr/lib/python3.10/unittest/mock.py:1118: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+/usr/lib/python3.10/unittest/mock.py:1173: in _execute_mock_call
+    raise effect
+kinda/langs/python/runtime/fuzzy.py:734: in maybe_for
+    personality = get_personality()
+/usr/lib/python3.10/unittest/mock.py:1114: in __call__
+    return self._mock_call(*args, **kwargs)
+/usr/lib/python3.10/unittest/mock.py:1118: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <MagicMock name='get_personality' id='131729501201232'>, args = ()
+kwargs = {}, effect = Exception('Personality failed')
+
+    def _execute_mock_call(self, /, *args, **kwargs):
+        # separate from _increment_mock_call so that awaited functions are
+        # executed separately from their call, also AsyncMock overrides this method
+    
+        effect = self.side_effect
+        if effect is not None:
+            if _is_exception(effect):
+>               raise effect
+E               Exception: Personality failed
+
+/usr/lib/python3.10/unittest/mock.py:1173: Exception
+--------------------------- Captured stdout teardown ---------------------------
+[PYTEST] ✨ ~sorta completed test_maybe_for_exception_handling (personality: friendly)
+____________ TestSometimesWhile.test_sometimes_while_max_iterations ____________
+
+self = <tests.python.test_fuzzy_runtime_comprehensive_coverage.TestSometimesWhile object at 0x77ceaa64a2c0>
+
+    def test_sometimes_while_max_iterations(self):
+        """Test sometimes_while hitting max iterations."""
+        from kinda.langs.python.runtime.fuzzy import sometimes_while
+    
+        # Patch to always continue to hit max iterations
+        with patch("kinda.personality.PersonalityContext.get_optimized_random", return_value=0.0):
+>           result = sometimes_while(lambda: True, max_iterations=10)
+E           TypeError: sometimes_while() got an unexpected keyword argument 'max_iterations'
+
+tests/python/test_fuzzy_runtime_comprehensive_coverage.py:848: TypeError
+---------------------------- Captured stdout setup -----------------------------
+
+[PYTEST] 🎲 Running test_sometimes_while_max_iterations with chaotic personality (chaos: 7)
+--------------------------- Captured stdout teardown ---------------------------
+[PYTEST] ✨ ~sorta completed test_sometimes_while_max_iterations (personality: chaotic)
+__________ TestSometimesWhile.test_sometimes_while_exception_handling __________
+
+self = <tests.python.test_fuzzy_runtime_comprehensive_coverage.TestSometimesWhile object at 0x77ceaa64a0e0>
+
+    def test_sometimes_while_exception_handling(self):
+        """Test sometimes_while exception handling."""
+        from kinda.langs.python.runtime.fuzzy import sometimes_while
+    
+        with patch(
+            "kinda.personality.get_personality", side_effect=Exception("Personality failed")
+        ):
+            with patch("builtins.print") as mock_print:
+>               result = sometimes_while(lambda: True)
+
+tests/python/test_fuzzy_runtime_comprehensive_coverage.py:859: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+kinda/langs/python/runtime/fuzzy.py:930: in sometimes_while
+    update_chaos_state(failed=True)
+kinda/personality.py:797: in update_chaos_state
+    personality = get_personality()
+/usr/lib/python3.10/unittest/mock.py:1114: in __call__
+    return self._mock_call(*args, **kwargs)
+/usr/lib/python3.10/unittest/mock.py:1118: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+/usr/lib/python3.10/unittest/mock.py:1173: in _execute_mock_call
+    raise effect
+kinda/langs/python/runtime/fuzzy.py:888: in sometimes_while
+    personality = get_personality()
+/usr/lib/python3.10/unittest/mock.py:1114: in __call__
+    return self._mock_call(*args, **kwargs)
+/usr/lib/python3.10/unittest/mock.py:1118: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <MagicMock name='get_personality' id='131729497008608'>, args = ()
+kwargs = {}, effect = Exception('Personality failed')
+
+    def _execute_mock_call(self, /, *args, **kwargs):
+        # separate from _increment_mock_call so that awaited functions are
+        # executed separately from their call, also AsyncMock overrides this method
+    
+        effect = self.side_effect
+        if effect is not None:
+            if _is_exception(effect):
+>               raise effect
+E               Exception: Personality failed
+
+/usr/lib/python3.10/unittest/mock.py:1173: Exception
+---------------------------- Captured stdout setup -----------------------------
+
+[PYTEST] 🎲 Running test_sometimes_while_exception_handling with chaotic personality (chaos: 7)
+--------------------------- Captured stdout teardown ---------------------------
+[PYTEST] ✨ ~sorta completed test_sometimes_while_exception_handling (personality: chaotic)
+__ TestSometimesWhileCondition.test_sometimes_while_condition_false_condition __
+
+self = <tests.python.test_fuzzy_runtime_comprehensive_coverage.TestSometimesWhileCondition object at 0x77ceaa649ed0>
+
+    def test_sometimes_while_condition_false_condition(self):
+        """Test sometimes_while_condition with false condition."""
+        from kinda.langs.python.runtime.fuzzy import sometimes_while_condition
+    
+        result = sometimes_while_condition(lambda: False)
+>       assert result is False
+E       assert True is False
+
+tests/python/test_fuzzy_runtime_comprehensive_coverage.py:882: AssertionError
+--------------------------- Captured stdout teardown ---------------------------
+[PYTEST] ✨ ~sorta completed test_sometimes_while_condition_false_condition (personality: playful)
+_ TestSometimesWhileCondition.test_sometimes_while_condition_exception_handling _
+
+self = <tests.python.test_fuzzy_runtime_comprehensive_coverage.TestSometimesWhileCondition object at 0x77ceaa64a920>
+
+    def test_sometimes_while_condition_exception_handling(self):
+        """Test sometimes_while_condition exception handling."""
+        from kinda.langs.python.runtime.fuzzy import sometimes_while_condition
+    
+        def failing_condition():
+            raise ValueError("Condition failed")
+    
+        with patch("builtins.print") as mock_print:
+            result = sometimes_while_condition(failing_condition)
+>           assert result is False
+E           assert True is False
+
+tests/python/test_fuzzy_runtime_comprehensive_coverage.py:901: AssertionError
+--------------------------- Captured stdout teardown ---------------------------
+[PYTEST] ✨ ~sorta completed test_sometimes_while_condition_exception_handling (personality: playful)
+________________ TestIshValue.test_ish_value_exception_handling ________________
+
+self = <tests.python.test_fuzzy_runtime_comprehensive_coverage.TestIshValue object at 0x77ceaa6435b0>
+
+    def test_ish_value_exception_handling(self):
+        """Test ish_value exception handling."""
+        from kinda.langs.python.runtime.fuzzy import ish_value
+    
+        with patch(
+            "kinda.langs.python.runtime.fuzzy.kinda_float", side_effect=Exception("Float failed")
+        ):
+            with patch("builtins.print") as mock_print:
+>               result = ish_value(42)
+
+tests/python/test_fuzzy_runtime_comprehensive_coverage.py:1183: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+kinda/langs/python/runtime/fuzzy.py:444: in ish_value
+    return kinda_float(val if val is not None else target_val if target_val is not None else 0)
+/usr/lib/python3.10/unittest/mock.py:1114: in __call__
+    return self._mock_call(*args, **kwargs)
+/usr/lib/python3.10/unittest/mock.py:1118: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+/usr/lib/python3.10/unittest/mock.py:1173: in _execute_mock_call
+    raise effect
+kinda/langs/python/runtime/fuzzy.py:406: in ish_value
+    fuzzy_variance = kinda_float(variance_base)
+/usr/lib/python3.10/unittest/mock.py:1114: in __call__
+    return self._mock_call(*args, **kwargs)
+/usr/lib/python3.10/unittest/mock.py:1118: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <MagicMock name='kinda_float' id='131729499509024'>, args = (2.0,)
+kwargs = {}, effect = Exception('Float failed')
+
+    def _execute_mock_call(self, /, *args, **kwargs):
+        # separate from _increment_mock_call so that awaited functions are
+        # executed separately from their call, also AsyncMock overrides this method
+    
+        effect = self.side_effect
+        if effect is not None:
+            if _is_exception(effect):
+>               raise effect
+E               Exception: Float failed
+
+/usr/lib/python3.10/unittest/mock.py:1173: Exception
+--------------------------- Captured stdout teardown ---------------------------
+[PYTEST] ✨ ~sorta completed test_ish_value_exception_handling (personality: friendly)
+__ TestSortaPrintCompositionCoverage.test_sorta_print_empty_args_no_execution __
+
+self = <tests.python.test_fuzzy_runtime_comprehensive_coverage.TestSortaPrintCompositionCoverage object at 0x77ceaa642680>
+
+    def test_sorta_print_empty_args_no_execution(self):
+        """Test sorta_print with empty args - no execution path."""
+        from kinda.langs.python.runtime.fuzzy import sorta_print
+    
+        PersonalityContext._instance = PersonalityContext("chaotic", 7, seed=222)
+    
+        # Force no execution by mocking gates to return False
+        with patch("kinda.langs.python.runtime.fuzzy.sometimes", return_value=False):
+            with patch("kinda.langs.python.runtime.fuzzy.maybe", return_value=False):
+                with patch("builtins.print") as mock_print:
+                    sorta_print()
+                    # Should have printed something (fallback or bridge)
+>                   assert mock_print.call_count > 0
+E                   AssertionError: assert 0 > 0
+E                    +  where 0 = <MagicMock name='print' id='131729495184128'>.call_count
+
+tests/python/test_fuzzy_runtime_comprehensive_coverage.py:1243: AssertionError
+--------------------------- Captured stdout teardown ---------------------------
+[PYTEST] ✨ ~sorta completed test_sorta_print_empty_args_no_execution (personality: chaotic)
+_ TestSortaPrintCompositionCoverage.test_sorta_print_chaotic_personality_bridge _
+
+self = <tests.python.test_fuzzy_runtime_comprehensive_coverage.TestSortaPrintCompositionCoverage object at 0x77ceaa6422c0>
+
+    def test_sorta_print_chaotic_personality_bridge(self):
+        """Test sorta_print with chaotic personality bridge probability."""
+        from kinda.langs.python.runtime.fuzzy import sorta_print
+    
+        PersonalityContext._instance = PersonalityContext("chaotic", 8, seed=333)
+    
+        # Mock gates to fail but trigger bridge probability
+        with patch("kinda.langs.python.runtime.fuzzy.sometimes", return_value=False):
+            with patch("kinda.langs.python.runtime.fuzzy.maybe", return_value=False):
+>               with patch(
+                    "kinda.personality.PersonalityContext.chaos_random", return_value=0.1
+                ):  # < 0.2 bridge prob
+
+tests/python/test_fuzzy_runtime_comprehensive_coverage.py:1273: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib/python3.10/unittest/mock.py:1447: in __enter__
+    original, local = self.get_original()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <unittest.mock._patch object at 0x77cea9cc4df0>
+
+    def get_original(self):
+        target = self.getter()
+        name = self.attribute
+    
+        original = DEFAULT
+        local = False
+    
+        try:
+            original = target.__dict__[name]
+        except (AttributeError, KeyError):
+            original = getattr(target, name, DEFAULT)
+        else:
+            local = True
+    
+        if name in _builtins and isinstance(target, ModuleType):
+            self.create = True
+    
+        if not self.create and original is DEFAULT:
+>           raise AttributeError(
+                "%s does not have the attribute %r" % (target, name)
+            )
+E           AttributeError: <class 'kinda.personality.PersonalityContext'> does not have the attribute 'chaos_random'
+
+/usr/lib/python3.10/unittest/mock.py:1420: AttributeError
+___ TestBoundaryInteractions.test_kinda_repeat_eventually_until_interaction ____
+
+self = <tests.python.test_repetition_edge_cases.TestBoundaryInteractions object at 0x77ceaa4dfdc0>
+
+        def test_kinda_repeat_eventually_until_interaction(self):
+            """Test interaction between ~kinda_repeat and ~eventually_until with shared state"""
+            PersonalityContext.set_mood("reliable")  # Use reliable for more predictable behavior
+            PersonalityContext.set_seed(2100)
+    
+            test_code = """
+    import sys
+    import os
+    sys.path.insert(0, os.path.abspath('.'))
+    
+    # Shared state between constructs
+    shared_counter = 0
+    
+    ~kinda_repeat(3):
+        local_target = shared_counter + 5
+        ~eventually_until shared_counter >= local_target:
+            shared_counter += 1
+    
+    print(f"FINAL_COUNTER:{shared_counter}")
+    """
+    
+            with tempfile.NamedTemporaryFile(mode="w", suffix=".knda", delete=False) as f:
+                f.write(test_code)
+                f.flush()
+    
+                try:
+                    result = run(
+                        ["python3", "-m", "kinda", "run", f.name],
+                        capture_output=True,
+                        text=True,
+                        timeout=20,
+                        cwd=os.getcwd(),
+                    )
+    
+                    assert result.returncode == 0, f"Shared state interaction failed: {result.stderr}"
+    
+                    output_lines = result.stdout.strip().split("\n")
+                    counter_line = [line for line in output_lines if line.startswith("FINAL_COUNTER:")]
+                    assert len(counter_line) == 1
+    
+                    final_counter = int(counter_line[0].split(":")[1])
+    
+                    # Each outer loop should add ~5 to counter, with 3 loops total
+                    # Expected: ~15 with some variance
+>                   assert (
+                        10 <= final_counter <= 25
+                    ), f"Shared state result out of range: {final_counter}"
+E                   AssertionError: Shared state result out of range: 30
+E                   assert 30 <= 25
+
+tests/python/test_repetition_edge_cases.py:620: AssertionError
+---------------------------- Captured stdout setup -----------------------------
+
+[PYTEST] 🎲 Running test_kinda_repeat_eventually_until_interaction with playful personality (chaos: 8)
+--------------------------- Captured stdout teardown ---------------------------
+[PYTEST] ✨ ~sorta completed test_kinda_repeat_eventually_until_interaction (personality: reliable)
+__ TestRepetitionWithFuzzyValues.test_eventually_until_with_fuzzy_comparison ___
+
+self = <tests.python.test_repetition_integration.TestRepetitionWithFuzzyValues object at 0x77ceaa50ceb0>
+
+        def test_eventually_until_with_fuzzy_comparison(self):
+            """Test ~eventually_until with ~ish fuzzy comparisons"""
+            PersonalityContext.set_mood("reliable")  # Use reliable for more deterministic behavior
+            PersonalityContext.set_seed(500)
+    
+            test_code = """
+    import sys
+    import os
+    sys.path.insert(0, os.path.abspath('.'))
+    
+    counter = 0
+    target = 25~ish
+    ~eventually_until counter ~ish target:
+        counter += 1
+    
+    print(f"COUNTER:{counter}")
+    print(f"TARGET:{target:.2f}")
+    """
+    
+            with tempfile.NamedTemporaryFile(mode="w", suffix=".knda", delete=False) as f:
+                f.write(test_code)
+                f.flush()
+    
+                try:
+>                   result = run(
+                        ["python3", "-m", "kinda", "run", f.name],
+                        capture_output=True,
+                        text=True,
+                        timeout=25,
+                        cwd=os.getcwd(),
+                    )
+
+tests/python/test_repetition_integration.py:288: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib/python3.10/subprocess.py:505: in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+/usr/lib/python3.10/subprocess.py:1154: in communicate
+    stdout, stderr = self._communicate(input, endtime, timeout)
+/usr/lib/python3.10/subprocess.py:2022: in _communicate
+    self._check_timeout(endtime, orig_timeout, stdout, stderr)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <Popen: returncode: -9 args: ['python3', '-m', 'kinda', 'run', '/tmp/tmplghv...>
+endtime = 314769.068913298, orig_timeout = 25, stdout_seq = [], stderr_seq = []
+skip_check_and_raise = False
+
+    def _check_timeout(self, endtime, orig_timeout, stdout_seq, stderr_seq,
+                       skip_check_and_raise=False):
+        """Convenience for checking if a timeout has expired."""
+        if endtime is None:
+            return
+        if skip_check_and_raise or _time() > endtime:
+>           raise TimeoutExpired(
+                    self.args, orig_timeout,
+                    output=b''.join(stdout_seq) if stdout_seq else None,
+                    stderr=b''.join(stderr_seq) if stderr_seq else None)
+E           subprocess.TimeoutExpired: Command '['python3', '-m', 'kinda', 'run', '/tmp/tmplghv5ger.knda']' timed out after 25 seconds
+
+/usr/lib/python3.10/subprocess.py:1198: TimeoutExpired
+--------------------------- Captured stdout teardown ---------------------------
+[PYTEST] ✨ ~sorta completed test_eventually_until_with_fuzzy_comparison (personality: reliable)
+=============================== warnings summary ===============================
+tests/documentation/test_performance_examples.py:409
+  /home/testuser/kinda-lang/tests/documentation/test_performance_examples.py:409: PytestUnknownMarkWarning: Unknown pytest.mark.slow - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.slow
+
+tests/documentation/test_probabilistic_control_flow_examples.py:360
+  /home/testuser/kinda-lang/tests/documentation/test_probabilistic_control_flow_examples.py:360: PytestUnknownMarkWarning: Unknown pytest.mark.slow - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.slow
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+================================ tests coverage ================================
+_______________ coverage: platform linux, python 3.10.12-final-0 _______________
+
+Name                                     Stmts   Miss  Cover   Missing
+----------------------------------------------------------------------
+kinda/__init__.py                            0      0   100%
+kinda/__main__.py                            3      3     0%   3-6
+kinda/cli.py                               608    262    57%   13, 49-51, 68-76, 84, 299-302, 307-310, 568-572, 574-578, 580-582, 613-614, 644-651, 653-657, 661-665, 680-681, 726-810, 814-917, 921-1143, 1157
+kinda/grammar/__init__.py                    0      0   100%
+kinda/grammar/python/constructs.py           3      0   100%
+kinda/grammar/python/matchers.py           457     54    88%   30, 83, 95-96, 99-100, 178, 206-208, 228, 271, 309-311, 314-316, 320-322, 337-340, 405, 526, 543-544, 547-548, 568-569, 571, 573-577, 591, 635, 640-643, 653, 669-670, 673-674, 692, 694, 710, 729, 732, 735
+kinda/interpreter/__init__.py                0      0   100%
+kinda/interpreter/__main__.py                3      1    67%   4
+kinda/interpreter/repl.py                   37      3    92%   24, 28, 53
+kinda/langs/__init__.py                      0      0   100%
+kinda/langs/python/__init__.py               0      0   100%
+kinda/langs/python/runtime/__init__.py       0      0   100%
+kinda/langs/python/runtime/fuzzy.py        800    104    87%   50, 52, 75, 77, 81, 87-91, 153, 155, 159, 165-169, 229-234, 294, 307-310, 429-431, 606, 622, 657, 715-716, 741, 777, 805-807, 813-814, 820-824, 830-852, 869-870, 895, 913-923, 931, 948-949, 956-960, 972-975, 977-980, 1117, 1119, 1123, 1136, 1138, 1142
+kinda/langs/python/runtime_gen.py           57      6    89%   59, 106-115
+kinda/langs/python/semantics.py             30      1    97%   41
+kinda/langs/python/transformer.py          405     60    85%   43-49, 83-84, 97, 102, 105-106, 139-140, 164, 168-174, 178-179, 246, 364-366, 418, 466-468, 471-474, 477-480, 483-487, 490-492, 534, 559-560, 575, 593-594, 601-602, 610, 618, 642, 650, 690, 696-700, 715-716
+kinda/personality.py                       397     43    89%   84, 136-138, 184, 214-215, 225-228, 232, 236-238, 242, 246, 250, 432-435, 448, 452, 456, 460, 676, 686, 690, 694-699, 733-738, 747, 751, 820, 825
+kinda/record_replay.py                     421    106    75%   123, 131, 191, 195, 222, 229, 249, 278, 295, 317-320, 339, 343, 353, 357, 362, 376-409, 416, 498, 504, 510, 522, 528, 530, 536, 542, 586, 590, 623-626, 643-646, 653-656, 663-672, 679-690, 697-707, 800, 824, 843-853, 873, 882, 911, 915, 918-924, 939-950, 987-988, 997-999, 1005, 1013
+kinda/run.py                                21      0   100%
+kinda/security.py                           83      5    94%   137, 180-181, 255-258
+----------------------------------------------------------------------
+TOTAL                                     3325    648    81%
+=========================== short test summary info ============================
+FAILED tests/python/test_fuzzy_runtime_comprehensive_coverage.py::TestAssertEventually::test_assert_eventually_timeout_failure
+FAILED tests/python/test_fuzzy_runtime_comprehensive_coverage.py::TestAssertEventually::test_assert_eventually_exception_handling
+FAILED tests/python/test_fuzzy_runtime_comprehensive_coverage.py::TestAssertProbability::test_assert_probability_success
+FAILED tests/python/test_fuzzy_runtime_comprehensive_coverage.py::TestAssertProbability::test_assert_probability_failure
+FAILED tests/python/test_fuzzy_runtime_comprehensive_coverage.py::TestAssertProbability::test_assert_probability_invalid_parameters
+FAILED tests/python/test_fuzzy_runtime_comprehensive_coverage.py::TestAssertProbability::test_assert_probability_samples_limit
+FAILED tests/python/test_fuzzy_runtime_comprehensive_coverage.py::TestDriftAccess::test_drift_access_none_value
+FAILED tests/python/test_fuzzy_runtime_comprehensive_coverage.py::TestEventuallyUntil::test_eventually_until_max_iterations
+FAILED tests/python/test_fuzzy_runtime_comprehensive_coverage.py::TestEventuallyUntil::test_eventually_until_body_exception
+FAILED tests/python/test_fuzzy_runtime_comprehensive_coverage.py::TestEventuallyUntilCondition::test_eventually_until_condition_exception_handling
+FAILED tests/python/test_fuzzy_runtime_comprehensive_coverage.py::TestKindaMood::test_kinda_mood_exception_handling
+FAILED tests/python/test_fuzzy_runtime_comprehensive_coverage.py::TestKindaRepeat::test_kinda_repeat_exception_handling
+FAILED tests/python/test_fuzzy_runtime_comprehensive_coverage.py::TestMaybeFor::test_maybe_for_exception_handling
+FAILED tests/python/test_fuzzy_runtime_comprehensive_coverage.py::TestSometimesWhile::test_sometimes_while_max_iterations
+FAILED tests/python/test_fuzzy_runtime_comprehensive_coverage.py::TestSometimesWhile::test_sometimes_while_exception_handling
+FAILED tests/python/test_fuzzy_runtime_comprehensive_coverage.py::TestSometimesWhileCondition::test_sometimes_while_condition_false_condition
+FAILED tests/python/test_fuzzy_runtime_comprehensive_coverage.py::TestSometimesWhileCondition::test_sometimes_while_condition_exception_handling
+FAILED tests/python/test_fuzzy_runtime_comprehensive_coverage.py::TestIshValue::test_ish_value_exception_handling
+FAILED tests/python/test_fuzzy_runtime_comprehensive_coverage.py::TestSortaPrintCompositionCoverage::test_sorta_print_empty_args_no_execution
+FAILED tests/python/test_fuzzy_runtime_comprehensive_coverage.py::TestSortaPrintCompositionCoverage::test_sorta_print_chaotic_personality_bridge
+FAILED tests/python/test_repetition_edge_cases.py::TestBoundaryInteractions::test_kinda_repeat_eventually_until_interaction
+FAILED tests/python/test_repetition_integration.py::TestRepetitionWithFuzzyValues::test_eventually_until_with_fuzzy_comparison
+====== 22 failed, 1034 passed, 98 skipped, 2 warnings in 87.57s (0:01:27) ======

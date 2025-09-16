@@ -220,7 +220,7 @@ class TestMaybeRuntimeBehavior:
             sys.path.insert(0, str(temp_path))
 
             try:
-                from fuzzy import maybe
+                from fuzzy import maybe  # type: ignore[import-not-found]
 
                 result = maybe(True)
                 assert (
@@ -253,7 +253,7 @@ class TestMaybeRuntimeBehavior:
             sys.path.insert(0, str(temp_path))
 
             try:
-                from fuzzy import maybe
+                from fuzzy import maybe  # type: ignore[import-not-found]
 
                 result = maybe(True)
                 assert result == False  # Should not execute when random >= 0.6
@@ -283,7 +283,7 @@ class TestMaybeRuntimeBehavior:
             sys.path.insert(0, str(temp_path))
 
             try:
-                from fuzzy import maybe
+                from fuzzy import maybe  # type: ignore[import-not-found]
 
                 result = maybe(False)  # False condition
                 assert result == False  # Should not execute when condition is False

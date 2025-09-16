@@ -8,6 +8,7 @@ Transforms .knda files to native C code with fuzzy logic support.
 import re
 import sys
 from pathlib import Path
+from typing import Any
 from typing import List, Set
 from kinda.grammar.c.matchers_c import match_c_construct
 from kinda.grammar.c.constructs_c import KindaCConstructs
@@ -69,7 +70,7 @@ def transform_line(line: str) -> List[str]:
         return [original_line]
 
     key, groups = match_c_construct(stripped)
-    if not key:
+    if not key or groups is None:
         return [original_line]
 
     if key == "kinda_int":
@@ -149,7 +150,7 @@ def transform_line(line: str) -> List[str]:
     return [original_line.replace(stripped, transformed_code)]
 
 
-def transform_file(path: Path, target_language="c") -> str:
+def transform_file(path: Path, target_language: str = "c") -> str:
     """Transform a .knda file to C code."""
     lines = path.read_text().splitlines()
     output_lines = []

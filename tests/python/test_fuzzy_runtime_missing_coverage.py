@@ -1,14 +1,15 @@
 """
 Test coverage for missing functions in runtime/fuzzy.py
-DISABLED: Persistent CI import issues with runtime generation
+DISABLED: Function signature mismatches - using new comprehensive test file instead
 """
 
 import pytest
 
-# Skip entire file - runtime generation inconsistent in CI
-pytestmark = pytest.mark.skip(
-    "runtime generation inconsistent in CI - skipping runtime coverage tests"
-)
+pytestmark = pytest.mark.skip("Disabled - using new comprehensive test file instead")
+import sys
+from io import StringIO
+from unittest.mock import patch
+from kinda.langs.python.runtime.fuzzy import ish_comparison, ish_value, welp_fallback, env
 
 
 class TestIshComparison:

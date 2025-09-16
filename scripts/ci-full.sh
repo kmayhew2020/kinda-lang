@@ -44,7 +44,15 @@ black --check --diff . || {
 }
 print_success "Black formatting check passed"
 
-# 3. Run tests with coverage (matches CI)
+# 3. MyPy type checking (new requirement) - exclude auto-generated files
+print_status "Run MyPy type checking..."
+mypy kinda/cli.py kinda/run.py kinda/security.py kinda/personality.py kinda/record_replay.py kinda/grammar/ kinda/interpreter/ kinda/langs/python/transformer.py kinda/langs/python/semantics.py kinda/langs/python/runtime_gen.py --ignore-missing-imports || {
+    print_error "MyPy type checking failed"
+    exit 1
+}
+print_success "MyPy type checking passed"
+
+# 4. Run tests with coverage (matches CI)
 print_status "Run tests with coverage..."
 pytest --cov=kinda --cov-report=term-missing tests/ --tb=short || {
     print_error "Test suite failed"
@@ -52,14 +60,14 @@ pytest --cov=kinda --cov-report=term-missing tests/ --tb=short || {
 }
 print_success "Test suite passed with coverage"
 
-# 4. Test CLI commands (matches CI)
+# 5. Test CLI commands (matches CI)
 print_status "Test kinda CLI commands..."
 kinda --help > /dev/null || { print_error "CLI help failed"; exit 1; }
 kinda examples > /dev/null || { print_error "CLI examples failed"; exit 1; }
 kinda syntax > /dev/null || { print_error "CLI syntax failed"; exit 1; }
 print_success "CLI commands functional"
 
-# 5. Example smoke tests (matches CI, Unix version)
+# 6. Example smoke tests (matches CI, Unix version)
 print_status "Example Smoke Tests..."
 print_status "  → Testing core examples..."
 kinda run examples/python/unified_syntax.py.knda || { print_error "unified_syntax example failed"; exit 1; }
@@ -77,7 +85,7 @@ timeout 30s kinda run examples/python/comprehensive/chaos_arena2_complete.py.knd
 }
 print_success "Example smoke tests completed"
 
-# 6. Additional local-only enhancements
+# 7. Additional local-only enhancements
 print_status "Additional local CI enhancements..."
 
 # Test with different chaos levels and seeds (local advantage)

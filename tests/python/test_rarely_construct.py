@@ -223,7 +223,7 @@ class TestRarelyRuntimeBehavior:
                 if "fuzzy" in sys.modules:
                     del sys.modules["fuzzy"]
 
-                from fuzzy import rarely
+                from fuzzy import rarely  # type: ignore[import-not-found]
 
                 # Test that function returns boolean values (basic functionality)
                 result1 = rarely(True)
@@ -286,7 +286,7 @@ class TestRarelyRuntimeBehavior:
                 if "fuzzy" in sys.modules:
                     del sys.modules["fuzzy"]
 
-                from fuzzy import rarely
+                from fuzzy import rarely  # type: ignore[import-not-found]
 
                 # Test statistical behavior over multiple calls
                 # With 15% probability, we should get mostly False with occasional True
@@ -343,7 +343,7 @@ class TestRarelyRuntimeBehavior:
                 if "fuzzy" in sys.modules:
                     del sys.modules["fuzzy"]
 
-                from fuzzy import rarely
+                from fuzzy import rarely  # type: ignore[import-not-found]
 
                 # Test that False condition always returns False
                 # Run multiple times to ensure consistency
