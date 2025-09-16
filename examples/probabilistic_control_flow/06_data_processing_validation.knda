@@ -1,0 +1,589 @@
+# Data Processing with Probabilistic Validation
+# Real-world example: Data validation pipeline with fuzzy quality checks
+# Demonstrates: ~maybe_for, ~eventually_until for data quality assurance
+
+import random
+import time
+import json
+import statistics
+from dataclasses import dataclass
+from typing import List, Dict, Optional, Tuple
+from datetime import datetime, timedelta
+
+@dataclass
+class DataQualityMetrics:
+    completeness_score: float  # 0-1, how complete the data is
+    accuracy_score: float      # 0-1, how accurate the data appears
+    consistency_score: float   # 0-1, how consistent with patterns
+    timeliness_score: float    # 0-1, how fresh/relevant the data is
+    validity_score: float      # 0-1, how valid the format/values are
+
+    def overall_quality(self) -> float:
+        """Calculate weighted overall quality score"""
+        weights = [0.25, 0.30, 0.20, 0.15, 0.10]  # Prioritize accuracy and completeness
+        scores = [self.completeness_score, self.accuracy_score,
+                 self.consistency_score, self.timeliness_score, self.validity_score]
+        return sum(w * s for w, s in zip(weights, scores))
+
+class DataRecord:
+    def __init__(self, record_id: str, data: Dict):
+        self.record_id = record_id
+        self.raw_data = data
+        self.quality_metrics = None
+        self.validation_history = []
+        self.processing_flags = []
+        self.final_quality_score = 0.0
+        self.is_approved = False
+
+    def add_validation_result(self, validator_name: str, passed: bool, details: str = ""):
+        """Add validation result to history"""
+        self.validation_history.append({
+            "validator": validator_name,
+            "passed": passed,
+            "details": details,
+            "timestamp": time.time()
+        })
+
+class DataValidator:
+    def __init__(self):
+        self.validation_stats = {
+            "records_processed": 0,
+            "records_approved": 0,
+            "records_rejected": 0,
+            "average_quality": 0.0,
+            "validation_time": 0.0
+        }
+
+    def generate_sample_data(self, count: int) -> List[DataRecord]:
+        """Generate sample data with varying quality levels"""
+        records = []
+
+        for i in range(count):
+            # Simulate different data quality scenarios
+            quality_tier = random.choices(
+                ["high", "medium", "low", "poor"],
+                weights=[40, 35, 20, 5]
+            )[0]
+
+            if quality_tier == "high":
+                data = {
+                    "customer_id": random.randint(10000, 99999),
+                    "email": f"user{i}@example.com",
+                    "age": random.randint(18, 80),
+                    "purchase_amount": round(random.uniform(10.0, 1000.0), 2),
+                    "purchase_date": datetime.now() - timedelta(days=random.randint(1, 30)),
+                    "product_category": random.choice(["electronics", "clothing", "books", "home"]),
+                    "customer_tier": random.choice(["bronze", "silver", "gold", "platinum"]),
+                    "satisfaction_score": random.randint(4, 5)
+                }
+            elif quality_tier == "medium":
+                data = {
+                    "customer_id": random.randint(10000, 99999),
+                    "email": f"user{i}@example.com",
+                    "age": random.randint(18, 80),
+                    "purchase_amount": round(random.uniform(10.0, 1000.0), 2),
+                    "purchase_date": datetime.now() - timedelta(days=random.randint(1, 60)),
+                    "product_category": random.choice(["electronics", "clothing", "books", "home"]),
+                    # Missing customer_tier and satisfaction_score
+                }
+            elif quality_tier == "low":
+                data = {
+                    "customer_id": random.randint(10000, 99999),
+                    "email": f"user{i}_invalid_email",  # Invalid email format
+                    "age": random.randint(-5, 120),  # Invalid age range
+                    "purchase_amount": round(random.uniform(-50.0, 1000.0), 2),  # Negative amounts
+                    "purchase_date": datetime.now() - timedelta(days=random.randint(1, 365)),
+                    "product_category": random.choice(["electronics", "clothing", "unknown", "misc"]),
+                }
+            else:  # poor quality
+                data = {
+                    "customer_id": "INVALID_ID",  # Non-numeric ID
+                    "email": None,  # Missing email
+                    "age": "unknown",  # String instead of number
+                    "purchase_amount": "not_a_number",  # Invalid amount
+                    "purchase_date": "invalid_date",  # Invalid date
+                    "product_category": "",  # Empty category
+                }
+
+            records.append(DataRecord(f"rec_{i+1:04d}", data))
+
+        return records
+
+    def validate_completeness(self, record: DataRecord) -> float:
+        """Check data completeness"""
+        required_fields = ["customer_id", "email", "age", "purchase_amount", "purchase_date"]
+        optional_fields = ["product_category", "customer_tier", "satisfaction_score"]
+
+        present_required = sum(1 for field in required_fields if field in record.raw_data and record.raw_data[field] is not None)
+        present_optional = sum(1 for field in optional_fields if field in record.raw_data and record.raw_data[field] is not None)
+
+        required_score = present_required / len(required_fields)
+        optional_score = present_optional / len(optional_fields)
+
+        completeness = 0.8 * required_score + 0.2 * optional_score
+
+        passed = completeness >= 0.7
+        record.add_validation_result("completeness", passed, f"Score: {completeness:.2f}")
+
+        return completeness
+
+    def validate_accuracy(self, record: DataRecord) -> float:
+        """Check data accuracy and format validity"""
+        accuracy_score = 1.0
+        checks = []
+
+        # Email format check
+        if "email" in record.raw_data and record.raw_data["email"]:
+            email = str(record.raw_data["email"])
+            if "@" in email and "." in email.split("@")[-1]:
+                checks.append(1.0)
+            else:
+                checks.append(0.0)
+
+        # Age range check
+        if "age" in record.raw_data:
+            try:
+                age = int(record.raw_data["age"])
+                if 0 <= age <= 120:
+                    checks.append(1.0)
+                else:
+                    checks.append(0.0)
+            except (ValueError, TypeError):
+                checks.append(0.0)
+
+        # Purchase amount check
+        if "purchase_amount" in record.raw_data:
+            try:
+                amount = float(record.raw_data["purchase_amount"])
+                if amount >= 0:
+                    checks.append(1.0)
+                else:
+                    checks.append(0.5)  # Negative amounts might be refunds
+            except (ValueError, TypeError):
+                checks.append(0.0)
+
+        # Customer ID check
+        if "customer_id" in record.raw_data:
+            try:
+                customer_id = int(record.raw_data["customer_id"])
+                if 10000 <= customer_id <= 99999:  # Expected range
+                    checks.append(1.0)
+                else:
+                    checks.append(0.7)  # Valid number, unexpected range
+            except (ValueError, TypeError):
+                checks.append(0.0)
+
+        accuracy_score = sum(checks) / len(checks) if checks else 0.0
+        passed = accuracy_score >= 0.8
+        record.add_validation_result("accuracy", passed, f"Score: {accuracy_score:.2f}")
+
+        return accuracy_score
+
+    def validate_consistency(self, record: DataRecord, context_records: List[DataRecord]) -> float:
+        """Check data consistency with other records"""
+        if not context_records:
+            return 1.0
+
+        consistency_checks = []
+
+        # Check if customer_tier matches purchase_amount patterns
+        if "purchase_amount" in record.raw_data and "customer_tier" in record.raw_data:
+            try:
+                amount = float(record.raw_data["purchase_amount"])
+                tier = record.raw_data["customer_tier"]
+
+                # Define expected ranges for tiers
+                tier_ranges = {
+                    "bronze": (0, 100),
+                    "silver": (50, 300),
+                    "gold": (200, 800),
+                    "platinum": (500, 2000)
+                }
+
+                if tier in tier_ranges:
+                    min_amt, max_amt = tier_ranges[tier]
+                    if min_amt <= amount <= max_amt:
+                        consistency_checks.append(1.0)
+                    else:
+                        consistency_checks.append(0.6)  # Inconsistent but not impossible
+                else:
+                    consistency_checks.append(0.8)  # Unknown tier
+            except (ValueError, TypeError):
+                consistency_checks.append(0.0)
+
+        # Check age vs satisfaction correlation (older customers might be more satisfied)
+        if "age" in record.raw_data and "satisfaction_score" in record.raw_data:
+            try:
+                age = int(record.raw_data["age"])
+                satisfaction = int(record.raw_data["satisfaction_score"])
+
+                # Simple heuristic: older customers tend to have higher satisfaction
+                expected_satisfaction = 3 + (age / 100)  # Base 3, increases with age
+                diff = abs(satisfaction - expected_satisfaction)
+
+                if diff <= 1:
+                    consistency_checks.append(1.0)
+                elif diff <= 2:
+                    consistency_checks.append(0.7)
+                else:
+                    consistency_checks.append(0.4)
+            except (ValueError, TypeError):
+                consistency_checks.append(0.0)
+
+        consistency_score = sum(consistency_checks) / len(consistency_checks) if consistency_checks else 0.8
+        passed = consistency_score >= 0.6
+        record.add_validation_result("consistency", passed, f"Score: {consistency_score:.2f}")
+
+        return consistency_score
+
+    def validate_timeliness(self, record: DataRecord) -> float:
+        """Check data freshness and relevance"""
+        if "purchase_date" not in record.raw_data:
+            return 0.5
+
+        try:
+            if isinstance(record.raw_data["purchase_date"], datetime):
+                purchase_date = record.raw_data["purchase_date"]
+            else:
+                # Try to parse string date
+                purchase_date = datetime.fromisoformat(str(record.raw_data["purchase_date"]))
+
+            days_old = (datetime.now() - purchase_date).days
+
+            if days_old <= 7:
+                timeliness_score = 1.0
+            elif days_old <= 30:
+                timeliness_score = 0.9
+            elif days_old <= 90:
+                timeliness_score = 0.7
+            elif days_old <= 365:
+                timeliness_score = 0.5
+            else:
+                timeliness_score = 0.2
+
+            passed = timeliness_score >= 0.6
+            record.add_validation_result("timeliness", passed, f"Score: {timeliness_score:.2f}, Age: {days_old} days")
+
+            return timeliness_score
+
+        except (ValueError, TypeError) as e:
+            record.add_validation_result("timeliness", False, f"Date parsing error: {e}")
+            return 0.0
+
+    def validate_business_rules(self, record: DataRecord) -> float:
+        """Apply business-specific validation rules"""
+        business_score = 1.0
+        violations = []
+
+        # Rule 1: High-value purchases should have customer tier data
+        try:
+            if "purchase_amount" in record.raw_data:
+                amount = float(record.raw_data["purchase_amount"])
+                if amount > 500 and "customer_tier" not in record.raw_data:
+                    violations.append("High-value purchase missing customer tier")
+                    business_score -= 0.3
+        except:
+            pass
+
+        # Rule 2: Platinum customers should have satisfaction scores
+        if record.raw_data.get("customer_tier") == "platinum":
+            if "satisfaction_score" not in record.raw_data:
+                violations.append("Platinum customer missing satisfaction score")
+                business_score -= 0.4
+
+        # Rule 3: Recent purchases should have complete data
+        try:
+            if "purchase_date" in record.raw_data:
+                if isinstance(record.raw_data["purchase_date"], datetime):
+                    days_old = (datetime.now() - record.raw_data["purchase_date"]).days
+                    if days_old <= 7:
+                        required_fields = ["email", "product_category"]
+                        missing = [f for f in required_fields if f not in record.raw_data or not record.raw_data[f]]
+                        if missing:
+                            violations.append(f"Recent purchase missing: {', '.join(missing)}")
+                            business_score -= 0.2 * len(missing)
+        except:
+            pass
+
+        business_score = max(0.0, business_score)
+        passed = business_score >= 0.7
+        details = f"Score: {business_score:.2f}"
+        if violations:
+            details += f", Violations: {'; '.join(violations)}"
+
+        record.add_validation_result("business_rules", passed, details)
+        return business_score
+
+    def comprehensive_validation(self, records: List[DataRecord]) -> List[DataRecord]:
+        """Run comprehensive validation on all records"""
+        print(f"\\n=== Comprehensive Data Validation ===")
+        print(f"Validating {len(records)} records...")
+
+        validated_records = []
+        validation_start = time.time()
+
+        # Process records with probabilistic validation intensity
+        ~maybe_for record in records:
+            print(f"\\nValidating {record.record_id}...")
+
+            # Run all validation checks
+            completeness = self.validate_completeness(record)
+            accuracy = self.validate_accuracy(record)
+
+            # For consistency, we need context records
+            context_sample = random.sample(validated_records, min(10, len(validated_records)))
+            consistency = self.validate_consistency(record, context_sample)
+
+            timeliness = self.validate_timeliness(record)
+
+            # Business rules validation might be applied fuzzy number of times
+            business_scores = []
+            ~kinda_repeat(2):  # Run business validation 1-3 times for thoroughness
+                business_scores.append(self.validate_business_rules(record))
+
+            business_score = statistics.mean(business_scores) if business_scores else 0.0
+
+            # Calculate overall quality metrics
+            record.quality_metrics = DataQualityMetrics(
+                completeness_score=completeness,
+                accuracy_score=accuracy,
+                consistency_score=consistency,
+                timeliness_score=timeliness,
+                validity_score=business_score
+            )
+
+            record.final_quality_score = record.quality_metrics.overall_quality()
+
+            # Determine approval status
+            quality_threshold = 0.7
+            record.is_approved = record.final_quality_score >= quality_threshold
+
+            status = "✓ APPROVED" if record.is_approved else "✗ REJECTED"
+            print(f"  {status} - Quality: {record.final_quality_score:.3f}")
+
+            validated_records.append(record)
+            self.validation_stats["records_processed"] += 1
+
+            if record.is_approved:
+                self.validation_stats["records_approved"] += 1
+            else:
+                self.validation_stats["records_rejected"] += 1
+
+        # Update statistics
+        total_quality = sum(r.final_quality_score for r in validated_records)
+        self.validation_stats["average_quality"] = total_quality / len(validated_records)
+        self.validation_stats["validation_time"] = time.time() - validation_start
+
+        return validated_records
+
+    def quality_improvement_cycle(self, records: List[DataRecord]) -> List[DataRecord]:
+        """Iteratively improve data quality until acceptable"""
+        print(f"\\n=== Quality Improvement Cycle ===")
+
+        improvement_cycle = 0
+        improved_records = records.copy()
+
+        # Keep improving until quality is acceptable across the dataset
+        ~eventually_until self.get_dataset_quality_score(improved_records) >= 0.75:
+            improvement_cycle += 1
+            print(f"\\nImprovement cycle {improvement_cycle}")
+
+            current_quality = self.get_dataset_quality_score(improved_records)
+            print(f"Current dataset quality: {current_quality:.3f}")
+
+            # Focus improvement efforts on lowest quality records
+            low_quality_records = [r for r in improved_records if r.final_quality_score < 0.6]
+
+            if low_quality_records:
+                print(f"Improving {len(low_quality_records)} low-quality records...")
+
+                ~maybe_for record in low_quality_records:
+                    print(f"  Improving {record.record_id} (quality: {record.final_quality_score:.3f})")
+
+                    # Apply various improvement techniques
+                    improvement_attempts = 0
+                    ~kinda_repeat(3):  # Try multiple improvement techniques
+                        improvement_attempts += 1
+                        improved = self.apply_data_improvements(record)
+                        if improved:
+                            print(f"    Applied improvement #{improvement_attempts}")
+
+                    # Re-validate after improvements
+                    self.re_validate_record(record, improved_records)
+                    print(f"    New quality: {record.final_quality_score:.3f}")
+
+            else:
+                print("No low-quality records found, checking medium-quality records...")
+                medium_quality = [r for r in improved_records if 0.6 <= r.final_quality_score < 0.8]
+                if medium_quality:
+                    # Apply lighter improvements to medium-quality records
+                    sample_size = min(5, len(medium_quality))
+                    for record in random.sample(medium_quality, sample_size):
+                        self.apply_data_improvements(record)
+                        self.re_validate_record(record, improved_records)
+
+            # Prevent infinite loops
+            if improvement_cycle >= 10:
+                print("Maximum improvement cycles reached")
+                break
+
+        final_quality = self.get_dataset_quality_score(improved_records)
+        print(f"\\nFinal dataset quality after {improvement_cycle} cycles: {final_quality:.3f}")
+
+        return improved_records
+
+    def apply_data_improvements(self, record: DataRecord) -> bool:
+        """Apply various data improvement techniques"""
+        improvements_made = False
+
+        # Fix common email issues
+        if "email" in record.raw_data and record.raw_data["email"]:
+            email = str(record.raw_data["email"])
+            if "@" not in email and "_" in email:
+                # Try to fix common email format issues
+                email = email.replace("_", "@", 1)
+                record.raw_data["email"] = email
+                record.processing_flags.append("email_format_fixed")
+                improvements_made = True
+
+        # Infer missing customer tier based on purchase amount
+        if "customer_tier" not in record.raw_data and "purchase_amount" in record.raw_data:
+            try:
+                amount = float(record.raw_data["purchase_amount"])
+                if amount >= 500:
+                    record.raw_data["customer_tier"] = "gold"
+                elif amount >= 200:
+                    record.raw_data["customer_tier"] = "silver"
+                else:
+                    record.raw_data["customer_tier"] = "bronze"
+                record.processing_flags.append("customer_tier_inferred")
+                improvements_made = True
+            except:
+                pass
+
+        # Fix age outliers
+        if "age" in record.raw_data:
+            try:
+                age = int(record.raw_data["age"])
+                if age < 0:
+                    record.raw_data["age"] = abs(age)  # Fix negative ages
+                    record.processing_flags.append("age_sign_corrected")
+                    improvements_made = True
+                elif age > 120:
+                    record.raw_data["age"] = min(age, 120)  # Cap unrealistic ages
+                    record.processing_flags.append("age_capped")
+                    improvements_made = True
+            except:
+                # Try to extract numeric age from string
+                age_str = str(record.raw_data["age"])
+                numeric_age = ''.join(filter(str.isdigit, age_str))
+                if numeric_age:
+                    record.raw_data["age"] = int(numeric_age)
+                    record.processing_flags.append("age_extracted_from_string")
+                    improvements_made = True
+
+        return improvements_made
+
+    def re_validate_record(self, record: DataRecord, all_records: List[DataRecord]):
+        """Re-run validation on an improved record"""
+        # Clear previous validation history for re-validation
+        record.validation_history = []
+
+        # Re-run all validations
+        completeness = self.validate_completeness(record)
+        accuracy = self.validate_accuracy(record)
+        consistency = self.validate_consistency(record, all_records[:50])  # Use sample for performance
+        timeliness = self.validate_timeliness(record)
+        business_score = self.validate_business_rules(record)
+
+        # Update quality metrics
+        record.quality_metrics = DataQualityMetrics(
+            completeness_score=completeness,
+            accuracy_score=accuracy,
+            consistency_score=consistency,
+            timeliness_score=timeliness,
+            validity_score=business_score
+        )
+
+        record.final_quality_score = record.quality_metrics.overall_quality()
+        record.is_approved = record.final_quality_score >= 0.7
+
+    def get_dataset_quality_score(self, records: List[DataRecord]) -> float:
+        """Calculate overall dataset quality score"""
+        if not records:
+            return 0.0
+
+        total_quality = sum(r.final_quality_score for r in records if hasattr(r, 'final_quality_score'))
+        return total_quality / len(records)
+
+    def print_validation_summary(self, records: List[DataRecord]):
+        """Print comprehensive validation summary"""
+        print(f"\\n=== Validation Summary ===")
+        print(f"Total Records: {len(records)}")
+        print(f"Approved: {sum(1 for r in records if r.is_approved)}")
+        print(f"Rejected: {sum(1 for r in records if not r.is_approved)}")
+        print(f"Average Quality: {self.get_dataset_quality_score(records):.3f}")
+
+        # Quality distribution
+        quality_ranges = {"High (>0.8)": 0, "Medium (0.6-0.8)": 0, "Low (<0.6)": 0}
+        for record in records:
+            if record.final_quality_score > 0.8:
+                quality_ranges["High (>0.8)"] += 1
+            elif record.final_quality_score >= 0.6:
+                quality_ranges["Medium (0.6-0.8)"] += 1
+            else:
+                quality_ranges["Low (<0.6)"] += 1
+
+        print("\\nQuality Distribution:")
+        for range_name, count in quality_ranges.items():
+            percentage = (count / len(records)) * 100
+            print(f"  {range_name}: {count} ({percentage:.1f}%)")
+
+        # Common improvement flags
+        all_flags = [flag for record in records for flag in record.processing_flags]
+        if all_flags:
+            from collections import Counter
+            flag_counts = Counter(all_flags)
+            print("\\nCommon Improvements Applied:")
+            for flag, count in flag_counts.most_common(5):
+                print(f"  {flag}: {count} records")
+
+def main():
+    print("=== Data Processing with Probabilistic Validation ===\\n")
+
+    # Set personality for data validation
+    ~kinda mood cautious  # Use cautious approach for data quality
+
+    validator = DataValidator()
+
+    # Generate sample dataset
+    print("Generating sample dataset...")
+    sample_size = 50
+    dataset = validator.generate_sample_data(sample_size)
+
+    # Run comprehensive validation
+    validated_dataset = validator.comprehensive_validation(dataset)
+
+    # Run quality improvement cycle
+    improved_dataset = validator.quality_improvement_cycle(validated_dataset)
+
+    # Print final results
+    validator.print_validation_summary(improved_dataset)
+
+    # Show some specific examples
+    print(f"\\n=== Example Records ===")
+    for record in improved_dataset[:3]:
+        print(f"\\nRecord {record.record_id}:")
+        print(f"  Quality: {record.final_quality_score:.3f} ({'APPROVED' if record.is_approved else 'REJECTED'})")
+        print(f"  Improvements: {record.processing_flags or 'None'}")
+
+    # Demonstrate personality impact
+    print(f"\\n=== Personality Impact on Validation ===")
+    print("Different personalities affect validation behavior:")
+    print("  reliable: More thorough validation, stricter quality thresholds")
+    print("  cautious: Conservative validation, moderate improvement efforts")
+    print("  playful: Balanced validation with creative improvement techniques")
+    print("  chaotic: Faster validation, more experimental improvements")
+
+if __name__ == "__main__":
+    main()

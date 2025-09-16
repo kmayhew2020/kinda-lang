@@ -1,26 +1,36 @@
-# Dual Epic Coordination Strategy
+# Multi-Epic Coordination Strategy
 
 ## 🎯 Strategic Overview
 
-**Context**: v0.5.0 "Complete Probabilistic Programming" implements parallel development of Epic #124 (Construct Self-definition) and Epic #125 (Probabilistic Control Flow Constructs) based on Architect Agent's comprehensive analysis.
+**Context**: Development roadmap from v0.5.0 through v0.6.0 implements strategic 3-stream approach with Epic #124 (Construct Self-definition), Epic #125 (Probabilistic Control Flow Constructs), and Epic #127 (Python Injection Framework).
 
-**Rationale**: User feedback analysis (8.5/10 score) revealed probabilistic control flow as the **highest priority gap**, while Epic #124 addresses the core "Kinda builds Kinda" vision. Parallel development maximizes v0.5.0 value delivery.
+**Rationale**: User feedback analysis (8.5/10 score) revealed probabilistic control flow as the **highest priority gap**, while Epic #124 addresses the core "Kinda builds Kinda" vision. Epic #127 adds strategic bridge for dual positioning between "enhancement tool" and "complete language" for v0.6.0 multi-language expansion.
 
 ## 🏗️ Resource Allocation Strategy
 
 ### Development Stream Organization
 
-#### Stream A: Epic #124 (Construct Self-definition)
+#### Stream A: Epic #124 (Construct Self-definition) - v0.5.0
 - **Focus**: "How to build constructs" - Framework and composition patterns
 - **Architect Agent**: Primary technical architect for composition framework design
 - **Coder Agent**: Implementation of construct composition patterns
 - **Timeline**: 9 weeks (parallel with Stream B)
+- **Status**: COMPLETED
 
-#### Stream B: Epic #125 (Probabilistic Control Flow)  
+#### Stream B: Epic #125 (Probabilistic Control Flow) - v0.5.0
 - **Focus**: "What constructs to build" - Missing probabilistic control flow
 - **Architect Agent**: Technical design for statistical algorithms and performance optimization
 - **Coder Agent**: Implementation of 4 new probabilistic constructs
 - **Timeline**: 9 weeks (parallel with Stream A)
+- **Status**: COMPLETED
+
+#### Stream C: Epic #127 (Python Injection Framework) - v0.5.5
+- **Focus**: "Enhancement + Complete Language" dual positioning strategy
+- **Architect Agent**: Python injection architecture and transpiler foundation design
+- **Coder Agent**: Python AST analysis, injection engine, and CLI integration
+- **Timeline**: 8 weeks (post v0.5.0 completion)
+- **Dependencies**: Epic #124/#125 completion provides stable foundation
+- **Strategic Purpose**: Bridge to v0.6.0 multi-language support
 
 ### Shared Infrastructure
 - **Project Manager Agent**: Cross-epic coordination and milestone tracking
