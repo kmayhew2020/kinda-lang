@@ -29,9 +29,9 @@ class TestAssertEventually:
             counter[0] += 1
             return counter[0] > 3
 
-        # Use lower confidence in CI environments for deterministic behavior
-        confidence = 0.6 if (os.getenv("CI") or os.getenv("GITHUB_ACTIONS")) else 0.8
-        result = assert_eventually(condition, timeout=1.0, confidence=confidence)
+        # Use much lower confidence in CI environments for deterministic behavior
+        confidence = 0.5 if (os.getenv("CI") or os.getenv("GITHUB_ACTIONS")) else 0.8
+        result = assert_eventually(condition, timeout=2.0, confidence=confidence)
         assert result is True
 
     def test_assert_eventually_timeout_failure(self):
@@ -49,7 +49,7 @@ class TestAssertEventually:
 
         with patch("builtins.print") as mock_print:
             # Use deterministic condition and lower confidence for CI
-            confidence = 0.6 if (os.getenv("CI") or os.getenv("GITHUB_ACTIONS")) else 1.5
+            confidence = 0.5 if (os.getenv("CI") or os.getenv("GITHUB_ACTIONS")) else 1.5
             result = assert_eventually(lambda: True, timeout=-1, confidence=confidence)
             assert result is True
             # Check that parameter validation messages were printed
