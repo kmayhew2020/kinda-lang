@@ -10,6 +10,7 @@ from kinda.langs.python.runtime_gen import generate_runtime as generate_runtime_
 # Runtime path
 RUNTIME_OUT = Path("kinda/langs/python/runtime")
 
+
 def ensure_runtime_exists():
     """Ensure runtime is generated before any test collection happens."""
     # Clean old runtime
@@ -20,6 +21,7 @@ def ensure_runtime_exists():
     # Generate runtime immediately
     generate_runtime_code(RUNTIME_OUT)
     print(f"[conftest] Generated runtime at {RUNTIME_OUT}")
+
 
 # Generate runtime IMMEDIATELY when this module is imported
 ensure_runtime_exists()
