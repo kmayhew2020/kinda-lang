@@ -306,7 +306,7 @@ def _parse_assert_probability_args(
     return (event, expected_prob, tolerance, samples)
 
 
-def _split_function_arguments(content: str) -> list[str]:
+def _split_function_arguments(content: str) -> List[str]:
     """Split function arguments on commas, respecting nested parentheses and strings."""
     args = []
     current_arg = []
