@@ -6,7 +6,9 @@ from pathlib import Path
 from typing import Any, Union
 
 
-def execute(input_path: Union[str, Path], out_dir: Union[str, Path] = "build", transformer: Any = None) -> None:
+def execute(
+    input_path: Union[str, Path], out_dir: Union[str, Path] = "build", transformer: Any = None
+) -> None:
     """
     Transforms a .knda file and runs the resulting .py file.
     """
