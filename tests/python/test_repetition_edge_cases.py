@@ -74,7 +74,10 @@ print(f"EXECUTED:{{counter[0]}}")
                         ), f"Should not execute excessively for invalid input {invalid_input}"
 
                 finally:
-                    os.unlink(f.name)
+                    try:
+                        os.unlink(f.name)
+                    except (OSError, PermissionError):
+                        pass  # Ignore Windows file permission issues
 
         # Reset
         PersonalityContext.set_seed(None)
@@ -157,7 +160,10 @@ print(f"RESULT:{{counter[0]}}")
                     # This is acceptable for extreme values
                     pass
                 finally:
-                    os.unlink(f.name)
+                    try:
+                        os.unlink(f.name)
+                    except (OSError, PermissionError):
+                        pass  # Ignore Windows file permission issues
 
         # Reset
         PersonalityContext.set_seed(None)
@@ -221,7 +227,10 @@ print(f"ITERATIONS:{{counter[0]}}")
                     ), f"Should not execute excessively for {expr}: {iterations}"
 
                 finally:
-                    os.unlink(f.name)
+                    try:
+                        os.unlink(f.name)
+                    except (OSError, PermissionError):
+                        pass  # Ignore Windows file permission issues
 
         # Reset
         PersonalityContext.set_seed(None)
@@ -348,7 +357,10 @@ print(f"ITERATIONS:{{counter[0]}}")
                     # (Some non-zero exit codes are acceptable for malformed input)
 
                 finally:
-                    os.unlink(f.name)
+                    try:
+                        os.unlink(f.name)
+                    except (OSError, PermissionError):
+                        pass  # Ignore Windows file permission issues
 
         # Reset
         PersonalityContext.set_seed(None)
@@ -433,7 +445,10 @@ print(f"CONDITION_MET:{original_condition}")
                     assert x + y * 10 <= 1200, f"Should terminate in reasonable time: x={x}, y={y}"
 
                 finally:
-                    os.unlink(f.name)
+                    try:
+                        os.unlink(f.name)
+                    except (OSError, PermissionError):
+                        pass  # Ignore Windows file permission issues
 
         # Reset
         PersonalityContext.set_seed(None)

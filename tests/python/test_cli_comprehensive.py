@@ -28,7 +28,10 @@ class TestChardetHandling:
                 result = cli.safe_read_file(temp_path)
                 assert "test content" in result
             finally:
-                os.unlink(temp_path)
+                try:
+                    os.unlink(temp_path)
+                except (OSError, PermissionError):
+                    pass  # Ignore Windows file permission issues
         finally:
             cli.HAS_CHARDET = original_has_chardet
 
@@ -48,7 +51,10 @@ class TestChardetHandling:
                 # Should work with UTF-8 fallback
                 assert "test content" in result
             finally:
-                os.unlink(temp_path)
+                try:
+                    os.unlink(temp_path)
+                except (OSError, PermissionError):
+                    pass  # Ignore Windows file permission issues
         finally:
             cli.HAS_CHARDET = original_has_chardet
 
@@ -69,7 +75,10 @@ class TestChardetHandling:
                 # Should work with UTF-8
                 assert "test content with unicode: ñ" in result
             finally:
-                os.unlink(temp_path)
+                try:
+                    os.unlink(temp_path)
+                except (OSError, PermissionError):
+                    pass  # Ignore Windows file permission issues
         finally:
             cli.HAS_CHARDET = original_has_chardet
 
@@ -90,7 +99,10 @@ class TestSafeReadFileEdgeCases:
                 # Should warn about empty file
                 mock_print.assert_called_with("⚠️  '" + str(temp_path) + "' appears to be empty")
         finally:
-            os.unlink(temp_path)
+            try:
+                os.unlink(temp_path)
+            except (OSError, PermissionError):
+                pass  # Ignore Windows file permission issues
 
 
 class TestShowExamples:
@@ -136,7 +148,10 @@ class TestTransformCommandErrorHandling:
                     calls = [call.args[0] for call in mock_print.call_args_list]
                     assert any("Sorry, I don't speak python yet" in call for call in calls)
         finally:
-            os.unlink(temp_path)
+            try:
+                os.unlink(temp_path)
+            except (OSError, PermissionError):
+                pass  # Ignore Windows file permission issues
 
     def test_transform_command_parser_error(self):
         """Test transform command with parse error"""
@@ -161,7 +176,10 @@ class TestTransformCommandErrorHandling:
                     calls = [call.args[0] for call in mock_print.call_args_list]
                     assert any("Fix the syntax error above" in call for call in calls)
         finally:
-            os.unlink(temp_path)
+            try:
+                os.unlink(temp_path)
+            except (OSError, PermissionError):
+                pass  # Ignore Windows file permission issues
 
     def test_transform_command_generic_error(self):
         """Test transform command with generic error"""
@@ -183,7 +201,10 @@ class TestTransformCommandErrorHandling:
                         "Fix any obvious syntax errors in your .knda file" in call for call in calls
                     )
         finally:
-            os.unlink(temp_path)
+            try:
+                os.unlink(temp_path)
+            except (OSError, PermissionError):
+                pass  # Ignore Windows file permission issues
 
 
 class TestRunCommandErrorHandling:
@@ -224,7 +245,10 @@ class TestRunCommandErrorHandling:
                     calls = [call.args[0] for call in mock_print.call_args_list]
                     assert any("Can't run python files yet" in call for call in calls)
         finally:
-            os.unlink(temp_path)
+            try:
+                os.unlink(temp_path)
+            except (OSError, PermissionError):
+                pass  # Ignore Windows file permission issues
 
     def test_run_command_runtime_error(self):
         """Test run command with runtime execution error"""
@@ -249,7 +273,10 @@ class TestRunCommandErrorHandling:
                             for call in calls
                         )
         finally:
-            os.unlink(temp_path)
+            try:
+                os.unlink(temp_path)
+            except (OSError, PermissionError):
+                pass  # Ignore Windows file permission issues
 
     def test_run_command_non_python_language(self):
         """Test run command with non-Python language"""
@@ -270,7 +297,10 @@ class TestRunCommandErrorHandling:
                             "I can transform javascript but can't run it" in call for call in calls
                         )
         finally:
-            os.unlink(temp_path)
+            try:
+                os.unlink(temp_path)
+            except (OSError, PermissionError):
+                pass  # Ignore Windows file permission issues
 
     def test_run_command_parse_error_handling(self):
         """Test run command with parse error"""
@@ -295,7 +325,10 @@ class TestRunCommandErrorHandling:
                     calls = [call.args[0] for call in mock_print.call_args_list]
                     assert any("Fix the syntax error above" in call for call in calls)
         finally:
-            os.unlink(temp_path)
+            try:
+                os.unlink(temp_path)
+            except (OSError, PermissionError):
+                pass  # Ignore Windows file permission issues
 
 
 class TestInterpretCommandErrorHandling:
@@ -336,7 +369,10 @@ class TestInterpretCommandErrorHandling:
                     "File validation failed - cannot interpret this file" in call for call in calls
                 )
         finally:
-            os.unlink(temp_path)
+            try:
+                os.unlink(temp_path)
+            except (OSError, PermissionError):
+                pass  # Ignore Windows file permission issues
 
     def test_interpret_command_non_python_language(self):
         """Test interpret command with non-Python language"""
@@ -352,7 +388,10 @@ class TestInterpretCommandErrorHandling:
                     calls = [call.args[0] for call in mock_print.call_args_list]
                     assert any("Interpret mode only works with Python" in call for call in calls)
         finally:
-            os.unlink(temp_path)
+            try:
+                os.unlink(temp_path)
+            except (OSError, PermissionError):
+                pass  # Ignore Windows file permission issues
 
 
 class TestMainFunctionEdgeCases:
@@ -405,7 +444,10 @@ class TestValidateKndaFileEdgeCases:
                 assert any("Large files might cause performance issues" in call for call in calls)
                 assert any("Proceeding anyway, but don't blame me" in call for call in calls)
         finally:
-            os.unlink(temp_path)
+            try:
+                os.unlink(temp_path)
+            except (OSError, PermissionError):
+                pass  # Ignore Windows file permission issues
 
     def test_validate_file_read_exception(self):
         """Test validation when file reading throws exception"""
@@ -420,4 +462,7 @@ class TestValidateKndaFileEdgeCases:
                 result = cli.validate_knda_file(temp_path)
                 assert result is False
         finally:
-            os.unlink(temp_path)
+            try:
+                os.unlink(temp_path)
+            except (OSError, PermissionError):
+                pass  # Ignore Windows file permission issues

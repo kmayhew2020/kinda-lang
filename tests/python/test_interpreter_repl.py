@@ -46,7 +46,10 @@ class TestInterpreterREPL:
         finally:
             import os
 
-            os.unlink(temp_path)
+            try:
+                os.unlink(temp_path)
+            except (OSError, PermissionError):
+                pass  # Ignore Windows file permission issues
 
     def test_run_interpreter_successful_execution(self):
         """Test run_interpreter with successful execution"""
@@ -76,7 +79,10 @@ class TestInterpreterREPL:
         finally:
             import os
 
-            os.unlink(temp_path)
+            try:
+                os.unlink(temp_path)
+            except (OSError, PermissionError):
+                pass  # Ignore Windows file permission issues
 
     def test_load_fuzzy_runtime(self):
         """Test loading fuzzy runtime module"""
@@ -106,7 +112,10 @@ def test_function():
             # Clean up sys.modules
             if "fuzzy" in sys.modules:
                 del sys.modules["fuzzy"]
-            os.unlink(temp_path)
+            try:
+                os.unlink(temp_path)
+            except (OSError, PermissionError):
+                pass  # Ignore Windows file permission issues
 
     def test_run_interpreter_with_various_exceptions(self):
         """Test run_interpreter with different types of exceptions"""
@@ -151,4 +160,7 @@ def test_function():
         finally:
             import os
 
-            os.unlink(temp_path)
+            try:
+                os.unlink(temp_path)
+            except (OSError, PermissionError):
+                pass  # Ignore Windows file permission issues
