@@ -97,6 +97,7 @@ def setup_kinda_test_environment():
 
     # In CI environments, use deterministic settings for 100% pass rate
     import os
+
     if os.getenv("CI") or os.getenv("GITHUB_ACTIONS"):
         selected_personality = "playful"  # Fixed for CI
         chaos_level = 5  # Fixed for CI
