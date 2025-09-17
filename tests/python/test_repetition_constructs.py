@@ -338,17 +338,18 @@ def test_error_handling():
     with tempfile.NamedTemporaryFile(mode="w", suffix=".knda", delete=False) as f:
         f.write(test_code)
         f.flush()
+        temp_path = f.name
 
+    try:
+        result = transform_file(Path(temp_path))
+        # Should still transform - error handling happens at runtime
+        assert "kinda_repeat_count" in result
+        assert '"invalid"' in result
+    finally:
         try:
-            result = transform_file(Path(f.name))
-            # Should still transform - error handling happens at runtime
-            assert "kinda_repeat_count" in result
-            assert '"invalid"' in result
-        finally:
-            try:
-                os.unlink(temp_path)
-            except (OSError, PermissionError):
-                pass  # Ignore Windows file permission issues
+            os.unlink(temp_path)
+        except (OSError, PermissionError):
+            pass  # Ignore Windows file permission issues
 
 
 if __name__ == "__main__":
