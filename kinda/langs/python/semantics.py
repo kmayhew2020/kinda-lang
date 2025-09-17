@@ -1,6 +1,6 @@
 # kinda/core/semantics.py
 
-from typing import Dict, Any
+from typing import Dict, Any, List
 from kinda.personality import chaos_random, chaos_choice
 
 env: Dict[str, Any] = {}
@@ -32,7 +32,7 @@ def sorta_print(expr: str) -> None:
             print(f"[print] Failed to evaluate: {expr}")
 
 
-def run_sometimes_block(condition: str, block_lines: list[str]) -> None:
+def run_sometimes_block(condition: str, block_lines: List[str]) -> None:
     if chaos_random() < 0.7:
         if evaluate(condition):
             for line in block_lines:

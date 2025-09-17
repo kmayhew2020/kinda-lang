@@ -5,7 +5,7 @@ from typing import Optional, Tuple, Any
 from .constructs_c import KindaCConstructs
 
 
-def match_c_construct(line: str) -> Tuple[Optional[str], Optional[tuple[Any, ...]]]:
+def match_c_construct(line: str) -> Tuple[Optional[str], Optional[Tuple[Any, ...]]]:
     """Match C kinda-lang constructs in the given line."""
     for key, meta in KindaCConstructs.items():
         pattern = meta["pattern"]

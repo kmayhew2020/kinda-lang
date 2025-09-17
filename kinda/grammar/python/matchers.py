@@ -1,7 +1,7 @@
 # kinda/grammar/python/matchers.py
 
 import re
-from typing import Optional, Tuple, Any
+from typing import Optional, Tuple, Any, List
 from kinda.grammar.python.constructs import KindaPythonConstructs
 
 # Compiled regex patterns for performance optimization
@@ -75,7 +75,7 @@ def _parse_sorta_print_arguments(line: str) -> Optional[str]:
         return content
 
 
-def _parse_balanced_parentheses(line: str, start_pos: int) -> tuple[Optional[str], bool]:
+def _parse_balanced_parentheses(line: str, start_pos: int) -> Tuple[Optional[str], bool]:
     """
     Parse balanced parentheses starting from start_pos.
     Returns (content, is_balanced) - content inside parentheses and whether they were balanced.
@@ -126,7 +126,7 @@ def _parse_balanced_parentheses(line: str, start_pos: int) -> tuple[Optional[str
         return content, False
 
 
-def _parse_conditional_arguments(line: str, construct_name: str) -> Optional[tuple[str]]:
+def _parse_conditional_arguments(line: str, construct_name: str) -> Optional[Tuple[str]]:
     """
     Parse conditional constructs (~maybe, ~sometimes) with balanced parentheses support.
     Maintains compatibility with existing behavior and tests.
@@ -185,7 +185,7 @@ def _parse_statistical_arguments(line: str, construct_name: str) -> Optional[Tup
     return None
 
 
-def _parse_loop_arguments(line: str, construct_name: str) -> Optional[tuple[str]]:
+def _parse_loop_arguments(line: str, construct_name: str) -> Optional[Tuple[str]]:
     """
     Parse loop constructs with complex expression parsing.
     Handles nested parentheses in expressions like kinda_repeat(int(7.8))
@@ -237,7 +237,7 @@ def _parse_loop_arguments(line: str, construct_name: str) -> Optional[tuple[str]
 
 def _parse_assert_eventually_args(
     content: str,
-) -> Optional[tuple[str, Optional[str], Optional[str]]]:
+) -> Optional[Tuple[str, Optional[str], Optional[str]]]:
     """Parse assert_eventually arguments: condition, timeout=5.0, confidence=0.95"""
     import re
 
@@ -271,7 +271,7 @@ def _parse_assert_eventually_args(
 
 def _parse_assert_probability_args(
     content: str,
-) -> Optional[tuple[str, Optional[str], Optional[str], Optional[str]]]:
+) -> Optional[Tuple[str, Optional[str], Optional[str], Optional[str]]]:
     """Parse assert_probability arguments: event, expected_prob=0.5, tolerance=0.1, samples=1000"""
     import re
 
@@ -449,7 +449,7 @@ def _is_inside_string_literal(line: str, position: int) -> bool:
     return in_string
 
 
-def find_ish_constructs(line: str) -> list[tuple[str, Any, int, int]]:
+def find_ish_constructs(line: str) -> List[Tuple[str, Any, int, int]]:
     """
     Find all ~ish constructs in a line for inline transformation.
     Returns a list of (construct_type, match_object, start_pos, end_pos).
@@ -509,7 +509,7 @@ def find_ish_constructs(line: str) -> list[tuple[str, Any, int, int]]:
     return constructs
 
 
-def find_welp_constructs(line: str) -> list[tuple[str, Any, int, int]]:
+def find_welp_constructs(line: str) -> List[Tuple[str, Any, int, int]]:
     """
     Find all ~welp constructs in a line for inline transformation.
     Returns a list of (construct_type, match_object, start_pos, end_pos).
