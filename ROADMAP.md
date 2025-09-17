@@ -58,11 +58,11 @@
   - Issue #118: Migration Guide for Existing Projects - **DEFERRED** (low user priority)
 
 **v0.5.0 "Complete Probabilistic Programming" (DUAL EPIC STRATEGY):**
-- 🏗️ **EPIC #124: CONSTRUCT SELF-DEFINITION** - Higher-level constructs built from basic ones (User Core Vision) - ✅ **APPROVED & ACTIVE**
-  - **Task 1**: Core ~sorta Conditional Implementation using existing constructs (~2 weeks) - 🚀 **READY FOR ASSIGNMENT**
-  - **Task 2**: Framework for Construct Composition Development (~2 weeks)
-  - **Task 3**: ~ish Patterns Implementation using ~kinda float + tolerance (~2 weeks)  
-  - **Task 4**: Documentation & Examples for Construct Composition (~1-2 weeks)
+- 🏗️ **EPIC #126: CONSTRUCT SELF-DEFINITION** - Higher-level constructs built from basic ones (User Core Vision) - ✅ **75% COMPLETE (3/4 TASKS DONE)**
+  - **Task 1**: Core ~sorta Conditional Implementation using existing constructs (~2 weeks) - ✅ **COMPLETED** (PR #69 MERGED)
+  - **Task 2**: Framework for Construct Composition Development (~2 weeks) - ✅ **COMPLETED** (PR #82 MERGED)
+  - **Task 3**: ~ish Patterns Implementation using ~kinda float + tolerance (~2 weeks) - ✅ **COMPLETED** (PR #84 MERGED)
+  - **Task 4**: Documentation & Examples for Construct Composition (~1-2 weeks) - 🏗️ **ASSIGNED TO ARCHITECT** (2025-09-16)
 - 🎲 **EPIC #125: PROBABILISTIC CONTROL FLOW CONSTRUCTS** - Complete fuzzy programming paradigm (User HIGH Priority) - ✅ **TASK 1 COMPLETED**
   - **Task 1**: Core Loop Constructs (~sometimes_while, ~maybe_for) - ✅ **COMPLETED**
   - **Task 2**: Repetition Constructs (~kinda_repeat, ~eventually_until) - 🚀 **READY FOR ASSIGNMENT**
@@ -206,14 +206,14 @@
 4. ✅ **Issue #123**: 🧪 ~assert_eventually() statistical assertions - **COMPLETED via PR #127** - Essential for testing fuzzy programs
 
 **🚀 HIGH PRIORITY (v0.5.0 DUAL EPIC STRATEGY):**
-1. **Epic #124**: 🏗️ **Construct Self-definition** - Higher-level constructs built from basic ones (User Core Vision)
+1. **Epic #126**: 🏗️ **Construct Self-definition** - Higher-level constructs built from basic ones (User Core Vision) - ✅ **75% COMPLETE**
 2. **Epic #125**: 🎲 **Probabilistic Control Flow Constructs** - Complete fuzzy programming paradigm (User HIGH Priority)
 
-**🚀 EPIC #124 TASKS (Parallel Stream A):**
-3. **Task 1**: 🏗️ Core ~sorta Conditional Implementation - Build ~sorta from ~sometimes + ~maybe + personality
-4. **Task 2**: 🔧 Framework for Construct Composition Development - Meta-programming infrastructure
-5. **Task 3**: 🎯 ~ish Patterns Implementation - Build ~ish behaviors from ~kinda float + tolerance  
-6. **Task 4**: 📖 Documentation & Examples for Construct Composition - Complete implementation showcase
+**🚀 EPIC #126 TASKS (Parallel Stream A) - 75% COMPLETE:**
+3. **Task 1**: 🏗️ Core ~sorta Conditional Implementation - ✅ **COMPLETED** (PR #69 MERGED)
+4. **Task 2**: 🔧 Framework for Construct Composition Development - ✅ **COMPLETED** (PR #82 MERGED)
+5. **Task 3**: 🎯 ~ish Patterns Implementation - ✅ **COMPLETED** (PR #84 MERGED)
+6. **Task 4**: 📖 Documentation & Examples for Construct Composition - 🚀 **READY FOR ASSIGNMENT**
 
 **🚀 EPIC #125 TASKS (Parallel Stream B):**
 7. **Task 1**: 🔄 Core Loop Constructs (~sometimes_while, ~maybe_for) - Probabilistic loop continuation and iteration
@@ -221,11 +221,11 @@
 9. **Task 3**: ⚙️ Advanced Integration & Optimization - Performance optimization and cross-construct compatibility
 10. **Task 4**: 📘 Documentation & Real-world Examples - Comprehensive probabilistic control flow guide
 
-**🚀 HIGH PRIORITY (v0.5.0 Epic #124 - Construct Self-definition):**
-5. **Task 1**: 🏗️ Core ~sorta Conditional Implementation - Build ~sorta from ~sometimes + ~maybe + personality
-6. **Task 2**: 🔧 Framework for Construct Composition Development - Meta-programming infrastructure
-7. **Task 3**: 🎯 ~ish Patterns Implementation - Build ~ish behaviors from ~kinda float + tolerance  
-8. **Task 4**: 📖 Documentation & Examples for Construct Composition - Complete implementation showcase
+**🚀 HIGH PRIORITY (v0.5.0 Epic #126 - Construct Self-definition) - 75% COMPLETE:**
+5. **Task 1**: 🏗️ Core ~sorta Conditional Implementation - ✅ **COMPLETED** (PR #69 MERGED)
+6. **Task 2**: 🔧 Framework for Construct Composition Development - ✅ **COMPLETED** (PR #82 MERGED)
+7. **Task 3**: 🎯 ~ish Patterns Implementation - ✅ **COMPLETED** (PR #84 MERGED)
+8. **Task 4**: 📖 Documentation & Examples for Construct Composition - 🏗️ **ASSIGNED TO ARCHITECT** (2025-09-16)
 
 **🟡 MEDIUM PRIORITY (User-Aligned Features):**
 11. **Issue #116**: 🌍 Real-world Application Examples (Epic #76.3) - Aligns with "practical use cases"
@@ -422,7 +422,7 @@ def implement_ish_comparison(a, b, tolerance):
 4. **Better validation** - demonstrates construct expressiveness through composition
 5. **More practical** - achievable in v0.5.0 timeframe (7-9 weeks vs 12-16 weeks)
 
-**EPIC #124 REVISED FOCUS:**
+**EPIC #126 REVISED FOCUS:**
 - Build hierarchy: basic constructs → composite constructs → complex behaviors
 - Demonstrate `~sorta` = `~sometimes` + `~maybe` + personality patterns
 - Show `~ish` patterns emerge from `~kinda float` + tolerance logic
@@ -456,9 +456,9 @@ This clarification makes the strategic direction MORE focused and achievable, pe
 - **REMAINING**: Issues #116, #117 (aligned with user priorities - MEDIUM priority)
 - **RESULT**: v0.4.0 "Developer Experience Release" - 100% COMPLETE - All 4 high-priority DX fundamentals delivered
 
-### **v0.5.0 STRATEGIC REFOCUS**  
-- **PRIMARY GOAL**: Epic #124 (Construct Self-definition) - User's core validation criterion
-- **TIMELINE**: 7-9 weeks for construct composition framework
+### **v0.5.0 STRATEGIC REFOCUS - ✅ 75% COMPLETE**
+- **PRIMARY GOAL**: Epic #126 (Construct Self-definition) - User's core validation criterion - ✅ **75% COMPLETE**
+- **TIMELINE**: 7-9 weeks for construct composition framework - **ON TRACK** (3/4 tasks completed)
 - **IMPACT**: Proves kinda-lang primitives are sufficient to build complex behaviors through elegant composition
 
 ### **USER ALIGNMENT SCORE** 
@@ -479,4 +479,4 @@ This clarification makes the strategic direction MORE focused and achievable, pe
 - **v0.4.0 SUCCESS**: All core developer experience fundamentals delivered as planned
 
 ---
-*Last Updated: 2025-09-10 by Kinda-Lang Project Manager - Epic #125 Task 1 COMPLETED: Core Loop Constructs delivered. Dual Epic Strategy in effect - parallel development for v0.5.0 "Complete Probabilistic Programming"*
+*Last Updated: 2025-09-16 by Kinda-Lang Project Manager - STRATEGIC UPDATE: Epic #126 Task 3 COMPLETED (PR #84 MERGED). Epic #126 now 75% complete (3/4 tasks done). Task 4 (Documentation & Examples) READY FOR ASSIGNMENT. Major milestone: "Kinda builds Kinda" principle successfully implemented through construct composition framework.*
