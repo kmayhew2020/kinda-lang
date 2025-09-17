@@ -67,12 +67,12 @@ jobs:
             kinda run examples/python/unified_syntax.py.knda
             kinda run examples/python/test_coverage_example.py.knda
             kinda run examples/python/kinda_binary_example.py.knda
-            
+
             echo "Testing comprehensive examples..."
             kinda run examples/python/comprehensive/fuzzy_calculator.py.knda
             kinda run examples/python/comprehensive/fuzzy_game_logic.py.knda
             kinda run examples/python/comprehensive/chaos_arena_complete.py.knda
-            
+
             echo "Testing complex examples with shorter runtime..."
             timeout 30s kinda run examples/python/comprehensive/chaos_arena2_complete.py.knda || echo "Chaos arena2 timed out as expected - this is normal"
           fi
