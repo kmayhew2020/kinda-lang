@@ -40,12 +40,16 @@ class TestCLIAdditionalCoverage:
         with tempfile.NamedTemporaryFile(mode="w", suffix=".txt", delete=False) as f:
             f.write("test content")
             f.flush()
+            temp_path = f.name
 
+        try:
+            result = validate_knda_file(Path(temp_path))
+            assert result is True  # validate_knda_file doesn't check extensions
+        finally:
             try:
-                result = validate_knda_file(Path(f.name))
-                assert result is True  # validate_knda_file doesn't check extensions
-            finally:
-                os.unlink(f.name)
+                os.unlink(temp_path)
+            except (OSError, PermissionError):
+                pass  # Ignore Windows file permission issues
 
     def test_safe_read_file_missing(self):
         """Test safe_read_file with missing file."""
@@ -76,18 +80,22 @@ print("Hello, world!")
         with tempfile.NamedTemporaryFile(mode="w", suffix=".knda", delete=False) as f:
             f.write(test_code)
             f.flush()
+            temp_path = f.name
 
+        try:
+            with patch("sys.argv", ["kinda", "run", temp_path]):
+                # This should not raise an exception
+                try:
+                    main()
+                except SystemExit as e:
+                    # Exit code 0 is success
+                    if e.code != 0:
+                        pytest.fail(f"CLI run failed with exit code {e.code}")
+        finally:
             try:
-                with patch("sys.argv", ["kinda", "run", f.name]):
-                    # This should not raise an exception
-                    try:
-                        main()
-                    except SystemExit as e:
-                        # Exit code 0 is success
-                        if e.code != 0:
-                            pytest.fail(f"CLI run failed with exit code {e.code}")
-            finally:
-                os.unlink(f.name)
+                os.unlink(temp_path)
+            except (OSError, PermissionError):
+                pass  # Ignore Windows file permission issues
 
     def test_cli_with_no_args(self):
         """Test CLI when no arguments are provided."""

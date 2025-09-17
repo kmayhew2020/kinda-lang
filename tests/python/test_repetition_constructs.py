@@ -24,13 +24,17 @@ count = 0
     with tempfile.NamedTemporaryFile(mode="w", suffix=".knda", delete=False) as f:
         f.write(test_code)
         f.flush()
+        temp_path = f.name
 
+    try:
+        result = transform_file(Path(temp_path))
+        assert "for _ in range(kinda_repeat_count(5)):" in result
+        assert "kinda_repeat_count" in result
+    finally:
         try:
-            result = transform_file(Path(f.name))
-            assert "for _ in range(kinda_repeat_count(5)):" in result
-            assert "kinda_repeat_count" in result
-        finally:
-            os.unlink(f.name)
+            os.unlink(temp_path)
+        except (OSError, PermissionError):
+            pass  # Ignore Windows file permission issues
 
 
 def test_kinda_repeat_personality_variance():
@@ -69,12 +73,16 @@ def test_kinda_repeat_edge_cases():
     with tempfile.NamedTemporaryFile(mode="w", suffix=".knda", delete=False) as f:
         f.write(test_code_zero)
         f.flush()
+        temp_path = f.name
 
+    try:
+        result = transform_file(Path(temp_path))
+        assert "kinda_repeat_count(0)" in result
+    finally:
         try:
-            result = transform_file(Path(f.name))
-            assert "kinda_repeat_count(0)" in result
-        finally:
-            os.unlink(f.name)
+            os.unlink(temp_path)
+        except (OSError, PermissionError):
+            pass  # Ignore Windows file permission issues
 
     # Test with n=1
     test_code_one = """
@@ -85,12 +93,16 @@ def test_kinda_repeat_edge_cases():
     with tempfile.NamedTemporaryFile(mode="w", suffix=".knda", delete=False) as f:
         f.write(test_code_one)
         f.flush()
+        temp_path = f.name
 
+    try:
+        result = transform_file(Path(temp_path))
+        assert "kinda_repeat_count(1)" in result
+    finally:
         try:
-            result = transform_file(Path(f.name))
-            assert "kinda_repeat_count(1)" in result
-        finally:
-            os.unlink(f.name)
+            os.unlink(temp_path)
+        except (OSError, PermissionError):
+            pass  # Ignore Windows file permission issues
 
 
 def test_eventually_until_basic_functionality():
@@ -106,13 +118,17 @@ count = 0
     with tempfile.NamedTemporaryFile(mode="w", suffix=".knda", delete=False) as f:
         f.write(test_code)
         f.flush()
+        temp_path = f.name
 
+    try:
+        result = transform_file(Path(temp_path))
+        assert "while eventually_until_condition(count > 5):" in result
+        assert "eventually_until_condition" in result
+    finally:
         try:
-            result = transform_file(Path(f.name))
-            assert "while eventually_until_condition(count > 5):" in result
-            assert "eventually_until_condition" in result
-        finally:
-            os.unlink(f.name)
+            os.unlink(temp_path)
+        except (OSError, PermissionError):
+            pass  # Ignore Windows file permission issues
 
 
 def test_eventually_until_confidence_levels():
@@ -154,14 +170,18 @@ total = 0
     with tempfile.NamedTemporaryFile(mode="w", suffix=".knda", delete=False) as f:
         f.write(test_code)
         f.flush()
+        temp_path = f.name
 
+    try:
+        result = transform_file(Path(temp_path))
+        # Both constructs should be properly transformed
+        assert "kinda_repeat_count(3)" in result
+        assert "eventually_until_condition(count > 2)" in result
+    finally:
         try:
-            result = transform_file(Path(f.name))
-            # Both constructs should be properly transformed
-            assert "kinda_repeat_count(3)" in result
-            assert "eventually_until_condition(count > 2)" in result
-        finally:
-            os.unlink(f.name)
+            os.unlink(temp_path)
+        except (OSError, PermissionError):
+            pass  # Ignore Windows file permission issues
 
 
 def test_runtime_execution_kinda_repeat():
@@ -190,11 +210,12 @@ print(f"RESULT:{count}")
     with tempfile.NamedTemporaryFile(mode="w", suffix=".knda", delete=False) as f:
         f.write(test_code)
         f.flush()
+        temp_path = f.name
 
-        try:
-            # Run the test through kinda
-            result = subprocess.run(
-                ["python3", "-m", "kinda", "run", f.name],
+    try:
+        # Run the test through kinda
+        result = subprocess.run(
+            ["python3", "-m", "kinda", "run", temp_path],
                 capture_output=True,
                 text=True,
                 cwd=os.getcwd(),
@@ -211,7 +232,10 @@ print(f"RESULT:{count}")
             assert 1 <= count <= 10  # Allow for probabilistic variance in kinda-lang
 
         finally:
-            os.unlink(f.name)
+            try:
+                os.unlink(temp_path)
+            except (OSError, PermissionError):
+                pass  # Ignore Windows file permission issues
 
     # Reset
     PersonalityContext.set_seed(None)
@@ -244,11 +268,12 @@ print(f"RESULT:{count}")
     with tempfile.NamedTemporaryFile(mode="w", suffix=".knda", delete=False) as f:
         f.write(test_code)
         f.flush()
+        temp_path = f.name
 
-        try:
-            # Run the test through kinda
-            result = subprocess.run(
-                ["python3", "-m", "kinda", "run", f.name],
+    try:
+        # Run the test through kinda
+        result = subprocess.run(
+            ["python3", "-m", "kinda", "run", temp_path],
                 capture_output=True,
                 text=True,
                 cwd=os.getcwd(),
@@ -267,7 +292,10 @@ print(f"RESULT:{count}")
             assert count < 20  # Reasonable upper bound
 
         finally:
-            os.unlink(f.name)
+            try:
+                os.unlink(temp_path)
+            except (OSError, PermissionError):
+                pass  # Ignore Windows file permission issues
 
     # Reset
     PersonalityContext.set_seed(None)
@@ -317,7 +345,10 @@ def test_error_handling():
             assert "kinda_repeat_count" in result
             assert '"invalid"' in result
         finally:
-            os.unlink(f.name)
+            try:
+                os.unlink(temp_path)
+            except (OSError, PermissionError):
+                pass  # Ignore Windows file permission issues
 
 
 if __name__ == "__main__":
