@@ -1,0 +1,28 @@
+# Karl's Composition Framework Test
+# Testing the new "Kinda builds Kinda" capabilities
+
+print("🔧 Testing composition framework...")
+
+# Test basic probabilistic constructs that the framework builds on
+~sometimes (True) {
+    print("Base construct: ~sometimes working")
+}
+
+~maybe (True) {
+    print("Base construct: ~maybe working")
+}
+
+# Test ish construct (should now use composition framework internally)
+x = 42
+if x ~ish 40:
+    print("Composition construct: ~ish comparison working")
+
+# Test sorta construct
+~sorta print("Composition construct: ~sorta working")
+
+# Test variable ish assignment
+~kinda int y = 90
+y ~ish 100
+print("Composition construct: ~ish assignment, y =", y)
+
+print("🎉 Composition framework demo complete!")
