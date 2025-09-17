@@ -216,26 +216,26 @@ print(f"RESULT:{count}")
         # Run the test through kinda
         result = subprocess.run(
             ["python3", "-m", "kinda", "run", temp_path],
-                capture_output=True,
-                text=True,
-                cwd=os.getcwd(),
-            )
+            capture_output=True,
+            text=True,
+            cwd=os.getcwd(),
+        )
 
-            # Extract the count from output
-            output_lines = result.stdout.strip().split("\n")
-            result_line = [line for line in output_lines if line.startswith("RESULT:")]
-            assert len(result_line) == 1
+        # Extract the count from output
+        output_lines = result.stdout.strip().split("\n")
+        result_line = [line for line in output_lines if line.startswith("RESULT:")]
+        assert len(result_line) == 1
 
-            count = int(result_line[0].split(":")[1])
-            assert isinstance(count, int)
-            assert count >= 1  # Always at least 1
-            assert 1 <= count <= 10  # Allow for probabilistic variance in kinda-lang
+        count = int(result_line[0].split(":")[1])
+        assert isinstance(count, int)
+        assert count >= 1  # Always at least 1
+        assert 1 <= count <= 10  # Allow for probabilistic variance in kinda-lang
 
-        finally:
-            try:
-                os.unlink(temp_path)
-            except (OSError, PermissionError):
-                pass  # Ignore Windows file permission issues
+    finally:
+        try:
+            os.unlink(temp_path)
+        except (OSError, PermissionError):
+            pass  # Ignore Windows file permission issues
 
     # Reset
     PersonalityContext.set_seed(None)
@@ -274,28 +274,28 @@ print(f"RESULT:{count}")
         # Run the test through kinda
         result = subprocess.run(
             ["python3", "-m", "kinda", "run", temp_path],
-                capture_output=True,
-                text=True,
-                cwd=os.getcwd(),
-            )
+            capture_output=True,
+            text=True,
+            cwd=os.getcwd(),
+        )
 
-            # Extract the count from output
-            output_lines = result.stdout.strip().split("\n")
-            result_line = [line for line in output_lines if line.startswith("RESULT:")]
-            assert len(result_line) == 1
+        # Extract the count from output
+        output_lines = result.stdout.strip().split("\n")
+        result_line = [line for line in output_lines if line.startswith("RESULT:")]
+        assert len(result_line) == 1
 
-            count = int(result_line[0].split(":")[1])
-            assert isinstance(count, int)
-            # eventually_until should terminate when statistically confident count > 5
-            # So count should be greater than 5 but not too much higher
-            assert count > 5
-            assert count < 20  # Reasonable upper bound
+        count = int(result_line[0].split(":")[1])
+        assert isinstance(count, int)
+        # eventually_until should terminate when statistically confident count > 5
+        # So count should be greater than 5 but not too much higher
+        assert count > 5
+        assert count < 20  # Reasonable upper bound
 
-        finally:
-            try:
-                os.unlink(temp_path)
-            except (OSError, PermissionError):
-                pass  # Ignore Windows file permission issues
+    finally:
+        try:
+            os.unlink(temp_path)
+        except (OSError, PermissionError):
+            pass  # Ignore Windows file permission issues
 
     # Reset
     PersonalityContext.set_seed(None)
