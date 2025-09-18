@@ -37,6 +37,7 @@ class TestEpic124125Integration:
         for i in range(self.test_iterations):
             # Use deterministic seeding for CI consistency
             import os
+
             if os.getenv("CI") or os.getenv("GITHUB_ACTIONS"):
                 random.seed(42 + i)  # Deterministic seeding for CI
             # Simulate Epic #124: Fuzzy data generation
@@ -96,6 +97,7 @@ class TestEpic124125Integration:
         for i in range(self.test_iterations):
             # Use deterministic seeding for CI consistency
             import os
+
             if os.getenv("CI") or os.getenv("GITHUB_ACTIONS"):
                 random.seed(42 + i)  # Deterministic seeding for CI
             # Simulate monitoring system with integrated fuzziness
