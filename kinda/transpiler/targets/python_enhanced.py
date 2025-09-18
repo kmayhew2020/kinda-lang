@@ -20,146 +20,146 @@ class PythonEnhancedTarget(LanguageTarget):
         """Initialize Python-specific construct implementations"""
 
         # kinda_int implementation
-        self.construct_registry['kinda_int'] = ConstructImplementation(
-            construct_name='kinda_int',
+        self.construct_registry["kinda_int"] = ConstructImplementation(
+            construct_name="kinda_int",
             language=self.language,
-            template='kinda.runtime.kinda_int({value})',
-            dependencies=['kinda.runtime'],
-            performance_notes='Minimal overhead, ~1.2x execution time',
+            template="kinda.runtime.kinda_int({value})",
+            dependencies=["kinda.runtime"],
+            performance_notes="Minimal overhead, ~1.2x execution time",
             examples=[
-                'x = kinda.runtime.kinda_int(42)  # Fuzzy integer around 42',
-                'count = kinda.runtime.kinda_int(10)  # Approximately 10'
-            ]
+                "x = kinda.runtime.kinda_int(42)  # Fuzzy integer around 42",
+                "count = kinda.runtime.kinda_int(10)  # Approximately 10",
+            ],
         )
 
         # kinda_float implementation
-        self.construct_registry['kinda_float'] = ConstructImplementation(
-            construct_name='kinda_float',
+        self.construct_registry["kinda_float"] = ConstructImplementation(
+            construct_name="kinda_float",
             language=self.language,
-            template='kinda.runtime.kinda_float({value})',
-            dependencies=['kinda.runtime'],
-            performance_notes='Minimal overhead, ~1.5x execution time',
+            template="kinda.runtime.kinda_float({value})",
+            dependencies=["kinda.runtime"],
+            performance_notes="Minimal overhead, ~1.5x execution time",
             examples=[
-                'pi = kinda.runtime.kinda_float(3.14159)  # Fuzzy pi',
-                'ratio = kinda.runtime.kinda_float(0.618)  # Golden ratio-ish'
-            ]
+                "pi = kinda.runtime.kinda_float(3.14159)  # Fuzzy pi",
+                "ratio = kinda.runtime.kinda_float(0.618)  # Golden ratio-ish",
+            ],
         )
 
         # sorta_print implementation
-        self.construct_registry['sorta_print'] = ConstructImplementation(
-            construct_name='sorta_print',
+        self.construct_registry["sorta_print"] = ConstructImplementation(
+            construct_name="sorta_print",
             language=self.language,
-            template='kinda.runtime.sorta_print({args})',
-            dependencies=['kinda.runtime'],
-            performance_notes='Very low overhead, probabilistic output',
+            template="kinda.runtime.sorta_print({args})",
+            dependencies=["kinda.runtime"],
+            performance_notes="Very low overhead, probabilistic output",
             examples=[
                 'kinda.runtime.sorta_print("Hello")  # Maybe prints',
-                'kinda.runtime.sorta_print(f"Value: {x}")  # Probabilistic logging'
-            ]
+                'kinda.runtime.sorta_print(f"Value: {x}")  # Probabilistic logging',
+            ],
         )
 
         # sometimes implementation
-        self.construct_registry['sometimes'] = ConstructImplementation(
-            construct_name='sometimes',
+        self.construct_registry["sometimes"] = ConstructImplementation(
+            construct_name="sometimes",
             language=self.language,
-            template='kinda.runtime.sometimes(lambda: {body})',
-            dependencies=['kinda.runtime'],
-            performance_notes='Moderate overhead, ~2x execution time when executed',
+            template="kinda.runtime.sometimes(lambda: {body})",
+            dependencies=["kinda.runtime"],
+            performance_notes="Moderate overhead, ~2x execution time when executed",
             examples=[
                 'kinda.runtime.sometimes(lambda: print("Sometimes"))',
-                'kinda.runtime.sometimes(lambda: process_data())'
-            ]
+                "kinda.runtime.sometimes(lambda: process_data())",
+            ],
         )
 
         # maybe implementation
-        self.construct_registry['maybe'] = ConstructImplementation(
-            construct_name='maybe',
+        self.construct_registry["maybe"] = ConstructImplementation(
+            construct_name="maybe",
             language=self.language,
-            template='kinda.runtime.maybe(lambda: {body})',
-            dependencies=['kinda.runtime'],
-            performance_notes='Moderate overhead, 50% execution probability',
+            template="kinda.runtime.maybe(lambda: {body})",
+            dependencies=["kinda.runtime"],
+            performance_notes="Moderate overhead, 50% execution probability",
             examples=[
-                'kinda.runtime.maybe(lambda: cleanup_cache())',
-                'kinda.runtime.maybe(lambda: send_notification())'
-            ]
+                "kinda.runtime.maybe(lambda: cleanup_cache())",
+                "kinda.runtime.maybe(lambda: send_notification())",
+            ],
         )
 
         # probably implementation
-        self.construct_registry['probably'] = ConstructImplementation(
-            construct_name='probably',
+        self.construct_registry["probably"] = ConstructImplementation(
+            construct_name="probably",
             language=self.language,
-            template='kinda.runtime.probably(lambda: {body})',
-            dependencies=['kinda.runtime'],
-            performance_notes='Moderate overhead, ~80% execution probability',
+            template="kinda.runtime.probably(lambda: {body})",
+            dependencies=["kinda.runtime"],
+            performance_notes="Moderate overhead, ~80% execution probability",
             examples=[
-                'kinda.runtime.probably(lambda: log_event())',
-                'kinda.runtime.probably(lambda: update_metrics())'
-            ]
+                "kinda.runtime.probably(lambda: log_event())",
+                "kinda.runtime.probably(lambda: update_metrics())",
+            ],
         )
 
         # rarely implementation
-        self.construct_registry['rarely'] = ConstructImplementation(
-            construct_name='rarely',
+        self.construct_registry["rarely"] = ConstructImplementation(
+            construct_name="rarely",
             language=self.language,
-            template='kinda.runtime.rarely(lambda: {body})',
-            dependencies=['kinda.runtime'],
-            performance_notes='Low overhead, ~20% execution probability',
+            template="kinda.runtime.rarely(lambda: {body})",
+            dependencies=["kinda.runtime"],
+            performance_notes="Low overhead, ~20% execution probability",
             examples=[
-                'kinda.runtime.rarely(lambda: detailed_debug_log())',
-                'kinda.runtime.rarely(lambda: expensive_validation())'
-            ]
+                "kinda.runtime.rarely(lambda: detailed_debug_log())",
+                "kinda.runtime.rarely(lambda: expensive_validation())",
+            ],
         )
 
         # kinda_repeat implementation
-        self.construct_registry['kinda_repeat'] = ConstructImplementation(
-            construct_name='kinda_repeat',
+        self.construct_registry["kinda_repeat"] = ConstructImplementation(
+            construct_name="kinda_repeat",
             language=self.language,
-            template='kinda.runtime.kinda_repeat({count}, lambda: {body})',
-            dependencies=['kinda.runtime'],
-            performance_notes='Higher overhead, fuzzy iteration count',
+            template="kinda.runtime.kinda_repeat({count}, lambda: {body})",
+            dependencies=["kinda.runtime"],
+            performance_notes="Higher overhead, fuzzy iteration count",
             examples=[
-                'kinda.runtime.kinda_repeat(10, lambda: process_item())',
-                'kinda.runtime.kinda_repeat(5, lambda: attempt_connection())'
-            ]
+                "kinda.runtime.kinda_repeat(10, lambda: process_item())",
+                "kinda.runtime.kinda_repeat(5, lambda: attempt_connection())",
+            ],
         )
 
         # maybe_for implementation (fuzzy loop iteration)
-        self.construct_registry['maybe_for'] = ConstructImplementation(
-            construct_name='maybe_for',
+        self.construct_registry["maybe_for"] = ConstructImplementation(
+            construct_name="maybe_for",
             language=self.language,
-            template='kinda.runtime.maybe_for({iterable}, lambda item: {body})',
-            dependencies=['kinda.runtime'],
-            performance_notes='Variable overhead, probabilistic iteration',
+            template="kinda.runtime.maybe_for({iterable}, lambda item: {body})",
+            dependencies=["kinda.runtime"],
+            performance_notes="Variable overhead, probabilistic iteration",
             examples=[
-                'kinda.runtime.maybe_for(items, lambda item: process(item))',
-                'kinda.runtime.maybe_for(range(10), lambda i: optional_step(i))'
-            ]
+                "kinda.runtime.maybe_for(items, lambda item: process(item))",
+                "kinda.runtime.maybe_for(range(10), lambda i: optional_step(i))",
+            ],
         )
 
         # welp implementation (graceful fallback)
-        self.construct_registry['welp'] = ConstructImplementation(
-            construct_name='welp',
+        self.construct_registry["welp"] = ConstructImplementation(
+            construct_name="welp",
             language=self.language,
-            template='kinda.runtime.welp(lambda: {primary}, lambda: {fallback})',
-            dependencies=['kinda.runtime'],
-            performance_notes='Overhead only on exceptions, graceful error handling',
+            template="kinda.runtime.welp(lambda: {primary}, lambda: {fallback})",
+            dependencies=["kinda.runtime"],
+            performance_notes="Overhead only on exceptions, graceful error handling",
             examples=[
-                'kinda.runtime.welp(lambda: risky_operation(), lambda: safe_default())',
-                'kinda.runtime.welp(lambda: parse_config(), lambda: default_config())'
-            ]
+                "kinda.runtime.welp(lambda: risky_operation(), lambda: safe_default())",
+                "kinda.runtime.welp(lambda: parse_config(), lambda: default_config())",
+            ],
         )
 
         # assert_probability implementation
-        self.construct_registry['assert_probability'] = ConstructImplementation(
-            construct_name='assert_probability',
+        self.construct_registry["assert_probability"] = ConstructImplementation(
+            construct_name="assert_probability",
             language=self.language,
-            template='kinda.runtime.assert_probability({condition}, {expected_prob})',
-            dependencies=['kinda.runtime'],
-            performance_notes='Testing overhead, statistical validation',
+            template="kinda.runtime.assert_probability({condition}, {expected_prob})",
+            dependencies=["kinda.runtime"],
+            performance_notes="Testing overhead, statistical validation",
             examples=[
-                'kinda.runtime.assert_probability(sometimes_result, 0.7)',
-                'kinda.runtime.assert_probability(maybe_result, 0.5)'
-            ]
+                "kinda.runtime.assert_probability(sometimes_result, 0.7)",
+                "kinda.runtime.assert_probability(maybe_result, 0.5)",
+            ],
         )
 
     def generate_header(self, dependencies: Set[str]) -> str:
@@ -172,11 +172,11 @@ class PythonEnhancedTarget(LanguageTarget):
         header_parts.append("")
 
         # Import kinda runtime if needed
-        if any('kinda.runtime' in dep for dep in dependencies):
+        if any("kinda.runtime" in dep for dep in dependencies):
             header_parts.append("import kinda.runtime")
 
         # Import other dependencies
-        other_deps = {dep for dep in dependencies if not dep.startswith('kinda.')}
+        other_deps = {dep for dep in dependencies if not dep.startswith("kinda.")}
         for dep in sorted(other_deps):
             header_parts.append(f"import {dep}")
 
@@ -207,21 +207,21 @@ class PythonEnhancedTarget(LanguageTarget):
         template = impl.template
 
         # Handle different parameter types
-        if 'value' in parameters:
-            template = template.replace('{value}', str(parameters['value']))
+        if "value" in parameters:
+            template = template.replace("{value}", str(parameters["value"]))
 
-        if 'body' in parameters:
-            template = template.replace('{body}', parameters['body'])
+        if "body" in parameters:
+            template = template.replace("{body}", parameters["body"])
 
-        if 'count' in parameters:
-            template = template.replace('{count}', str(parameters['count']))
+        if "count" in parameters:
+            template = template.replace("{count}", str(parameters["count"]))
 
-        if 'args' in parameters:
-            if isinstance(parameters['args'], list):
-                args_str = ', '.join(str(arg) for arg in parameters['args'])
+        if "args" in parameters:
+            if isinstance(parameters["args"], list):
+                args_str = ", ".join(str(arg) for arg in parameters["args"])
             else:
-                args_str = str(parameters['args'])
-            template = template.replace('{args}', args_str)
+                args_str = str(parameters["args"])
+            template = template.replace("{args}", args_str)
 
         return template
 
@@ -231,20 +231,21 @@ class PythonEnhancedTarget(LanguageTarget):
 
         try:
             # Try to compile the code
-            compile(code, '<generated>', 'exec')
+            compile(code, "<generated>", "exec")
         except SyntaxError as e:
             errors.append(f"Syntax error in generated code: {e}")
         except Exception as e:
             errors.append(f"Code validation error: {e}")
 
         # Check for common issues
-        if 'kinda.runtime' in code and 'import kinda.runtime' not in code:
+        if "kinda.runtime" in code and "import kinda.runtime" not in code:
             errors.append("Missing kinda.runtime import")
 
         # Check for unresolved template variables
-        if '{' in code and '}' in code:
+        if "{" in code and "}" in code:
             import re
-            unresolved = re.findall(r'\{(\w+)\}', code)
+
+            unresolved = re.findall(r"\{(\w+)\}", code)
             if unresolved:
                 errors.append(f"Unresolved template variables: {', '.join(unresolved)}")
 
@@ -256,17 +257,17 @@ class PythonEnhancedTarget(LanguageTarget):
 
         # Python-specific adjustments
         python_adjustments = {
-            'execution_overhead': 0.8,  # Python is generally slower but more dynamic
-            'memory_overhead': 1.2,     # Higher memory usage due to Python objects
-            'compilation_time': 0.0     # No compilation time for Python
+            "execution_overhead": 0.8,  # Python is generally slower but more dynamic
+            "memory_overhead": 1.2,  # Higher memory usage due to Python objects
+            "compilation_time": 0.0,  # No compilation time for Python
         }
 
         for key, multiplier in python_adjustments.items():
             base_estimates[key] *= multiplier
 
         # Add Python-specific metrics
-        base_estimates['startup_time'] = len(constructs_used) * 0.1  # Import overhead
-        base_estimates['gc_pressure'] = len(constructs_used) * 0.5   # Garbage collection
+        base_estimates["startup_time"] = len(constructs_used) * 0.1  # Import overhead
+        base_estimates["gc_pressure"] = len(constructs_used) * 0.5  # Garbage collection
 
         return base_estimates
 

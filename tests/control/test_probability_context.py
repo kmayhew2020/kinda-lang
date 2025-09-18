@@ -14,7 +14,7 @@ from kinda.control.context import (
     ProbabilityMode,
     get_construct_probability,
     is_deterministic_mode,
-    is_testing_mode
+    is_testing_mode,
 )
 
 
@@ -239,9 +239,7 @@ class TestProbabilityModes:
     def test_normal_mode_behavior(self):
         """Test normal mode probability behavior"""
         profile = ProbabilityProfile(
-            name="normal",
-            description="Normal mode",
-            mode=ProbabilityMode.NORMAL
+            name="normal", description="Normal mode", mode=ProbabilityMode.NORMAL
         )
 
         with ProbabilityContext(profile=profile) as ctx:

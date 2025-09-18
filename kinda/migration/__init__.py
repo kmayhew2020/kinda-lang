@@ -10,10 +10,10 @@ from .strategy import MigrationStrategy, FourPhaseStrategy
 from .utilities import MigrationUtilities
 
 __all__ = [
-    'enhance',
-    'enhance_class',
-    'kinda_migrate',
-    'MigrationStrategy',
-    'FourPhaseStrategy',
-    'MigrationUtilities'
+    "enhance",
+    "enhance_class",
+    "kinda_migrate",
+    "MigrationStrategy",
+    "FourPhaseStrategy",
+    "MigrationUtilities",
 ]

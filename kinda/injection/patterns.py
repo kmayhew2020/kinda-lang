@@ -16,6 +16,7 @@ from .ast_analyzer import PatternType, SecurityLevel
 @dataclass
 class PatternInfo:
     """Information about an injection pattern"""
+
     name: str
     pattern_type: PatternType
     description: str
@@ -60,28 +61,32 @@ class KindaIntPattern(InjectionPattern):
     """Pattern for injecting kinda_int behavior into integer assignments"""
 
     def __init__(self):
-        super().__init__(PatternInfo(
-            name="Kinda Integer",
-            pattern_type=PatternType.KINDA_INT,
-            description="Adds fuzzy noise to integer values",
-            default_probability=1.0,  # Always fuzzy when applied
-            security_level=SecurityLevel.SAFE,
-            complexity="basic",
-            prerequisites=["kinda.kinda_int"],
-            examples=[
-                "x = 42  # becomes x = kinda.kinda_int(42)",
-                "count = 10  # becomes count = kinda.kinda_int(10)"
-            ]
-        ))
+        super().__init__(
+            PatternInfo(
+                name="Kinda Integer",
+                pattern_type=PatternType.KINDA_INT,
+                description="Adds fuzzy noise to integer values",
+                default_probability=1.0,  # Always fuzzy when applied
+                security_level=SecurityLevel.SAFE,
+                complexity="basic",
+                prerequisites=["kinda.kinda_int"],
+                examples=[
+                    "x = 42  # becomes x = kinda.kinda_int(42)",
+                    "count = 10  # becomes count = kinda.kinda_int(10)",
+                ],
+            )
+        )
 
     def detect(self, node: ast.AST) -> bool:
         """Detect integer assignment patterns"""
         if isinstance(node, ast.Assign):
             # Single target assignment of integer constant
-            if (len(node.targets) == 1 and
-                isinstance(node.targets[0], ast.Name) and
-                isinstance(node.value, ast.Constant) and
-                isinstance(node.value.value, int)):
+            if (
+                len(node.targets) == 1
+                and isinstance(node.targets[0], ast.Name)
+                and isinstance(node.value, ast.Constant)
+                and isinstance(node.value.value, int)
+            ):
                 return True
         return False
 
@@ -90,7 +95,7 @@ class KindaIntPattern(InjectionPattern):
         if isinstance(node, ast.Assign):
             target = node.targets[0]
             # Avoid system/reserved variables
-            reserved_names = {'__file__', '__name__', '__package__', '__version__'}
+            reserved_names = {"__file__", "__name__", "__package__", "__version__"}
             if isinstance(target, ast.Name) and target.id in reserved_names:
                 return False
         return True
@@ -104,27 +109,31 @@ class KindaFloatPattern(InjectionPattern):
     """Pattern for injecting kinda_float behavior into float assignments"""
 
     def __init__(self):
-        super().__init__(PatternInfo(
-            name="Kinda Float",
-            pattern_type=PatternType.KINDA_FLOAT,
-            description="Adds fuzzy variance to floating-point values",
-            default_probability=1.0,
-            security_level=SecurityLevel.SAFE,
-            complexity="basic",
-            prerequisites=["kinda.kinda_float"],
-            examples=[
-                "pi = 3.14159  # becomes pi = kinda.kinda_float(3.14159)",
-                "ratio = 0.618  # becomes ratio = kinda.kinda_float(0.618)"
-            ]
-        ))
+        super().__init__(
+            PatternInfo(
+                name="Kinda Float",
+                pattern_type=PatternType.KINDA_FLOAT,
+                description="Adds fuzzy variance to floating-point values",
+                default_probability=1.0,
+                security_level=SecurityLevel.SAFE,
+                complexity="basic",
+                prerequisites=["kinda.kinda_float"],
+                examples=[
+                    "pi = 3.14159  # becomes pi = kinda.kinda_float(3.14159)",
+                    "ratio = 0.618  # becomes ratio = kinda.kinda_float(0.618)",
+                ],
+            )
+        )
 
     def detect(self, node: ast.AST) -> bool:
         """Detect float assignment patterns"""
         if isinstance(node, ast.Assign):
-            if (len(node.targets) == 1 and
-                isinstance(node.targets[0], ast.Name) and
-                isinstance(node.value, ast.Constant) and
-                isinstance(node.value.value, float)):
+            if (
+                len(node.targets) == 1
+                and isinstance(node.targets[0], ast.Name)
+                and isinstance(node.value, ast.Constant)
+                and isinstance(node.value.value, float)
+            ):
                 return True
         return False
 
@@ -146,24 +155,26 @@ class SortaPrintPattern(InjectionPattern):
     """Pattern for making print statements probabilistic"""
 
     def __init__(self):
-        super().__init__(PatternInfo(
-            name="Sorta Print",
-            pattern_type=PatternType.SORTA_PRINT,
-            description="Makes print statements execute probabilistically",
-            default_probability=0.8,  # 80% chance of printing
-            security_level=SecurityLevel.SAFE,
-            complexity="basic",
-            prerequisites=["kinda.sorta_print"],
-            examples=[
-                'print("Hello")  # becomes kinda.sorta_print("Hello")',
-                'print(f"Value: {x}")  # becomes kinda.sorta_print(f"Value: {x}")'
-            ]
-        ))
+        super().__init__(
+            PatternInfo(
+                name="Sorta Print",
+                pattern_type=PatternType.SORTA_PRINT,
+                description="Makes print statements execute probabilistically",
+                default_probability=0.8,  # 80% chance of printing
+                security_level=SecurityLevel.SAFE,
+                complexity="basic",
+                prerequisites=["kinda.sorta_print"],
+                examples=[
+                    'print("Hello")  # becomes kinda.sorta_print("Hello")',
+                    'print(f"Value: {x}")  # becomes kinda.sorta_print(f"Value: {x}")',
+                ],
+            )
+        )
 
     def detect(self, node: ast.AST) -> bool:
         """Detect print function calls"""
         if isinstance(node, ast.Call):
-            if isinstance(node.func, ast.Name) and node.func.id == 'print':
+            if isinstance(node.func, ast.Name) and node.func.id == "print":
                 return True
         return False
 
@@ -181,19 +192,21 @@ class SometimesPattern(InjectionPattern):
     """Pattern for making conditional statements probabilistic"""
 
     def __init__(self):
-        super().__init__(PatternInfo(
-            name="Sometimes",
-            pattern_type=PatternType.SOMETIMES,
-            description="Makes conditional execution probabilistic",
-            default_probability=0.7,  # 70% execution chance
-            security_level=SecurityLevel.CAUTION,
-            complexity="intermediate",
-            prerequisites=["kinda.sometimes"],
-            examples=[
-                'if condition:  # becomes kinda.sometimes(lambda: ...)',
-                'if x > 0:  # becomes probabilistic execution'
-            ]
-        ))
+        super().__init__(
+            PatternInfo(
+                name="Sometimes",
+                pattern_type=PatternType.SOMETIMES,
+                description="Makes conditional execution probabilistic",
+                default_probability=0.7,  # 70% execution chance
+                security_level=SecurityLevel.CAUTION,
+                complexity="intermediate",
+                prerequisites=["kinda.sometimes"],
+                examples=[
+                    "if condition:  # becomes kinda.sometimes(lambda: ...)",
+                    "if x > 0:  # becomes probabilistic execution",
+                ],
+            )
+        )
 
     def detect(self, node: ast.AST) -> bool:
         """Detect if statements suitable for sometimes injection"""
@@ -224,9 +237,9 @@ class SometimesPattern(InjectionPattern):
                 return True
             # Check for file operations, network calls, etc.
             if isinstance(stmt, ast.Call):
-                if hasattr(stmt.func, 'attr'):
+                if hasattr(stmt.func, "attr"):
                     attr = stmt.func.attr
-                    if attr in {'write', 'read', 'open', 'close', 'send', 'recv'}:
+                    if attr in {"write", "read", "open", "close", "send", "recv"}:
                         return True
         return False
 
@@ -235,26 +248,30 @@ class KindaRepeatPattern(InjectionPattern):
     """Pattern for making loops fuzzy with kinda_repeat"""
 
     def __init__(self):
-        super().__init__(PatternInfo(
-            name="Kinda Repeat",
-            pattern_type=PatternType.KINDA_REPEAT,
-            description="Makes loop iterations fuzzy and probabilistic",
-            default_probability=1.0,  # Always apply when detected
-            security_level=SecurityLevel.CAUTION,
-            complexity="intermediate",
-            prerequisites=["kinda.kinda_repeat"],
-            examples=[
-                'for i in range(10):  # becomes kinda.kinda_repeat(10, ...)',
-                'for _ in range(5):  # becomes fuzzy iteration count'
-            ]
-        ))
+        super().__init__(
+            PatternInfo(
+                name="Kinda Repeat",
+                pattern_type=PatternType.KINDA_REPEAT,
+                description="Makes loop iterations fuzzy and probabilistic",
+                default_probability=1.0,  # Always apply when detected
+                security_level=SecurityLevel.CAUTION,
+                complexity="intermediate",
+                prerequisites=["kinda.kinda_repeat"],
+                examples=[
+                    "for i in range(10):  # becomes kinda.kinda_repeat(10, ...)",
+                    "for _ in range(5):  # becomes fuzzy iteration count",
+                ],
+            )
+        )
 
     def detect(self, node: ast.AST) -> bool:
         """Detect for loops with range() suitable for kinda_repeat"""
         if isinstance(node, ast.For):
-            if (isinstance(node.iter, ast.Call) and
-                isinstance(node.iter.func, ast.Name) and
-                node.iter.func.id == 'range'):
+            if (
+                isinstance(node.iter, ast.Call)
+                and isinstance(node.iter.func, ast.Name)
+                and node.iter.func.id == "range"
+            ):
                 return True
         return False
 
@@ -276,9 +293,9 @@ class KindaRepeatPattern(InjectionPattern):
                 return True
             # Check for file operations in loops
             if isinstance(stmt, ast.Call):
-                if hasattr(stmt.func, 'attr'):
+                if hasattr(stmt.func, "attr"):
                     attr = stmt.func.attr
-                    if attr in {'write', 'append', 'insert', 'delete'}:
+                    if attr in {"write", "append", "insert", "delete"}:
                         return True
         return False
 
@@ -297,7 +314,7 @@ class PatternLibrary:
             KindaFloatPattern(),
             SortaPrintPattern(),
             SometimesPattern(),
-            KindaRepeatPattern()
+            KindaRepeatPattern(),
         ]
 
         for pattern in patterns:
@@ -315,24 +332,26 @@ class PatternLibrary:
         """Get patterns by complexity level"""
         return [p for p in self.patterns.values() if p.info.complexity == complexity]
 
-    def get_patterns_by_security_level(self, security_level: SecurityLevel) -> List[InjectionPattern]:
+    def get_patterns_by_security_level(
+        self, security_level: SecurityLevel
+    ) -> List[InjectionPattern]:
         """Get patterns by security level"""
         return [p for p in self.patterns.values() if p.info.security_level == security_level]
 
     def validate_pattern_compatibility(self, patterns: List[PatternType]) -> Dict[str, Any]:
         """Check compatibility between multiple patterns"""
-        results = {
-            'compatible': True,
-            'conflicts': [],
-            'warnings': []
-        }
+        results = {"compatible": True, "conflicts": [], "warnings": []}
 
         # Check for known conflicts
         if PatternType.KINDA_INT in patterns and PatternType.KINDA_FLOAT in patterns:
-            results['warnings'].append("Both kinda_int and kinda_float enabled - ensure type consistency")
+            results["warnings"].append(
+                "Both kinda_int and kinda_float enabled - ensure type consistency"
+            )
 
         if PatternType.SOMETIMES in patterns and PatternType.KINDA_REPEAT in patterns:
-            results['warnings'].append("Sometimes and kinda_repeat together may create complex probability interactions")
+            results["warnings"].append(
+                "Sometimes and kinda_repeat together may create complex probability interactions"
+            )
 
         return results
 

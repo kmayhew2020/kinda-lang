@@ -21,6 +21,7 @@ from .decorators import EnhancementConfig
 
 class MigrationPhase(Enum):
     """Four-phase migration strategy phases"""
+
     FUNCTION_LEVEL = 1
     CLASS_LEVEL = 2
     MODULE_LEVEL = 3
@@ -29,6 +30,7 @@ class MigrationPhase(Enum):
 
 class MigrationStatus(Enum):
     """Status of migration operations"""
+
     NOT_STARTED = "not_started"
     IN_PROGRESS = "in_progress"
     COMPLETED = "completed"
@@ -39,6 +41,7 @@ class MigrationStatus(Enum):
 @dataclass
 class MigrationResult:
     """Result of a migration operation"""
+
     success: bool
     phase: MigrationPhase
     files_processed: int
@@ -62,6 +65,7 @@ class MigrationResult:
 @dataclass
 class MigrationPlan:
     """Plan for migrating a Python project to kinda-lang"""
+
     target_directory: Path
     phases: List[MigrationPhase]
     pattern_progression: Dict[MigrationPhase, Set[PatternType]]
@@ -72,51 +76,88 @@ class MigrationPlan:
     validation_enabled: bool = True
 
     @classmethod
-    def conservative_plan(cls, target_dir: Path) -> 'MigrationPlan':
+    def conservative_plan(cls, target_dir: Path) -> "MigrationPlan":
         """Create a conservative migration plan"""
         return cls(
             target_directory=target_dir,
             phases=[MigrationPhase.FUNCTION_LEVEL, MigrationPhase.CLASS_LEVEL],
             pattern_progression={
                 MigrationPhase.FUNCTION_LEVEL: {PatternType.KINDA_INT, PatternType.KINDA_FLOAT},
-                MigrationPhase.CLASS_LEVEL: {PatternType.KINDA_INT, PatternType.KINDA_FLOAT, PatternType.SORTA_PRINT}
+                MigrationPhase.CLASS_LEVEL: {
+                    PatternType.KINDA_INT,
+                    PatternType.KINDA_FLOAT,
+                    PatternType.SORTA_PRINT,
+                },
             },
-            exclude_files={'__init__.py', 'setup.py', 'conftest.py'},
-            safety_level="safe"
+            exclude_files={"__init__.py", "setup.py", "conftest.py"},
+            safety_level="safe",
         )
 
     @classmethod
-    def standard_plan(cls, target_dir: Path) -> 'MigrationPlan':
+    def standard_plan(cls, target_dir: Path) -> "MigrationPlan":
         """Create a standard migration plan"""
         return cls(
             target_directory=target_dir,
-            phases=[MigrationPhase.FUNCTION_LEVEL, MigrationPhase.CLASS_LEVEL, MigrationPhase.MODULE_LEVEL],
+            phases=[
+                MigrationPhase.FUNCTION_LEVEL,
+                MigrationPhase.CLASS_LEVEL,
+                MigrationPhase.MODULE_LEVEL,
+            ],
             pattern_progression={
-                MigrationPhase.FUNCTION_LEVEL: {PatternType.KINDA_INT, PatternType.KINDA_FLOAT, PatternType.SORTA_PRINT},
-                MigrationPhase.CLASS_LEVEL: {PatternType.KINDA_INT, PatternType.KINDA_FLOAT, PatternType.SORTA_PRINT, PatternType.SOMETIMES},
-                MigrationPhase.MODULE_LEVEL: {PatternType.KINDA_INT, PatternType.KINDA_FLOAT, PatternType.SORTA_PRINT,
-                                             PatternType.SOMETIMES, PatternType.KINDA_REPEAT}
+                MigrationPhase.FUNCTION_LEVEL: {
+                    PatternType.KINDA_INT,
+                    PatternType.KINDA_FLOAT,
+                    PatternType.SORTA_PRINT,
+                },
+                MigrationPhase.CLASS_LEVEL: {
+                    PatternType.KINDA_INT,
+                    PatternType.KINDA_FLOAT,
+                    PatternType.SORTA_PRINT,
+                    PatternType.SOMETIMES,
+                },
+                MigrationPhase.MODULE_LEVEL: {
+                    PatternType.KINDA_INT,
+                    PatternType.KINDA_FLOAT,
+                    PatternType.SORTA_PRINT,
+                    PatternType.SOMETIMES,
+                    PatternType.KINDA_REPEAT,
+                },
             },
-            exclude_files={'__init__.py', 'setup.py'},
-            safety_level="safe"
+            exclude_files={"__init__.py", "setup.py"},
+            safety_level="safe",
         )
 
     @classmethod
-    def aggressive_plan(cls, target_dir: Path) -> 'MigrationPlan':
+    def aggressive_plan(cls, target_dir: Path) -> "MigrationPlan":
         """Create an aggressive migration plan"""
         return cls(
             target_directory=target_dir,
             phases=list(MigrationPhase),
             pattern_progression={
-                MigrationPhase.FUNCTION_LEVEL: {PatternType.KINDA_INT, PatternType.KINDA_FLOAT, PatternType.SORTA_PRINT},
-                MigrationPhase.CLASS_LEVEL: {PatternType.KINDA_INT, PatternType.KINDA_FLOAT, PatternType.SORTA_PRINT,
-                                           PatternType.SOMETIMES, PatternType.MAYBE},
-                MigrationPhase.MODULE_LEVEL: {PatternType.KINDA_INT, PatternType.KINDA_FLOAT, PatternType.SORTA_PRINT,
-                                             PatternType.SOMETIMES, PatternType.MAYBE, PatternType.KINDA_REPEAT},
-                MigrationPhase.PROJECT_WIDE: set(PatternType)
+                MigrationPhase.FUNCTION_LEVEL: {
+                    PatternType.KINDA_INT,
+                    PatternType.KINDA_FLOAT,
+                    PatternType.SORTA_PRINT,
+                },
+                MigrationPhase.CLASS_LEVEL: {
+                    PatternType.KINDA_INT,
+                    PatternType.KINDA_FLOAT,
+                    PatternType.SORTA_PRINT,
+                    PatternType.SOMETIMES,
+                    PatternType.MAYBE,
+                },
+                MigrationPhase.MODULE_LEVEL: {
+                    PatternType.KINDA_INT,
+                    PatternType.KINDA_FLOAT,
+                    PatternType.SORTA_PRINT,
+                    PatternType.SOMETIMES,
+                    PatternType.MAYBE,
+                    PatternType.KINDA_REPEAT,
+                },
+                MigrationPhase.PROJECT_WIDE: set(PatternType),
             },
-            exclude_files={'setup.py'},
-            safety_level="caution"
+            exclude_files={"setup.py"},
+            safety_level="caution",
         )
 
 
@@ -166,7 +207,7 @@ class MigrationStrategy(ABC):
             "total_files_processed": sum(r.files_processed for r in self.results),
             "total_functions_enhanced": sum(r.functions_enhanced for r in self.results),
             "total_errors": sum(len(r.errors) for r in self.results),
-            "total_warnings": sum(len(r.warnings) for r in self.results)
+            "total_warnings": sum(len(r.warnings) for r in self.results),
         }
 
 
@@ -181,11 +222,7 @@ class FourPhaseStrategy(MigrationStrategy):
     def execute_phase(self, phase: MigrationPhase) -> MigrationResult:
         """Execute specific phase of four-phase strategy"""
         result = MigrationResult(
-            success=True,
-            phase=phase,
-            files_processed=0,
-            functions_enhanced=0,
-            patterns_applied=[]
+            success=True, phase=phase, files_processed=0, functions_enhanced=0, patterns_applied=[]
         )
 
         try:
@@ -259,10 +296,12 @@ class FourPhaseStrategy(MigrationStrategy):
 
         for root, dirs, files in os.walk(self.plan.target_directory):
             # Skip common non-code directories
-            dirs[:] = [d for d in dirs if d not in {'.git', '.venv', '__pycache__', '.pytest_cache'}]
+            dirs[:] = [
+                d for d in dirs if d not in {".git", ".venv", "__pycache__", ".pytest_cache"}
+            ]
 
             for file in files:
-                if file.endswith('.py'):
+                if file.endswith(".py"):
                     file_path = Path(root) / file
                     python_files.append(file_path)
 
@@ -278,12 +317,14 @@ class FourPhaseStrategy(MigrationStrategy):
 
         # Skip test files in early phases
         if self.current_phase in [MigrationPhase.FUNCTION_LEVEL, MigrationPhase.CLASS_LEVEL]:
-            if 'test' in file_name.lower():
+            if "test" in file_name.lower():
                 return False
 
         return True
 
-    def _process_file_functions(self, file_path: Path, patterns: Set[PatternType], result: MigrationResult):
+    def _process_file_functions(
+        self, file_path: Path, patterns: Set[PatternType], result: MigrationResult
+    ):
         """Process individual functions in a file"""
         try:
             # Backup file if enabled
@@ -291,7 +332,7 @@ class FourPhaseStrategy(MigrationStrategy):
                 self._backup_file(file_path)
 
             # Parse file
-            with open(file_path, 'r', encoding='utf-8') as f:
+            with open(file_path, "r", encoding="utf-8") as f:
                 source = f.read()
 
             tree = ast.parse(source, filename=str(file_path))
@@ -315,13 +356,15 @@ class FourPhaseStrategy(MigrationStrategy):
         except Exception as e:
             result.add_error(f"Failed to process {file_path}: {e}")
 
-    def _process_file_classes(self, file_path: Path, patterns: Set[PatternType], result: MigrationResult):
+    def _process_file_classes(
+        self, file_path: Path, patterns: Set[PatternType], result: MigrationResult
+    ):
         """Process classes in a file"""
         try:
             if self.plan.backup_enabled:
                 self._backup_file(file_path)
 
-            with open(file_path, 'r', encoding='utf-8') as f:
+            with open(file_path, "r", encoding="utf-8") as f:
                 source = f.read()
 
             tree = ast.parse(source, filename=str(file_path))
@@ -345,17 +388,16 @@ class FourPhaseStrategy(MigrationStrategy):
         except Exception as e:
             result.add_error(f"Failed to process classes in {file_path}: {e}")
 
-    def _process_module(self, module_path: Path, patterns: Set[PatternType], result: MigrationResult):
+    def _process_module(
+        self, module_path: Path, patterns: Set[PatternType], result: MigrationResult
+    ):
         """Process entire module"""
         # For module-level processing, we enhance the entire module as a unit
         try:
             if self.plan.backup_enabled:
                 self._backup_file(module_path)
 
-            config = InjectionConfig(
-                enabled_patterns=patterns,
-                safety_level=self.plan.safety_level
-            )
+            config = InjectionConfig(enabled_patterns=patterns, safety_level=self.plan.safety_level)
 
             injection_result = self.injection_engine.inject_file(module_path, config)
 
@@ -364,7 +406,9 @@ class FourPhaseStrategy(MigrationStrategy):
                 result.functions_enhanced += len(injection_result.applied_patterns)
                 result.patterns_applied.extend(injection_result.applied_patterns)
             else:
-                result.add_error(f"Module injection failed for {module_path}: {injection_result.errors}")
+                result.add_error(
+                    f"Module injection failed for {module_path}: {injection_result.errors}"
+                )
 
         except Exception as e:
             result.add_error(f"Failed to process module {module_path}: {e}")
@@ -404,11 +448,11 @@ class FourPhaseStrategy(MigrationStrategy):
     def _should_enhance_function(self, func_node: ast.FunctionDef) -> bool:
         """Check if function should be enhanced"""
         # Skip special methods
-        if func_node.name.startswith('__') and func_node.name.endswith('__'):
+        if func_node.name.startswith("__") and func_node.name.endswith("__"):
             return False
 
         # Skip functions that are already enhanced
-        if any(isinstance(d, ast.Name) and 'enhance' in d.id for d in func_node.decorator_list):
+        if any(isinstance(d, ast.Name) and "enhance" in d.id for d in func_node.decorator_list):
             return False
 
         return True
@@ -416,12 +460,14 @@ class FourPhaseStrategy(MigrationStrategy):
     def _should_enhance_class(self, class_node: ast.ClassDef) -> bool:
         """Check if class should be enhanced"""
         # Skip classes that are already enhanced
-        if any(isinstance(d, ast.Name) and 'enhance' in d.id for d in class_node.decorator_list):
+        if any(isinstance(d, ast.Name) and "enhance" in d.id for d in class_node.decorator_list):
             return False
 
         return True
 
-    def _enhance_function_node(self, func_node: ast.FunctionDef, patterns: Set[PatternType], file_path: Path) -> bool:
+    def _enhance_function_node(
+        self, func_node: ast.FunctionDef, patterns: Set[PatternType], file_path: Path
+    ) -> bool:
         """Enhance a specific function node"""
         # This is a simplified version - in practice, we would modify the AST
         # and write back the enhanced code
@@ -432,7 +478,9 @@ class FourPhaseStrategy(MigrationStrategy):
         except Exception:
             return False
 
-    def _enhance_class_node(self, class_node: ast.ClassDef, patterns: Set[PatternType], file_path: Path) -> bool:
+    def _enhance_class_node(
+        self, class_node: ast.ClassDef, patterns: Set[PatternType], file_path: Path
+    ) -> bool:
         """Enhance a specific class node"""
         try:
             # Enhance methods in the class
@@ -449,7 +497,7 @@ class FourPhaseStrategy(MigrationStrategy):
 
         for file_path in self._find_python_files():
             # Each Python file is a module
-            if file_path.name != '__init__.py':  # Skip package init files
+            if file_path.name != "__init__.py":  # Skip package init files
                 modules.append(file_path)
 
         return modules
@@ -465,11 +513,7 @@ class IncrementalStrategy(MigrationStrategy):
     def execute_phase(self, phase: MigrationPhase) -> MigrationResult:
         """Execute phase in small increments"""
         result = MigrationResult(
-            success=True,
-            phase=phase,
-            files_processed=0,
-            functions_enhanced=0,
-            patterns_applied=[]
+            success=True, phase=phase, files_processed=0, functions_enhanced=0, patterns_applied=[]
         )
 
         # Find all enhancement targets
@@ -477,7 +521,7 @@ class IncrementalStrategy(MigrationStrategy):
 
         # Process in increments
         for i in range(0, len(targets), self.increment_size):
-            increment_targets = targets[i:i + self.increment_size]
+            increment_targets = targets[i : i + self.increment_size]
             increment_result = self._process_increment(increment_targets, phase)
 
             # Merge results
@@ -506,7 +550,7 @@ class IncrementalStrategy(MigrationStrategy):
             if self._should_process_file(file_path):
                 # Parse file and find targets based on phase
                 try:
-                    with open(file_path, 'r', encoding='utf-8') as f:
+                    with open(file_path, "r", encoding="utf-8") as f:
                         source = f.read()
 
                     tree = ast.parse(source)
@@ -525,14 +569,12 @@ class IncrementalStrategy(MigrationStrategy):
 
         return targets
 
-    def _process_increment(self, targets: List[Tuple[Path, str]], phase: MigrationPhase) -> MigrationResult:
+    def _process_increment(
+        self, targets: List[Tuple[Path, str]], phase: MigrationPhase
+    ) -> MigrationResult:
         """Process a single increment of targets"""
         result = MigrationResult(
-            success=True,
-            phase=phase,
-            files_processed=0,
-            functions_enhanced=0,
-            patterns_applied=[]
+            success=True, phase=phase, files_processed=0, functions_enhanced=0, patterns_applied=[]
         )
 
         processed_files = set()
@@ -556,10 +598,10 @@ class IncrementalStrategy(MigrationStrategy):
         python_files = []
 
         for root, dirs, files in os.walk(self.plan.target_directory):
-            dirs[:] = [d for d in dirs if d not in {'.git', '.venv', '__pycache__'}]
+            dirs[:] = [d for d in dirs if d not in {".git", ".venv", "__pycache__"}]
 
             for file in files:
-                if file.endswith('.py'):
+                if file.endswith(".py"):
                     python_files.append(Path(root) / file)
 
         return python_files

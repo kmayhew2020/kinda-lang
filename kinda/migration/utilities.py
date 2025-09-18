@@ -22,6 +22,7 @@ from .strategy import MigrationPlan, MigrationResult, MigrationPhase
 @dataclass
 class MigrationReport:
     """Comprehensive migration report"""
+
     timestamp: str
     project_path: str
     migration_plan: Dict[str, Any]
@@ -32,13 +33,13 @@ class MigrationReport:
 
     def save_to_file(self, output_path: Path):
         """Save report to JSON file"""
-        with open(output_path, 'w', encoding='utf-8') as f:
+        with open(output_path, "w", encoding="utf-8") as f:
             json.dump(asdict(self), f, indent=2, default=str)
 
     @classmethod
-    def load_from_file(cls, file_path: Path) -> 'MigrationReport':
+    def load_from_file(cls, file_path: Path) -> "MigrationReport":
         """Load report from JSON file"""
-        with open(file_path, 'r', encoding='utf-8') as f:
+        with open(file_path, "r", encoding="utf-8") as f:
             data = json.load(f)
         return cls(**data)
 
@@ -46,6 +47,7 @@ class MigrationReport:
 @dataclass
 class CodeAnalysis:
     """Analysis of code complexity and migration readiness"""
+
     file_path: str
     function_count: int
     class_count: int
@@ -62,8 +64,9 @@ class MigrationUtilities:
     def __init__(self):
         self.injection_engine = InjectionEngine()
 
-    def analyze_project_readiness(self, project_path: Path,
-                                exclude_patterns: Optional[Set[str]] = None) -> Dict[str, Any]:
+    def analyze_project_readiness(
+        self, project_path: Path, exclude_patterns: Optional[Set[str]] = None
+    ) -> Dict[str, Any]:
         """
         Analyze project readiness for kinda-lang migration.
 
@@ -74,19 +77,19 @@ class MigrationUtilities:
         Returns:
             Dictionary with analysis results and recommendations
         """
-        exclude_patterns = exclude_patterns or {'.git', '.venv', '__pycache__', '*.pyc'}
+        exclude_patterns = exclude_patterns or {".git", ".venv", "__pycache__", "*.pyc"}
 
         analysis = {
-            'project_path': str(project_path),
-            'timestamp': datetime.now().isoformat(),
-            'files_analyzed': 0,
-            'total_functions': 0,
-            'total_classes': 0,
-            'complexity_distribution': {},
-            'injection_opportunities': [],
-            'risk_assessment': {},
-            'recommendations': [],
-            'estimated_migration_effort': 'unknown'
+            "project_path": str(project_path),
+            "timestamp": datetime.now().isoformat(),
+            "files_analyzed": 0,
+            "total_functions": 0,
+            "total_classes": 0,
+            "complexity_distribution": {},
+            "injection_opportunities": [],
+            "risk_assessment": {},
+            "recommendations": [],
+            "estimated_migration_effort": "unknown",
         }
 
         python_files = self._find_python_files(project_path, exclude_patterns)
@@ -94,22 +97,22 @@ class MigrationUtilities:
         for file_path in python_files:
             file_analysis = self.analyze_file(file_path)
             if file_analysis:
-                analysis['files_analyzed'] += 1
-                analysis['total_functions'] += file_analysis.function_count
-                analysis['total_classes'] += file_analysis.class_count
-                analysis['injection_opportunities'].extend(file_analysis.injection_opportunities)
+                analysis["files_analyzed"] += 1
+                analysis["total_functions"] += file_analysis.function_count
+                analysis["total_classes"] += file_analysis.class_count
+                analysis["injection_opportunities"].extend(file_analysis.injection_opportunities)
 
         # Calculate complexity distribution
-        analysis['complexity_distribution'] = self._calculate_complexity_distribution(python_files)
+        analysis["complexity_distribution"] = self._calculate_complexity_distribution(python_files)
 
         # Generate risk assessment
-        analysis['risk_assessment'] = self._assess_migration_risks(analysis)
+        analysis["risk_assessment"] = self._assess_migration_risks(analysis)
 
         # Generate recommendations
-        analysis['recommendations'] = self._generate_readiness_recommendations(analysis)
+        analysis["recommendations"] = self._generate_readiness_recommendations(analysis)
 
         # Estimate migration effort
-        analysis['estimated_migration_effort'] = self._estimate_migration_effort(analysis)
+        analysis["estimated_migration_effort"] = self._estimate_migration_effort(analysis)
 
         return analysis
 
@@ -124,7 +127,7 @@ class MigrationUtilities:
             CodeAnalysis object or None if analysis fails
         """
         try:
-            with open(file_path, 'r', encoding='utf-8') as f:
+            with open(file_path, "r", encoding="utf-8") as f:
                 source = f.read()
 
             tree = ast.parse(source, filename=str(file_path))
@@ -140,10 +143,10 @@ class MigrationUtilities:
             injection_points = self.injection_engine.analyzer.find_injection_points(tree)
             opportunities = [
                 {
-                    'pattern': point.pattern_type.value,
-                    'location': f"line {point.location.line}",
-                    'confidence': point.confidence,
-                    'safety_level': point.safety_level.value
+                    "pattern": point.pattern_type.value,
+                    "location": f"line {point.location.line}",
+                    "confidence": point.confidence,
+                    "safety_level": point.safety_level.value,
                 }
                 for point in injection_points
             ]
@@ -167,14 +170,16 @@ class MigrationUtilities:
                 injection_opportunities=opportunities,
                 risks=risks,
                 recommendations=recommendations,
-                estimated_enhancement_impact=impact
+                estimated_enhancement_impact=impact,
             )
 
         except Exception as e:
             print(f"Failed to analyze {file_path}: {e}")
             return None
 
-    def create_migration_backup(self, project_path: Path, backup_name: Optional[str] = None) -> Path:
+    def create_migration_backup(
+        self, project_path: Path, backup_name: Optional[str] = None
+    ) -> Path:
         """
         Create a complete backup of the project before migration.
 
@@ -186,26 +191,28 @@ class MigrationUtilities:
             Path to the backup directory
         """
         if backup_name is None:
-            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             backup_name = f"kinda_migration_backup_{timestamp}"
 
         backup_path = project_path.parent / backup_name
 
         # Create backup
-        shutil.copytree(project_path, backup_path, ignore=shutil.ignore_patterns(
-            '.git', '.venv', '__pycache__', '*.pyc', '.pytest_cache'
-        ))
+        shutil.copytree(
+            project_path,
+            backup_path,
+            ignore=shutil.ignore_patterns(".git", ".venv", "__pycache__", "*.pyc", ".pytest_cache"),
+        )
 
         # Create backup metadata
         metadata = {
-            'backup_timestamp': datetime.now().isoformat(),
-            'original_path': str(project_path),
-            'backup_path': str(backup_path),
-            'kinda_lang_version': '0.5.5-dev',  # Should get from actual version
-            'purpose': 'Pre-migration backup'
+            "backup_timestamp": datetime.now().isoformat(),
+            "original_path": str(project_path),
+            "backup_path": str(backup_path),
+            "kinda_lang_version": "0.5.5-dev",  # Should get from actual version
+            "purpose": "Pre-migration backup",
         }
 
-        with open(backup_path / '.kinda_backup_metadata.json', 'w') as f:
+        with open(backup_path / ".kinda_backup_metadata.json", "w") as f:
             json.dump(metadata, f, indent=2)
 
         return backup_path
@@ -223,11 +230,11 @@ class MigrationUtilities:
         """
         try:
             # Read backup metadata
-            metadata_file = backup_path / '.kinda_backup_metadata.json'
+            metadata_file = backup_path / ".kinda_backup_metadata.json"
             if metadata_file.exists():
-                with open(metadata_file, 'r') as f:
+                with open(metadata_file, "r") as f:
                     metadata = json.load(f)
-                original_path = Path(metadata['original_path'])
+                original_path = Path(metadata["original_path"])
             else:
                 if target_path is None:
                     raise ValueError("No metadata found and no target path specified")
@@ -240,9 +247,11 @@ class MigrationUtilities:
                 shutil.rmtree(restore_path)
 
             # Copy backup to target location
-            shutil.copytree(backup_path, restore_path, ignore=shutil.ignore_patterns(
-                '.kinda_backup_metadata.json'
-            ))
+            shutil.copytree(
+                backup_path,
+                restore_path,
+                ignore=shutil.ignore_patterns(".kinda_backup_metadata.json"),
+            )
 
             return True
 
@@ -250,8 +259,9 @@ class MigrationUtilities:
             print(f"Failed to restore from backup: {e}")
             return False
 
-    def generate_migration_report(self, migration_plan: MigrationPlan,
-                                results: List[MigrationResult]) -> MigrationReport:
+    def generate_migration_report(
+        self, migration_plan: MigrationPlan, results: List[MigrationResult]
+    ) -> MigrationReport:
         """
         Generate comprehensive migration report.
 
@@ -267,25 +277,27 @@ class MigrationUtilities:
         for result in results:
             phase_num = result.phase.value
             results_by_phase[phase_num] = {
-                'success': result.success,
-                'files_processed': result.files_processed,
-                'functions_enhanced': result.functions_enhanced,
-                'patterns_applied': result.patterns_applied,
-                'errors': result.errors,
-                'warnings': result.warnings,
-                'performance_impact': result.performance_impact
+                "success": result.success,
+                "files_processed": result.files_processed,
+                "functions_enhanced": result.functions_enhanced,
+                "patterns_applied": result.patterns_applied,
+                "errors": result.errors,
+                "warnings": result.warnings,
+                "performance_impact": result.performance_impact,
             }
 
         # Calculate summary
         summary = {
-            'total_phases_completed': len([r for r in results if r.success]),
-            'total_phases_planned': len(migration_plan.phases),
-            'total_files_processed': sum(r.files_processed for r in results),
-            'total_functions_enhanced': sum(r.functions_enhanced for r in results),
-            'total_errors': sum(len(r.errors) for r in results),
-            'total_warnings': sum(len(r.warnings) for r in results),
-            'overall_success': all(r.success for r in results),
-            'estimated_performance_impact': max((r.performance_impact for r in results), default=0.0)
+            "total_phases_completed": len([r for r in results if r.success]),
+            "total_phases_planned": len(migration_plan.phases),
+            "total_files_processed": sum(r.files_processed for r in results),
+            "total_functions_enhanced": sum(r.functions_enhanced for r in results),
+            "total_errors": sum(len(r.errors) for r in results),
+            "total_warnings": sum(len(r.warnings) for r in results),
+            "overall_success": all(r.success for r in results),
+            "estimated_performance_impact": max(
+                (r.performance_impact for r in results), default=0.0
+            ),
         }
 
         # Generate recommendations
@@ -301,11 +313,12 @@ class MigrationUtilities:
             results_by_phase=results_by_phase,
             summary=summary,
             recommendations=recommendations,
-            rollback_instructions=rollback_instructions
+            rollback_instructions=rollback_instructions,
         )
 
-    def validate_enhanced_code(self, file_path: Path,
-                             original_backup: Optional[Path] = None) -> Dict[str, Any]:
+    def validate_enhanced_code(
+        self, file_path: Path, original_backup: Optional[Path] = None
+    ) -> Dict[str, Any]:
         """
         Validate enhanced code against original version.
 
@@ -317,42 +330,42 @@ class MigrationUtilities:
             Validation results
         """
         validation = {
-            'file_path': str(file_path),
-            'timestamp': datetime.now().isoformat(),
-            'syntax_valid': False,
-            'imports_preserved': False,
-            'function_signatures_preserved': False,
-            'enhancement_markers_present': False,
-            'errors': [],
-            'warnings': [],
-            'recommendations': []
+            "file_path": str(file_path),
+            "timestamp": datetime.now().isoformat(),
+            "syntax_valid": False,
+            "imports_preserved": False,
+            "function_signatures_preserved": False,
+            "enhancement_markers_present": False,
+            "errors": [],
+            "warnings": [],
+            "recommendations": [],
         }
 
         try:
             # Check syntax validity
-            with open(file_path, 'r', encoding='utf-8') as f:
+            with open(file_path, "r", encoding="utf-8") as f:
                 enhanced_source = f.read()
 
             try:
                 ast.parse(enhanced_source)
-                validation['syntax_valid'] = True
+                validation["syntax_valid"] = True
             except SyntaxError as e:
-                validation['errors'].append(f"Syntax error: {e}")
+                validation["errors"].append(f"Syntax error: {e}")
 
             # Check for enhancement markers
-            if 'kinda' in enhanced_source or '@enhance' in enhanced_source:
-                validation['enhancement_markers_present'] = True
+            if "kinda" in enhanced_source or "@enhance" in enhanced_source:
+                validation["enhancement_markers_present"] = True
 
             # Compare with original if available
             if original_backup and original_backup.exists():
-                with open(original_backup, 'r', encoding='utf-8') as f:
+                with open(original_backup, "r", encoding="utf-8") as f:
                     original_source = f.read()
 
                 comparison = self._compare_code_versions(original_source, enhanced_source)
                 validation.update(comparison)
 
         except Exception as e:
-            validation['errors'].append(f"Validation failed: {e}")
+            validation["errors"].append(f"Validation failed: {e}")
 
         return validation
 
@@ -360,7 +373,7 @@ class MigrationUtilities:
         """Find all Python files in project"""
         python_files = []
 
-        for file_path in project_path.rglob('*.py'):
+        for file_path in project_path.rglob("*.py"):
             # Check exclusion patterns
             if any(pattern in str(file_path) for pattern in exclude_patterns):
                 continue
@@ -385,23 +398,23 @@ class MigrationUtilities:
 
     def _calculate_complexity_distribution(self, files: List[Path]) -> Dict[str, int]:
         """Calculate complexity distribution across files"""
-        distribution = {'low': 0, 'medium': 0, 'high': 0, 'very_high': 0}
+        distribution = {"low": 0, "medium": 0, "high": 0, "very_high": 0}
 
         for file_path in files:
             try:
-                with open(file_path, 'r', encoding='utf-8') as f:
+                with open(file_path, "r", encoding="utf-8") as f:
                     source = f.read()
                 tree = ast.parse(source)
                 complexity = self._calculate_complexity(tree)
 
                 if complexity <= 5:
-                    distribution['low'] += 1
+                    distribution["low"] += 1
                 elif complexity <= 15:
-                    distribution['medium'] += 1
+                    distribution["medium"] += 1
                 elif complexity <= 30:
-                    distribution['high'] += 1
+                    distribution["high"] += 1
                 else:
-                    distribution['very_high'] += 1
+                    distribution["very_high"] += 1
 
             except Exception:
                 continue
@@ -410,29 +423,27 @@ class MigrationUtilities:
 
     def _assess_migration_risks(self, analysis: Dict[str, Any]) -> Dict[str, Any]:
         """Assess migration risks based on analysis"""
-        risks = {
-            'overall_risk': 'low',
-            'specific_risks': [],
-            'mitigation_strategies': []
-        }
+        risks = {"overall_risk": "low", "specific_risks": [], "mitigation_strategies": []}
 
         # Check complexity distribution
-        complexity_dist = analysis['complexity_distribution']
-        high_complexity_files = complexity_dist.get('high', 0) + complexity_dist.get('very_high', 0)
+        complexity_dist = analysis["complexity_distribution"]
+        high_complexity_files = complexity_dist.get("high", 0) + complexity_dist.get("very_high", 0)
 
-        if high_complexity_files > analysis['files_analyzed'] * 0.3:
-            risks['overall_risk'] = 'high'
-            risks['specific_risks'].append('High proportion of complex files')
-            risks['mitigation_strategies'].append('Consider manual review of complex files')
+        if high_complexity_files > analysis["files_analyzed"] * 0.3:
+            risks["overall_risk"] = "high"
+            risks["specific_risks"].append("High proportion of complex files")
+            risks["mitigation_strategies"].append("Consider manual review of complex files")
 
         # Check injection opportunities
-        opportunities = analysis['injection_opportunities']
-        risky_opportunities = [o for o in opportunities if o.get('safety_level') in ['risky', 'dangerous']]
+        opportunities = analysis["injection_opportunities"]
+        risky_opportunities = [
+            o for o in opportunities if o.get("safety_level") in ["risky", "dangerous"]
+        ]
 
         if len(risky_opportunities) > 10:
-            risks['overall_risk'] = 'medium' if risks['overall_risk'] == 'low' else 'high'
-            risks['specific_risks'].append('Many risky injection opportunities detected')
-            risks['mitigation_strategies'].append('Use conservative migration plan')
+            risks["overall_risk"] = "medium" if risks["overall_risk"] == "low" else "high"
+            risks["specific_risks"].append("Many risky injection opportunities detected")
+            risks["mitigation_strategies"].append("Use conservative migration plan")
 
         return risks
 
@@ -441,22 +452,28 @@ class MigrationUtilities:
         recommendations = []
 
         # File count recommendations
-        if analysis['files_analyzed'] > 100:
-            recommendations.append("Large project detected - consider incremental migration strategy")
-        elif analysis['files_analyzed'] < 5:
+        if analysis["files_analyzed"] > 100:
+            recommendations.append(
+                "Large project detected - consider incremental migration strategy"
+            )
+        elif analysis["files_analyzed"] < 5:
             recommendations.append("Small project - suitable for aggressive migration")
 
         # Complexity recommendations
-        complexity_dist = analysis['complexity_distribution']
-        if complexity_dist.get('very_high', 0) > 0:
+        complexity_dist = analysis["complexity_distribution"]
+        if complexity_dist.get("very_high", 0) > 0:
             recommendations.append("Very high complexity files found - manual review recommended")
 
         # Opportunity recommendations
-        opportunities = analysis['injection_opportunities']
+        opportunities = analysis["injection_opportunities"]
         if len(opportunities) < 10:
-            recommendations.append("Limited injection opportunities - migration impact may be minimal")
+            recommendations.append(
+                "Limited injection opportunities - migration impact may be minimal"
+            )
         elif len(opportunities) > 100:
-            recommendations.append("Many injection opportunities - significant enhancement potential")
+            recommendations.append(
+                "Many injection opportunities - significant enhancement potential"
+            )
 
         return recommendations
 
@@ -465,7 +482,7 @@ class MigrationUtilities:
         score = 0
 
         # File count factor
-        file_count = analysis['files_analyzed']
+        file_count = analysis["files_analyzed"]
         if file_count > 100:
             score += 3
         elif file_count > 20:
@@ -474,11 +491,11 @@ class MigrationUtilities:
             score += 1
 
         # Complexity factor
-        complexity_dist = analysis['complexity_distribution']
-        score += complexity_dist.get('high', 0) + complexity_dist.get('very_high', 0) * 2
+        complexity_dist = analysis["complexity_distribution"]
+        score += complexity_dist.get("high", 0) + complexity_dist.get("very_high", 0) * 2
 
         # Opportunity factor
-        opportunities = len(analysis['injection_opportunities'])
+        opportunities = len(analysis["injection_opportunities"])
         if opportunities > 100:
             score += 2
         elif opportunities > 50:
@@ -499,7 +516,7 @@ class MigrationUtilities:
         risks = []
 
         # Check for dangerous imports
-        dangerous_imports = {'os', 'subprocess', 'sys', 'eval', 'exec'}
+        dangerous_imports = {"os", "subprocess", "sys", "eval", "exec"}
         for node in ast.walk(tree):
             if isinstance(node, ast.Import):
                 for alias in node.names:
@@ -507,18 +524,23 @@ class MigrationUtilities:
                         risks.append(f"Dangerous import: {alias.name}")
 
         # Check for eval/exec usage
-        if 'eval(' in source or 'exec(' in source:
+        if "eval(" in source or "exec(" in source:
             risks.append("Dynamic code execution detected")
 
         # Check for file operations
-        if any(op in source for op in ['open(', 'file(', 'write(', 'read(']):
+        if any(op in source for op in ["open(", "file(", "write(", "read("]):
             risks.append("File operations detected")
 
         return risks
 
-    def _generate_file_recommendations(self, function_count: int, class_count: int,
-                                     complexity: int, opportunities: List[Dict[str, Any]],
-                                     risks: List[str]) -> List[str]:
+    def _generate_file_recommendations(
+        self,
+        function_count: int,
+        class_count: int,
+        complexity: int,
+        opportunities: List[Dict[str, Any]],
+        risks: List[str],
+    ) -> List[str]:
         """Generate recommendations for a specific file"""
         recommendations = []
 
@@ -544,32 +566,34 @@ class MigrationUtilities:
 
         # Adjust for opportunity types
         for opp in opportunities:
-            if opp.get('pattern') in ['kinda_repeat', 'sometimes']:
+            if opp.get("pattern") in ["kinda_repeat", "sometimes"]:
                 total_impact += 1.0  # Higher impact patterns
 
         return min(total_impact, 25.0)  # Cap at 25%
 
-    def _generate_migration_recommendations(self, results: List[MigrationResult],
-                                          summary: Dict[str, Any]) -> List[str]:
+    def _generate_migration_recommendations(
+        self, results: List[MigrationResult], summary: Dict[str, Any]
+    ) -> List[str]:
         """Generate recommendations based on migration results"""
         recommendations = []
 
-        if not summary['overall_success']:
+        if not summary["overall_success"]:
             recommendations.append("Migration incomplete - review errors and retry failed phases")
 
-        if summary['total_errors'] > 0:
+        if summary["total_errors"] > 0:
             recommendations.append("Errors detected - manual review recommended")
 
-        if summary['estimated_performance_impact'] > 15:
+        if summary["estimated_performance_impact"] > 15:
             recommendations.append("High performance impact - consider reducing enhancement scope")
 
-        if summary['total_functions_enhanced'] == 0:
+        if summary["total_functions_enhanced"] == 0:
             recommendations.append("No functions enhanced - review migration configuration")
 
         return recommendations
 
-    def _generate_rollback_instructions(self, migration_plan: MigrationPlan,
-                                      results: List[MigrationResult]) -> List[str]:
+    def _generate_rollback_instructions(
+        self, migration_plan: MigrationPlan, results: List[MigrationResult]
+    ) -> List[str]:
         """Generate rollback instructions"""
         instructions = []
 
@@ -589,9 +613,9 @@ class MigrationUtilities:
     def _compare_code_versions(self, original: str, enhanced: str) -> Dict[str, Any]:
         """Compare original and enhanced code versions"""
         comparison = {
-            'imports_preserved': True,
-            'function_signatures_preserved': True,
-            'additional_checks': []
+            "imports_preserved": True,
+            "function_signatures_preserved": True,
+            "additional_checks": [],
         }
 
         try:
@@ -599,24 +623,32 @@ class MigrationUtilities:
             enhanced_tree = ast.parse(enhanced)
 
             # Check imports
-            original_imports = {node.names[0].name for node in ast.walk(original_tree)
-                              if isinstance(node, ast.Import)}
-            enhanced_imports = {node.names[0].name for node in ast.walk(enhanced_tree)
-                              if isinstance(node, ast.Import)}
+            original_imports = {
+                node.names[0].name
+                for node in ast.walk(original_tree)
+                if isinstance(node, ast.Import)
+            }
+            enhanced_imports = {
+                node.names[0].name
+                for node in ast.walk(enhanced_tree)
+                if isinstance(node, ast.Import)
+            }
 
             if not original_imports.issubset(enhanced_imports):
-                comparison['imports_preserved'] = False
+                comparison["imports_preserved"] = False
 
             # Check function signatures (simplified check)
-            original_functions = {node.name for node in ast.walk(original_tree)
-                                if isinstance(node, ast.FunctionDef)}
-            enhanced_functions = {node.name for node in ast.walk(enhanced_tree)
-                                if isinstance(node, ast.FunctionDef)}
+            original_functions = {
+                node.name for node in ast.walk(original_tree) if isinstance(node, ast.FunctionDef)
+            }
+            enhanced_functions = {
+                node.name for node in ast.walk(enhanced_tree) if isinstance(node, ast.FunctionDef)
+            }
 
             if not original_functions.issubset(enhanced_functions):
-                comparison['function_signatures_preserved'] = False
+                comparison["function_signatures_preserved"] = False
 
         except Exception as e:
-            comparison['additional_checks'].append(f"Comparison failed: {e}")
+            comparison["additional_checks"].append(f"Comparison failed: {e}")
 
         return comparison

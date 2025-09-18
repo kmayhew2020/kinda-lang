@@ -9,8 +9,8 @@ from .context import ProbabilityContext, ProbabilityProfile
 from .dynamic import DynamicProbabilityManager, ProbabilityRule
 
 __all__ = [
-    'ProbabilityContext',
-    'ProbabilityProfile',
-    'DynamicProbabilityManager',
-    'ProbabilityRule'
+    "ProbabilityContext",
+    "ProbabilityProfile",
+    "DynamicProbabilityManager",
+    "ProbabilityRule",
 ]

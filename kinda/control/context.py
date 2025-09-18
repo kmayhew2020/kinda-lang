@@ -17,16 +17,18 @@ from ..personality import PersonalityContext as PersonalityManager
 
 class ProbabilityMode(Enum):
     """Probability execution modes"""
-    NORMAL = "normal"          # Standard probabilistic behavior
+
+    NORMAL = "normal"  # Standard probabilistic behavior
     DETERMINISTIC = "deterministic"  # Disable all randomness
-    CHAOS = "chaos"           # Maximum randomness
-    TESTING = "testing"       # Reproducible randomness with seed
+    CHAOS = "chaos"  # Maximum randomness
+    TESTING = "testing"  # Reproducible randomness with seed
     PRODUCTION = "production"  # Conservative probabilities
 
 
 @dataclass
 class ProbabilityProfile:
     """Predefined probability configuration profiles"""
+
     name: str
     description: str
     mode: ProbabilityMode
@@ -35,74 +37,74 @@ class ProbabilityProfile:
     seed: Optional[int] = None
 
     @classmethod
-    def create_testing_profile(cls, seed: int = 42) -> 'ProbabilityProfile':
+    def create_testing_profile(cls, seed: int = 42) -> "ProbabilityProfile":
         """Create a testing profile with reproducible randomness"""
         return cls(
             name="testing",
             description="Reproducible randomness for testing",
             mode=ProbabilityMode.TESTING,
             construct_overrides={
-                'sometimes': 0.7,
-                'maybe': 0.5,
-                'probably': 0.8,
-                'rarely': 0.2,
-                'sorta_print': 0.8
+                "sometimes": 0.7,
+                "maybe": 0.5,
+                "probably": 0.8,
+                "rarely": 0.2,
+                "sorta_print": 0.8,
             },
-            seed=seed
+            seed=seed,
         )
 
     @classmethod
-    def create_production_profile(cls) -> 'ProbabilityProfile':
+    def create_production_profile(cls) -> "ProbabilityProfile":
         """Create a conservative production profile"""
         return cls(
             name="production",
             description="Conservative probabilities for production",
             mode=ProbabilityMode.PRODUCTION,
             construct_overrides={
-                'sometimes': 0.9,   # More predictable
-                'maybe': 0.7,      # Less random
-                'probably': 0.95,  # Very likely
-                'rarely': 0.1,     # Very rare
-                'sorta_print': 1.0 # Always print in production
-            }
+                "sometimes": 0.9,  # More predictable
+                "maybe": 0.7,  # Less random
+                "probably": 0.95,  # Very likely
+                "rarely": 0.1,  # Very rare
+                "sorta_print": 1.0,  # Always print in production
+            },
         )
 
     @classmethod
-    def create_chaos_profile(cls) -> 'ProbabilityProfile':
+    def create_chaos_profile(cls) -> "ProbabilityProfile":
         """Create maximum chaos profile"""
         return cls(
             name="chaos",
             description="Maximum randomness and unpredictability",
             mode=ProbabilityMode.CHAOS,
             construct_overrides={
-                'sometimes': 0.5,
-                'maybe': 0.5,
-                'probably': 0.6,   # Less probable than expected
-                'rarely': 0.4,     # More frequent than expected
-                'sorta_print': 0.3  # Mostly silent
-            }
+                "sometimes": 0.5,
+                "maybe": 0.5,
+                "probably": 0.6,  # Less probable than expected
+                "rarely": 0.4,  # More frequent than expected
+                "sorta_print": 0.3,  # Mostly silent
+            },
         )
 
     @classmethod
-    def create_deterministic_profile(cls) -> 'ProbabilityProfile':
+    def create_deterministic_profile(cls) -> "ProbabilityProfile":
         """Create deterministic profile (no randomness)"""
         return cls(
             name="deterministic",
             description="Deterministic execution, no randomness",
             mode=ProbabilityMode.DETERMINISTIC,
             construct_overrides={
-                'sometimes': 1.0,  # Always execute
-                'maybe': 1.0,
-                'probably': 1.0,
-                'rarely': 0.0,    # Never execute
-                'sorta_print': 1.0
-            }
+                "sometimes": 1.0,  # Always execute
+                "maybe": 1.0,
+                "probably": 1.0,
+                "rarely": 0.0,  # Never execute
+                "sorta_print": 1.0,
+            },
         )
 
 
 # Context variable for thread-local probability context
-_probability_context: ContextVar[Optional['ProbabilityContext']] = ContextVar(
-    'probability_context', default=None
+_probability_context: ContextVar[Optional["ProbabilityContext"]] = ContextVar(
+    "probability_context", default=None
 )
 
 
@@ -114,12 +116,14 @@ class ProbabilityContext:
     enabling fine-grained control over randomness and chaos in kinda-lang programs.
     """
 
-    def __init__(self,
-                 profile: Optional[ProbabilityProfile] = None,
-                 overrides: Optional[Dict[str, float]] = None,
-                 seed: Optional[int] = None,
-                 mode: Optional[ProbabilityMode] = None,
-                 personality: Optional[str] = None):
+    def __init__(
+        self,
+        profile: Optional[ProbabilityProfile] = None,
+        overrides: Optional[Dict[str, float]] = None,
+        seed: Optional[int] = None,
+        mode: Optional[ProbabilityMode] = None,
+        personality: Optional[str] = None,
+    ):
         """
         Initialize probability context.
 
@@ -140,7 +144,7 @@ class ProbabilityContext:
         self.effective_overrides = {**self.profile.construct_overrides, **self.overrides}
 
         # Track nested contexts
-        self._parent_context: Optional['ProbabilityContext'] = None
+        self._parent_context: Optional["ProbabilityContext"] = None
 
         # Performance monitoring
         self.construct_calls: Dict[str, int] = {}
@@ -149,7 +153,7 @@ class ProbabilityContext:
         # Integration with personality system
         self.personality_manager: Optional[PersonalityManager] = None
 
-    def __enter__(self) -> 'ProbabilityContext':
+    def __enter__(self) -> "ProbabilityContext":
         """Enter the probability context"""
         # Store parent context for nesting support
         self._parent_context = _probability_context.get()
@@ -160,6 +164,7 @@ class ProbabilityContext:
         # Set random seed if specified
         if self.seed is not None:
             import random
+
             random.seed(self.seed)
 
         # Initialize personality manager if specified
@@ -199,6 +204,7 @@ class ProbabilityContext:
         elif self.mode == ProbabilityMode.CHAOS:
             # Add some chaos to the default
             import random
+
             chaos_factor = random.uniform(-0.2, 0.2)
             return max(0.0, min(1.0, default + chaos_factor))
         elif self.mode == ProbabilityMode.PRODUCTION:
@@ -207,7 +213,7 @@ class ProbabilityContext:
 
         return default
 
-    def with_override(self, construct_name: str, probability: float) -> 'ProbabilityContext':
+    def with_override(self, construct_name: str, probability: float) -> "ProbabilityContext":
         """
         Create a new context with an additional override.
 
@@ -224,10 +230,10 @@ class ProbabilityContext:
             overrides=new_overrides,
             seed=self.seed,
             mode=self.mode,
-            personality=self.personality
+            personality=self.personality,
         )
 
-    def with_profile(self, profile: ProbabilityProfile) -> 'ProbabilityContext':
+    def with_profile(self, profile: ProbabilityProfile) -> "ProbabilityContext":
         """
         Create a new context with a different profile.
 
@@ -242,22 +248,26 @@ class ProbabilityContext:
             overrides=self.overrides,  # Keep current overrides
             seed=self.seed,
             mode=self.mode,
-            personality=self.personality
+            personality=self.personality,
         )
 
     def get_usage_stats(self) -> Dict[str, Any]:
         """Get usage statistics for this context"""
         return {
-            'total_calls': self.total_calls,
-            'construct_calls': self.construct_calls.copy(),
-            'most_used': max(self.construct_calls, key=self.construct_calls.get) if self.construct_calls else None,
-            'profile_name': self.profile.name,
-            'mode': self.mode.value,
-            'seed': self.seed
+            "total_calls": self.total_calls,
+            "construct_calls": self.construct_calls.copy(),
+            "most_used": (
+                max(self.construct_calls, key=self.construct_calls.get)
+                if self.construct_calls
+                else None
+            ),
+            "profile_name": self.profile.name,
+            "mode": self.mode.value,
+            "seed": self.seed,
         }
 
     @staticmethod
-    def get_current() -> Optional['ProbabilityContext']:
+    def get_current() -> Optional["ProbabilityContext"]:
         """Get the current probability context"""
         return _probability_context.get()
 
@@ -282,7 +292,7 @@ class ProbabilityContext:
 
     @staticmethod
     @contextmanager
-    def testing_mode(seed: int = 42) -> Generator['ProbabilityContext', None, None]:
+    def testing_mode(seed: int = 42) -> Generator["ProbabilityContext", None, None]:
         """
         Context manager for testing mode with reproducible randomness.
 
@@ -295,7 +305,7 @@ class ProbabilityContext:
 
     @staticmethod
     @contextmanager
-    def production_mode() -> Generator['ProbabilityContext', None, None]:
+    def production_mode() -> Generator["ProbabilityContext", None, None]:
         """Context manager for production mode with conservative probabilities"""
         profile = ProbabilityProfile.create_production_profile()
         with ProbabilityContext(profile=profile) as ctx:
@@ -303,7 +313,7 @@ class ProbabilityContext:
 
     @staticmethod
     @contextmanager
-    def chaos_mode() -> Generator['ProbabilityContext', None, None]:
+    def chaos_mode() -> Generator["ProbabilityContext", None, None]:
         """Context manager for maximum chaos mode"""
         profile = ProbabilityProfile.create_chaos_profile()
         with ProbabilityContext(profile=profile) as ctx:
@@ -311,7 +321,7 @@ class ProbabilityContext:
 
     @staticmethod
     @contextmanager
-    def deterministic_mode() -> Generator['ProbabilityContext', None, None]:
+    def deterministic_mode() -> Generator["ProbabilityContext", None, None]:
         """Context manager for deterministic mode (no randomness)"""
         profile = ProbabilityProfile.create_deterministic_profile()
         with ProbabilityContext(profile=profile) as ctx:

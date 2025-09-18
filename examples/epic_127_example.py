@@ -7,6 +7,7 @@ seamless integration of kinda-lang constructs into Python code.
 
 # This is a regular Python file that can be enhanced with kinda-lang constructs
 
+
 def calculate_score(base_score):
     """Calculate a score with some fuzzy logic"""
     bonus = 10  # This could become kinda_int(10)

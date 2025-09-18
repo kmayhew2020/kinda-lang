@@ -24,13 +24,13 @@ class TestTranspilerEngine:
     def test_transpiler_engine_initialization(self):
         """Test TranspilerEngine initialization"""
         assert self.engine is not None
-        assert hasattr(self.engine, 'transpile_to_python')
-        assert hasattr(self.engine, 'transpile_to_javascript')
-        assert hasattr(self.engine, 'register_target_language')
+        assert hasattr(self.engine, "transpile_to_python")
+        assert hasattr(self.engine, "transpile_to_javascript")
+        assert hasattr(self.engine, "register_target_language")
 
     def test_transpile_to_python_basic(self):
         """Test basic transpilation to Python"""
-        kinda_code = '''
+        kinda_code = """
 ~sometimes {
     x = ~kinda_int(42)
     ~sorta_print("Hello, kinda world!")
@@ -47,12 +47,12 @@ class TestTranspilerEngine:
         ~sorta_print("This rarely prints")
     }
 }
-'''
+"""
 
-        with patch.object(self.engine, 'transpile_to_python') as mock_transpile:
+        with patch.object(self.engine, "transpile_to_python") as mock_transpile:
             mock_transpile.return_value = {
-                'success': True,
-                'transpiled_code': '''
+                "success": True,
+                "transpiled_code": """
 import kinda
 from kinda.runtime import *
 
@@ -80,29 +80,29 @@ def _kinda_block_3():
 _kinda_block_1()
 _kinda_block_2()
 _kinda_block_3()
-''',
-                'target_language': 'python',
-                'source_language': 'kinda',
-                'warnings': [],
-                'metadata': {
-                    'blocks_transpiled': 3,
-                    'constructs_used': ['sometimes', 'maybe', 'kinda_repeat', 'rarely']
-                }
+""",
+                "target_language": "python",
+                "source_language": "kinda",
+                "warnings": [],
+                "metadata": {
+                    "blocks_transpiled": 3,
+                    "constructs_used": ["sometimes", "maybe", "kinda_repeat", "rarely"],
+                },
             }
 
             result = self.engine.transpile_to_python(kinda_code)
 
-            assert result['success']
-            assert 'import kinda' in result['transpiled_code']
-            assert '@sometimes' in result['transpiled_code']
-            assert '@maybe' in result['transpiled_code']
-            assert '@kinda_repeat' in result['transpiled_code']
-            assert result['target_language'] == 'python'
+            assert result["success"]
+            assert "import kinda" in result["transpiled_code"]
+            assert "@sometimes" in result["transpiled_code"]
+            assert "@maybe" in result["transpiled_code"]
+            assert "@kinda_repeat" in result["transpiled_code"]
+            assert result["target_language"] == "python"
             mock_transpile.assert_called_once_with(kinda_code)
 
     def test_transpile_to_javascript_basic(self):
         """Test basic transpilation to JavaScript"""
-        kinda_code = '''
+        kinda_code = """
 ~sometimes {
     let x = ~kinda_int(10)
     ~sorta_console_log("Sometimes this runs")
@@ -114,12 +114,12 @@ _kinda_block_3()
         ~sorta_console_log(`Value is ${y}`)
     }
 }
-'''
+"""
 
-        with patch.object(self.engine, 'transpile_to_javascript') as mock_transpile:
+        with patch.object(self.engine, "transpile_to_javascript") as mock_transpile:
             mock_transpile.return_value = {
-                'success': True,
-                'transpiled_code': '''
+                "success": True,
+                "transpiled_code": """
 // Transpiled from kinda-lang to JavaScript
 const kinda = require('kinda-js');
 
@@ -142,28 +142,25 @@ function _kindaBlock2() {
 // Execute kinda blocks
 _kindaBlock1();
 _kindaBlock2();
-''',
-                'target_language': 'javascript',
-                'source_language': 'kinda',
-                'warnings': ['JavaScript runtime library required'],
-                'metadata': {
-                    'blocks_transpiled': 2,
-                    'requires_kinda_js': True
-                }
+""",
+                "target_language": "javascript",
+                "source_language": "kinda",
+                "warnings": ["JavaScript runtime library required"],
+                "metadata": {"blocks_transpiled": 2, "requires_kinda_js": True},
             }
 
             result = self.engine.transpile_to_javascript(kinda_code)
 
-            assert result['success']
-            assert 'const kinda = require' in result['transpiled_code']
-            assert 'kinda.sometimes()' in result['transpiled_code']
-            assert 'kinda.maybe()' in result['transpiled_code']
-            assert result['target_language'] == 'javascript'
+            assert result["success"]
+            assert "const kinda = require" in result["transpiled_code"]
+            assert "kinda.sometimes()" in result["transpiled_code"]
+            assert "kinda.maybe()" in result["transpiled_code"]
+            assert result["target_language"] == "javascript"
             mock_transpile.assert_called_once_with(kinda_code)
 
     def test_transpile_complex_constructs(self):
         """Test transpilation of complex kinda-lang constructs"""
-        complex_kinda_code = '''
+        complex_kinda_code = """
 ~sometimes {
     data = []
     ~kinda_repeat 10 times {
@@ -189,12 +186,12 @@ _kindaBlock2();
         ~sorta_print(f"Rounded pi: {rounded}")
     }
 }
-'''
+"""
 
-        with patch.object(self.engine, 'transpile_to_python') as mock_transpile:
+        with patch.object(self.engine, "transpile_to_python") as mock_transpile:
             mock_transpile.return_value = {
-                'success': True,
-                'transpiled_code': '''
+                "success": True,
+                "transpiled_code": """
 import kinda
 from kinda.runtime import *
 
@@ -234,25 +231,22 @@ def _kinda_block_2():
 
 _kinda_block_1()
 _kinda_block_2()
-''',
-                'target_language': 'python',
-                'warnings': ['Complex nested structures detected'],
-                'metadata': {
-                    'nesting_depth': 3,
-                    'total_constructs': 6
-                }
+""",
+                "target_language": "python",
+                "warnings": ["Complex nested structures detected"],
+                "metadata": {"nesting_depth": 3, "total_constructs": 6},
             }
 
             result = self.engine.transpile_to_python(complex_kinda_code)
 
-            assert result['success']
-            assert '@kinda_repeat(10)' in result['transpiled_code']
-            assert '@probably' in result['transpiled_code']
-            assert 'nesting_depth' in result['metadata']
+            assert result["success"]
+            assert "@kinda_repeat(10)" in result["transpiled_code"]
+            assert "@probably" in result["transpiled_code"]
+            assert "nesting_depth" in result["metadata"]
 
     def test_transpiler_error_handling(self):
         """Test transpiler error handling for invalid code"""
-        invalid_kinda_code = '''
+        invalid_kinda_code = """
 ~invalid_construct {
     syntax error here
     ~undefined_function()
@@ -260,65 +254,62 @@ _kinda_block_2()
 
 ~sometimes {
     # Missing closing brace
-'''
+"""
 
-        with patch.object(self.engine, 'transpile_to_python') as mock_transpile:
+        with patch.object(self.engine, "transpile_to_python") as mock_transpile:
             mock_transpile.return_value = {
-                'success': False,
-                'transpiled_code': '',
-                'target_language': 'python',
-                'errors': [
+                "success": False,
+                "transpiled_code": "",
+                "target_language": "python",
+                "errors": [
                     'Syntax error at line 2: Unrecognized construct "~invalid_construct"',
                     'Parse error at line 6: Missing closing brace for "~sometimes" block',
-                    'Undefined function: ~undefined_function'
+                    "Undefined function: ~undefined_function",
                 ],
-                'warnings': ['Code contains experimental constructs'],
-                'metadata': {
-                    'parse_errors': 3,
-                    'recoverable': False
-                }
+                "warnings": ["Code contains experimental constructs"],
+                "metadata": {"parse_errors": 3, "recoverable": False},
             }
 
             result = self.engine.transpile_to_python(invalid_kinda_code)
 
-            assert not result['success']
-            assert len(result['errors']) > 0
-            assert 'Syntax error' in result['errors'][0]
-            assert 'Parse error' in result['errors'][1]
+            assert not result["success"]
+            assert len(result["errors"]) > 0
+            assert "Syntax error" in result["errors"][0]
+            assert "Parse error" in result["errors"][1]
 
     def test_transpiler_target_language_registration(self):
         """Test registering new target languages"""
-        with patch.object(self.engine, 'register_target_language') as mock_register:
+        with patch.object(self.engine, "register_target_language") as mock_register:
             mock_register.return_value = {
-                'language_registered': True,
-                'language_name': 'rust',
-                'transpiler_function': 'transpile_to_rust',
-                'supported_constructs': ['sometimes', 'maybe', 'rarely', 'probably']
+                "language_registered": True,
+                "language_name": "rust",
+                "transpiler_function": "transpile_to_rust",
+                "supported_constructs": ["sometimes", "maybe", "rarely", "probably"],
             }
 
             rust_config = {
-                'language_name': 'rust',
-                'file_extension': '.rs',
-                'construct_mapping': {
-                    'sometimes': 'kinda::sometimes!',
-                    'maybe': 'kinda::maybe!',
-                    'kinda_int': 'kinda::KindaInt::new',
-                    'sorta_print': 'kinda::sorta_println!'
+                "language_name": "rust",
+                "file_extension": ".rs",
+                "construct_mapping": {
+                    "sometimes": "kinda::sometimes!",
+                    "maybe": "kinda::maybe!",
+                    "kinda_int": "kinda::KindaInt::new",
+                    "sorta_print": "kinda::sorta_println!",
                 },
-                'imports': ['use kinda::*;'],
-                'runtime_required': True
+                "imports": ["use kinda::*;"],
+                "runtime_required": True,
             }
 
-            if hasattr(self.engine, 'register_target_language'):
-                result = self.engine.register_target_language('rust', rust_config)
+            if hasattr(self.engine, "register_target_language"):
+                result = self.engine.register_target_language("rust", rust_config)
 
-                assert result['language_registered']
-                assert result['language_name'] == 'rust'
-                mock_register.assert_called_once_with('rust', rust_config)
+                assert result["language_registered"]
+                assert result["language_name"] == "rust"
+                mock_register.assert_called_once_with("rust", rust_config)
 
     def test_transpiler_optimization_levels(self):
         """Test transpiler optimization levels"""
-        test_code = '''
+        test_code = """
 ~sometimes {
     x = ~kinda_int(42)
     ~sorta_print(x)
@@ -328,165 +319,182 @@ _kinda_block_2()
     y = ~kinda_int(24)
     ~sorta_print(y)
 }
-'''
+"""
 
-        optimization_levels = ['none', 'basic', 'aggressive']
+        optimization_levels = ["none", "basic", "aggressive"]
 
-        with patch.object(self.engine, 'transpile_with_optimization') as mock_optimize:
+        with patch.object(self.engine, "transpile_with_optimization") as mock_optimize:
             for level in optimization_levels:
                 mock_optimize.return_value = {
-                    'success': True,
-                    'transpiled_code': f'// Optimized with level: {level}\n' +
-                                     ('# Blocks merged for efficiency\n' if level == 'aggressive' else '') +
-                                     'optimized_code_here',
-                    'optimization_level': level,
-                    'optimizations_applied': [
-                        'dead_code_elimination' if level in ['basic', 'aggressive'] else None,
-                        'block_merging' if level == 'aggressive' else None
+                    "success": True,
+                    "transpiled_code": f"// Optimized with level: {level}\n"
+                    + ("# Blocks merged for efficiency\n" if level == "aggressive" else "")
+                    + "optimized_code_here",
+                    "optimization_level": level,
+                    "optimizations_applied": [
+                        "dead_code_elimination" if level in ["basic", "aggressive"] else None,
+                        "block_merging" if level == "aggressive" else None,
                     ],
-                    'size_reduction_percent': 15 if level == 'aggressive' else 5 if level == 'basic' else 0
+                    "size_reduction_percent": (
+                        15 if level == "aggressive" else 5 if level == "basic" else 0
+                    ),
                 }
 
-                if hasattr(self.engine, 'transpile_with_optimization'):
-                    result = self.engine.transpile_with_optimization(test_code, 'python', level)
+                if hasattr(self.engine, "transpile_with_optimization"):
+                    result = self.engine.transpile_with_optimization(test_code, "python", level)
 
-                    assert result['success']
-                    assert result['optimization_level'] == level
-                    assert 'optimizations_applied' in result
+                    assert result["success"]
+                    assert result["optimization_level"] == level
+                    assert "optimizations_applied" in result
 
     def test_transpiler_source_map_generation(self):
         """Test source map generation for debugging"""
-        kinda_code = '''
+        kinda_code = """
 ~sometimes {
     x = 10
     ~sorta_print("Hello")
 }
-'''
+"""
 
-        with patch.object(self.engine, 'transpile_with_source_map') as mock_source_map:
+        with patch.object(self.engine, "transpile_with_source_map") as mock_source_map:
             mock_source_map.return_value = {
-                'success': True,
-                'transpiled_code': '''
+                "success": True,
+                "transpiled_code": """
 @sometimes
 def _block():
     x = 10
     sorta_print("Hello")
 _block()
-''',
-                'source_map': {
-                    'version': 3,
-                    'sources': ['input.kinda'],
-                    'mappings': [
-                        {'original': {'line': 1, 'column': 0}, 'generated': {'line': 1, 'column': 0}},
-                        {'original': {'line': 2, 'column': 4}, 'generated': {'line': 3, 'column': 4}},
-                        {'original': {'line': 3, 'column': 4}, 'generated': {'line': 4, 'column': 4}}
-                    ]
+""",
+                "source_map": {
+                    "version": 3,
+                    "sources": ["input.kinda"],
+                    "mappings": [
+                        {
+                            "original": {"line": 1, "column": 0},
+                            "generated": {"line": 1, "column": 0},
+                        },
+                        {
+                            "original": {"line": 2, "column": 4},
+                            "generated": {"line": 3, "column": 4},
+                        },
+                        {
+                            "original": {"line": 3, "column": 4},
+                            "generated": {"line": 4, "column": 4},
+                        },
+                    ],
                 },
-                'debug_info': {
-                    'construct_locations': {
-                        'sometimes': {'line': 1, 'column': 0},
-                        'sorta_print': {'line': 3, 'column': 4}
+                "debug_info": {
+                    "construct_locations": {
+                        "sometimes": {"line": 1, "column": 0},
+                        "sorta_print": {"line": 3, "column": 4},
                     }
-                }
+                },
             }
 
-            if hasattr(self.engine, 'transpile_with_source_map'):
-                result = self.engine.transpile_with_source_map(kinda_code, 'python')
+            if hasattr(self.engine, "transpile_with_source_map"):
+                result = self.engine.transpile_with_source_map(kinda_code, "python")
 
-                assert result['success']
-                assert 'source_map' in result
-                assert 'mappings' in result['source_map']
-                assert 'debug_info' in result
+                assert result["success"]
+                assert "source_map" in result
+                assert "mappings" in result["source_map"]
+                assert "debug_info" in result
 
     def test_transpiler_batch_processing(self):
         """Test batch transpilation of multiple files"""
         test_files = [
-            {'name': 'file1.kinda', 'content': '~sometimes { ~sorta_print("File 1") }'},
-            {'name': 'file2.kinda', 'content': '~maybe { x = ~kinda_int(42) }'},
-            {'name': 'file3.kinda', 'content': '~rarely { ~sorta_print("Rare") }'}
+            {"name": "file1.kinda", "content": '~sometimes { ~sorta_print("File 1") }'},
+            {"name": "file2.kinda", "content": "~maybe { x = ~kinda_int(42) }"},
+            {"name": "file3.kinda", "content": '~rarely { ~sorta_print("Rare") }'},
         ]
 
-        with patch.object(self.engine, 'batch_transpile') as mock_batch:
+        with patch.object(self.engine, "batch_transpile") as mock_batch:
             mock_batch.return_value = {
-                'success': True,
-                'total_files': 3,
-                'processed_files': 3,
-                'failed_files': 0,
-                'results': [
+                "success": True,
+                "total_files": 3,
+                "processed_files": 3,
+                "failed_files": 0,
+                "results": [
                     {
-                        'file': 'file1.kinda',
-                        'success': True,
-                        'output_file': 'file1.py',
-                        'transpiled_code': '@sometimes\ndef _block(): sorta_print("File 1")\n_block()'
+                        "file": "file1.kinda",
+                        "success": True,
+                        "output_file": "file1.py",
+                        "transpiled_code": '@sometimes\ndef _block(): sorta_print("File 1")\n_block()',
                     },
                     {
-                        'file': 'file2.kinda',
-                        'success': True,
-                        'output_file': 'file2.py',
-                        'transpiled_code': '@maybe\ndef _block(): x = kinda_int(42)\n_block()'
+                        "file": "file2.kinda",
+                        "success": True,
+                        "output_file": "file2.py",
+                        "transpiled_code": "@maybe\ndef _block(): x = kinda_int(42)\n_block()",
                     },
                     {
-                        'file': 'file3.kinda',
-                        'success': True,
-                        'output_file': 'file3.py',
-                        'transpiled_code': '@rarely\ndef _block(): sorta_print("Rare")\n_block()'
-                    }
+                        "file": "file3.kinda",
+                        "success": True,
+                        "output_file": "file3.py",
+                        "transpiled_code": '@rarely\ndef _block(): sorta_print("Rare")\n_block()',
+                    },
                 ],
-                'summary': {
-                    'total_lines_processed': 3,
-                    'total_constructs': 3,
-                    'processing_time_seconds': 1.5
-                }
+                "summary": {
+                    "total_lines_processed": 3,
+                    "total_constructs": 3,
+                    "processing_time_seconds": 1.5,
+                },
             }
 
-            if hasattr(self.engine, 'batch_transpile'):
-                result = self.engine.batch_transpile(test_files, 'python')
+            if hasattr(self.engine, "batch_transpile"):
+                result = self.engine.batch_transpile(test_files, "python")
 
-                assert result['success']
-                assert result['total_files'] == 3
-                assert result['processed_files'] == 3
-                assert len(result['results']) == 3
+                assert result["success"]
+                assert result["total_files"] == 3
+                assert result["processed_files"] == 3
+                assert len(result["results"]) == 3
 
     def test_transpiler_custom_construct_support(self):
         """Test transpiler support for custom constructs"""
-        custom_code = '''
+        custom_code = """
 ~custom_sometimes(probability=0.7) {
     x = ~custom_kinda_value(base=100, variance=0.1)
     ~custom_output(x, format="debug")
 }
-'''
+"""
 
-        with patch.object(self.engine, 'register_custom_construct') as mock_register, \
-             patch.object(self.engine, 'transpile_to_python') as mock_transpile:
+        with (
+            patch.object(self.engine, "register_custom_construct") as mock_register,
+            patch.object(self.engine, "transpile_to_python") as mock_transpile,
+        ):
 
             mock_register.return_value = {
-                'construct_registered': True,
-                'construct_name': 'custom_sometimes',
-                'transpiler_function': 'transpile_custom_sometimes'
+                "construct_registered": True,
+                "construct_name": "custom_sometimes",
+                "transpiler_function": "transpile_custom_sometimes",
             }
 
             mock_transpile.return_value = {
-                'success': True,
-                'transpiled_code': '''
+                "success": True,
+                "transpiled_code": """
 @custom_sometimes(probability=0.7)
 def _custom_block():
     x = custom_kinda_value(base=100, variance=0.1)
     custom_output(x, format="debug")
 _custom_block()
-''',
-                'custom_constructs_used': ['custom_sometimes', 'custom_kinda_value', 'custom_output'],
-                'requires_custom_runtime': True
+""",
+                "custom_constructs_used": [
+                    "custom_sometimes",
+                    "custom_kinda_value",
+                    "custom_output",
+                ],
+                "requires_custom_runtime": True,
             }
 
             # Register custom construct
-            if hasattr(self.engine, 'register_custom_construct'):
-                reg_result = self.engine.register_custom_construct('custom_sometimes')
-                assert reg_result['construct_registered']
+            if hasattr(self.engine, "register_custom_construct"):
+                reg_result = self.engine.register_custom_construct("custom_sometimes")
+                assert reg_result["construct_registered"]
 
             # Transpile code with custom construct
             trans_result = self.engine.transpile_to_python(custom_code)
-            assert trans_result['success']
-            assert '@custom_sometimes(probability=0.7)' in trans_result['transpiled_code']
+            assert trans_result["success"]
+            assert "@custom_sometimes(probability=0.7)" in trans_result["transpiled_code"]
 
 
 class TestTranspilerEngineIntegration:
@@ -498,7 +506,7 @@ class TestTranspilerEngineIntegration:
 
     def test_end_to_end_transpilation_workflow(self):
         """Test complete end-to-end transpilation workflow"""
-        kinda_source = '''
+        kinda_source = """
 # Data processing with kinda-lang constructs
 ~sometimes {
     data = []
@@ -532,31 +540,33 @@ class TestTranspilerEngineIntegration:
             ~sorta_print(f"Adjusted threshold: {adjusted_threshold}")
     }
 }
-'''
+"""
 
         # Mock the complete workflow
-        with patch.object(self.engine, 'parse_kinda_source') as mock_parse, \
-             patch.object(self.engine, 'analyze_constructs') as mock_analyze, \
-             patch.object(self.engine, 'transpile_to_python') as mock_transpile, \
-             patch.object(self.engine, 'validate_output') as mock_validate:
+        with (
+            patch.object(self.engine, "parse_kinda_source") as mock_parse,
+            patch.object(self.engine, "analyze_constructs") as mock_analyze,
+            patch.object(self.engine, "transpile_to_python") as mock_transpile,
+            patch.object(self.engine, "validate_output") as mock_validate,
+        ):
 
             # Setup workflow mocks
             mock_parse.return_value = {
-                'success': True,
-                'ast': 'parsed_ast_representation',
-                'constructs_found': ['sometimes', 'kinda_repeat', 'maybe', 'rarely', 'probably']
+                "success": True,
+                "ast": "parsed_ast_representation",
+                "constructs_found": ["sometimes", "kinda_repeat", "maybe", "rarely", "probably"],
             }
 
             mock_analyze.return_value = {
-                'total_constructs': 8,
-                'nesting_depth': 3,
-                'complexity_score': 0.7,
-                'transpilation_feasible': True
+                "total_constructs": 8,
+                "nesting_depth": 3,
+                "complexity_score": 0.7,
+                "transpilation_feasible": True,
             }
 
             mock_transpile.return_value = {
-                'success': True,
-                'transpiled_code': '''
+                "success": True,
+                "transpiled_code": """
 import kinda
 from kinda.runtime import *
 
@@ -601,24 +611,21 @@ def _block_2():
 
 _block_1()
 _block_2()
-''',
-                'target_language': 'python',
-                'metadata': {
-                    'blocks_generated': 2,
-                    'functions_created': 6
-                }
+""",
+                "target_language": "python",
+                "metadata": {"blocks_generated": 2, "functions_created": 6},
             }
 
             mock_validate.return_value = {
-                'validation_passed': True,
-                'syntax_valid': True,
-                'imports_resolved': True,
-                'runtime_available': True
+                "validation_passed": True,
+                "syntax_valid": True,
+                "imports_resolved": True,
+                "runtime_available": True,
             }
 
             # Execute complete workflow
-            if hasattr(self.engine, 'transpile_complete_workflow'):
-                result = self.engine.transpile_complete_workflow(kinda_source, 'python')
+            if hasattr(self.engine, "transpile_complete_workflow"):
+                result = self.engine.transpile_complete_workflow(kinda_source, "python")
 
                 # Verify workflow steps
                 mock_parse.assert_called_once()
@@ -627,33 +634,33 @@ _block_2()
                 mock_validate.assert_called_once()
 
                 # Verify final result
-                assert result['success']
-                assert 'import kinda' in result['transpiled_code']
+                assert result["success"]
+                assert "import kinda" in result["transpiled_code"]
 
     def test_transpiler_with_file_io(self):
         """Test transpiler with actual file input/output"""
-        kinda_content = '''
+        kinda_content = """
 ~sometimes {
     message = "Hello from file!"
     ~sorta_print(message)
 }
-'''
+"""
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.kinda', delete=False) as input_file:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".kinda", delete=False) as input_file:
             input_file.write(kinda_content)
             input_file.flush()
             input_path = Path(input_file.name)
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as output_file:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as output_file:
             output_path = Path(output_file.name)
 
         try:
-            with patch.object(self.engine, 'transpile_file') as mock_transpile_file:
+            with patch.object(self.engine, "transpile_file") as mock_transpile_file:
                 mock_transpile_file.return_value = {
-                    'success': True,
-                    'input_file': str(input_path),
-                    'output_file': str(output_path),
-                    'transpiled_code': '''
+                    "success": True,
+                    "input_file": str(input_path),
+                    "output_file": str(output_path),
+                    "transpiled_code": """
 import kinda
 from kinda.runtime import *
 
@@ -662,18 +669,18 @@ def _block():
     message = "Hello from file!"
     sorta_print(message)
 _block()
-''',
-                    'file_size_bytes': 156,
-                    'transpilation_time': 0.05
+""",
+                    "file_size_bytes": 156,
+                    "transpilation_time": 0.05,
                 }
 
-                if hasattr(self.engine, 'transpile_file'):
-                    result = self.engine.transpile_file(input_path, output_path, 'python')
+                if hasattr(self.engine, "transpile_file"):
+                    result = self.engine.transpile_file(input_path, output_path, "python")
 
-                    assert result['success']
-                    assert result['input_file'] == str(input_path)
-                    assert result['output_file'] == str(output_path)
-                    assert 'transpilation_time' in result
+                    assert result["success"]
+                    assert result["input_file"] == str(input_path)
+                    assert result["output_file"] == str(output_path)
+                    assert "transpilation_time" in result
 
         finally:
             input_path.unlink()
@@ -684,7 +691,7 @@ _block()
         # Generate large kinda code
         large_code_parts = []
         for i in range(100):
-            block = f'''
+            block = f"""
 ~sometimes {{
     value_{i} = ~kinda_int({i})
     ~maybe {{
@@ -692,35 +699,35 @@ _block()
             ~sorta_print(f"Block {i}: {{value_{i}}}")
     }}
 }}
-'''
+"""
             large_code_parts.append(block)
 
-        large_kinda_code = '\n'.join(large_code_parts)
+        large_kinda_code = "\n".join(large_code_parts)
 
-        with patch.object(self.engine, 'transpile_to_python') as mock_transpile:
+        with patch.object(self.engine, "transpile_to_python") as mock_transpile:
             mock_transpile.return_value = {
-                'success': True,
-                'transpiled_code': 'large_transpiled_code_placeholder',
-                'metadata': {
-                    'source_lines': 500,
-                    'generated_lines': 800,
-                    'blocks_processed': 100,
-                    'transpilation_time_seconds': 2.5,
-                    'memory_usage_mb': 15.2
+                "success": True,
+                "transpiled_code": "large_transpiled_code_placeholder",
+                "metadata": {
+                    "source_lines": 500,
+                    "generated_lines": 800,
+                    "blocks_processed": 100,
+                    "transpilation_time_seconds": 2.5,
+                    "memory_usage_mb": 15.2,
                 },
-                'performance_metrics': {
-                    'lines_per_second': 200,
-                    'blocks_per_second': 40,
-                    'memory_efficiency': 'good'
-                }
+                "performance_metrics": {
+                    "lines_per_second": 200,
+                    "blocks_per_second": 40,
+                    "memory_efficiency": "good",
+                },
             }
 
             result = self.engine.transpile_to_python(large_kinda_code)
 
-            assert result['success']
-            assert result['metadata']['blocks_processed'] == 100
-            assert result['metadata']['transpilation_time_seconds'] < 5.0  # Performance requirement
-            assert result['performance_metrics']['lines_per_second'] > 100
+            assert result["success"]
+            assert result["metadata"]["blocks_processed"] == 100
+            assert result["metadata"]["transpilation_time_seconds"] < 5.0  # Performance requirement
+            assert result["performance_metrics"]["lines_per_second"] > 100
 
 
 if __name__ == "__main__":

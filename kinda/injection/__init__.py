@@ -11,11 +11,11 @@ from .patterns import PatternLibrary
 from .security import InjectionSecurityValidator
 
 __all__ = [
-    'PythonASTAnalyzer',
-    'InjectionEngine',
-    'InjectionConfig',
-    'PatternLibrary',
-    'InjectionSecurityValidator'
+    "PythonASTAnalyzer",
+    "InjectionEngine",
+    "InjectionConfig",
+    "PatternLibrary",
+    "InjectionSecurityValidator",
 ]
 
-__version__ = '0.5.5-dev'
+__version__ = "0.5.5-dev"

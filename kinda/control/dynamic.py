@@ -18,6 +18,7 @@ from .context import ProbabilityContext, ProbabilityProfile, ProbabilityMode
 
 class RuleCondition(Enum):
     """Conditions for probability adjustment rules"""
+
     TIME_BASED = "time_based"
     CALL_COUNT = "call_count"
     SUCCESS_RATE = "success_rate"
@@ -28,15 +29,17 @@ class RuleCondition(Enum):
 
 class AdjustmentType(Enum):
     """Types of probability adjustments"""
-    ABSOLUTE = "absolute"     # Set to specific value
-    RELATIVE = "relative"     # Add/subtract delta
+
+    ABSOLUTE = "absolute"  # Set to specific value
+    RELATIVE = "relative"  # Add/subtract delta
     MULTIPLICATIVE = "multiplicative"  # Multiply by factor
-    EXPONENTIAL = "exponential"       # Exponential decay/growth
+    EXPONENTIAL = "exponential"  # Exponential decay/growth
 
 
 @dataclass
 class ProbabilityRule:
     """Rule for dynamic probability adjustment"""
+
     name: str
     construct_name: str
     condition: RuleCondition
@@ -54,23 +57,23 @@ class ProbabilityRule:
             return False
 
         if self.condition == RuleCondition.TIME_BASED:
-            elapsed = metrics.get('elapsed_time', 0)
+            elapsed = metrics.get("elapsed_time", 0)
             return elapsed >= self.threshold
 
         elif self.condition == RuleCondition.CALL_COUNT:
-            calls = metrics.get('call_count', 0)
+            calls = metrics.get("call_count", 0)
             return calls >= self.threshold
 
         elif self.condition == RuleCondition.SUCCESS_RATE:
-            success_rate = metrics.get('success_rate', 1.0)
+            success_rate = metrics.get("success_rate", 1.0)
             return success_rate <= self.threshold
 
         elif self.condition == RuleCondition.PERFORMANCE:
-            performance = metrics.get('performance_score', 1.0)
+            performance = metrics.get("performance_score", 1.0)
             return performance <= self.threshold
 
         elif self.condition == RuleCondition.ERROR_RATE:
-            error_rate = metrics.get('error_rate', 0.0)
+            error_rate = metrics.get("error_rate", 0.0)
             return error_rate >= self.threshold
 
         return False
@@ -104,6 +107,7 @@ class ProbabilityRule:
 @dataclass
 class PerformanceMetrics:
     """Performance and behavior metrics for a construct"""
+
     construct_name: str
     call_count: int = 0
     success_count: int = 0
@@ -150,11 +154,11 @@ class PerformanceMetrics:
     def get_metrics_dict(self, elapsed_time: float = 0.0) -> Dict[str, Any]:
         """Get metrics as dictionary for rule evaluation"""
         return {
-            'call_count': self.call_count,
-            'success_rate': self.success_rate,
-            'error_rate': self.error_rate,
-            'performance_score': 1.0 / (1.0 + self.average_execution_time),
-            'elapsed_time': elapsed_time
+            "call_count": self.call_count,
+            "success_rate": self.success_rate,
+            "error_rate": self.error_rate,
+            "performance_score": 1.0 / (1.0 + self.average_execution_time),
+            "elapsed_time": elapsed_time,
         }
 
 
@@ -202,38 +206,44 @@ class DynamicProbabilityManager:
         """Initialize with sensible default rules"""
 
         # Reduce 'sometimes' probability if error rate is high
-        self.add_rule(ProbabilityRule(
-            name="sometimes_error_reduction",
-            construct_name="sometimes",
-            condition=RuleCondition.ERROR_RATE,
-            threshold=0.1,  # 10% error rate
-            adjustment_type=AdjustmentType.MULTIPLICATIVE,
-            adjustment_value=0.8,  # Reduce by 20%
-            description="Reduce 'sometimes' probability when error rate is high"
-        ))
+        self.add_rule(
+            ProbabilityRule(
+                name="sometimes_error_reduction",
+                construct_name="sometimes",
+                condition=RuleCondition.ERROR_RATE,
+                threshold=0.1,  # 10% error rate
+                adjustment_type=AdjustmentType.MULTIPLICATIVE,
+                adjustment_value=0.8,  # Reduce by 20%
+                description="Reduce 'sometimes' probability when error rate is high",
+            )
+        )
 
         # Increase 'rarely' probability if it's never triggering
-        self.add_rule(ProbabilityRule(
-            name="rarely_activation_boost",
-            construct_name="rarely",
-            condition=RuleCondition.CALL_COUNT,
-            threshold=50,  # After 50 calls
-            adjustment_type=AdjustmentType.RELATIVE,
-            adjustment_value=0.1,  # Increase by 10%
-            max_probability=0.5,  # Don't make it too common
-            description="Boost 'rarely' probability if it's not triggering enough"
-        ))
+        self.add_rule(
+            ProbabilityRule(
+                name="rarely_activation_boost",
+                construct_name="rarely",
+                condition=RuleCondition.CALL_COUNT,
+                threshold=50,  # After 50 calls
+                adjustment_type=AdjustmentType.RELATIVE,
+                adjustment_value=0.1,  # Increase by 10%
+                max_probability=0.5,  # Don't make it too common
+                description="Boost 'rarely' probability if it's not triggering enough",
+            )
+        )
 
         # Performance-based adjustment for 'kinda_repeat'
-        self.add_rule(ProbabilityRule(
-            name="kinda_repeat_performance",
-            construct_name="kinda_repeat",
-            condition=RuleCondition.PERFORMANCE,
-            threshold=0.5,  # Performance score below 0.5
-            adjustment_type=AdjustmentType.MULTIPLICATIVE,
-            adjustment_value=0.9,  # Slight reduction
-            description="Reduce loop fuzziness if performance is poor"
-        ))
+        self.add_rule(
+            ProbabilityRule(
+                name="kinda_repeat_performance",
+                construct_name="kinda_repeat",
+                condition=RuleCondition.PERFORMANCE,
+                threshold=0.5,  # Performance score below 0.5
+                adjustment_type=AdjustmentType.MULTIPLICATIVE,
+                adjustment_value=0.9,  # Slight reduction
+                description="Reduce loop fuzziness if performance is poor",
+            )
+        )
 
     def add_rule(self, rule: ProbabilityRule):
         """Add a dynamic adjustment rule"""
@@ -267,9 +277,9 @@ class DynamicProbabilityManager:
                     return True
         return False
 
-    def get_dynamic_probability(self, construct_name: str,
-                              base_probability: float,
-                              context: Optional[Dict[str, Any]] = None) -> float:
+    def get_dynamic_probability(
+        self, construct_name: str, base_probability: float, context: Optional[Dict[str, Any]] = None
+    ) -> float:
         """
         Get dynamically adjusted probability for a construct.
 
@@ -309,24 +319,29 @@ class DynamicProbabilityManager:
                     # Record the adjustment
                     if old_probability != adjusted_probability:
                         applied_rules.append(rule.name)
-                        self.adjustment_history.append((
-                            time.time(),
-                            rule.name,
-                            construct_name,
-                            old_probability,
-                            adjusted_probability
-                        ))
+                        self.adjustment_history.append(
+                            (
+                                time.time(),
+                                rule.name,
+                                construct_name,
+                                old_probability,
+                                adjusted_probability,
+                            )
+                        )
 
             # Record the probability in history
             metrics.probability_history.append(adjusted_probability)
 
             return adjusted_probability
 
-    def record_construct_execution(self, construct_name: str,
-                                 execution_time: float,
-                                 success: bool,
-                                 probability_used: float,
-                                 context: Optional[Dict[str, Any]] = None):
+    def record_construct_execution(
+        self,
+        construct_name: str,
+        execution_time: float,
+        success: bool,
+        probability_used: float,
+        context: Optional[Dict[str, Any]] = None,
+    ):
         """
         Record the execution of a construct for learning.
 
@@ -346,10 +361,10 @@ class DynamicProbabilityManager:
 
             # Collect feedback
             feedback_context = {
-                'execution_time': execution_time,
-                'success': success,
-                'probability_used': probability_used,
-                'metrics': metrics.get_metrics_dict()
+                "execution_time": execution_time,
+                "success": success,
+                "probability_used": probability_used,
+                "metrics": metrics.get_metrics_dict(),
             }
             if context:
                 feedback_context.update(context)
@@ -364,8 +379,9 @@ class DynamicProbabilityManager:
         """Get all performance metrics"""
         return self.metrics.copy()
 
-    def get_adjustment_history(self, construct_name: Optional[str] = None,
-                             limit: Optional[int] = None) -> List[Tuple[float, str, str, float, float]]:
+    def get_adjustment_history(
+        self, construct_name: Optional[str] = None, limit: Optional[int] = None
+    ) -> List[Tuple[float, str, str, float, float]]:
         """
         Get history of probability adjustments.
 
@@ -386,8 +402,9 @@ class DynamicProbabilityManager:
 
         return history
 
-    def create_adaptive_profile(self, base_profile: ProbabilityProfile,
-                              adaptation_strength: float = 0.1) -> ProbabilityProfile:
+    def create_adaptive_profile(
+        self, base_profile: ProbabilityProfile, adaptation_strength: float = 0.1
+    ) -> ProbabilityProfile:
         """
         Create an adaptive profile based on learned behavior.
 
@@ -410,8 +427,7 @@ class DynamicProbabilityManager:
 
                     # Blend original with learned average
                     adapted_overrides[construct_name] = (
-                        original * (1 - adaptation_strength) +
-                        learned_avg * adaptation_strength
+                        original * (1 - adaptation_strength) + learned_avg * adaptation_strength
                     )
 
         return ProbabilityProfile(
@@ -420,7 +436,7 @@ class DynamicProbabilityManager:
             mode=base_profile.mode,
             construct_overrides=adapted_overrides,
             personality_config=base_profile.personality_config.copy(),
-            seed=base_profile.seed
+            seed=base_profile.seed,
         )
 
     def reset_metrics(self, construct_name: Optional[str] = None):
@@ -442,65 +458,75 @@ class DynamicProbabilityManager:
             construct_summaries = {}
             for name, metrics in self.metrics.items():
                 construct_summaries[name] = {
-                    'call_count': metrics.call_count,
-                    'success_rate': metrics.success_rate,
-                    'error_rate': metrics.error_rate,
-                    'avg_execution_time': metrics.average_execution_time,
-                    'current_probability': list(metrics.probability_history)[-1] if metrics.probability_history else None
+                    "call_count": metrics.call_count,
+                    "success_rate": metrics.success_rate,
+                    "error_rate": metrics.error_rate,
+                    "avg_execution_time": metrics.average_execution_time,
+                    "current_probability": (
+                        list(metrics.probability_history)[-1]
+                        if metrics.probability_history
+                        else None
+                    ),
                 }
 
             return {
-                'total_constructs_tracked': len(self.metrics),
-                'total_calls': total_calls,
-                'total_adjustments': total_adjustments,
-                'active_rules': len([r for r in self.rules if r.enabled]),
-                'total_rules': len(self.rules),
-                'uptime_seconds': time.time() - self.start_time,
-                'construct_summaries': construct_summaries
+                "total_constructs_tracked": len(self.metrics),
+                "total_calls": total_calls,
+                "total_adjustments": total_adjustments,
+                "active_rules": len([r for r in self.rules if r.enabled]),
+                "total_rules": len(self.rules),
+                "uptime_seconds": time.time() - self.start_time,
+                "construct_summaries": construct_summaries,
             }
 
     def export_learning_data(self) -> Dict[str, Any]:
         """Export learning data for analysis or persistence"""
         return {
-            'metrics': {name: {
-                'call_count': m.call_count,
-                'success_count': m.success_count,
-                'error_count': m.error_count,
-                'total_execution_time': m.total_execution_time,
-                'probability_history': list(m.probability_history)
-            } for name, m in self.metrics.items()},
-            'adjustment_history': self.adjustment_history,
-            'rules': [{
-                'name': r.name,
-                'construct_name': r.construct_name,
-                'condition': r.condition.value,
-                'threshold': r.threshold,
-                'adjustment_type': r.adjustment_type.value,
-                'adjustment_value': r.adjustment_value,
-                'enabled': r.enabled
-            } for r in self.rules]
+            "metrics": {
+                name: {
+                    "call_count": m.call_count,
+                    "success_count": m.success_count,
+                    "error_count": m.error_count,
+                    "total_execution_time": m.total_execution_time,
+                    "probability_history": list(m.probability_history),
+                }
+                for name, m in self.metrics.items()
+            },
+            "adjustment_history": self.adjustment_history,
+            "rules": [
+                {
+                    "name": r.name,
+                    "construct_name": r.construct_name,
+                    "condition": r.condition.value,
+                    "threshold": r.threshold,
+                    "adjustment_type": r.adjustment_type.value,
+                    "adjustment_value": r.adjustment_value,
+                    "enabled": r.enabled,
+                }
+                for r in self.rules
+            ],
         }
 
     def import_learning_data(self, data: Dict[str, Any]):
         """Import previously exported learning data"""
         with self._lock:
             # Import metrics
-            if 'metrics' in data:
-                for name, metric_data in data['metrics'].items():
+            if "metrics" in data:
+                for name, metric_data in data["metrics"].items():
                     metrics = PerformanceMetrics(name)
-                    metrics.call_count = metric_data.get('call_count', 0)
-                    metrics.success_count = metric_data.get('success_count', 0)
-                    metrics.error_count = metric_data.get('error_count', 0)
-                    metrics.total_execution_time = metric_data.get('total_execution_time', 0.0)
+                    metrics.call_count = metric_data.get("call_count", 0)
+                    metrics.success_count = metric_data.get("success_count", 0)
+                    metrics.error_count = metric_data.get("error_count", 0)
+                    metrics.total_execution_time = metric_data.get("total_execution_time", 0.0)
 
-                    prob_history = metric_data.get('probability_history', [])
+                    prob_history = metric_data.get("probability_history", [])
                     metrics.probability_history = deque(prob_history, maxlen=100)
 
                     self.metrics[name] = metrics
 
             # Import adjustment history
-            if 'adjustment_history' in data:
-                self.adjustment_history = data['adjustment_history']
+            if "adjustment_history" in data:
+                self.adjustment_history = data["adjustment_history"]
 
 
 # Global dynamic manager instance
@@ -537,8 +563,6 @@ class DynamicProbabilityContext(ProbabilityContext):
 
         # Apply dynamic adjustments if enabled
         if self.enable_dynamic and self.dynamic_manager:
-            return self.dynamic_manager.get_dynamic_probability(
-                construct_name, base_probability
-            )
+            return self.dynamic_manager.get_dynamic_probability(construct_name, base_probability)
 
         return base_probability

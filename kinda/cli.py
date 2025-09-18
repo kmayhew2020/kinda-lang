@@ -405,12 +405,12 @@ def handle_inject_run(args) -> int:
     patterns = set()
     if args.patterns:
         pattern_map = {
-            'kinda_int': PatternType.KINDA_INT,
-            'kinda_float': PatternType.KINDA_FLOAT,
-            'sorta_print': PatternType.SORTA_PRINT,
-            'sometimes': PatternType.SOMETIMES,
-            'maybe': PatternType.MAYBE,
-            'kinda_repeat': PatternType.KINDA_REPEAT
+            "kinda_int": PatternType.KINDA_INT,
+            "kinda_float": PatternType.KINDA_FLOAT,
+            "sorta_print": PatternType.SORTA_PRINT,
+            "sometimes": PatternType.SOMETIMES,
+            "maybe": PatternType.MAYBE,
+            "kinda_repeat": PatternType.KINDA_REPEAT,
         }
         for pattern_name in args.patterns:
             if pattern_name in pattern_map:
@@ -420,16 +420,24 @@ def handle_inject_run(args) -> int:
         if args.level == "basic":
             patterns = {PatternType.KINDA_INT, PatternType.KINDA_FLOAT, PatternType.SORTA_PRINT}
         elif args.level == "intermediate":
-            patterns = {PatternType.KINDA_INT, PatternType.KINDA_FLOAT, PatternType.SORTA_PRINT, PatternType.SOMETIMES}
+            patterns = {
+                PatternType.KINDA_INT,
+                PatternType.KINDA_FLOAT,
+                PatternType.SORTA_PRINT,
+                PatternType.SOMETIMES,
+            }
         else:  # advanced
-            patterns = {PatternType.KINDA_INT, PatternType.KINDA_FLOAT, PatternType.SORTA_PRINT,
-                       PatternType.SOMETIMES, PatternType.MAYBE, PatternType.KINDA_REPEAT}
+            patterns = {
+                PatternType.KINDA_INT,
+                PatternType.KINDA_FLOAT,
+                PatternType.SORTA_PRINT,
+                PatternType.SOMETIMES,
+                PatternType.MAYBE,
+                PatternType.KINDA_REPEAT,
+            }
 
     # Create injection config
-    config = InjectionConfig(
-        enabled_patterns=patterns,
-        safety_level=args.safety
-    )
+    config = InjectionConfig(enabled_patterns=patterns, safety_level=args.safety)
 
     # Inject and run
     engine = InjectionEngine()
@@ -444,13 +452,13 @@ def handle_inject_run(args) -> int:
     safe_print(f"Enhanced with patterns: {', '.join(result.applied_patterns)}")
 
     # Write enhanced code to temporary file and run it
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as f:
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as f:
         f.write(result.transformed_code)
         temp_path = f.name
 
     try:
         # Run the enhanced Python file
-        subprocess.run(['python', temp_path], check=True)
+        subprocess.run(["python", temp_path], check=True)
         return 0
     except subprocess.CalledProcessError as e:
         safe_print(f"Execution failed: {e}")
@@ -529,10 +537,21 @@ def handle_inject_convert(args) -> int:
     if args.level == "basic":
         patterns = {PatternType.KINDA_INT, PatternType.KINDA_FLOAT, PatternType.SORTA_PRINT}
     elif args.level == "intermediate":
-        patterns = {PatternType.KINDA_INT, PatternType.KINDA_FLOAT, PatternType.SORTA_PRINT, PatternType.SOMETIMES}
+        patterns = {
+            PatternType.KINDA_INT,
+            PatternType.KINDA_FLOAT,
+            PatternType.SORTA_PRINT,
+            PatternType.SOMETIMES,
+        }
     else:  # advanced
-        patterns = {PatternType.KINDA_INT, PatternType.KINDA_FLOAT, PatternType.SORTA_PRINT,
-                   PatternType.SOMETIMES, PatternType.MAYBE, PatternType.KINDA_REPEAT}
+        patterns = {
+            PatternType.KINDA_INT,
+            PatternType.KINDA_FLOAT,
+            PatternType.SORTA_PRINT,
+            PatternType.SOMETIMES,
+            PatternType.MAYBE,
+            PatternType.KINDA_REPEAT,
+        }
 
     config = InjectionConfig(enabled_patterns=patterns)
 
@@ -546,7 +565,7 @@ def handle_inject_convert(args) -> int:
         return 1
 
     # Write enhanced code
-    output_path.write_text(result.transformed_code, encoding='utf-8')
+    output_path.write_text(result.transformed_code, encoding="utf-8")
 
     safe_print(f"Enhanced file written to: {output_path}")
     safe_print(f"Applied patterns: {', '.join(result.applied_patterns)}")
@@ -564,6 +583,7 @@ def handle_inject_examples(args) -> int:
     if args.pattern:
         # Show examples for specific pattern
         from kinda.injection.ast_analyzer import PatternType
+
         try:
             pattern_type = PatternType(args.pattern)
             pattern = library.get_pattern(pattern_type)
@@ -740,32 +760,55 @@ def main(argv=None) -> int:
     p_analyze.add_argument("--export", "-e", help="Export analysis to file (format: csv, json)")
 
     # Epic #127: Python Injection Commands
-    p_inject = sub.add_parser("inject", help="Inject kinda-lang constructs into Python code (Epic #127)")
+    p_inject = sub.add_parser(
+        "inject", help="Inject kinda-lang constructs into Python code (Epic #127)"
+    )
     inject_sub = p_inject.add_subparsers(dest="inject_command", required=True)
 
     # inject run command
-    p_inject_run = inject_sub.add_parser("run", help="Run Python file with injected kinda constructs")
+    p_inject_run = inject_sub.add_parser(
+        "run", help="Run Python file with injected kinda constructs"
+    )
     p_inject_run.add_argument("file", help="Python file to enhance and run")
-    p_inject_run.add_argument("--level", choices=["basic", "intermediate", "advanced"], default="basic",
-                              help="Enhancement level")
-    p_inject_run.add_argument("--patterns", nargs="*",
-                              help="Specific patterns to enable (e.g., kinda_int sorta_print)")
-    p_inject_run.add_argument("--safety", choices=["safe", "caution", "risky"], default="safe",
-                              help="Safety level for injection operations")
+    p_inject_run.add_argument(
+        "--level",
+        choices=["basic", "intermediate", "advanced"],
+        default="basic",
+        help="Enhancement level",
+    )
+    p_inject_run.add_argument(
+        "--patterns", nargs="*", help="Specific patterns to enable (e.g., kinda_int sorta_print)"
+    )
+    p_inject_run.add_argument(
+        "--safety",
+        choices=["safe", "caution", "risky"],
+        default="safe",
+        help="Safety level for injection operations",
+    )
 
     # inject analyze command
-    p_inject_analyze = inject_sub.add_parser("analyze", help="Analyze Python file for injection opportunities")
+    p_inject_analyze = inject_sub.add_parser(
+        "analyze", help="Analyze Python file for injection opportunities"
+    )
     p_inject_analyze.add_argument("file", help="Python file to analyze")
-    p_inject_analyze.add_argument("--verbose", "-v", action="store_true",
-                                  help="Show detailed analysis")
+    p_inject_analyze.add_argument(
+        "--verbose", "-v", action="store_true", help="Show detailed analysis"
+    )
 
     # inject convert command
-    p_inject_convert = inject_sub.add_parser("convert", help="Convert Python file with kinda enhancements")
+    p_inject_convert = inject_sub.add_parser(
+        "convert", help="Convert Python file with kinda enhancements"
+    )
     p_inject_convert.add_argument("file", help="Python file to convert")
-    p_inject_convert.add_argument("--output", "-o", help="Output file (default: <file>_enhanced.py)")
-    p_inject_convert.add_argument("--level", choices=["basic", "intermediate", "advanced"], default="basic")
-    p_inject_convert.add_argument("--interactive", action="store_true",
-                                  help="Interactive enhancement selection")
+    p_inject_convert.add_argument(
+        "--output", "-o", help="Output file (default: <file>_enhanced.py)"
+    )
+    p_inject_convert.add_argument(
+        "--level", choices=["basic", "intermediate", "advanced"], default="basic"
+    )
+    p_inject_convert.add_argument(
+        "--interactive", action="store_true", help="Interactive enhancement selection"
+    )
 
     # inject examples command
     p_inject_examples = inject_sub.add_parser("examples", help="Show injection examples")

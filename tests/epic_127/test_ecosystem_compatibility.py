@@ -16,6 +16,7 @@ from unittest.mock import patch, MagicMock
 from kinda.injection.injection_engine import InjectionEngine, InjectionConfig
 from kinda.injection.ast_analyzer import PatternType
 from kinda.migration.utilities import MigrationUtilities
+
 # Note: gradual_kinda and kinda_safe are mocked in tests
 # from kinda.migration.decorators import gradual_kinda, kinda_safe
 
@@ -31,14 +32,14 @@ class TestEcosystemCompatibility:
                 PatternType.KINDA_INT,
                 PatternType.KINDA_FLOAT,
                 PatternType.SORTA_PRINT,
-                PatternType.SOMETIMES
+                PatternType.SOMETIMES,
             },
-            safety_level="safe"
+            safety_level="safe",
         )
 
     def test_numpy_compatibility(self):
         """Test kinda-lang compatibility with NumPy operations"""
-        numpy_code = '''
+        numpy_code = """
 import numpy as np
 
 def analyze_data():
@@ -57,7 +58,7 @@ def analyze_data():
 
 if __name__ == "__main__":
     analyze_data()
-'''
+"""
 
         # Test injection into NumPy code
         result = self.engine.inject_source(numpy_code, self.config)
@@ -69,13 +70,13 @@ if __name__ == "__main__":
 
         # Verify the transformed code is syntactically valid
         try:
-            compile(result.transformed_code, '<test>', 'exec')
+            compile(result.transformed_code, "<test>", "exec")
         except SyntaxError as e:
             pytest.fail(f"Transformed NumPy code is not valid Python: {e}")
 
     def test_pandas_compatibility(self):
         """Test kinda-lang compatibility with Pandas operations"""
-        pandas_code = '''
+        pandas_code = """
 import pandas as pd
 
 def process_dataframe():
@@ -98,7 +99,7 @@ def process_dataframe():
 
 if __name__ == "__main__":
     process_dataframe()
-'''
+"""
 
         result = self.engine.inject_source(pandas_code, self.config)
 
@@ -108,13 +109,13 @@ if __name__ == "__main__":
 
         # Verify syntactic validity
         try:
-            compile(result.transformed_code, '<test>', 'exec')
+            compile(result.transformed_code, "<test>", "exec")
         except SyntaxError as e:
             pytest.fail(f"Transformed Pandas code is not valid Python: {e}")
 
     def test_flask_compatibility(self):
         """Test kinda-lang compatibility with Flask web applications"""
-        flask_code = '''
+        flask_code = """
 from flask import Flask, jsonify
 
 app = Flask(__name__)
@@ -144,7 +145,7 @@ def health_check():
 
 if __name__ == '__main__':
     app.run(debug=True)
-'''
+"""
 
         result = self.engine.inject_source(flask_code, self.config)
 
@@ -154,13 +155,13 @@ if __name__ == '__main__':
 
         # Verify syntactic validity
         try:
-            compile(result.transformed_code, '<test>', 'exec')
+            compile(result.transformed_code, "<test>", "exec")
         except SyntaxError as e:
             pytest.fail(f"Transformed Flask code is not valid Python: {e}")
 
     def test_django_compatibility(self):
         """Test kinda-lang compatibility with Django models and views"""
-        django_code = '''
+        django_code = """
 from django.db import models
 from django.http import JsonResponse
 
@@ -194,7 +195,7 @@ def api_view(request):
     }
 
     return JsonResponse(response)
-'''
+"""
 
         result = self.engine.inject_source(django_code, self.config)
 
@@ -204,13 +205,13 @@ def api_view(request):
 
         # Verify syntactic validity
         try:
-            compile(result.transformed_code, '<test>', 'exec')
+            compile(result.transformed_code, "<test>", "exec")
         except SyntaxError as e:
             pytest.fail(f"Transformed Django code is not valid Python: {e}")
 
     def test_requests_compatibility(self):
         """Test kinda-lang compatibility with HTTP requests"""
-        requests_code = '''
+        requests_code = """
 import requests
 import json
 
@@ -243,7 +244,7 @@ def fetch_api_data():
 
 if __name__ == "__main__":
     fetch_api_data()
-'''
+"""
 
         result = self.engine.inject_source(requests_code, self.config)
 
@@ -253,13 +254,13 @@ if __name__ == "__main__":
 
         # Verify syntactic validity
         try:
-            compile(result.transformed_code, '<test>', 'exec')
+            compile(result.transformed_code, "<test>", "exec")
         except SyntaxError as e:
             pytest.fail(f"Transformed Requests code is not valid Python: {e}")
 
     def test_sqlalchemy_compatibility(self):
         """Test kinda-lang compatibility with SQLAlchemy ORM"""
-        sqlalchemy_code = '''
+        sqlalchemy_code = """
 from sqlalchemy import create_engine, Column, Integer, Float, String
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
@@ -308,7 +309,7 @@ def process_records():
 
 if __name__ == "__main__":
     process_records()
-'''
+"""
 
         result = self.engine.inject_source(sqlalchemy_code, self.config)
 
@@ -318,12 +319,17 @@ if __name__ == "__main__":
 
         # Verify syntactic validity
         try:
-            compile(result.transformed_code, '<test>', 'exec')
+            compile(result.transformed_code, "<test>", "exec")
         except SyntaxError as e:
             pytest.fail(f"Transformed SQLAlchemy code is not valid Python: {e}")
 
-    @pytest.mark.parametrize("library_name,import_code,test_code", [
-        ("matplotlib", "import matplotlib.pyplot as plt", '''
+    @pytest.mark.parametrize(
+        "library_name,import_code,test_code",
+        [
+            (
+                "matplotlib",
+                "import matplotlib.pyplot as plt",
+                """
 plt.figure(figsize=(8, 6))
 data = [1, 2, 3, 4, 5]
 threshold = 3.0
@@ -331,8 +337,12 @@ if max(data) > threshold:
     print("Creating plot")
 plt.plot(data)
 plt.show()
-'''),
-        ("scipy", "from scipy import stats", '''
+""",
+            ),
+            (
+                "scipy",
+                "from scipy import stats",
+                """
 import numpy as np
 data = np.array([1, 2, 3, 4, 5])
 confidence = 0.95
@@ -340,8 +350,12 @@ mean = data.mean()
 if mean > 2.5:
     print(f"Statistical analysis: mean={mean}")
 result = stats.norm.pdf(data, mean, 1.0)
-'''),
-        ("scikit-learn", "from sklearn.linear_model import LinearRegression", '''
+""",
+            ),
+            (
+                "scikit-learn",
+                "from sklearn.linear_model import LinearRegression",
+                """
 import numpy as np
 X = np.array([[1], [2], [3], [4], [5]])
 y = np.array([2, 4, 6, 8, 10])
@@ -351,8 +365,10 @@ model.fit(X, y)
 score = model.score(X, y)
 if score > score_threshold:
     print(f"Model performance: {score}")
-'''),
-    ])
+""",
+            ),
+        ],
+    )
     def test_scientific_libraries_compatibility(self, library_name, import_code, test_code):
         """Test compatibility with scientific computing libraries"""
         full_code = f"{import_code}\n\n{test_code}"
@@ -365,7 +381,7 @@ if score > score_threshold:
 
         # Verify syntactic validity
         try:
-            compile(result.transformed_code, '<test>', 'exec')
+            compile(result.transformed_code, "<test>", "exec")
         except SyntaxError as e:
             pytest.fail(f"Transformed {library_name} code is not valid Python: {e}")
 
@@ -381,6 +397,7 @@ class TestMigrationDecorators:
             def decorator(func):
                 func._kinda_probability = probability
                 return func
+
             return decorator
 
         def numpy_analysis():
@@ -394,7 +411,7 @@ class TestMigrationDecorators:
         # Test the decorated function
         result = decorated_func()
         assert isinstance(result, (int, float))
-        assert hasattr(decorated_func, '_kinda_probability')
+        assert hasattr(decorated_func, "_kinda_probability")
         assert decorated_func._kinda_probability == 0.3
 
     def test_safe_migration_pandas(self):
@@ -402,14 +419,15 @@ class TestMigrationDecorators:
 
         def mock_kinda_safe(fallback_mode=True):
             def decorator(func):
-                func._safe_config = {'fallback_mode': fallback_mode}
+                func._safe_config = {"fallback_mode": fallback_mode}
                 return func
+
             return decorator
 
         def pandas_processing():
             # Simulate pandas operations
-            data = {'values': [1, 2, 3, 4, 5]}
-            return sum(data['values']) / len(data['values'])
+            data = {"values": [1, 2, 3, 4, 5]}
+            return sum(data["values"]) / len(data["values"])
 
         # Apply mock decorator
         decorated_func = mock_kinda_safe(fallback_mode=True)(pandas_processing)
@@ -417,8 +435,8 @@ class TestMigrationDecorators:
         # Test the decorated function
         result = decorated_func()
         assert isinstance(result, (int, float))
-        assert hasattr(decorated_func, '_safe_config')
-        assert decorated_func._safe_config['fallback_mode'] is True
+        assert hasattr(decorated_func, "_safe_config")
+        assert decorated_func._safe_config["fallback_mode"] is True
 
 
 class TestPerformanceOverhead:
@@ -432,14 +450,14 @@ class TestPerformanceOverhead:
                 PatternType.KINDA_INT,
                 PatternType.KINDA_FLOAT,
                 PatternType.SORTA_PRINT,
-                PatternType.SOMETIMES
+                PatternType.SOMETIMES,
             },
-            safety_level="safe"
+            safety_level="safe",
         )
 
     def test_performance_overhead_numpy(self):
         """Test performance overhead with NumPy code stays under 20%"""
-        numpy_code = '''
+        numpy_code = """
 import numpy as np
 
 def heavy_computation():
@@ -457,17 +475,19 @@ def heavy_computation():
         result = np.sum(data * std_val)
 
     return result
-'''
+"""
 
         result = self.engine.inject_source(numpy_code, self.config)
 
         assert result.success
         # Architecture requirement: <20% overhead
-        assert result.performance_estimate < 20.0, f"Performance overhead {result.performance_estimate}% exceeds 20% limit"
+        assert (
+            result.performance_estimate < 20.0
+        ), f"Performance overhead {result.performance_estimate}% exceeds 20% limit"
 
     def test_performance_overhead_pandas(self):
         """Test performance overhead with Pandas code stays under 20%"""
-        pandas_code = '''
+        pandas_code = """
 import pandas as pd
 import numpy as np
 
@@ -490,16 +510,18 @@ def data_processing():
         df[col] = df[col] * 2.0
 
     return df.sum().sum()
-'''
+"""
 
         result = self.engine.inject_source(pandas_code, self.config)
 
         assert result.success
-        assert result.performance_estimate < 20.0, f"Performance overhead {result.performance_estimate}% exceeds 20% limit"
+        assert (
+            result.performance_estimate < 20.0
+        ), f"Performance overhead {result.performance_estimate}% exceeds 20% limit"
 
     def test_minimal_overhead_simple_code(self):
         """Test that simple code has minimal overhead"""
-        simple_code = '''
+        simple_code = """
 def simple_function():
     x = 42
     y = 3.14
@@ -508,13 +530,15 @@ def simple_function():
         print("Value is high")
 
     return x + y
-'''
+"""
 
         result = self.engine.inject_source(simple_code, self.config)
 
         assert result.success
         # Simple code should have very low overhead
-        assert result.performance_estimate < 10.0, f"Simple code overhead {result.performance_estimate}% is too high"
+        assert (
+            result.performance_estimate < 10.0
+        ), f"Simple code overhead {result.performance_estimate}% is too high"
 
 
 @pytest.mark.integration
@@ -523,7 +547,7 @@ class TestRealWorldScenarios:
 
     def test_web_api_with_database(self):
         """Test web API endpoint with database operations"""
-        api_code = '''
+        api_code = """
 from flask import Flask, request, jsonify
 import sqlite3
 
@@ -561,12 +585,16 @@ def get_user(user_id):
 
 if __name__ == '__main__':
     app.run()
-'''
+"""
 
         engine = InjectionEngine()
         config = InjectionConfig(
-            enabled_patterns={PatternType.KINDA_INT, PatternType.SOMETIMES, PatternType.SORTA_PRINT},
-            safety_level="safe"
+            enabled_patterns={
+                PatternType.KINDA_INT,
+                PatternType.SOMETIMES,
+                PatternType.SORTA_PRINT,
+            },
+            safety_level="safe",
         )
 
         result = engine.inject_source(api_code, config)
@@ -577,13 +605,13 @@ if __name__ == '__main__':
 
         # Verify code is still valid
         try:
-            compile(result.transformed_code, '<test>', 'exec')
+            compile(result.transformed_code, "<test>", "exec")
         except SyntaxError as e:
             pytest.fail(f"Real-world scenario code is not valid Python: {e}")
 
     def test_data_analysis_pipeline(self):
         """Test data analysis pipeline with multiple libraries"""
-        pipeline_code = '''
+        pipeline_code = """
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -631,7 +659,7 @@ def analyze_sales_data(csv_file):
 if __name__ == "__main__":
     results = analyze_sales_data('sales.csv')
     print(f"Analysis complete: {results}")
-'''
+"""
 
         engine = InjectionEngine()
         config = InjectionConfig(
@@ -639,9 +667,9 @@ if __name__ == "__main__":
                 PatternType.KINDA_INT,
                 PatternType.KINDA_FLOAT,
                 PatternType.SOMETIMES,
-                PatternType.SORTA_PRINT
+                PatternType.SORTA_PRINT,
             },
-            safety_level="safe"
+            safety_level="safe",
         )
 
         result = engine.inject_source(pipeline_code, config)
@@ -655,7 +683,7 @@ if __name__ == "__main__":
 
         # Verify code is still valid
         try:
-            compile(result.transformed_code, '<test>', 'exec')
+            compile(result.transformed_code, "<test>", "exec")
         except SyntaxError as e:
             pytest.fail(f"Data analysis pipeline code is not valid Python: {e}")
 
