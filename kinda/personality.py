@@ -241,7 +241,7 @@ class OptimizedRandomState:
         """Generate Gaussian random number."""
         return self.rng.gauss(mu, sigma)
 
-    def getstate(self) -> tuple[Any, ...]:
+    def getstate(self) -> Tuple[Any, ...]:
         """Get RNG state."""
         return self.rng.getstate()
 

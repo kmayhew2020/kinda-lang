@@ -13,19 +13,22 @@ import os
 import subprocess
 import tempfile
 import shutil
-from pathlib import Path
+import sys
 import pytest
+from pathlib import Path
 
 
 class TestInstallationModernization:
     """Test suite for installation modernization (Issues #102 & #103)"""
 
+    @pytest.mark.skipif(sys.platform == "win32", reason="Shell scripts not supported on Windows")
     def test_install_script_exists_and_executable(self):
         """Test that install.sh exists and is executable"""
         script_path = Path(__file__).parent.parent / "install.sh"
         assert script_path.exists(), "install.sh should exist"
         assert os.access(script_path, os.X_OK), "install.sh should be executable"
 
+    @pytest.mark.skipif(sys.platform == "win32", reason="Shell scripts not supported on Windows")
     def test_install_script_help_flag(self):
         """Test install.sh --help flag works"""
         script_path = Path(__file__).parent.parent / "install.sh"
@@ -38,6 +41,7 @@ class TestInstallationModernization:
         assert "--no-path" in result.stdout, "Help should mention --no-path flag"
         assert "Install development dependencies" in result.stdout
 
+    @pytest.mark.skipif(sys.platform == "win32", reason="Shell scripts not supported on Windows")
     def test_install_script_invalid_option(self):
         """Test install.sh with invalid option fails gracefully"""
         script_path = Path(__file__).parent.parent / "install.sh"
@@ -68,7 +72,7 @@ class TestInstallationModernization:
     def test_readme_pipx_primary_installation(self):
         """Test that README.md shows pipx as primary installation method"""
         readme_path = Path(__file__).parent.parent / "README.md"
-        content = readme_path.read_text()
+        content = readme_path.read_text(encoding="utf-8")
 
         # Check installation section structure
         assert "## 🚀 Installation" in content, "Should have installation section"
@@ -85,7 +89,7 @@ class TestInstallationModernization:
         # This would be more comprehensive in a real environment
         # For now, just verify the logic structure exists
         script_path = Path(__file__).parent.parent / "install.sh"
-        content = script_path.read_text()
+        content = script_path.read_text(encoding="utf-8")
 
         # Check that shell detection function exists
         assert "detect_shell_config()" in content, "Should have shell detection function"
@@ -97,7 +101,7 @@ class TestInstallationModernization:
     def test_path_configuration_logic(self):
         """Test PATH configuration logic in install.sh"""
         script_path = Path(__file__).parent.parent / "install.sh"
-        content = script_path.read_text()
+        content = script_path.read_text(encoding="utf-8")
 
         # Check PATH configuration function
         assert "configure_path()" in content, "Should have PATH config function"
@@ -108,7 +112,7 @@ class TestInstallationModernization:
     def test_installation_strategy_selection(self):
         """Test that install.sh has proper installation strategy"""
         script_path = Path(__file__).parent.parent / "install.sh"
-        content = script_path.read_text()
+        content = script_path.read_text(encoding="utf-8")
 
         # Check for multiple installation strategies
         assert "pipx" in content, "Should support pipx installation"
@@ -122,7 +126,7 @@ class TestInstallationModernization:
     def test_development_mode_features(self):
         """Test --dev flag functionality in install.sh"""
         script_path = Path(__file__).parent.parent / "install.sh"
-        content = script_path.read_text()
+        content = script_path.read_text(encoding="utf-8")
 
         # Check dev mode functionality
         assert "DEV_MODE" in content, "Should have dev mode variable"
@@ -133,7 +137,7 @@ class TestInstallationModernization:
     def test_python_version_requirement_updated(self):
         """Test that Python version requirement is updated to 3.9+"""
         script_path = Path(__file__).parent.parent / "install.sh"
-        content = script_path.read_text()
+        content = script_path.read_text(encoding="utf-8")
 
         # Check Python version enforcement
         assert "3.9" in content, "Should require Python 3.9+"
@@ -155,7 +159,7 @@ class TestInstallationModernization:
     def test_error_handling_and_fallbacks(self):
         """Test that install.sh has proper error handling"""
         script_path = Path(__file__).parent.parent / "install.sh"
-        content = script_path.read_text()
+        content = script_path.read_text(encoding="utf-8")
 
         # Check error handling
         assert "set -euo pipefail" in content, "Should use strict error handling"
@@ -170,7 +174,7 @@ class TestInstallationModernization:
     def test_user_experience_messaging(self):
         """Test that install.sh provides good user feedback"""
         script_path = Path(__file__).parent.parent / "install.sh"
-        content = script_path.read_text()
+        content = script_path.read_text(encoding="utf-8")
 
         # Check for good UX messaging
         assert "🎉 Installation complete!" in content, "Should have success message"
@@ -185,7 +189,7 @@ class TestCrossCompatibility:
     def test_shell_compatibility_coverage(self):
         """Test that major shells are handled"""
         script_path = Path(__file__).parent.parent / "install.sh"
-        content = script_path.read_text()
+        content = script_path.read_text(encoding="utf-8")
 
         # Major shells should be handled
         shells = ["bash", "zsh", "fish"]
@@ -195,7 +199,7 @@ class TestCrossCompatibility:
     def test_path_configuration_by_shell(self):
         """Test PATH configuration varies by shell"""
         script_path = Path(__file__).parent.parent / "install.sh"
-        content = script_path.read_text()
+        content = script_path.read_text(encoding="utf-8")
 
         # Different shells should have different PATH syntax
         assert "export PATH=" in content, "Should use export for bash/zsh"
@@ -204,7 +208,7 @@ class TestCrossCompatibility:
     def test_backup_creation(self):
         """Test that config file backups are created"""
         script_path = Path(__file__).parent.parent / "install.sh"
-        content = script_path.read_text()
+        content = script_path.read_text(encoding="utf-8")
 
         assert "backup" in content, "Should create backups"
         assert "$(date +%s)" in content, "Should use timestamp in backup name"

@@ -13,7 +13,7 @@ import time
 import threading
 from dataclasses import dataclass, asdict
 from pathlib import Path
-from typing import Dict, List, Optional, Any, Union
+from typing import Dict, List, Optional, Any, Union, Tuple
 from uuid import uuid4
 import traceback
 
@@ -409,7 +409,7 @@ class ExecutionRecorder:
         return True
 
     def _record_rng_call(
-        self, method_name: str, args: tuple[Any, ...], kwargs: dict[str, Any], result: Any
+        self, method_name: str, args: Tuple[Any, ...], kwargs: Dict[str, Any], result: Any
     ) -> None:
         """Record a single RNG call with full context."""
 
@@ -857,7 +857,7 @@ class ReplayEngine:
         return replay_method
 
     def _get_recorded_result(
-        self, method_name: str, args: tuple[Any, ...], kwargs: dict[str, Any]
+        self, method_name: str, args: Tuple[Any, ...], kwargs: Dict[str, Any]
     ) -> Any:
         """Get the next recorded result for this RNG call."""
 
@@ -932,8 +932,8 @@ class ReplayEngine:
     def _log_replay_mismatch(
         self,
         method_name: str,
-        actual_args: tuple[Any, ...],
-        actual_kwargs: dict[str, Any],
+        actual_args: Tuple[Any, ...],
+        actual_kwargs: Dict[str, Any],
         expected_args: Any,
         fallback_result: Any,
         reason: str,

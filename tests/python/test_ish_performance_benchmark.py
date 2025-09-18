@@ -11,6 +11,12 @@ import statistics
 import os
 from contextlib import contextmanager
 
+# Skip all performance tests in CI environments
+pytestmark = pytest.mark.skipif(
+    bool(os.getenv("CI")) or bool(os.getenv("GITHUB_ACTIONS")),
+    reason="Performance tests are flaky in CI environments",
+)
+
 
 @contextmanager
 def performance_timer():

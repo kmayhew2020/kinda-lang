@@ -1,22 +1,22 @@
 # pyproject.toml
 
 [build-system]
-requires = ["setuptools>=61.0"]
+requires = ["setuptools>=70.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "kinda-lang"
-version = "0.4.0"
+version = "0.5.0"
 description = "🤷 A programming language for people who aren't totally sure - install with pipx"
 authors = [
     { name = "Kevin Mayhew", email = "kevin@example.com" }
 ]
 readme = "README.md"
 license = { file = "LICENSE" }
-requires-python = ">=3.9"
+requires-python = ">=3.8"
 classifiers = [
     "Development Status :: 3 - Alpha",
-    "Intended Audience :: Developers", 
+    "Intended Audience :: Developers",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9", 
@@ -56,7 +56,7 @@ line-length = 100
 target-version = ['py39']
 
 [tool.setuptools]
-packages = ["kinda", "kinda.grammar", "kinda.interpreter", "kinda.langs", "kinda.langs.python"]
+packages = ["kinda", "kinda.grammar", "kinda.grammar.python", "kinda.grammar.c", "kinda.interpreter", "kinda.langs"]
 
 [tool.mypy]
 python_version = "3.10"

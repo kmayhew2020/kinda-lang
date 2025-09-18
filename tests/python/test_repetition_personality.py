@@ -70,7 +70,10 @@ print(f"EVENTUALLY:{eventually_counter[0]}")
                             results.append((repeat_count, eventually_count))
 
                 finally:
-                    os.unlink(f.name)
+                    try:
+                        os.unlink(f.name)
+                    except (OSError, PermissionError):
+                        pass  # Ignore Windows file permission issues
 
         # Analyze reliability characteristics
         assert len(results) >= 3, "Should have multiple test runs for statistical analysis"
@@ -159,7 +162,10 @@ print(f"EVENTUALLY:{eventually_counter[0]}")
                             results.append((repeat_count, eventually_count))
 
                 finally:
-                    os.unlink(f.name)
+                    try:
+                        os.unlink(f.name)
+                    except (OSError, PermissionError):
+                        pass  # Ignore Windows file permission issues
 
         # Analyze chaotic characteristics
         assert len(results) >= 5, "Should have multiple test runs for chaotic analysis"
@@ -248,7 +254,10 @@ print(f"EVENTUALLY:{{eventually_counter[0]}}")
                             results.append((repeat_count, eventually_count))
 
                 finally:
-                    os.unlink(f.name)
+                    try:
+                        os.unlink(f.name)
+                    except (OSError, PermissionError):
+                        pass  # Ignore Windows file permission issues
 
         # Analyze cautious characteristics
         assert len(results) >= 4, "Should have multiple test runs for cautious analysis"
@@ -328,7 +337,10 @@ print(f"REPEAT:{{repeat_counter[0]}}")
                             chaos_results[chaos_level] = repeat_count
 
                 finally:
-                    os.unlink(f.name)
+                    try:
+                        os.unlink(f.name)
+                    except (OSError, PermissionError):
+                        pass  # Ignore Windows file permission issues
 
         # Analyze chaos level progression
         assert len(chaos_results) >= 3, "Should have results for multiple chaos levels"
@@ -431,7 +443,10 @@ print(f"EVENTUALLY:{{eventually_counter[0]}}")
                         ), f"Extreme chaos should still terminate reasonably: {eventually_count}"
 
                 finally:
-                    os.unlink(f.name)
+                    try:
+                        os.unlink(f.name)
+                    except (OSError, PermissionError):
+                        pass  # Ignore Windows file permission issues
 
         # Reset
         PersonalityContext.set_chaos_level(5)
@@ -505,7 +520,10 @@ print(f"RESULT:{{count}}")
                                 results.append(count)
 
                     finally:
-                        os.unlink(f.name)
+                        try:
+                            os.unlink(f.name)
+                        except (OSError, PermissionError):
+                            pass  # Ignore Windows file permission issues
 
             # Statistical validation
             assert len(results) >= 10, f"Need sufficient samples for {personality}: {len(results)}"
@@ -591,7 +609,10 @@ print(f"RESULT:{{counter}}")
                                 termination_points.append(count)
 
                     finally:
-                        os.unlink(f.name)
+                        try:
+                            os.unlink(f.name)
+                        except (OSError, PermissionError):
+                            pass  # Ignore Windows file permission issues
 
             # Statistical validation
             assert len(termination_points) >= 7, f"Need sufficient samples for {personality}"
@@ -695,7 +716,10 @@ print(f"CHAOTIC:{count2}")
                 ), "Personality change should affect behavior"
 
             finally:
-                os.unlink(f.name)
+                try:
+                    os.unlink(f.name)
+                except (OSError, PermissionError):
+                    pass  # Ignore Windows file permission issues
 
         # Reset
         PersonalityContext.set_mood("playful")
@@ -753,7 +777,10 @@ print(f"RESULT:{{counter[0]}}")
                                 results.append(count)
 
                     finally:
-                        os.unlink(f.name)
+                        try:
+                            os.unlink(f.name)
+                        except (OSError, PermissionError):
+                            pass  # Ignore Windows file permission issues
 
             # Same seed should produce same results within same personality
             assert len(results) >= 2, f"Need multiple runs for {personality}"

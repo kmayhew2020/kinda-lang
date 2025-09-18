@@ -377,7 +377,7 @@ class TestProbabilisticControlFlowExamples:
                 pytest.skip(f"Example file {example_file} not found")
 
             # Basic syntax validation (check if file is readable and has expected patterns)
-            content = example_path.read_text()
+            content = example_path.read_text(encoding="utf-8")
 
             # Verify presence of probabilistic constructs
             assert (
@@ -537,7 +537,7 @@ class TestDocumentationExampleQuality:
             doc_path = self.docs_dir / doc_file
             assert doc_path.exists(), f"Required documentation file {doc_file} is missing"
 
-            content = doc_path.read_text()
+            content = doc_path.read_text(encoding="utf-8")
             assert len(content) > 1000, f"Documentation file {doc_file} seems too short"
 
             # Check for key sections
@@ -562,7 +562,7 @@ class TestDocumentationExampleQuality:
         readme_path = self.examples_dir / "README.md"
         assert readme_path.exists(), "Examples README.md is missing"
 
-        readme_content = readme_path.read_text()
+        readme_content = readme_path.read_text(encoding="utf-8")
 
         # Check that README mentions all constructs
         constructs = ["~sometimes_while", "~maybe_for", "~kinda_repeat", "~eventually_until"]
@@ -582,7 +582,7 @@ class TestDocumentationExampleQuality:
             if doc_file.name.startswith("."):
                 continue
 
-            content = doc_file.read_text()
+            content = doc_file.read_text(encoding="utf-8")
 
             # Look for code blocks
             code_blocks = []
@@ -628,7 +628,7 @@ class TestDocumentationExampleQuality:
                         continue
 
                     # Check if personality is set elsewhere in the document
-                    full_content = doc_file.read_text()
+                    full_content = doc_file.read_text(encoding="utf-8")
                     if "~kinda mood" not in full_content and len(code_block.strip()) > 50:
                         assert (
                             False

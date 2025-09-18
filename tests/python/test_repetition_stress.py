@@ -75,7 +75,10 @@ print(f"RESULT:{total}")
                 assert 800 <= count <= 1200, f"Expected ~1000 ± 20%, got {count}"
 
             finally:
-                os.unlink(f.name)
+                try:
+                    os.unlink(f.name)
+                except (OSError, PermissionError):
+                    pass  # Ignore Windows file permission issues
 
         # Reset
         PersonalityContext.set_seed(None)
@@ -133,7 +136,10 @@ print(f"RESULT:{total}")
                 assert execution_time < 30, f"Execution took too long: {execution_time:.2f}s"
 
             finally:
-                os.unlink(f.name)
+                try:
+                    os.unlink(f.name)
+                except (OSError, PermissionError):
+                    pass  # Ignore Windows file permission issues
 
         # Reset
         PersonalityContext.set_seed(None)
@@ -186,7 +192,10 @@ print(f"RESULT:{len(data)}")
                 assert count > 1500, f"Expected high iteration count, got {count}"
 
             finally:
-                os.unlink(f.name)
+                try:
+                    os.unlink(f.name)
+                except (OSError, PermissionError):
+                    pass  # Ignore Windows file permission issues
 
         # Force garbage collection and check memory usage
         gc.collect()
@@ -253,7 +262,10 @@ print(f"RESULT:{{counter[0]}}")
                     ), f"For input {input_val}, expected >= {expected_min}, got {count}"
 
                 finally:
-                    os.unlink(f.name)
+                    try:
+                        os.unlink(f.name)
+                    except (OSError, PermissionError):
+                        pass  # Ignore Windows file permission issues
 
         # Reset
         PersonalityContext.set_seed(None)
@@ -313,7 +325,10 @@ print(f"RESULT:{iteration}")
                 assert execution_time < 45, f"Execution took too long: {execution_time:.2f}s"
 
             finally:
-                os.unlink(f.name)
+                try:
+                    os.unlink(f.name)
+                except (OSError, PermissionError):
+                    pass  # Ignore Windows file permission issues
 
         # Reset
         PersonalityContext.set_seed(None)
@@ -376,7 +391,10 @@ print(f"RESULT:{iteration}")
                 # This is acceptable - the condition never resolves
                 pass
             finally:
-                os.unlink(f.name)
+                try:
+                    os.unlink(f.name)
+                except (OSError, PermissionError):
+                    pass  # Ignore Windows file permission issues
 
         # Reset
         PersonalityContext.set_seed(None)
@@ -427,7 +445,10 @@ print(f"RESULT:{counter}")
                             results.append(count)
 
                 finally:
-                    os.unlink(f.name)
+                    try:
+                        os.unlink(f.name)
+                    except (OSError, PermissionError):
+                        pass  # Ignore Windows file permission issues
 
         # Analyze statistical results
         assert len(results) > 5, "Should have multiple successful runs for statistical analysis"
@@ -503,7 +524,10 @@ print(f"RESULT:{sum(results)}")
                 assert total_count >= 100, f"Expected sum of results >= 100, got {total_count}"
 
             finally:
-                os.unlink(f.name)
+                try:
+                    os.unlink(f.name)
+                except (OSError, PermissionError):
+                    pass  # Ignore Windows file permission issues
 
         # Check memory usage after multiple eventually_until executions
         gc.collect()
@@ -578,7 +602,10 @@ print(f"RESULT:{total}")
                 assert execution_time < 35, f"Nested execution took too long: {execution_time:.2f}s"
 
             finally:
-                os.unlink(f.name)
+                try:
+                    os.unlink(f.name)
+                except (OSError, PermissionError):
+                    pass  # Ignore Windows file permission issues
 
         # Reset
         PersonalityContext.set_seed(None)
@@ -641,7 +668,10 @@ print(f"RESULT:{state[0]}")
                 assert execution_time < 45, f"Mixed execution took too long: {execution_time:.2f}s"
 
             finally:
-                os.unlink(f.name)
+                try:
+                    os.unlink(f.name)
+                except (OSError, PermissionError):
+                    pass  # Ignore Windows file permission issues
 
         # Reset
         PersonalityContext.set_seed(None)
