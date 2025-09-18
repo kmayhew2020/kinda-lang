@@ -331,7 +331,7 @@ class TestPerformanceGuideExamples:
 
     @pytest.mark.skipif(
         os.getenv("CI") or os.getenv("GITHUB_ACTIONS"),
-        reason="Performance tests are flaky in CI environments"
+        reason="Performance tests are flaky in CI environments",
     )
     def test_construct_overhead_scaling_with_body_complexity(self):
         """Test that construct overhead becomes negligible with complex operations."""
@@ -409,6 +409,7 @@ class TestPerformanceGuideExamples:
         ), "Complex operations should have lower relative overhead"
         # Adjust threshold for CI environments where performance can vary
         import os
+
         threshold = 12 if (os.getenv("CI") or os.getenv("GITHUB_ACTIONS")) else 7
         assert (
             complex_overhead < threshold
@@ -417,7 +418,7 @@ class TestPerformanceGuideExamples:
     @pytest.mark.slow
     @pytest.mark.skipif(
         os.getenv("CI") or os.getenv("GITHUB_ACTIONS"),
-        reason="Performance tests are flaky in CI environments"
+        reason="Performance tests are flaky in CI environments",
     )
     def test_cross_platform_performance_consistency(self):
         """Test that performance characteristics are consistent across different scenarios."""
