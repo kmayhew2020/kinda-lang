@@ -45,7 +45,7 @@ class TestEpic124125Integration:
             base_count = 100
             actual_count = base_count + random.randint(-10, 10)  # ~kinda_repeat simulation
 
-            for i in range(actual_count):
+            for j in range(actual_count):
                 # Simulate ~kinda int, ~kinda float, ~kinda bool
                 fuzzy_id = 42 + random.randint(-3, 3)
                 fuzzy_score = 85.5 + random.gauss(0, 2.5)
