@@ -50,6 +50,10 @@ testpaths = ["tests"]
 python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
+markers = [
+    "performance: marks tests as performance-related",
+    "slow: marks tests as slow-running",
+]
 
 [tool.black]
 line-length = 100
