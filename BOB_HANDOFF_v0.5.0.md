@@ -8,7 +8,7 @@
 
 ### ✅ **EPIC #126 + EPIC #125 ARE COMPLETE**
 - **Epic #126**: Composition Framework (Kinda builds Kinda) ✅ DONE
-- **Epic #125**: Probabilistic Control Flow (~sometimes_while, ~maybe_for, ~kinda_repeat, ~eventually_until) ✅ DONE
+- **Epic #125**: Probabilistic Control Flow (all 4 constructs + comprehensive docs + 10 examples) ✅ DONE - Issue #158
 - **CI Infrastructure**: Stabilized with 99.36% tests running, 78% coverage ✅ DONE
 
 ### ❌ **INCORRECT BULK CLOSURE (2025-09-15)**
