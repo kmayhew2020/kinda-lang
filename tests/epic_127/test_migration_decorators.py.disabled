@@ -54,65 +54,35 @@ class TestGradualKindaDecorator:
     def test_gradual_kinda_probability_validation(self):
         """Test gradual_kinda decorator probability validation"""
 
-        with patch("kinda.migration.decorators.gradual_kinda") as mock_decorator:
+        # Test valid probability - this should work without error
+        @gradual_kinda(probability=0.3)
+        def valid_function():
+            return "valid"
 
-            def mock_gradual_kinda(probability=0.5):
-                if not 0 <= probability <= 1:
-                    raise ValueError("Probability must be between 0 and 1")
+        # Verify the function was decorated and can be called
+        assert valid_function() == "valid"
 
-                def decorator(func):
-                    @functools.wraps(func)
-                    def wrapper(*args, **kwargs):
-                        return func(*args, **kwargs)
+        # Test invalid probability - this should raise ValueError
+        with pytest.raises(ValueError, match="Probability must be between 0 and 1"):
 
-                    return wrapper
-
-                return decorator
-
-            mock_decorator.side_effect = mock_gradual_kinda
-
-            # Test valid probability
-            @gradual_kinda(probability=0.3)
-            def valid_function():
-                return "valid"
-
-            mock_decorator.assert_called_with(probability=0.3)
-
-            # Test invalid probability
-            with pytest.raises(ValueError, match="Probability must be between 0 and 1"):
-
-                @gradual_kinda(probability=1.5)
-                def invalid_function():
-                    return "invalid"
+            @gradual_kinda(probability=1.5)
+            def invalid_function():
+                return "invalid"
 
     def test_gradual_kinda_with_different_probabilities(self):
         """Test gradual_kinda with various probability values"""
 
-        with patch("kinda.migration.decorators.gradual_kinda") as mock_decorator:
+        probabilities = [0.0, 0.25, 0.5, 0.75, 1.0]
 
-            def mock_gradual_kinda(probability=0.5):
-                def decorator(func):
-                    func._kinda_probability = probability
-                    return func
+        for prob in probabilities:
+            # Each decorator should work without error
+            @gradual_kinda(probability=prob)
+            def test_func():
+                return f"prob_{prob}"
 
-                return decorator
-
-            mock_decorator.side_effect = mock_gradual_kinda
-
-            probabilities = [0.0, 0.25, 0.5, 0.75, 1.0]
-
-            for prob in probabilities:
-
-                @gradual_kinda(probability=prob)
-                def test_func():
-                    return f"prob_{prob}"
-
-                assert hasattr(test_func, "_kinda_probability")
-                assert test_func._kinda_probability == prob
-
-            # Verify all calls were made
-            expected_calls = [call(probability=prob) for prob in probabilities]
-            mock_decorator.assert_has_calls(expected_calls, any_order=True)
+            # Function should be callable and return expected result
+            result = test_func()
+            assert result == f"prob_{prob}"
 
     def test_gradual_kinda_function_preservation(self):
         """Test that gradual_kinda preserves function metadata"""
@@ -158,36 +128,17 @@ class TestGradualKindaDecorator:
     def test_gradual_kinda_with_complex_functions(self):
         """Test gradual_kinda with complex function signatures"""
 
-        with patch("kinda.migration.decorators.gradual_kinda") as mock_decorator:
+        @gradual_kinda(probability=0.8)
+        def complex_function(a, b=10, *args, **kwargs):
+            """Complex function with various parameter types"""
+            return sum([a, b] + list(args) + list(kwargs.values()))
 
-            def mock_gradual_kinda(probability=0.5):
-                def decorator(func):
-                    @functools.wraps(func)
-                    def wrapper(*args, **kwargs):
-                        # Add some kinda behavior tracking
-                        result = func(*args, **kwargs)
-                        return result
+        # Test with different argument patterns
+        result1 = complex_function(1)
+        assert result1 == 11  # 1 + 10
 
-                    wrapper._execution_count = 0
-                    return wrapper
-
-                return decorator
-
-            mock_decorator.side_effect = mock_gradual_kinda
-
-            @gradual_kinda(probability=0.8)
-            def complex_function(a, b=10, *args, **kwargs):
-                """Complex function with various parameter types"""
-                return sum([a, b] + list(args) + list(kwargs.values()))
-
-            # Test with different argument patterns
-            result1 = complex_function(1)
-            assert result1 == 11  # 1 + 10
-
-            result2 = complex_function(1, 2, 3, 4, extra=5)
-            assert result2 == 15  # 1 + 2 + 3 + 4 + 5
-
-            mock_decorator.assert_called_with(probability=0.8)
+        result2 = complex_function(1, 2, 3, 4, extra=5)
+        assert result2 == 15  # 1 + 2 + 3 + 4 + 5
 
 
 class TestKindaSafeDecorator:
@@ -196,39 +147,13 @@ class TestKindaSafeDecorator:
     def test_kinda_safe_basic_functionality(self):
         """Test basic kinda_safe decorator functionality"""
 
-        with patch("kinda.migration.decorators.kinda_safe") as mock_decorator:
+        @kinda_safe(fallback_mode=True, max_retries=2)
+        def safe_function():
+            return "safe execution"
 
-            def mock_kinda_safe(fallback_mode=True, max_retries=3):
-                def decorator(func):
-                    @functools.wraps(func)
-                    def wrapper(*args, **kwargs):
-                        try:
-                            return func(*args, **kwargs)
-                        except Exception as e:
-                            if fallback_mode:
-                                # Return safe fallback
-                                return None
-                            else:
-                                raise e
-
-                    wrapper._kinda_safe_config = {
-                        "fallback_mode": fallback_mode,
-                        "max_retries": max_retries,
-                    }
-                    return wrapper
-
-                return decorator
-
-            mock_decorator.side_effect = mock_kinda_safe
-
-            @kinda_safe(fallback_mode=True, max_retries=2)
-            def safe_function():
-                return "safe execution"
-
-            result = safe_function()
-            assert result == "safe execution"
-
-            mock_decorator.assert_called_once_with(fallback_mode=True, max_retries=2)
+        # Function should work normally when no error occurs
+        result = safe_function()
+        assert result == "safe execution"
 
     def test_kinda_safe_error_handling(self):
         """Test kinda_safe decorator error handling"""
