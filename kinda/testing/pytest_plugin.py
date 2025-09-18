@@ -216,6 +216,10 @@ def pytest_configure(config):
     config.addinivalue_line(
         "markers", "ci_unstable: mark test as potentially unstable in CI environments"
     )
+    # Statistical testing markers
+    config.addinivalue_line("markers", "statistical: mark test for statistical validation")
+    config.addinivalue_line("markers", "probabilistic: mark test for probabilistic behavior")
+    config.addinivalue_line("markers", "binomial: mark test for binomial distribution testing")
 
 
 def pytest_addoption(parser):
@@ -285,6 +289,48 @@ def performance_test_config(request):
         "warmup_iterations": max(1, iterations // 20),
         "threshold_factor": 1.2,
         "statistical_method": "robust",
+    }
+
+
+# Statistical Testing Fixtures
+@pytest.fixture(scope="function")
+def statistical_tester():
+    """Provide statistical tester for test functions."""
+    from .assertions import StatisticalTester
+    return StatisticalTester()
+
+
+@pytest.fixture(scope="function")
+def distribution_tester():
+    """Provide distribution tester for test functions."""
+    from .distributions import DistributionTester
+    return DistributionTester()
+
+
+@pytest.fixture(scope="session")
+def confidence_calculator():
+    """Provide confidence interval calculator for test sessions."""
+    from .confidence import ConfidenceCalculator
+    return ConfidenceCalculator()
+
+
+@pytest.fixture(scope="function")
+def statistical_config(request):
+    """Provide statistical test configuration."""
+    # Get configuration from statistical marker if present
+    marker = request.node.get_closest_marker("statistical")
+    config = {}
+
+    if marker and marker.kwargs:
+        config = marker.kwargs
+
+    # Default configuration with marker overrides
+    return {
+        "confidence": config.get("confidence", 0.95),
+        "method": config.get("method", "wilson"),
+        "tolerance": config.get("tolerance", None),
+        "max_attempts": config.get("max_attempts", 100),
+        "context": config.get("context", "statistical test validation")
     }
 
 
