@@ -42,8 +42,7 @@ class TestIshPerformanceBenchmark:
 
         # Use dependency resolver instead of dynamic skip
         ish_comparison_composed = dependency_resolver.get_function_or_fallback(
-            "kinda.langs.python.runtime.ish_composition",
-            "ish_comparison_composed"
+            "kinda.langs.python.runtime.ish_composition", "ish_comparison_composed"
         )
 
         iterations = 1000  # Reduced for CI performance
@@ -67,7 +66,7 @@ class TestIshPerformanceBenchmark:
             benchmark_legacy,
             benchmark_composition,
             iterations=5,  # Reduced for CI
-            max_overhead_percent=max_overhead
+            max_overhead_percent=max_overhead,
         )
 
         # Get results
@@ -78,18 +77,26 @@ class TestIshPerformanceBenchmark:
         print(f"Overhead: {overhead_percent:.2f}%")
 
         if dependency_resolver.is_fallback_function(ish_comparison_composed):
-            print(f"Note: Using fallback implementation for {dependency_resolver.get_fallback_info(ish_comparison_composed)}")
+            print(
+                f"Note: Using fallback implementation for {dependency_resolver.get_fallback_info(ish_comparison_composed)}"
+            )
 
         # Assert using framework validation
         # For fallback implementations, we only check overhead percentage, not statistical significance
         if dependency_resolver.is_fallback_function(ish_comparison_composed):
             # Fallback implementations are expected to have higher overhead due to sleep() simulation
             is_overhead_acceptable = overhead_percent <= max_overhead
-            assert is_overhead_acceptable, f"Fallback implementation overhead too high: {overhead_percent:.2f}% > {max_overhead}%"
-            print(f"✓ Fallback implementation overhead acceptable: {overhead_percent:.2f}% ≤ {max_overhead}%")
+            assert (
+                is_overhead_acceptable
+            ), f"Fallback implementation overhead too high: {overhead_percent:.2f}% > {max_overhead}%"
+            print(
+                f"✓ Fallback implementation overhead acceptable: {overhead_percent:.2f}% ≤ {max_overhead}%"
+            )
         else:
             # Real implementations should pass full statistical validation
-            assert comparison.is_valid, f"Composition overhead validation failed: {comparison.message}"
+            assert (
+                comparison.is_valid
+            ), f"Composition overhead validation failed: {comparison.message}"
 
     @pytest.mark.performance
     def test_ish_value_performance(self, dependency_resolver, performance_framework):
@@ -98,8 +105,7 @@ class TestIshPerformanceBenchmark:
 
         # Use dependency resolver instead of dynamic skip
         ish_value_composed = dependency_resolver.get_function_or_fallback(
-            "kinda.langs.python.runtime.ish_composition",
-            "ish_value_composed"
+            "kinda.langs.python.runtime.ish_composition", "ish_value_composed"
         )
 
         iterations = 1000  # Reduced for CI performance
@@ -123,7 +129,7 @@ class TestIshPerformanceBenchmark:
             benchmark_legacy,
             benchmark_composition,
             iterations=5,  # Reduced for CI
-            max_overhead_percent=max_overhead
+            max_overhead_percent=max_overhead,
         )
 
         # Get results
@@ -134,18 +140,26 @@ class TestIshPerformanceBenchmark:
         print(f"Overhead: {overhead_percent:.2f}%")
 
         if dependency_resolver.is_fallback_function(ish_value_composed):
-            print(f"Note: Using fallback implementation for {dependency_resolver.get_fallback_info(ish_value_composed)}")
+            print(
+                f"Note: Using fallback implementation for {dependency_resolver.get_fallback_info(ish_value_composed)}"
+            )
 
         # Assert using framework validation
         # For fallback implementations, we only check overhead percentage, not statistical significance
         if dependency_resolver.is_fallback_function(ish_value_composed):
             # Fallback implementations are expected to have higher overhead due to sleep() simulation
             is_overhead_acceptable = overhead_percent <= max_overhead
-            assert is_overhead_acceptable, f"Fallback implementation overhead too high: {overhead_percent:.2f}% > {max_overhead}%"
-            print(f"✓ Fallback implementation overhead acceptable: {overhead_percent:.2f}% ≤ {max_overhead}%")
+            assert (
+                is_overhead_acceptable
+            ), f"Fallback implementation overhead too high: {overhead_percent:.2f}% > {max_overhead}%"
+            print(
+                f"✓ Fallback implementation overhead acceptable: {overhead_percent:.2f}% ≤ {max_overhead}%"
+            )
         else:
             # Real implementations should pass full statistical validation
-            assert comparison.is_valid, f"Composition overhead validation failed: {comparison.message}"
+            assert (
+                comparison.is_valid
+            ), f"Composition overhead validation failed: {comparison.message}"
 
     @pytest.mark.performance
     def test_pattern_creation_performance(self):
@@ -237,8 +251,7 @@ class TestPerformanceRegression:
 
         # Use dependency resolver
         ish_comparison_composed = dependency_resolver.get_function_or_fallback(
-            "kinda.langs.python.runtime.ish_composition",
-            "ish_comparison_composed"
+            "kinda.langs.python.runtime.ish_composition", "ish_comparison_composed"
         )
 
         # Reduced iterations for CI performance
@@ -282,10 +295,14 @@ class TestPerformanceRegression:
         print(f"Memory overhead: {memory_overhead:.2f}%")
 
         if dependency_resolver.is_fallback_function(ish_comparison_composed):
-            print(f"Note: Using fallback implementation for {dependency_resolver.get_fallback_info(ish_comparison_composed)}")
+            print(
+                f"Note: Using fallback implementation for {dependency_resolver.get_fallback_info(ish_comparison_composed)}"
+            )
 
         # Memory overhead should be reasonable (<75% for fallback implementations)
-        max_overhead = 75.0 if dependency_resolver.is_fallback_function(ish_comparison_composed) else 50.0
+        max_overhead = (
+            75.0 if dependency_resolver.is_fallback_function(ish_comparison_composed) else 50.0
+        )
         assert memory_overhead < max_overhead, f"Memory overhead too high: {memory_overhead:.2f}%"
 
     @pytest.mark.performance
