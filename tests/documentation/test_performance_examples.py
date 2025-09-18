@@ -330,7 +330,7 @@ class TestPerformanceGuideExamples:
         assert avg_with_cache < avg_no_cache, "Cached operations should be faster"
 
     @pytest.mark.skipif(
-        os.getenv("CI") or os.getenv("GITHUB_ACTIONS"),
+        bool(os.getenv("CI")) or bool(os.getenv("GITHUB_ACTIONS")),
         reason="Performance tests are flaky in CI environments",
     )
     def test_construct_overhead_scaling_with_body_complexity(self):
@@ -417,7 +417,7 @@ class TestPerformanceGuideExamples:
 
     @pytest.mark.slow
     @pytest.mark.skipif(
-        os.getenv("CI") or os.getenv("GITHUB_ACTIONS"),
+        bool(os.getenv("CI")) or bool(os.getenv("GITHUB_ACTIONS")),
         reason="Performance tests are flaky in CI environments",
     )
     def test_cross_platform_performance_consistency(self):
