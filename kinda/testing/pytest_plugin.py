@@ -297,6 +297,7 @@ def performance_test_config(request):
 def statistical_tester():
     """Provide statistical tester for test functions."""
     from .assertions import StatisticalTester
+
     return StatisticalTester()
 
 
@@ -304,6 +305,7 @@ def statistical_tester():
 def distribution_tester():
     """Provide distribution tester for test functions."""
     from .distributions import DistributionTester
+
     return DistributionTester()
 
 
@@ -311,6 +313,7 @@ def distribution_tester():
 def confidence_calculator():
     """Provide confidence interval calculator for test sessions."""
     from .confidence import ConfidenceCalculator
+
     return ConfidenceCalculator()
 
 
@@ -330,7 +333,7 @@ def statistical_config(request):
         "method": config.get("method", "wilson"),
         "tolerance": config.get("tolerance", None),
         "max_attempts": config.get("max_attempts", 100),
-        "context": config.get("context", "statistical test validation")
+        "context": config.get("context", "statistical test validation"),
     }
 
 

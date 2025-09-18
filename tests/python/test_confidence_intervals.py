@@ -12,9 +12,13 @@ import statistics
 from typing import List
 
 from kinda.testing.confidence import (
-    ConfidenceCalculator, ConfidenceInterval, ConfidenceMethod,
-    wilson_score_interval, bootstrap_confidence_interval,
-    StatisticalFrameworkError, ConfidenceIntervalError
+    ConfidenceCalculator,
+    ConfidenceInterval,
+    ConfidenceMethod,
+    wilson_score_interval,
+    bootstrap_confidence_interval,
+    StatisticalFrameworkError,
+    ConfidenceIntervalError,
 )
 
 
@@ -24,8 +28,12 @@ class TestConfidenceInterval:
     def test_confidence_interval_contains(self):
         """Test confidence interval contains method."""
         ci = ConfidenceInterval(
-            lower=0.4, upper=0.8, confidence=0.95,
-            method=ConfidenceMethod.WILSON, sample_size=100, point_estimate=0.6
+            lower=0.4,
+            upper=0.8,
+            confidence=0.95,
+            method=ConfidenceMethod.WILSON,
+            sample_size=100,
+            point_estimate=0.6,
         )
 
         assert ci.contains(0.5)
@@ -37,8 +45,12 @@ class TestConfidenceInterval:
     def test_confidence_interval_width(self):
         """Test confidence interval width calculation."""
         ci = ConfidenceInterval(
-            lower=0.4, upper=0.8, confidence=0.95,
-            method=ConfidenceMethod.WILSON, sample_size=100, point_estimate=0.6
+            lower=0.4,
+            upper=0.8,
+            confidence=0.95,
+            method=ConfidenceMethod.WILSON,
+            sample_size=100,
+            point_estimate=0.6,
         )
 
         assert abs(ci.width() - 0.4) < 1e-6
@@ -47,8 +59,12 @@ class TestConfidenceInterval:
     def test_confidence_interval_edge_cases(self):
         """Test confidence interval with edge case values."""
         ci = ConfidenceInterval(
-            lower=0.0, upper=1.0, confidence=0.95,
-            method=ConfidenceMethod.WILSON, sample_size=0, point_estimate=0.0
+            lower=0.0,
+            upper=1.0,
+            confidence=0.95,
+            method=ConfidenceMethod.WILSON,
+            sample_size=0,
+            point_estimate=0.0,
         )
 
         assert ci.contains(0.5)
@@ -277,8 +293,9 @@ class TestMathematicalAccuracy:
         # With 200 simulations, standard error is approximately 0.035
         tolerance = 0.1  # More lenient for test stability
 
-        assert abs(observed_coverage - confidence) < tolerance, \
-            f"Coverage {observed_coverage:.3f} differs from {confidence:.3f} by more than {tolerance}"
+        assert (
+            abs(observed_coverage - confidence) < tolerance
+        ), f"Coverage {observed_coverage:.3f} differs from {confidence:.3f} by more than {tolerance}"
 
     def test_confidence_interval_nesting(self):
         """Test that higher confidence levels give wider intervals."""
@@ -311,8 +328,9 @@ class TestMathematicalAccuracy:
 
         # For large samples, Wilson and normal approximation should be similar
         width_difference = abs(ci_wilson.width() - ci_normal.width())
-        assert width_difference < 0.05, \
-            f"Wilson and normal approximations differ too much: {width_difference}"
+        assert (
+            width_difference < 0.05
+        ), f"Wilson and normal approximations differ too much: {width_difference}"
 
     def test_extreme_cases_stability(self):
         """Test that extreme cases are handled gracefully."""
@@ -349,8 +367,9 @@ class TestPerformanceRequirements:
 
         # Should complete 1000 calculations in reasonable time
         # Target: <0.1ms per calculation, so 1000 calculations in <100ms
-        assert elapsed_time < 1.0, \
-            f"Wilson score calculations too slow: {elapsed_time:.3f}s for 1000 calculations"
+        assert (
+            elapsed_time < 1.0
+        ), f"Wilson score calculations too slow: {elapsed_time:.3f}s for 1000 calculations"
 
     def test_bootstrap_performance(self):
         """Test bootstrap calculation performance."""
@@ -367,5 +386,6 @@ class TestPerformanceRequirements:
         elapsed_time = time.time() - start_time
 
         # Bootstrap should be slower but still reasonable
-        assert elapsed_time < 5.0, \
-            f"Bootstrap calculations too slow: {elapsed_time:.3f}s for 10 calculations"
+        assert (
+            elapsed_time < 5.0
+        ), f"Bootstrap calculations too slow: {elapsed_time:.3f}s for 10 calculations"
