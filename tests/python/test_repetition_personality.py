@@ -520,7 +520,10 @@ print(f"RESULT:{{count}}")
                                 results.append(count)
 
                     finally:
-                        os.unlink(f.name)
+                        try:
+                            os.unlink(f.name)
+                        except (OSError, PermissionError):
+                            pass  # Ignore Windows file permission issues
 
             # Statistical validation
             assert len(results) >= 10, f"Need sufficient samples for {personality}: {len(results)}"
@@ -606,7 +609,10 @@ print(f"RESULT:{{counter}}")
                                 termination_points.append(count)
 
                     finally:
-                        os.unlink(f.name)
+                        try:
+                            os.unlink(f.name)
+                        except (OSError, PermissionError):
+                            pass  # Ignore Windows file permission issues
 
             # Statistical validation
             assert len(termination_points) >= 7, f"Need sufficient samples for {personality}"
@@ -710,7 +716,10 @@ print(f"CHAOTIC:{count2}")
                 ), "Personality change should affect behavior"
 
             finally:
-                os.unlink(f.name)
+                try:
+                    os.unlink(f.name)
+                except (OSError, PermissionError):
+                    pass  # Ignore Windows file permission issues
 
         # Reset
         PersonalityContext.set_mood("playful")
@@ -768,7 +777,10 @@ print(f"RESULT:{{counter[0]}}")
                                 results.append(count)
 
                     finally:
-                        os.unlink(f.name)
+                        try:
+                            os.unlink(f.name)
+                        except (OSError, PermissionError):
+                            pass  # Ignore Windows file permission issues
 
             # Same seed should produce same results within same personality
             assert len(results) >= 2, f"Need multiple runs for {personality}"

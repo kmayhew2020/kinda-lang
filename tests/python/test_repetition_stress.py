@@ -76,7 +76,7 @@ print(f"RESULT:{total}")
 
             finally:
                 try:
-                    os.unlink(f.name)
+                    try:\n                        os.unlink(f.name)\n                    except (OSError, PermissionError):\n                        pass  # Ignore Windows file permission issues
                 except (OSError, PermissionError):
                     pass  # Ignore Windows file permission issues
 
@@ -137,7 +137,7 @@ print(f"RESULT:{total}")
 
             finally:
                 try:
-                    os.unlink(f.name)
+                    try:\n                        os.unlink(f.name)\n                    except (OSError, PermissionError):\n                        pass  # Ignore Windows file permission issues
                 except (OSError, PermissionError):
                     pass  # Ignore Windows file permission issues
 
@@ -193,7 +193,7 @@ print(f"RESULT:{len(data)}")
 
             finally:
                 try:
-                    os.unlink(f.name)
+                    try:\n                        os.unlink(f.name)\n                    except (OSError, PermissionError):\n                        pass  # Ignore Windows file permission issues
                 except (OSError, PermissionError):
                     pass  # Ignore Windows file permission issues
 
@@ -262,7 +262,7 @@ print(f"RESULT:{{counter[0]}}")
                     ), f"For input {input_val}, expected >= {expected_min}, got {count}"
 
                 finally:
-                    os.unlink(f.name)
+                    try:\n                        os.unlink(f.name)\n                    except (OSError, PermissionError):\n                        pass  # Ignore Windows file permission issues
 
         # Reset
         PersonalityContext.set_seed(None)
@@ -323,7 +323,7 @@ print(f"RESULT:{iteration}")
 
             finally:
                 try:
-                    os.unlink(f.name)
+                    try:\n                        os.unlink(f.name)\n                    except (OSError, PermissionError):\n                        pass  # Ignore Windows file permission issues
                 except (OSError, PermissionError):
                     pass  # Ignore Windows file permission issues
 
@@ -389,7 +389,7 @@ print(f"RESULT:{iteration}")
                 pass
             finally:
                 try:
-                    os.unlink(f.name)
+                    try:\n                        os.unlink(f.name)\n                    except (OSError, PermissionError):\n                        pass  # Ignore Windows file permission issues
                 except (OSError, PermissionError):
                     pass  # Ignore Windows file permission issues
 
@@ -442,7 +442,7 @@ print(f"RESULT:{counter}")
                             results.append(count)
 
                 finally:
-                    os.unlink(f.name)
+                    try:\n                        os.unlink(f.name)\n                    except (OSError, PermissionError):\n                        pass  # Ignore Windows file permission issues
 
         # Analyze statistical results
         assert len(results) > 5, "Should have multiple successful runs for statistical analysis"
@@ -519,7 +519,7 @@ print(f"RESULT:{sum(results)}")
 
             finally:
                 try:
-                    os.unlink(f.name)
+                    try:\n                        os.unlink(f.name)\n                    except (OSError, PermissionError):\n                        pass  # Ignore Windows file permission issues
                 except (OSError, PermissionError):
                     pass  # Ignore Windows file permission issues
 
@@ -597,7 +597,7 @@ print(f"RESULT:{total}")
 
             finally:
                 try:
-                    os.unlink(f.name)
+                    try:\n                        os.unlink(f.name)\n                    except (OSError, PermissionError):\n                        pass  # Ignore Windows file permission issues
                 except (OSError, PermissionError):
                     pass  # Ignore Windows file permission issues
 
@@ -663,7 +663,7 @@ print(f"RESULT:{state[0]}")
 
             finally:
                 try:
-                    os.unlink(f.name)
+                    try:\n                        os.unlink(f.name)\n                    except (OSError, PermissionError):\n                        pass  # Ignore Windows file permission issues
                 except (OSError, PermissionError):
                     pass  # Ignore Windows file permission issues
 

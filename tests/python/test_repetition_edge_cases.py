@@ -75,7 +75,7 @@ print(f"EXECUTED:{{counter[0]}}")
 
                 finally:
                     try:
-                        os.unlink(f.name)
+                        try:\n                    os.unlink(f.name)\n                except (OSError, PermissionError):\n                    pass  # Ignore Windows file permission issues
                     except (OSError, PermissionError):
                         pass  # Ignore Windows file permission issues
 
@@ -161,7 +161,7 @@ print(f"RESULT:{{counter[0]}}")
                     pass
                 finally:
                     try:
-                        os.unlink(f.name)
+                        try:\n                    os.unlink(f.name)\n                except (OSError, PermissionError):\n                    pass  # Ignore Windows file permission issues
                     except (OSError, PermissionError):
                         pass  # Ignore Windows file permission issues
 
@@ -228,7 +228,7 @@ print(f"ITERATIONS:{{counter[0]}}")
 
                 finally:
                     try:
-                        os.unlink(f.name)
+                        try:\n                    os.unlink(f.name)\n                except (OSError, PermissionError):\n                    pass  # Ignore Windows file permission issues
                     except (OSError, PermissionError):
                         pass  # Ignore Windows file permission issues
 
@@ -288,7 +288,7 @@ print(f"TOTAL:{total}")
                 assert 100 <= total <= 700, f"Deep nesting result out of range: {total}"
 
             finally:
-                os.unlink(f.name)
+                try:\n                    os.unlink(f.name)\n                except (OSError, PermissionError):\n                    pass  # Ignore Windows file permission issues
 
         # Reset
         PersonalityContext.set_seed(None)
@@ -358,7 +358,7 @@ print(f"ITERATIONS:{{counter[0]}}")
 
                 finally:
                     try:
-                        os.unlink(f.name)
+                        try:\n                    os.unlink(f.name)\n                except (OSError, PermissionError):\n                    pass  # Ignore Windows file permission issues
                     except (OSError, PermissionError):
                         pass  # Ignore Windows file permission issues
 
@@ -446,7 +446,7 @@ print(f"CONDITION_MET:{original_condition}")
 
                 finally:
                     try:
-                        os.unlink(f.name)
+                        try:\n                    os.unlink(f.name)\n                except (OSError, PermissionError):\n                    pass  # Ignore Windows file permission issues
                     except (OSError, PermissionError):
                         pass  # Ignore Windows file permission issues
 
@@ -522,7 +522,7 @@ print(f"ACCESS_COUNT:{state.access_count}")
                 ), f"Should have accessed state multiple times: {access_count} vs {iterations}"
 
             finally:
-                os.unlink(f.name)
+                try:\n                    os.unlink(f.name)\n                except (OSError, PermissionError):\n                    pass  # Ignore Windows file permission issues
 
         # Reset
         PersonalityContext.set_seed(None)
@@ -578,7 +578,7 @@ print(f"EVALUATIONS:{evaluations}")
                 ), f"Statistical sampling should be reasonable: {evaluations}"
 
             finally:
-                os.unlink(f.name)
+                try:\n                    os.unlink(f.name)\n                except (OSError, PermissionError):\n                    pass  # Ignore Windows file permission issues
 
         # Reset
         PersonalityContext.set_seed(None)
@@ -645,7 +645,7 @@ print(f"FINAL_COUNTER:{shared_counter}")
                 ), f"Shared state result out of range: {final_counter}"
 
             finally:
-                os.unlink(f.name)
+                try:\n                    os.unlink(f.name)\n                except (OSError, PermissionError):\n                    pass  # Ignore Windows file permission issues
 
         # Reset
         PersonalityContext.set_seed(None)
@@ -710,7 +710,7 @@ print(f"SIZES:{data_sets}")
                 ), "Should have datasets near target size"
 
             finally:
-                os.unlink(f.name)
+                try:\n                    os.unlink(f.name)\n                except (OSError, PermissionError):\n                    pass  # Ignore Windows file permission issues
 
         # Reset
         PersonalityContext.set_seed(None)
@@ -777,7 +777,7 @@ print(f"RESULTS:{results}")
                     ), f"Should have mostly non-zero results: {results_str}"
 
             finally:
-                os.unlink(f.name)
+                try:\n                    os.unlink(f.name)\n                except (OSError, PermissionError):\n                    pass  # Ignore Windows file permission issues
 
         # Reset
         PersonalityContext.set_mood("playful")
