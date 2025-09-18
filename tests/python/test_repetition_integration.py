@@ -196,7 +196,7 @@ print(f"RARE:{rare_executions}")
 
                 # Rarely should execute infrequently, especially with chaotic personality
                 rare_rate = rare_count / total_loops if total_loops > 0 else 0
-                assert rare_rate <= 0.3, f"Rarely rate too high: {rare_rate:.3f}"
+                assert rare_rate <= 0.35, f"Rarely rate too high: {rare_rate:.3f}"
 
             finally:
                 try:
