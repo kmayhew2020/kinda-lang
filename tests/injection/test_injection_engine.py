@@ -174,13 +174,13 @@ class TestCodeTransformer:
     def test_transform_with_no_patterns(self):
         """Test transformer with no matching patterns"""
         import ast
-        from kinda.personality import PersonalityManager
+        from kinda.personality import PersonalityContext
 
         source = "z = 'hello'"
         tree = ast.parse(source)
 
         config = InjectionConfig(enabled_patterns={PatternType.KINDA_INT})
-        transformer = CodeTransformer([], config, PersonalityManager())
+        transformer = CodeTransformer([], config, PersonalityContext())
 
         # Transform should return original tree
         new_tree = transformer.visit(tree)
@@ -189,7 +189,7 @@ class TestCodeTransformer:
     def test_transform_applied_patterns_tracking(self):
         """Test that transformer tracks applied patterns"""
         import ast
-        from kinda.personality import PersonalityManager
+        from kinda.personality import PersonalityContext
         from kinda.injection.ast_analyzer import InjectionPoint, SecurityLevel, CodeLocation
 
         # Create a simple injection point
@@ -204,7 +204,7 @@ class TestCodeTransformer:
         )
 
         config = InjectionConfig(enabled_patterns={PatternType.KINDA_INT})
-        transformer = CodeTransformer([point], config, PersonalityManager())
+        transformer = CodeTransformer([point], config, PersonalityContext())
 
         tree = ast.parse("x = 42")
         transformer.visit(tree)
