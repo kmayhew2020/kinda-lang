@@ -126,6 +126,7 @@ class DependencyResolver:
             def ish_value(value):
                 """Minimal ish value fallback."""
                 import random
+
                 # Add some fuzziness to the value (±10%)
                 variation = value * 0.1 * (random.random() - 0.5)
                 return value + variation
@@ -178,6 +179,7 @@ class DependencyResolver:
                 if args:
                     try:
                         import random
+
                         base_value = float(args[0])
                         variation = base_value * 0.05 * (random.random() - 0.5)
                         return base_value + variation
@@ -237,12 +239,12 @@ class DependencyResolver:
 
     def is_fallback_function(self, func: Callable) -> bool:
         """Check if a function is a fallback implementation."""
-        return hasattr(func, '_is_fallback') and func._is_fallback
+        return hasattr(func, "_is_fallback") and func._is_fallback
 
     def get_fallback_info(self, func: Callable) -> Optional[str]:
         """Get information about what this fallback replaces."""
         if self.is_fallback_function(func):
-            return getattr(func, '_fallback_for', 'unknown')
+            return getattr(func, "_fallback_for", "unknown")
         return None
 
     def clear_cache(self) -> None:
@@ -259,5 +261,5 @@ class DependencyResolver:
             "total_modules_checked": total_modules,
             "available_modules": available_modules,
             "missing_modules": total_modules - available_modules,
-            "fallback_implementations": fallback_count
+            "fallback_implementations": fallback_count,
         }

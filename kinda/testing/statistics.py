@@ -9,6 +9,7 @@ from enum import Enum
 
 class ValidationMethod(Enum):
     """Statistical validation methods."""
+
     ROBUST = "robust"  # Median + MAD based
     BOOTSTRAP = "bootstrap"  # Bootstrap confidence intervals
     PERCENTILE = "percentile"  # Percentile-based validation
@@ -18,6 +19,7 @@ class ValidationMethod(Enum):
 @dataclass
 class ValidationResult:
     """Result of statistical validation."""
+
     is_valid: bool
     message: str
     p_value: Optional[float]
@@ -29,6 +31,7 @@ class ValidationResult:
 @dataclass
 class ComparisonResult:
     """Result of performance comparison between two sets."""
+
     is_valid: bool
     message: str
     overhead_percent: float
@@ -49,7 +52,7 @@ class StatisticalValidator:
         lower_threshold: float,
         upper_threshold: float,
         method: str = "robust",
-        confidence_level: float = 0.95
+        confidence_level: float = 0.95,
     ) -> ValidationResult:
         """Validate performance samples against thresholds."""
         if not samples:
@@ -59,7 +62,7 @@ class StatisticalValidator:
                 p_value=None,
                 confidence_level=confidence_level,
                 method_used=ValidationMethod.SIMPLE,
-                statistics={}
+                statistics={},
             )
 
         # Convert method string to enum
@@ -73,13 +76,21 @@ class StatisticalValidator:
 
         # Perform validation based on method
         if validation_method == ValidationMethod.ROBUST:
-            result = self._validate_robust(samples, lower_threshold, upper_threshold, confidence_level, stats)
+            result = self._validate_robust(
+                samples, lower_threshold, upper_threshold, confidence_level, stats
+            )
         elif validation_method == ValidationMethod.BOOTSTRAP:
-            result = self._validate_bootstrap(samples, lower_threshold, upper_threshold, confidence_level, stats)
+            result = self._validate_bootstrap(
+                samples, lower_threshold, upper_threshold, confidence_level, stats
+            )
         elif validation_method == ValidationMethod.PERCENTILE:
-            result = self._validate_percentile(samples, lower_threshold, upper_threshold, confidence_level, stats)
+            result = self._validate_percentile(
+                samples, lower_threshold, upper_threshold, confidence_level, stats
+            )
         else:  # SIMPLE
-            result = self._validate_simple(samples, lower_threshold, upper_threshold, confidence_level, stats)
+            result = self._validate_simple(
+                samples, lower_threshold, upper_threshold, confidence_level, stats
+            )
 
         return result
 
@@ -88,17 +99,17 @@ class StatisticalValidator:
         baseline_samples: List[float],
         comparison_samples: List[float],
         max_overhead_percent: float = 20.0,
-        significance_level: float = 0.05
+        significance_level: float = 0.05,
     ) -> ComparisonResult:
         """Compare performance between two sample sets."""
         if not baseline_samples or not comparison_samples:
             return ComparisonResult(
                 is_valid=False,
                 message="Insufficient samples for comparison",
-                overhead_percent=float('inf'),
+                overhead_percent=float("inf"),
                 significance_test=None,
                 p_value=None,
-                effect_size=None
+                effect_size=None,
             )
 
         # Calculate medians for overhead calculation
@@ -118,10 +129,9 @@ class StatisticalValidator:
         effect_size = self._calculate_effect_size(baseline_samples, comparison_samples)
 
         # Determine if comparison is valid
-        is_valid = (
-            overhead_percent <= max_overhead_percent and
-            (p_value is None or p_value >= significance_level)  # No significant increase
-        )
+        is_valid = overhead_percent <= max_overhead_percent and (
+            p_value is None or p_value >= significance_level
+        )  # No significant increase
 
         # Create informative message
         if is_valid:
@@ -140,10 +150,12 @@ class StatisticalValidator:
             overhead_percent=overhead_percent,
             significance_test=test_name,
             p_value=p_value,
-            effect_size=effect_size
+            effect_size=effect_size,
         )
 
-    def detect_outliers(self, samples: List[float], method: str = "iqr") -> Tuple[List[float], List[int]]:
+    def detect_outliers(
+        self, samples: List[float], method: str = "iqr"
+    ) -> Tuple[List[float], List[int]]:
         """Detect and return outliers in samples."""
         if len(samples) < 3:
             return [], []
@@ -163,15 +175,15 @@ class StatisticalValidator:
             return {}
 
         return {
-            'mean': statistics.mean(samples),
-            'median': statistics.median(samples),
-            'std': statistics.stdev(samples) if len(samples) > 1 else 0.0,
-            'mad': self._median_absolute_deviation(samples),
-            'min': min(samples),
-            'max': max(samples),
-            'count': len(samples),
-            'q25': np.percentile(samples, 25),
-            'q75': np.percentile(samples, 75),
+            "mean": statistics.mean(samples),
+            "median": statistics.median(samples),
+            "std": statistics.stdev(samples) if len(samples) > 1 else 0.0,
+            "mad": self._median_absolute_deviation(samples),
+            "min": min(samples),
+            "max": max(samples),
+            "count": len(samples),
+            "q25": np.percentile(samples, 25),
+            "q75": np.percentile(samples, 75),
         }
 
     def _validate_robust(
@@ -180,11 +192,11 @@ class StatisticalValidator:
         lower_threshold: float,
         upper_threshold: float,
         confidence_level: float,
-        stats: Dict[str, float]
+        stats: Dict[str, float],
     ) -> ValidationResult:
         """Validate using robust statistics (median + MAD)."""
-        median = stats['median']
-        mad = stats['mad']
+        median = stats["median"]
+        mad = stats["mad"]
 
         # Use MAD-based confidence interval
         # MAD * 1.4826 approximates standard deviation for normal data
@@ -221,7 +233,7 @@ class StatisticalValidator:
             p_value=p_value,
             confidence_level=confidence_level,
             method_used=ValidationMethod.ROBUST,
-            statistics={**stats, 'ci_lower': ci_lower, 'ci_upper': ci_upper}
+            statistics={**stats, "ci_lower": ci_lower, "ci_upper": ci_upper},
         )
 
     def _validate_bootstrap(
@@ -230,7 +242,7 @@ class StatisticalValidator:
         lower_threshold: float,
         upper_threshold: float,
         confidence_level: float,
-        stats: Dict[str, float]
+        stats: Dict[str, float],
     ) -> ValidationResult:
         """Validate using bootstrap confidence intervals."""
         try:
@@ -254,7 +266,9 @@ class StatisticalValidator:
             is_valid = ci_lower >= lower_threshold and ci_upper <= upper_threshold
 
             # Estimate p-value from bootstrap distribution
-            outside_count = sum(1 for m in bootstrap_medians if m < lower_threshold or m > upper_threshold)
+            outside_count = sum(
+                1 for m in bootstrap_medians if m < lower_threshold or m > upper_threshold
+            )
             p_value = outside_count / len(bootstrap_medians)
 
             message = (
@@ -269,12 +283,19 @@ class StatisticalValidator:
                 p_value=p_value,
                 confidence_level=confidence_level,
                 method_used=ValidationMethod.BOOTSTRAP,
-                statistics={**stats, 'ci_lower': ci_lower, 'ci_upper': ci_upper, 'bootstrap_samples': n_bootstrap}
+                statistics={
+                    **stats,
+                    "ci_lower": ci_lower,
+                    "ci_upper": ci_upper,
+                    "bootstrap_samples": n_bootstrap,
+                },
             )
 
         except Exception:
             # Fall back to robust method if bootstrap fails
-            return self._validate_robust(samples, lower_threshold, upper_threshold, confidence_level, stats)
+            return self._validate_robust(
+                samples, lower_threshold, upper_threshold, confidence_level, stats
+            )
 
     def _validate_percentile(
         self,
@@ -282,7 +303,7 @@ class StatisticalValidator:
         lower_threshold: float,
         upper_threshold: float,
         confidence_level: float,
-        stats: Dict[str, float]
+        stats: Dict[str, float],
     ) -> ValidationResult:
         """Validate using percentile-based thresholds."""
         # Calculate percentiles that correspond to confidence level
@@ -311,7 +332,7 @@ class StatisticalValidator:
             p_value=p_value,
             confidence_level=confidence_level,
             method_used=ValidationMethod.PERCENTILE,
-            statistics={**stats, 'ci_lower': ci_lower, 'ci_upper': ci_upper}
+            statistics={**stats, "ci_lower": ci_lower, "ci_upper": ci_upper},
         )
 
     def _validate_simple(
@@ -320,11 +341,11 @@ class StatisticalValidator:
         lower_threshold: float,
         upper_threshold: float,
         confidence_level: float,
-        stats: Dict[str, float]
+        stats: Dict[str, float],
     ) -> ValidationResult:
         """Simple validation using mean and standard deviation."""
-        mean = stats['mean']
-        std = stats['std']
+        mean = stats["mean"]
+        std = stats["std"]
 
         # Calculate confidence interval using t-distribution approximation
         confidence_multiplier = self._get_confidence_multiplier(confidence_level)
@@ -357,16 +378,26 @@ class StatisticalValidator:
             p_value=p_value,
             confidence_level=confidence_level,
             method_used=ValidationMethod.SIMPLE,
-            statistics={**stats, 'ci_lower': ci_lower, 'ci_upper': ci_upper, 'margin_of_error': margin_of_error}
+            statistics={
+                **stats,
+                "ci_lower": ci_lower,
+                "ci_upper": ci_upper,
+                "margin_of_error": margin_of_error,
+            },
         )
 
-    def _perform_significance_test(self, baseline: List[float], comparison: List[float]) -> Tuple[Optional[float], str]:
+    def _perform_significance_test(
+        self, baseline: List[float], comparison: List[float]
+    ) -> Tuple[Optional[float], str]:
         """Perform appropriate significance test."""
         try:
             from scipy import stats
+
             # Use Mann-Whitney U test (non-parametric)
             statistic, p_value = stats.mannwhitneyu(
-                baseline, comparison, alternative='less'  # Test if baseline < comparison (degradation)
+                baseline,
+                comparison,
+                alternative="less",  # Test if baseline < comparison (degradation)
             )
             return p_value, "Mann-Whitney U"
         except ImportError:
@@ -391,7 +422,9 @@ class StatisticalValidator:
             except Exception:
                 return None, "No test"
 
-    def _calculate_effect_size(self, baseline: List[float], comparison: List[float]) -> Optional[float]:
+    def _calculate_effect_size(
+        self, baseline: List[float], comparison: List[float]
+    ) -> Optional[float]:
         """Calculate effect size (Cohen's d equivalent for robust statistics)."""
         try:
             baseline_median = statistics.median(baseline)

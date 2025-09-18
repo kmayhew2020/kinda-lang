@@ -12,6 +12,7 @@ from datetime import datetime
 @dataclass
 class PerformanceBaseline:
     """Historical performance baseline data."""
+
     test_name: str
     environment_key: str
     median_time: float
@@ -25,7 +26,7 @@ class PerformanceBaseline:
         return asdict(self)
 
     @classmethod
-    def from_dict(cls, data: dict) -> 'PerformanceBaseline':
+    def from_dict(cls, data: dict) -> "PerformanceBaseline":
         """Create from dictionary for JSON deserialization."""
         return cls(**data)
 
@@ -43,7 +44,7 @@ class ThresholdManager:
         test_name: str,
         environment_key: str,
         current_samples: List[float],
-        confidence_level: float = 0.95
+        confidence_level: float = 0.95,
     ) -> Tuple[float, float]:
         """Calculate adaptive threshold for test."""
         baseline = self.get_baseline(test_name, environment_key)
@@ -56,10 +57,7 @@ class ThresholdManager:
         return self._calculate_adaptive_threshold(baseline, current_samples, confidence_level)
 
     def update_baseline(
-        self,
-        test_name: str,
-        environment_key: str,
-        new_samples: List[float]
+        self, test_name: str, environment_key: str, new_samples: List[float]
     ) -> None:
         """Update baseline with new performance data."""
         baseline_key = f"{test_name}:{environment_key}"
@@ -79,22 +77,18 @@ class ThresholdManager:
         return self.baselines.get(baseline_key)
 
     def _calculate_initial_threshold(
-        self,
-        samples: List[float],
-        confidence_level: float
+        self, samples: List[float], confidence_level: float
     ) -> Tuple[float, float]:
         """Calculate initial threshold from current samples."""
         if not samples:
-            return 0.0, float('inf')
+            return 0.0, float("inf")
 
         # Use robust statistics
         median = statistics.median(samples)
         mad = self._median_absolute_deviation(samples)
 
         # Calculate confidence interval using bootstrap method
-        lower_bound, upper_bound = self._bootstrap_confidence_interval(
-            samples, confidence_level
-        )
+        lower_bound, upper_bound = self._bootstrap_confidence_interval(samples, confidence_level)
 
         # For initial thresholds, use wider bounds for safety
         threshold_multiplier = self._get_threshold_multiplier(confidence_level)
@@ -105,10 +99,7 @@ class ThresholdManager:
         return lower_threshold, upper_threshold
 
     def _calculate_adaptive_threshold(
-        self,
-        baseline: PerformanceBaseline,
-        current_samples: List[float],
-        confidence_level: float
+        self, baseline: PerformanceBaseline, current_samples: List[float], confidence_level: float
     ) -> Tuple[float, float]:
         """Calculate threshold using historical baseline and current performance."""
         if not current_samples:
@@ -130,11 +121,17 @@ class ThresholdManager:
 
         # Use exponential smoothing to blend baseline with current performance
         smoothing_factor = 0.3  # 30% weight to current, 70% to historical
-        blended_median = (1 - smoothing_factor) * baseline.median_time + smoothing_factor * current_median
+        blended_median = (
+            1 - smoothing_factor
+        ) * baseline.median_time + smoothing_factor * current_median
         blended_mad = (1 - smoothing_factor) * baseline.mad_time + smoothing_factor * current_mad
 
-        lower_threshold = max(0, blended_median - blended_mad * threshold_multiplier * adaptation_factor)
-        upper_threshold = blended_median + blended_mad * threshold_multiplier * adaptation_factor * 2
+        lower_threshold = max(
+            0, blended_median - blended_mad * threshold_multiplier * adaptation_factor
+        )
+        upper_threshold = (
+            blended_median + blended_mad * threshold_multiplier * adaptation_factor * 2
+        )
 
         return lower_threshold, upper_threshold
 
@@ -160,7 +157,7 @@ class ThresholdManager:
         # Update confidence interval (blend endpoints)
         updated_ci = (
             (1 - alpha) * baseline.confidence_interval[0] + alpha * new_confidence_interval[0],
-            (1 - alpha) * baseline.confidence_interval[1] + alpha * new_confidence_interval[1]
+            (1 - alpha) * baseline.confidence_interval[1] + alpha * new_confidence_interval[1],
         )
 
         # Update baseline
@@ -171,10 +168,12 @@ class ThresholdManager:
             mad_time=updated_mad,
             sample_count=baseline.sample_count + len(new_samples),
             last_updated=datetime.now().isoformat(),
-            confidence_interval=updated_ci
+            confidence_interval=updated_ci,
         )
 
-    def _create_new_baseline(self, test_name: str, environment_key: str, samples: List[float]) -> None:
+    def _create_new_baseline(
+        self, test_name: str, environment_key: str, samples: List[float]
+    ) -> None:
         """Create new baseline from samples."""
         if not samples:
             return
@@ -192,7 +191,7 @@ class ThresholdManager:
             mad_time=mad,
             sample_count=len(samples),
             last_updated=datetime.now().isoformat(),
-            confidence_interval=confidence_interval
+            confidence_interval=confidence_interval,
         )
 
     def _median_absolute_deviation(self, samples: List[float]) -> float:
@@ -204,7 +203,9 @@ class ThresholdManager:
         deviations = [abs(x - median) for x in samples]
         return statistics.median(deviations)
 
-    def _bootstrap_confidence_interval(self, samples: List[float], confidence_level: float) -> Tuple[float, float]:
+    def _bootstrap_confidence_interval(
+        self, samples: List[float], confidence_level: float
+    ) -> Tuple[float, float]:
         """Calculate confidence interval using bootstrap method."""
         if len(samples) < 2:
             if samples:
@@ -255,7 +256,7 @@ class ThresholdManager:
         """Load baselines from cache file."""
         try:
             if self.cache_path.exists():
-                with open(self.cache_path, 'r') as f:
+                with open(self.cache_path, "r") as f:
                     data = json.load(f)
 
                 # Validate and load baselines
@@ -283,8 +284,8 @@ class ThresholdManager:
             data = {key: baseline.to_dict() for key, baseline in self.baselines.items()}
 
             # Write atomically (write to temp file, then rename)
-            temp_path = self.cache_path.with_suffix('.tmp')
-            with open(temp_path, 'w') as f:
+            temp_path = self.cache_path.with_suffix(".tmp")
+            with open(temp_path, "w") as f:
                 json.dump(data, f, indent=2)
 
             temp_path.rename(self.cache_path)

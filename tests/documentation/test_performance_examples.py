@@ -369,16 +369,17 @@ class TestPerformanceGuideExamples:
 
             # Use performance framework for overhead measurement
             overhead_result = performance_framework.measure_performance_overhead(
-                baseline_test, probabilistic_test,
+                baseline_test,
+                probabilistic_test,
                 iterations=self.test_iterations,  # Reduced iterations for CI
-                max_overhead_percent=25.0  # More lenient for CI environments
+                max_overhead_percent=25.0,  # More lenient for CI environments
             )
 
             comparison = overhead_result["comparison"]
             overhead_percentage = comparison.overhead_percent
             overhead_results[complexity] = {
                 "overhead": overhead_percentage,
-                "comparison": comparison
+                "comparison": comparison,
             }
 
         # Verify overhead scaling using statistical validation

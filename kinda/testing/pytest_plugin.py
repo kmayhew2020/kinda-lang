@@ -29,7 +29,7 @@ class PerformanceTestFramework:
         iterations: int = 100,
         threshold_factor: float = 1.2,
         statistical_method: str = "robust",
-        warmup_iterations: int = 5
+        warmup_iterations: int = 5,
     ) -> Dict[str, Any]:
         """Run performance test with statistical validation."""
         environment_key = self.environment_detector.get_environment_key()
@@ -79,7 +79,9 @@ class PerformanceTestFramework:
 
         # Apply environment-specific threshold adjustment
         adjusted_lower = lower_threshold * self.environment.performance_multiplier
-        adjusted_upper = upper_threshold * self.environment.performance_multiplier * threshold_factor
+        adjusted_upper = (
+            upper_threshold * self.environment.performance_multiplier * threshold_factor
+        )
 
         # Perform statistical validation
         validation_result = self.statistical_validator.validate_performance(
@@ -100,7 +102,7 @@ class PerformanceTestFramework:
             "environment": environment_key,
             "iterations_completed": len(samples),
             "iterations_failed": failed_runs,
-            "outliers_removed": len(samples) - len(cleaned_samples)
+            "outliers_removed": len(samples) - len(cleaned_samples),
         }
 
     def measure_performance_overhead(
@@ -108,7 +110,7 @@ class PerformanceTestFramework:
         baseline_function: Callable,
         test_function: Callable,
         iterations: int = 100,
-        max_overhead_percent: float = 20.0
+        max_overhead_percent: float = 20.0,
     ) -> Dict[str, Any]:
         """Measure performance overhead between baseline and test function."""
         # Adjust iterations for CI
@@ -151,7 +153,7 @@ class PerformanceTestFramework:
             "baseline_samples": cleaned_baseline,
             "test_samples": cleaned_test,
             "comparison": comparison_result,
-            "environment": self.environment_detector.get_environment_key()
+            "environment": self.environment_detector.get_environment_key(),
         }
 
     def _measure_execution_time(self, test_function: Callable) -> float:
@@ -202,24 +204,17 @@ class PerformanceTestFramework:
             "memory_gb": self.environment.platform_profile.memory_gb,
             "virtualized": self.environment.platform_profile.virtualized,
             "performance_multiplier": self.environment.performance_multiplier,
-            "resource_constraints": self.environment.resource_constraints
+            "resource_constraints": self.environment.resource_constraints,
         }
 
 
 # Pytest plugin hooks and fixtures
 def pytest_configure(config):
     """Configure pytest with performance testing markers."""
+    config.addinivalue_line("markers", "performance: mark test as performance test")
+    config.addinivalue_line("markers", "slow: mark test as slow running test")
     config.addinivalue_line(
-        "markers",
-        "performance: mark test as performance test"
-    )
-    config.addinivalue_line(
-        "markers",
-        "slow: mark test as slow running test"
-    )
-    config.addinivalue_line(
-        "markers",
-        "ci_unstable: mark test as potentially unstable in CI environments"
+        "markers", "ci_unstable: mark test as potentially unstable in CI environments"
     )
 
 
@@ -229,20 +224,20 @@ def pytest_addoption(parser):
         "--performance-cache-dir",
         action="store",
         default=".performance-cache",
-        help="Directory to store performance baselines"
+        help="Directory to store performance baselines",
     )
     parser.addoption(
         "--performance-report",
         action="store",
         default=None,
-        help="File to write performance test report"
+        help="File to write performance test report",
     )
     parser.addoption(
         "--performance-iterations",
         action="store",
         type=int,
         default=None,
-        help="Override default number of iterations for performance tests"
+        help="Override default number of iterations for performance tests",
     )
 
 
@@ -289,7 +284,7 @@ def performance_test_config(request):
         "iterations": iterations,
         "warmup_iterations": max(1, iterations // 20),
         "threshold_factor": 1.2,
-        "statistical_method": "robust"
+        "statistical_method": "robust",
     }
 
 
@@ -311,7 +306,7 @@ def pytest_runtest_teardown(item):
 
 def pytest_sessionfinish(session, exitstatus):
     """Generate performance report at end of session."""
-    if hasattr(session, '_performance_framework'):
+    if hasattr(session, "_performance_framework"):
         framework = session._performance_framework
 
         # Get report file from command line option
@@ -333,20 +328,20 @@ def _generate_performance_report(framework: PerformanceTestFramework, report_fil
             "test_results": {
                 test_name: {
                     "samples": samples,
-                    "median": __import__('statistics').median(samples),
-                    "mean": __import__('statistics').mean(samples),
-                    "std": __import__('statistics').stdev(samples) if len(samples) > 1 else 0,
-                    "count": len(samples)
+                    "median": __import__("statistics").median(samples),
+                    "mean": __import__("statistics").mean(samples),
+                    "std": __import__("statistics").stdev(samples) if len(samples) > 1 else 0,
+                    "count": len(samples),
                 }
                 for test_name, samples in test_results.items()
             },
             "summary": {
                 "total_tests": len(test_results),
-                "total_samples": sum(len(samples) for samples in test_results.values())
-            }
+                "total_samples": sum(len(samples) for samples in test_results.values()),
+            },
         }
 
-        with open(report_file, 'w') as f:
+        with open(report_file, "w") as f:
             json.dump(report, f, indent=2)
 
     except Exception as e:
@@ -358,16 +353,17 @@ def performance_test(
     iterations: int = 100,
     threshold_factor: float = 1.2,
     statistical_method: str = "robust",
-    max_overhead_percent: Optional[float] = None
+    max_overhead_percent: Optional[float] = None,
 ):
     """Decorator for performance tests."""
+
     def decorator(test_func):
         # Add performance marker
         test_func = pytest.mark.performance(
             iterations=iterations,
             threshold_factor=threshold_factor,
             statistical_method=statistical_method,
-            max_overhead_percent=max_overhead_percent
+            max_overhead_percent=max_overhead_percent,
         )(test_func)
 
         return test_func
