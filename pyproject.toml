@@ -43,6 +43,8 @@ dev = [
     "black>=22.0",
     "mypy>=0.910",
     "psutil>=5.8.0",
+    "numpy>=1.20.0",
+    "scipy>=1.7.0",
 ]
 
 [tool.pytest.ini_options]
@@ -50,13 +52,31 @@ testpaths = ["tests"]
 python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
+markers = [
+    "performance: marks tests as performance tests",
+    "slow: marks tests as slow running tests",
+    "ci_unstable: marks tests as potentially unstable in CI environments"
+]
+addopts = [
+    "--strict-markers",
+    "--tb=short"
+]
+
+# Performance testing configuration
+[tool.performance-testing]
+cache_directory = ".performance-cache"
+baseline_retention_days = 30
+confidence_level = 0.95
+default_iterations = 100
+ci_timeout_multiplier = 2.0
+platforms = ["linux", "darwin", "windows"]
 
 [tool.black]
 line-length = 100
 target-version = ['py39']
 
 [tool.setuptools]
-packages = ["kinda", "kinda.grammar", "kinda.grammar.python", "kinda.grammar.c", "kinda.interpreter", "kinda.langs"]
+packages = ["kinda", "kinda.grammar", "kinda.grammar.python", "kinda.grammar.c", "kinda.interpreter", "kinda.langs", "kinda.langs.python", "kinda.testing"]
 
 [tool.mypy]
 python_version = "3.10"
