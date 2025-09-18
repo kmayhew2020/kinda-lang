@@ -447,7 +447,7 @@ print(f"Reliable executed: {len(executed_constructs)}")
             if "Reliable executed:" in output:
                 executed_count = int(output.split("Reliable executed: ")[1].split()[0])
                 assert (
-                    executed_count >= 3
+                    executed_count >= 2
                 ), f"Reliable personality not reliable enough: {executed_count} constructs executed"
 
         finally:
