@@ -461,18 +461,17 @@ class TestPerformanceGuideExamples:
 
         slowdown_ratio = stressed_time / optimal_time
 
-        # Performance should degrade predictably with load (very relaxed bounds for CI stability)
-        # In CI environments, timing can be highly variable, so we just verify the ratio makes sense
+        # Performance scaling should be reasonable (allowing for CPU optimizations and warm-up effects)
         assert (
-            0.5 < slowdown_ratio < 10.0
-        ), f"Performance degradation should be reasonable, got {slowdown_ratio:.2f}x"
+            0.3 < slowdown_ratio < 5.0
+        ), f"Performance scaling should be reasonable, got {slowdown_ratio:.2f}x"
 
-        # Variance should remain reasonable across conditions (very relaxed for CI)
+        # Variance should remain reasonable across conditions (relaxed for CI stability)
         for condition, metrics in performance_consistency.items():
             cv = metrics["coefficient_of_variation"]
             assert (
-                cv < 1.0
-            ), f"Coefficient of variation for {condition} should be <1.0, got {cv:.3f}"
+                cv < 0.8
+            ), f"Coefficient of variation for {condition} should be <0.8, got {cv:.3f}"
 
 
 if __name__ == "__main__":
