@@ -122,7 +122,9 @@ class TestIshPerformanceBenchmark:
         # Adjust overhead threshold for fallback implementations
         max_overhead = 25.0  # Default for real implementations
         if dependency_resolver.is_fallback_function(ish_value_composed):
-            max_overhead = 1300.0  # Very lenient for ish_value fallback due to sleep() timing variations
+            max_overhead = (
+                1300.0  # Very lenient for ish_value fallback due to sleep() timing variations
+            )
 
         # Use performance framework for overhead measurement
         overhead_result = performance_framework.measure_performance_overhead(
