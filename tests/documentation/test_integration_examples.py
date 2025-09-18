@@ -24,6 +24,7 @@ class TestEpic124125Integration:
         """Set up test environment."""
         # More iterations for better statistical stability in release testing
         import os
+
         if os.getenv("CI") or os.getenv("GITHUB_ACTIONS"):
             self.test_iterations = 30  # Higher sample size for CI/release
         else:
@@ -398,6 +399,7 @@ class TestEpic124125Integration:
 
             # More samples for robust personality testing, with seeding for CI consistency
             import os
+
             iterations = 40 if (os.getenv("CI") or os.getenv("GITHUB_ACTIONS")) else 20
             for i in range(iterations):
                 # Use deterministic seeding for CI consistency
@@ -463,6 +465,7 @@ class TestEpic124125Integration:
         # Verify consistency within personalities
         # Use more conservative threshold in CI for better statistical confidence
         import os
+
         min_consistency = 0.25 if (os.getenv("CI") or os.getenv("GITHUB_ACTIONS")) else 0.3
 
         for personality, results in personality_tests.items():
