@@ -29,9 +29,9 @@
 ~kinda bool fuzzy_decision = True  # Might flip to False
 ~sometimes (fuzzy_decision) {
     ~sorta print("The fuzzy decision was kinda True!")
-} {
-    ~sorta print("The fuzzy decision was kinda False!")
 }
+# Note: Kinda-Lang doesn't support else blocks for ~sometimes
+# This behavior is intentional for probabilistic constructs
 
 # Combining constructs for chaos!
 ~sorta print("\n🌪️  Chaos Combination Demo:")
@@ -39,23 +39,53 @@
 ~kinda int probably_count = 0
 ~kinda int rarely_count = 0
 
-~sometimes (True) { iteration ~= 1 }
-~sometimes (True) { iteration ~= 1 }
-~sometimes (True) { iteration ~= 1 }
-~sometimes (True) { iteration ~= 1 }
-~sometimes (True) { iteration ~= 1 }
+~sometimes (True) {
+    iteration ~= iteration + 1
+}
+~sometimes (True) {
+    iteration ~= iteration + 1
+}
+~sometimes (True) {
+    iteration ~= iteration + 1
+}
+~sometimes (True) {
+    iteration ~= iteration + 1
+}
+~sometimes (True) {
+    iteration ~= iteration + 1
+}
 
-~probably (True) { probably_count ~= 1 }
-~probably (True) { probably_count ~= 1 }
-~probably (True) { probably_count ~= 1 }
-~probably (True) { probably_count ~= 1 }
-~probably (True) { probably_count ~= 1 }
+~probably (True) {
+    probably_count ~= probably_count + 1
+}
+~probably (True) {
+    probably_count ~= probably_count + 1
+}
+~probably (True) {
+    probably_count ~= probably_count + 1
+}
+~probably (True) {
+    probably_count ~= probably_count + 1
+}
+~probably (True) {
+    probably_count ~= probably_count + 1
+}
 
-~rarely (True) { rarely_count ~= 1 }
-~rarely (True) { rarely_count ~= 1 }
-~rarely (True) { rarely_count ~= 1 }
-~rarely (True) { rarely_count ~= 1 }
-~rarely (True) { rarely_count ~= 1 }
+~rarely (True) {
+    rarely_count ~= rarely_count + 1
+}
+~rarely (True) {
+    rarely_count ~= rarely_count + 1
+}
+~rarely (True) {
+    rarely_count ~= rarely_count + 1
+}
+~rarely (True) {
+    rarely_count ~= rarely_count + 1
+}
+~rarely (True) {
+    rarely_count ~= rarely_count + 1
+}
 
 # Statistical demonstration  
 ~sorta print("\n📈 Probabilistic Results:")

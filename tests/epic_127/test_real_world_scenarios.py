@@ -31,9 +31,9 @@ class TestWebDevelopmentScenarios:
                 PatternType.KINDA_INT,
                 PatternType.KINDA_FLOAT,
                 PatternType.SOMETIMES,
-                PatternType.SORTA_PRINT
+                PatternType.SORTA_PRINT,
             },
-            safety_level="safe"
+            safety_level="safe",
         )
 
     def test_flask_api_endpoint_migration(self):
@@ -115,17 +115,17 @@ if __name__ == '__main__':
         result = self.engine.inject_source(flask_api_code, self.config)
 
         assert result.success, f"Flask API injection failed: {result.errors}"
-        assert 'import kinda' in result.transformed_code
+        assert "import kinda" in result.transformed_code
         assert len(result.applied_patterns) >= 3
 
         # Verify Flask-specific elements are preserved
-        assert '@app.route' in result.transformed_code
-        assert 'jsonify' in result.transformed_code
-        assert 'request.get_json()' in result.transformed_code
+        assert "@app.route" in result.transformed_code
+        assert "jsonify" in result.transformed_code
+        assert "request.get_json()" in result.transformed_code
 
         # Verify kinda-lang patterns are applied appropriately
-        transformed_lines = result.transformed_code.split('\n')
-        kinda_patterns_found = [line for line in transformed_lines if 'kinda' in line.lower()]
+        transformed_lines = result.transformed_code.split("\n")
+        kinda_patterns_found = [line for line in transformed_lines if "kinda" in line.lower()]
         assert len(kinda_patterns_found) >= 2
 
     def test_django_model_migration(self):
@@ -242,16 +242,16 @@ class OrderItem(models.Model):
         result = self.engine.inject_source(django_model_code, self.config)
 
         assert result.success, f"Django model injection failed: {result.errors}"
-        assert 'import kinda' in result.transformed_code
+        assert "import kinda" in result.transformed_code
 
         # Verify Django-specific elements are preserved
-        assert 'models.Model' in result.transformed_code
-        assert 'models.CharField' in result.transformed_code
-        assert 'class Meta:' in result.transformed_code
+        assert "models.Model" in result.transformed_code
+        assert "models.CharField" in result.transformed_code
+        assert "class Meta:" in result.transformed_code
 
         # Verify method structure is maintained
-        assert 'def calculate_discount_price' in result.transformed_code
-        assert 'def update_stock' in result.transformed_code
+        assert "def calculate_discount_price" in result.transformed_code
+        assert "def update_stock" in result.transformed_code
 
     def test_fastapi_async_endpoint_migration(self):
         """Test migrating FastAPI async endpoints to use kinda-lang"""
@@ -386,17 +386,17 @@ if __name__ == "__main__":
         result = self.engine.inject_source(fastapi_code, self.config)
 
         assert result.success, f"FastAPI injection failed: {result.errors}"
-        assert 'import kinda' in result.transformed_code
+        assert "import kinda" in result.transformed_code
 
         # Verify FastAPI-specific elements are preserved
-        assert '@app.post' in result.transformed_code
-        assert 'async def' in result.transformed_code
-        assert 'await' in result.transformed_code
-        assert 'BaseModel' in result.transformed_code
+        assert "@app.post" in result.transformed_code
+        assert "async def" in result.transformed_code
+        assert "await" in result.transformed_code
+        assert "BaseModel" in result.transformed_code
 
         # Verify async structure is maintained
-        assert 'async def create_user' in result.transformed_code
-        assert 'await save_user_async' in result.transformed_code
+        assert "async def create_user" in result.transformed_code
+        assert "await save_user_async" in result.transformed_code
 
 
 class TestDataScienceScenarios:
@@ -410,9 +410,9 @@ class TestDataScienceScenarios:
                 PatternType.KINDA_INT,
                 PatternType.KINDA_FLOAT,
                 PatternType.SOMETIMES,
-                PatternType.SORTA_PRINT
+                PatternType.SORTA_PRINT,
             },
-            safety_level="safe"
+            safety_level="safe",
         )
 
     def test_data_analysis_pipeline_migration(self):
@@ -606,15 +606,15 @@ if __name__ == "__main__":
         result = self.engine.inject_source(data_analysis_code, self.config)
 
         assert result.success, f"Data analysis injection failed: {result.errors}"
-        assert 'import kinda' in result.transformed_code
+        assert "import kinda" in result.transformed_code
 
         # Verify data science imports are preserved
-        assert 'import pandas as pd' in result.transformed_code
-        assert 'import numpy as np' in result.transformed_code
+        assert "import pandas as pd" in result.transformed_code
+        assert "import numpy as np" in result.transformed_code
 
         # Verify class structure is maintained
-        assert 'class DataAnalyzer:' in result.transformed_code
-        assert 'def analyze_distribution' in result.transformed_code
+        assert "class DataAnalyzer:" in result.transformed_code
+        assert "def analyze_distribution" in result.transformed_code
 
         # Check that kinda patterns are applied to numerical operations
         assert len(result.applied_patterns) >= 4
@@ -630,9 +630,9 @@ class TestDevOpsScenarios:
             enabled_patterns={
                 PatternType.KINDA_INT,
                 PatternType.SOMETIMES,
-                PatternType.SORTA_PRINT
+                PatternType.SORTA_PRINT,
             },
-            safety_level="safe"
+            safety_level="safe",
         )
 
     def test_deployment_automation_script(self):
@@ -874,16 +874,16 @@ if __name__ == "__main__":
         result = self.engine.inject_source(deployment_script, self.config)
 
         assert result.success, f"Deployment script injection failed: {result.errors}"
-        assert 'import kinda' in result.transformed_code
+        assert "import kinda" in result.transformed_code
 
         # Verify DevOps-specific elements are preserved
-        assert 'import subprocess' in result.transformed_code
-        assert 'logging.basicConfig' in result.transformed_code
-        assert 'class DeploymentManager:' in result.transformed_code
+        assert "import subprocess" in result.transformed_code
+        assert "logging.basicConfig" in result.transformed_code
+        assert "class DeploymentManager:" in result.transformed_code
 
         # Verify deployment logic structure is maintained
-        assert 'def deploy_service' in result.transformed_code
-        assert 'def health_check_services' in result.transformed_code
+        assert "def deploy_service" in result.transformed_code
+        assert "def health_check_services" in result.transformed_code
 
 
 class TestMigrationGradualRollout:
@@ -896,11 +896,13 @@ class TestMigrationGradualRollout:
     def test_gradual_migration_decorator_usage(self):
         """Test using gradual migration decorators in real scenarios"""
 
-        with patch('kinda.migration.decorators.gradual_kinda') as mock_gradual:
+        with patch("kinda.migration.decorators.gradual_kinda") as mock_gradual:
+
             def mock_gradual_decorator(probability=0.5):
                 def decorator(func):
                     func._kinda_probability = probability
                     return func
+
                 return decorator
 
             mock_gradual.side_effect = mock_gradual_decorator
@@ -921,7 +923,7 @@ class TestMigrationGradualRollout:
                 return round(final_price, 2)
 
             # Test that decorator was applied
-            assert hasattr(calculate_pricing, '_kinda_probability')
+            assert hasattr(calculate_pricing, "_kinda_probability")
             assert calculate_pricing._kinda_probability == 0.1
 
             # Test function still works
@@ -933,14 +935,13 @@ class TestMigrationGradualRollout:
     def test_safe_migration_with_fallback(self):
         """Test safe migration with fallback mechanisms"""
 
-        with patch('kinda.migration.decorators.kinda_safe') as mock_safe:
+        with patch("kinda.migration.decorators.kinda_safe") as mock_safe:
+
             def mock_safe_decorator(fallback_mode=True, max_retries=3):
                 def decorator(func):
-                    func._safe_config = {
-                        'fallback_mode': fallback_mode,
-                        'max_retries': max_retries
-                    }
+                    func._safe_config = {"fallback_mode": fallback_mode, "max_retries": max_retries}
                     return func
+
                 return decorator
 
             mock_safe.side_effect = mock_safe_decorator
@@ -956,22 +957,22 @@ class TestMigrationGradualRollout:
 
                 # Simulate payment processing
                 payment_result = {
-                    'amount': amount,
-                    'fee': processing_fee,
-                    'total': total_amount,
-                    'method': payment_method,
-                    'status': 'completed'
+                    "amount": amount,
+                    "fee": processing_fee,
+                    "total": total_amount,
+                    "method": payment_method,
+                    "status": "completed",
                 }
 
                 return payment_result
 
             # Test that decorator was applied
-            assert hasattr(process_payment, '_safe_config')
-            assert process_payment._safe_config['fallback_mode'] is True
+            assert hasattr(process_payment, "_safe_config")
+            assert process_payment._safe_config["fallback_mode"] is True
 
             # Test function works
-            result = process_payment(50.0, 'credit_card')
-            assert result['status'] == 'completed'
+            result = process_payment(50.0, "credit_card")
+            assert result["status"] == "completed"
 
             mock_safe.assert_called_once_with(fallback_mode=True, max_retries=2)
 
@@ -1140,23 +1141,23 @@ if __name__ == "__main__":
                 PatternType.KINDA_INT,
                 PatternType.KINDA_FLOAT,
                 PatternType.SOMETIMES,
-                PatternType.SORTA_PRINT
+                PatternType.SORTA_PRINT,
             },
-            safety_level="safe"
+            safety_level="safe",
         )
 
         result = engine.inject_source(high_traffic_service, config)
 
         assert result.success, f"High traffic service injection failed: {result.errors}"
-        assert 'import kinda' in result.transformed_code
+        assert "import kinda" in result.transformed_code
 
         # Verify async/await structure is preserved
-        assert 'async def handle_request' in result.transformed_code
-        assert 'await asyncio.sleep' in result.transformed_code
+        assert "async def handle_request" in result.transformed_code
+        assert "await asyncio.sleep" in result.transformed_code
 
         # Verify performance monitoring elements are preserved
-        assert 'response_times' in result.transformed_code
-        assert 'get_performance_metrics' in result.transformed_code
+        assert "response_times" in result.transformed_code
+        assert "get_performance_metrics" in result.transformed_code
 
         # Performance requirement: should apply patterns efficiently
         assert result.performance_estimate < 20.0
@@ -1251,9 +1252,9 @@ if __name__ == "__main__":
                 PatternType.KINDA_INT,
                 PatternType.KINDA_FLOAT,
                 PatternType.SOMETIMES,
-                PatternType.SORTA_PRINT
+                PatternType.SORTA_PRINT,
             },
-            safety_level="safe"
+            safety_level="safe",
         )
 
         result = engine.inject_source(ecosystem_test_code, config)
@@ -1264,9 +1265,9 @@ if __name__ == "__main__":
         assert len(result.applied_patterns) >= 2, "Must apply multiple kinda patterns"
 
         # Validate library compatibility
-        assert 'import requests' in result.transformed_code
-        assert 'import sqlite3' in result.transformed_code
-        assert 'import json' in result.transformed_code
+        assert "import requests" in result.transformed_code
+        assert "import sqlite3" in result.transformed_code
+        assert "import json" in result.transformed_code
 
     def test_production_readiness_validation(self):
         """Validate production readiness requirements"""

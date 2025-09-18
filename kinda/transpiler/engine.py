@@ -15,6 +15,7 @@ from ..grammar.python.constructs import KindaPythonConstructs as PYTHON_CONSTRUC
 
 class LanguageType(Enum):
     """Supported target languages"""
+
     PYTHON_ENHANCED = "python_enhanced"
     C = "c"
     MATLAB = "matlab"
@@ -24,6 +25,7 @@ class LanguageType(Enum):
 @dataclass
 class ConstructImplementation:
     """Implementation of a kinda-lang construct in a target language"""
+
     construct_name: str
     language: LanguageType
     template: str
@@ -35,6 +37,7 @@ class ConstructImplementation:
 @dataclass
 class TranspilerResult:
     """Result of transpilation operation"""
+
     success: bool
     target_code: str
     language: LanguageType
@@ -82,32 +85,30 @@ class LanguageTarget(ABC):
         """Get list of constructs supported by this target"""
         return list(self.construct_registry.keys())
 
-    def get_construct_implementation(self, construct_name: str) -> Optional[ConstructImplementation]:
+    def get_construct_implementation(
+        self, construct_name: str
+    ) -> Optional[ConstructImplementation]:
         """Get implementation details for a specific construct"""
         return self.construct_registry.get(construct_name)
 
     def estimate_performance(self, constructs_used: List[str]) -> Dict[str, float]:
         """Estimate performance characteristics of transpiled code"""
-        estimates = {
-            'execution_overhead': 0.0,
-            'memory_overhead': 0.0,
-            'compilation_time': 0.0
-        }
+        estimates = {"execution_overhead": 0.0, "memory_overhead": 0.0, "compilation_time": 0.0}
 
         # Base estimates per construct
         construct_costs = {
-            'kinda_int': {'exec': 1.2, 'memory': 0.5, 'compile': 0.1},
-            'kinda_float': {'exec': 1.5, 'memory': 0.8, 'compile': 0.1},
-            'sometimes': {'exec': 2.0, 'memory': 1.0, 'compile': 0.2},
-            'kinda_repeat': {'exec': 5.0, 'memory': 2.0, 'compile': 0.3},
-            'sorta_print': {'exec': 0.5, 'memory': 0.2, 'compile': 0.05}
+            "kinda_int": {"exec": 1.2, "memory": 0.5, "compile": 0.1},
+            "kinda_float": {"exec": 1.5, "memory": 0.8, "compile": 0.1},
+            "sometimes": {"exec": 2.0, "memory": 1.0, "compile": 0.2},
+            "kinda_repeat": {"exec": 5.0, "memory": 2.0, "compile": 0.3},
+            "sorta_print": {"exec": 0.5, "memory": 0.2, "compile": 0.05},
         }
 
         for construct in constructs_used:
-            costs = construct_costs.get(construct, {'exec': 1.0, 'memory': 0.5, 'compile': 0.1})
-            estimates['execution_overhead'] += costs['exec']
-            estimates['memory_overhead'] += costs['memory']
-            estimates['compilation_time'] += costs['compile']
+            costs = construct_costs.get(construct, {"exec": 1.0, "memory": 0.5, "compile": 0.1})
+            estimates["execution_overhead"] += costs["exec"]
+            estimates["memory_overhead"] += costs["memory"]
+            estimates["compilation_time"] += costs["compile"]
 
         return estimates
 
@@ -125,7 +126,9 @@ class ConstructRegistry:
 
         self.implementations[impl.language][impl.construct_name] = impl
 
-    def get_implementation(self, construct_name: str, language: LanguageType) -> Optional[ConstructImplementation]:
+    def get_implementation(
+        self, construct_name: str, language: LanguageType
+    ) -> Optional[ConstructImplementation]:
         """Get construct implementation for specific language"""
         return self.implementations.get(language, {}).get(construct_name)
 
@@ -155,7 +158,7 @@ class ConstructRegistry:
         for construct, languages in support_map.items():
             missing = all_languages - set(languages)
             if missing:
-                missing_str = ', '.join(lang.value for lang in missing)
+                missing_str = ", ".join(lang.value for lang in missing)
                 issues.append(f"Construct '{construct}' missing in: {missing_str}")
 
         return issues
@@ -209,7 +212,7 @@ class TranspilerEngine:
         self.construct_registry = ConstructRegistry()
         self.optimization_passes: List[OptimizationPass] = [
             DeadCodeElimination(),
-            ProbabilityOptimization()
+            ProbabilityOptimization(),
         ]
 
         # Initialize with default targets
@@ -242,8 +245,9 @@ class TranspilerEngine:
                 return target
         return None
 
-    def transpile(self, kinda_code: str, target_language: LanguageType,
-                 optimization_level: int = 1) -> TranspilerResult:
+    def transpile(
+        self, kinda_code: str, target_language: LanguageType, optimization_level: int = 1
+    ) -> TranspilerResult:
         """
         Transpile kinda-lang code to target language.
 
@@ -264,7 +268,7 @@ class TranspilerEngine:
                 dependencies=[],
                 warnings=[],
                 errors=[f"Unsupported target language: {target_language.value}"],
-                performance_estimate={}
+                performance_estimate={},
             )
 
         target = self.targets[target_language]
@@ -288,7 +292,7 @@ class TranspilerEngine:
                     dependencies=[],
                     warnings=[],
                     errors=[f"Unsupported constructs: {', '.join(unsupported)}"],
-                    performance_estimate={}
+                    performance_estimate={},
                 )
 
             # Generate target code
@@ -296,7 +300,9 @@ class TranspilerEngine:
 
             # Apply optimizations
             if optimization_level > 0:
-                target_code = self._apply_optimizations(target_code, target_language, optimization_level)
+                target_code = self._apply_optimizations(
+                    target_code, target_language, optimization_level
+                )
 
             # Validate generated code
             validation_errors = target.validate_target_code(target_code)
@@ -319,7 +325,7 @@ class TranspilerEngine:
                 dependencies=list(dependencies),
                 warnings=[],
                 errors=validation_errors,
-                performance_estimate=performance_estimate
+                performance_estimate=performance_estimate,
             )
 
         except Exception as e:
@@ -331,7 +337,7 @@ class TranspilerEngine:
                 dependencies=[],
                 warnings=[],
                 errors=[f"Transpilation failed: {str(e)}"],
-                performance_estimate={}
+                performance_estimate={},
             )
 
     def get_supported_languages(self) -> List[LanguageType]:
@@ -367,14 +373,15 @@ class TranspilerEngine:
         import re
 
         for construct_name in PYTHON_CONSTRUCTS:
-            pattern = rf'~{construct_name}\b'
+            pattern = rf"~{construct_name}\b"
             if re.search(pattern, kinda_code):
                 constructs.append(construct_name)
 
         return constructs
 
-    def _generate_target_code(self, kinda_code: str, target: LanguageTarget,
-                            constructs_used: List[str]) -> str:
+    def _generate_target_code(
+        self, kinda_code: str, target: LanguageTarget, constructs_used: List[str]
+    ) -> str:
         """Generate target language code"""
         # This is a simplified implementation
         # Real implementation would involve sophisticated AST transformation
@@ -399,8 +406,8 @@ class TranspilerEngine:
             if impl:
                 # Apply construct-specific transformation
                 # This is very simplified - real implementation would be much more sophisticated
-                pattern = rf'~{construct}\s*\{{([^}}]*)\}}'
-                replacement = impl.template.format(body=r'\1')
+                pattern = rf"~{construct}\s*\{{([^}}]*)\}}"
+                replacement = impl.template.format(body=r"\1")
                 transformed_body = re.sub(pattern, replacement, transformed_body)
 
         code_parts.append(transformed_body)
@@ -408,7 +415,7 @@ class TranspilerEngine:
         # Footer
         code_parts.append(target.generate_footer())
 
-        return '\n'.join(part for part in code_parts if part)
+        return "\n".join(part for part in code_parts if part)
 
     def _apply_optimizations(self, code: str, language: LanguageType, level: int) -> str:
         """Apply optimization passes based on level"""

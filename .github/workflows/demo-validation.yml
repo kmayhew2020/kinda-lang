@@ -1,0 +1,45 @@
+name: Demo Files Validation
+
+on:
+  push:
+    branches: [ main, dev ]
+    paths:
+      - '*.knda'
+  pull_request:
+    branches: [ main, dev ]
+    paths:
+      - '*.knda'
+
+jobs:
+  validate-demos:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        chaos-level: [1, 5, 10]
+        python-version: [3.9, 3.12]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e .
+
+    - name: Validate demo files
+      run: |
+        echo "Testing demo files with chaos level ${{ matrix.chaos-level }}"
+        for demo in *.knda; do
+          if [ -f "$demo" ]; then
+            echo "Testing $demo"
+            timeout 30s python -m kinda.cli run "$demo" --chaos-level ${{ matrix.chaos-level }} --seed 42 || {
+              echo "FAILED: $demo"
+              exit 1
+            }
+          fi
+        done

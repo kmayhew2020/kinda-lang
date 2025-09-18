@@ -20,20 +20,26 @@ class TestGradualKindaDecorator:
         """Test basic gradual_kinda decorator functionality"""
 
         # Mock the decorator to test its structure
-        with patch('kinda.migration.decorators.gradual_kinda') as mock_decorator:
+        import sys
+
+        with patch.object(sys.modules[__name__], "gradual_kinda") as mock_decorator:
+
             def mock_gradual_kinda(probability=0.5):
                 def decorator(func):
                     @functools.wraps(func)
                     def wrapper(*args, **kwargs):
                         # Simulate probabilistic execution
                         import random
+
                         if random.random() < probability:
                             # Execute with kinda behavior
                             return func(*args, **kwargs)
                         else:
                             # Execute normally
                             return func(*args, **kwargs)
+
                     return wrapper
+
                 return decorator
 
             mock_decorator.side_effect = mock_gradual_kinda
@@ -48,7 +54,8 @@ class TestGradualKindaDecorator:
     def test_gradual_kinda_probability_validation(self):
         """Test gradual_kinda decorator probability validation"""
 
-        with patch('kinda.migration.decorators.gradual_kinda') as mock_decorator:
+        with patch("kinda.migration.decorators.gradual_kinda") as mock_decorator:
+
             def mock_gradual_kinda(probability=0.5):
                 if not 0 <= probability <= 1:
                     raise ValueError("Probability must be between 0 and 1")
@@ -57,7 +64,9 @@ class TestGradualKindaDecorator:
                     @functools.wraps(func)
                     def wrapper(*args, **kwargs):
                         return func(*args, **kwargs)
+
                     return wrapper
+
                 return decorator
 
             mock_decorator.side_effect = mock_gradual_kinda
@@ -71,6 +80,7 @@ class TestGradualKindaDecorator:
 
             # Test invalid probability
             with pytest.raises(ValueError, match="Probability must be between 0 and 1"):
+
                 @gradual_kinda(probability=1.5)
                 def invalid_function():
                     return "invalid"
@@ -78,11 +88,13 @@ class TestGradualKindaDecorator:
     def test_gradual_kinda_with_different_probabilities(self):
         """Test gradual_kinda with various probability values"""
 
-        with patch('kinda.migration.decorators.gradual_kinda') as mock_decorator:
+        with patch("kinda.migration.decorators.gradual_kinda") as mock_decorator:
+
             def mock_gradual_kinda(probability=0.5):
                 def decorator(func):
                     func._kinda_probability = probability
                     return func
+
                 return decorator
 
             mock_decorator.side_effect = mock_gradual_kinda
@@ -90,11 +102,12 @@ class TestGradualKindaDecorator:
             probabilities = [0.0, 0.25, 0.5, 0.75, 1.0]
 
             for prob in probabilities:
+
                 @gradual_kinda(probability=prob)
                 def test_func():
                     return f"prob_{prob}"
 
-                assert hasattr(test_func, '_kinda_probability')
+                assert hasattr(test_func, "_kinda_probability")
                 assert test_func._kinda_probability == prob
 
             # Verify all calls were made
@@ -104,15 +117,18 @@ class TestGradualKindaDecorator:
     def test_gradual_kinda_function_preservation(self):
         """Test that gradual_kinda preserves function metadata"""
 
-        with patch('kinda.migration.decorators.gradual_kinda') as mock_decorator:
+        with patch("kinda.migration.decorators.gradual_kinda") as mock_decorator:
+
             def mock_gradual_kinda(probability=0.5):
                 def decorator(func):
                     @functools.wraps(func)
                     def wrapper(*args, **kwargs):
                         return func(*args, **kwargs)
+
                     wrapper._kinda_decorated = True
                     wrapper._original_function = func
                     return wrapper
+
                 return decorator
 
             mock_decorator.side_effect = mock_gradual_kinda
@@ -131,9 +147,9 @@ class TestGradualKindaDecorator:
                 return x + y
 
             # Test function metadata preservation
-            assert hasattr(documented_function, '_kinda_decorated')
-            assert hasattr(documented_function, '_original_function')
-            assert documented_function.__name__ == 'documented_function'
+            assert hasattr(documented_function, "_kinda_decorated")
+            assert hasattr(documented_function, "_original_function")
+            assert documented_function.__name__ == "documented_function"
 
             # Test function still works
             result = documented_function(5, 3)
@@ -142,7 +158,8 @@ class TestGradualKindaDecorator:
     def test_gradual_kinda_with_complex_functions(self):
         """Test gradual_kinda with complex function signatures"""
 
-        with patch('kinda.migration.decorators.gradual_kinda') as mock_decorator:
+        with patch("kinda.migration.decorators.gradual_kinda") as mock_decorator:
+
             def mock_gradual_kinda(probability=0.5):
                 def decorator(func):
                     @functools.wraps(func)
@@ -150,8 +167,10 @@ class TestGradualKindaDecorator:
                         # Add some kinda behavior tracking
                         result = func(*args, **kwargs)
                         return result
+
                     wrapper._execution_count = 0
                     return wrapper
+
                 return decorator
 
             mock_decorator.side_effect = mock_gradual_kinda
@@ -177,7 +196,8 @@ class TestKindaSafeDecorator:
     def test_kinda_safe_basic_functionality(self):
         """Test basic kinda_safe decorator functionality"""
 
-        with patch('kinda.migration.decorators.kinda_safe') as mock_decorator:
+        with patch("kinda.migration.decorators.kinda_safe") as mock_decorator:
+
             def mock_kinda_safe(fallback_mode=True, max_retries=3):
                 def decorator(func):
                     @functools.wraps(func)
@@ -190,11 +210,13 @@ class TestKindaSafeDecorator:
                                 return None
                             else:
                                 raise e
+
                     wrapper._kinda_safe_config = {
-                        'fallback_mode': fallback_mode,
-                        'max_retries': max_retries
+                        "fallback_mode": fallback_mode,
+                        "max_retries": max_retries,
                     }
                     return wrapper
+
                 return decorator
 
             mock_decorator.side_effect = mock_kinda_safe
@@ -211,7 +233,8 @@ class TestKindaSafeDecorator:
     def test_kinda_safe_error_handling(self):
         """Test kinda_safe decorator error handling"""
 
-        with patch('kinda.migration.decorators.kinda_safe') as mock_decorator:
+        with patch("kinda.migration.decorators.kinda_safe") as mock_decorator:
+
             def mock_kinda_safe(fallback_mode=True, max_retries=3):
                 def decorator(func):
                     @functools.wraps(func)
@@ -223,10 +246,12 @@ class TestKindaSafeDecorator:
                                 if attempt < max_retries:
                                     continue
                                 elif fallback_mode:
-                                    return {'error': str(e), 'fallback_used': True}
+                                    return {"error": str(e), "fallback_used": True}
                                 else:
                                     raise e
+
                     return wrapper
+
                 return decorator
 
             mock_decorator.side_effect = mock_kinda_safe
@@ -237,31 +262,37 @@ class TestKindaSafeDecorator:
 
             result = error_prone_function()
             assert isinstance(result, dict)
-            assert result.get('fallback_used') == True
+            assert result.get("fallback_used") == True
 
             mock_decorator.assert_called_with(fallback_mode=True, max_retries=2)
 
     def test_kinda_safe_rollback_functionality(self):
         """Test kinda_safe decorator rollback functionality"""
 
-        with patch('kinda.migration.decorators.kinda_safe') as mock_decorator:
+        with patch("kinda.migration.decorators.kinda_safe") as mock_decorator:
+
             def mock_kinda_safe(rollback_on_error=True, preserve_state=True):
                 def decorator(func):
                     @functools.wraps(func)
                     def wrapper(*args, **kwargs):
-                        original_state = kwargs.get('state', {}).copy() if preserve_state else {}
+                        original_state = kwargs.get("state", {}).copy() if preserve_state else {}
 
                         try:
                             return func(*args, **kwargs)
                         except Exception as e:
                             if rollback_on_error and preserve_state:
                                 # Simulate state rollback
-                                if 'state' in kwargs:
-                                    kwargs['state'].update(original_state)
-                                return {'rollback_performed': True, 'original_state': original_state}
+                                if "state" in kwargs:
+                                    kwargs["state"].update(original_state)
+                                return {
+                                    "rollback_performed": True,
+                                    "original_state": original_state,
+                                }
                             else:
                                 raise e
+
                     return wrapper
+
                 return decorator
 
             mock_decorator.side_effect = mock_kinda_safe
@@ -270,27 +301,28 @@ class TestKindaSafeDecorator:
             def stateful_function(data, state=None):
                 if state is None:
                     state = {}
-                state['modified'] = True
-                if data == 'error':
+                state["modified"] = True
+                if data == "error":
                     raise RuntimeError("Simulated error")
                 return state
 
             # Test successful execution
             state = {}
-            result = stateful_function('success', state=state)
-            assert result.get('modified') == True
+            result = stateful_function("success", state=state)
+            assert result.get("modified") == True
 
             # Test error with rollback
-            state = {'original': True}
-            result = stateful_function('error', state=state)
-            assert result.get('rollback_performed') == True
+            state = {"original": True}
+            result = stateful_function("error", state=state)
+            assert result.get("rollback_performed") == True
 
             mock_decorator.assert_called_with(rollback_on_error=True, preserve_state=True)
 
     def test_kinda_safe_performance_monitoring(self):
         """Test kinda_safe decorator with performance monitoring"""
 
-        with patch('kinda.migration.decorators.kinda_safe') as mock_decorator:
+        with patch("kinda.migration.decorators.kinda_safe") as mock_decorator:
+
             def mock_kinda_safe(monitor_performance=True, timeout_seconds=5):
                 def decorator(func):
                     @functools.wraps(func)
@@ -303,20 +335,22 @@ class TestKindaSafeDecorator:
 
                             if monitor_performance:
                                 result = {
-                                    'result': result,
-                                    'execution_time': execution_time,
-                                    'performance_ok': execution_time < timeout_seconds
+                                    "result": result,
+                                    "execution_time": execution_time,
+                                    "performance_ok": execution_time < timeout_seconds,
                                 }
 
                             return result
                         except Exception as e:
                             execution_time = time.time() - start_time
                             return {
-                                'error': str(e),
-                                'execution_time': execution_time,
-                                'timed_out': execution_time >= timeout_seconds
+                                "error": str(e),
+                                "execution_time": execution_time,
+                                "timed_out": execution_time >= timeout_seconds,
                             }
+
                     return wrapper
+
                 return decorator
 
             mock_decorator.side_effect = mock_kinda_safe
@@ -328,8 +362,8 @@ class TestKindaSafeDecorator:
 
             # Test fast execution
             result = monitored_function(0.1)
-            assert result['result'] == "completed"
-            assert result['performance_ok'] == True
+            assert result["result"] == "completed"
+            assert result["performance_ok"] == True
 
             mock_decorator.assert_called_with(monitor_performance=True, timeout_seconds=1)
 
@@ -340,8 +374,10 @@ class TestDecoratorsIntegration:
     def test_combined_decorators_usage(self):
         """Test using gradual_kinda and kinda_safe together"""
 
-        with patch('kinda.migration.decorators.gradual_kinda') as mock_gradual, \
-             patch('kinda.migration.decorators.kinda_safe') as mock_safe:
+        with (
+            patch("kinda.migration.decorators.gradual_kinda") as mock_gradual,
+            patch("kinda.migration.decorators.kinda_safe") as mock_safe,
+        ):
 
             def mock_gradual_impl(probability=0.5):
                 def decorator(func):
@@ -349,7 +385,9 @@ class TestDecoratorsIntegration:
                     def wrapper(*args, **kwargs):
                         func._gradual_applied = True
                         return func(*args, **kwargs)
+
                     return wrapper
+
                 return decorator
 
             def mock_safe_impl(fallback_mode=True):
@@ -358,7 +396,9 @@ class TestDecoratorsIntegration:
                     def wrapper(*args, **kwargs):
                         func._safe_applied = True
                         return func(*args, **kwargs)
+
                     return wrapper
+
                 return decorator
 
             mock_gradual.side_effect = mock_gradual_impl
@@ -370,8 +410,8 @@ class TestDecoratorsIntegration:
                 return "both decorators applied"
 
             result = combined_function()
-            assert hasattr(combined_function, '_gradual_applied')
-            assert hasattr(combined_function, '_safe_applied')
+            assert hasattr(combined_function, "_gradual_applied")
+            assert hasattr(combined_function, "_safe_applied")
 
             mock_gradual.assert_called_with(probability=0.7)
             mock_safe.assert_called_with(fallback_mode=True)
@@ -379,8 +419,10 @@ class TestDecoratorsIntegration:
     def test_decorators_with_real_world_functions(self):
         """Test decorators with realistic function scenarios"""
 
-        with patch('kinda.migration.decorators.gradual_kinda') as mock_gradual, \
-             patch('kinda.migration.decorators.kinda_safe') as mock_safe:
+        with (
+            patch("kinda.migration.decorators.gradual_kinda") as mock_gradual,
+            patch("kinda.migration.decorators.kinda_safe") as mock_safe,
+        ):
 
             def mock_gradual_impl(probability=0.5):
                 def decorator(func):
@@ -388,14 +430,17 @@ class TestDecoratorsIntegration:
                     def wrapper(*args, **kwargs):
                         # Simulate probabilistic behavior
                         import random
+
                         random.seed(42)  # For consistent testing
                         if random.random() < probability:
                             result = func(*args, **kwargs)
-                            return {'result': result, 'kinda_mode': True}
+                            return {"result": result, "kinda_mode": True}
                         else:
                             result = func(*args, **kwargs)
-                            return {'result': result, 'kinda_mode': False}
+                            return {"result": result, "kinda_mode": False}
+
                     return wrapper
+
                 return decorator
 
             def mock_safe_impl(fallback_mode=True, max_retries=2):
@@ -409,10 +454,12 @@ class TestDecoratorsIntegration:
                                 if attempt < max_retries:
                                     continue
                                 elif fallback_mode:
-                                    return {'error': str(e), 'fallback_used': True}
+                                    return {"error": str(e), "fallback_used": True}
                                 else:
                                     raise
+
                     return wrapper
+
                 return decorator
 
             mock_gradual.side_effect = mock_gradual_impl
@@ -435,8 +482,8 @@ class TestDecoratorsIntegration:
             valid_data = [1, 2, 3, 4, 5]
             result = process_data(valid_data)
 
-            if isinstance(result, dict) and 'result' in result:
-                assert result['result'] == 15  # Sum of valid_data
+            if isinstance(result, dict) and "result" in result:
+                assert result["result"] == 15  # Sum of valid_data
             else:
                 assert result == 15
 
@@ -453,8 +500,10 @@ class TestDecoratorsIntegration:
     def test_decorators_configuration_validation(self):
         """Test decorator configuration validation"""
 
-        with patch('kinda.migration.decorators.gradual_kinda') as mock_gradual, \
-             patch('kinda.migration.decorators.kinda_safe') as mock_safe:
+        with (
+            patch("kinda.migration.decorators.gradual_kinda") as mock_gradual,
+            patch("kinda.migration.decorators.kinda_safe") as mock_safe,
+        ):
 
             def mock_gradual_impl(probability=0.5):
                 if not isinstance(probability, (int, float)):
@@ -464,6 +513,7 @@ class TestDecoratorsIntegration:
 
                 def decorator(func):
                     return func
+
                 return decorator
 
             def mock_safe_impl(fallback_mode=True, max_retries=3):
@@ -472,6 +522,7 @@ class TestDecoratorsIntegration:
 
                 def decorator(func):
                     return func
+
                 return decorator
 
             mock_gradual.side_effect = mock_gradual_impl
@@ -488,11 +539,13 @@ class TestDecoratorsIntegration:
 
             # Test invalid configurations
             with pytest.raises(ValueError, match="Probability must be between 0 and 1"):
+
                 @gradual_kinda(probability=2.0)
                 def invalid_gradual_func():
                     pass
 
             with pytest.raises(ValueError, match="max_retries must be a non-negative integer"):
+
                 @kinda_safe(max_retries=-1)
                 def invalid_safe_func():
                     pass
@@ -500,8 +553,10 @@ class TestDecoratorsIntegration:
     def test_decorators_performance_impact(self):
         """Test decorators don't significantly impact performance"""
 
-        with patch('kinda.migration.decorators.gradual_kinda') as mock_gradual, \
-             patch('kinda.migration.decorators.kinda_safe') as mock_safe:
+        with (
+            patch("kinda.migration.decorators.gradual_kinda") as mock_gradual,
+            patch("kinda.migration.decorators.kinda_safe") as mock_safe,
+        ):
 
             def mock_gradual_impl(probability=0.5):
                 def decorator(func):
@@ -514,7 +569,9 @@ class TestDecoratorsIntegration:
                         # Track performance impact
                         wrapper._last_execution_time = execution_time
                         return result
+
                     return wrapper
+
                 return decorator
 
             def mock_safe_impl(fallback_mode=True):
@@ -523,7 +580,9 @@ class TestDecoratorsIntegration:
                     def wrapper(*args, **kwargs):
                         # Minimal overhead implementation
                         return func(*args, **kwargs)
+
                     return wrapper
+
                 return decorator
 
             mock_gradual.side_effect = mock_gradual_impl

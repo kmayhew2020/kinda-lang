@@ -7,6 +7,7 @@ Tests the core functionality of all 4 major features.
 import tempfile
 from pathlib import Path
 
+
 def test_injection_engine():
     """Test the injection engine basic functionality"""
     print("Testing injection engine...")
@@ -15,17 +16,16 @@ def test_injection_engine():
     from kinda.injection.ast_analyzer import PatternType
 
     # Test source code
-    test_code = '''
+    test_code = """
 def calculate_score(base: int) -> int:
     bonus = 10
     print(f"Calculating with base: {base}")
     return base + bonus
-'''
+"""
 
     # Create injection config
     config = InjectionConfig(
-        enabled_patterns={PatternType.KINDA_INT, PatternType.SORTA_PRINT},
-        safety_level="safe"
+        enabled_patterns={PatternType.KINDA_INT, PatternType.SORTA_PRINT}, safety_level="safe"
     )
 
     # Test injection
@@ -44,7 +44,7 @@ def test_enhancement_decorators():
 
     from kinda.migration import enhance
 
-    @enhance(patterns=['kinda_int', 'sorta_print'], safety_level='safe')
+    @enhance(patterns=["kinda_int", "sorta_print"], safety_level="safe")
     def test_function(x: int) -> int:
         y = 42
         print(f"Processing {x}")
@@ -52,7 +52,7 @@ def test_enhancement_decorators():
 
     # Test enhanced function
     result = test_function(10)
-    enhanced = hasattr(test_function, '__kinda_enhanced__')
+    enhanced = hasattr(test_function, "__kinda_enhanced__")
 
     print(f"✓ Function enhanced: {enhanced}")
     print(f"✓ Function callable: {callable(test_function)}")
@@ -71,15 +71,15 @@ def test_probability_control():
     profile = ProbabilityProfile.create_testing_profile(seed=42)
 
     with ProbabilityContext(profile=profile) as ctx:
-        prob1 = ctx.get_probability('sometimes', 0.7)
-        prob2 = ctx.get_probability('maybe', 0.5)
+        prob1 = ctx.get_probability("sometimes", 0.7)
+        prob2 = ctx.get_probability("maybe", 0.5)
 
         print(f"✓ Sometimes probability: {prob1}")
         print(f"✓ Maybe probability: {prob2}")
 
         # Test nested context
-        with ctx.with_override('sometimes', 0.9):
-            prob3 = ctx.get_probability('sometimes', 0.7)
+        with ctx.with_override("sometimes", 0.9):
+            prob3 = ctx.get_probability("sometimes", 0.7)
             print(f"✓ Overridden sometimes probability: {prob3}")
 
     return True
@@ -99,7 +99,7 @@ def test_transpiler_infrastructure():
     print(f"✓ Available targets: {targets}")
 
     # Test if we can create a target
-    python_target = engine.get_target('python_enhanced')
+    python_target = engine.get_target("python_enhanced")
     print(f"✓ Python enhanced target available: {python_target is not None}")
 
     return True
@@ -114,13 +114,15 @@ def test_migration_utilities():
     utilities = MigrationUtilities()
 
     # Create a temporary test file
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as f:
-        f.write('''
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as f:
+        f.write(
+            """
 def test_function():
     x = 42
     print("Hello World")
     return x
-''')
+"""
+        )
         temp_path = Path(f.name)
 
     try:

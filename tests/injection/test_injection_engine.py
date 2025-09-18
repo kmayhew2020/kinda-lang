@@ -13,7 +13,7 @@ from kinda.injection.injection_engine import (
     InjectionEngine,
     InjectionConfig,
     TransformResult,
-    CodeTransformer
+    CodeTransformer,
 )
 from kinda.injection.ast_analyzer import PatternType
 
@@ -34,8 +34,7 @@ class TestInjectionConfig:
         """Test configuration with probability overrides"""
         overrides = {"sometimes": 0.9, "maybe": 0.3}
         config = InjectionConfig(
-            enabled_patterns={PatternType.SOMETIMES},
-            probability_overrides=overrides
+            enabled_patterns={PatternType.SOMETIMES}, probability_overrides=overrides
         )
 
         assert config.probability_overrides == overrides
@@ -86,11 +85,13 @@ x = 42
 print("Hello")
 y = 3.14
 """
-        config = InjectionConfig(enabled_patterns={
-            PatternType.KINDA_INT,
-            PatternType.KINDA_FLOAT,
-            PatternType.SORTA_PRINT
-        })
+        config = InjectionConfig(
+            enabled_patterns={
+                PatternType.KINDA_INT,
+                PatternType.KINDA_FLOAT,
+                PatternType.SORTA_PRINT,
+            }
+        )
 
         result = self.engine.inject_source(source, config)
 
@@ -104,10 +105,7 @@ y = 3.14
 if dangerous_condition():
     delete_everything()
 """
-        config = InjectionConfig(
-            enabled_patterns={PatternType.SOMETIMES},
-            safety_level="safe"
-        )
+        config = InjectionConfig(enabled_patterns={PatternType.SOMETIMES}, safety_level="safe")
 
         result = self.engine.inject_source(source, config)
 
@@ -117,10 +115,7 @@ if dangerous_condition():
     def test_inject_source_no_imports(self):
         """Test injection without adding imports"""
         source = "x = 42"
-        config = InjectionConfig(
-            enabled_patterns={PatternType.KINDA_INT},
-            add_kinda_imports=False
-        )
+        config = InjectionConfig(enabled_patterns={PatternType.KINDA_INT}, add_kinda_imports=False)
 
         result = self.engine.inject_source(source, config)
 
@@ -140,15 +135,14 @@ if dangerous_condition():
     def test_inject_file_valid(self):
         """Test injection on valid file"""
         # Create temporary file
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as f:
             f.write("x = 42\nprint('hello')")
             temp_path = Path(f.name)
 
         try:
-            config = InjectionConfig(enabled_patterns={
-                PatternType.KINDA_INT,
-                PatternType.SORTA_PRINT
-            })
+            config = InjectionConfig(
+                enabled_patterns={PatternType.KINDA_INT, PatternType.SORTA_PRINT}
+            )
 
             result = self.engine.inject_file(temp_path, config)
 
@@ -201,7 +195,7 @@ class TestCodeTransformer:
             safety_level=SecurityLevel.SAFE,
             confidence=0.9,
             node=assign_node,
-            context={}
+            context={},
         )
 
         config = InjectionConfig(enabled_patterns={PatternType.KINDA_INT})
@@ -225,7 +219,7 @@ class TestTransformResult:
             applied_patterns=["kinda_int"],
             errors=[],
             warnings=[],
-            performance_estimate=2.5
+            performance_estimate=2.5,
         )
 
         assert result.success
@@ -240,7 +234,7 @@ class TestTransformResult:
             applied_patterns=[],
             errors=["Syntax error"],
             warnings=["Deprecated pattern"],
-            performance_estimate=0.0
+            performance_estimate=0.0,
         )
 
         assert not result.success

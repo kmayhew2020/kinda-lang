@@ -26,6 +26,7 @@ from kinda.control.context import ProbabilityContext
 @dataclass
 class BenchmarkResult:
     """Result of a performance benchmark"""
+
     name: str
     original_time: float
     kinda_time: float
@@ -48,13 +49,15 @@ class PerformanceBenchmarker:
                 PatternType.KINDA_FLOAT,
                 PatternType.SORTA_PRINT,
                 PatternType.SOMETIMES,
-                PatternType.KINDA_REPEAT
+                PatternType.KINDA_REPEAT,
             },
-            safety_level="safe"
+            safety_level="safe",
         )
         self.results: List[BenchmarkResult] = []
 
-    def benchmark_code(self, name: str, original_code: str, iterations: int = 100) -> BenchmarkResult:
+    def benchmark_code(
+        self, name: str, original_code: str, iterations: int = 100
+    ) -> BenchmarkResult:
         """Benchmark original vs kinda-injected code"""
 
         # Inject kinda-lang constructs
@@ -66,8 +69,8 @@ class PerformanceBenchmarker:
         kinda_code = injection_result.transformed_code
 
         # Compile both versions
-        original_compiled = compile(original_code, '<original>', 'exec')
-        kinda_compiled = compile(kinda_code, '<kinda>', 'exec')
+        original_compiled = compile(original_code, "<original>", "exec")
+        kinda_compiled = compile(kinda_code, "<kinda>", "exec")
 
         # Benchmark original code
         gc.collect()
@@ -77,7 +80,7 @@ class PerformanceBenchmarker:
         original_times = []
         for _ in range(iterations):
             start_time = time.perf_counter()
-            exec(original_compiled, {'__builtins__': __builtins__})
+            exec(original_compiled, {"__builtins__": __builtins__})
             end_time = time.perf_counter()
             original_times.append(end_time - start_time)
 
@@ -91,15 +94,19 @@ class PerformanceBenchmarker:
         kinda_times = []
 
         # Mock kinda module for testing
-        kinda_mock = type('KindaMock', (), {
-            'kinda_int': lambda x: x,
-            'kinda_float': lambda x: x,
-            'sorta_print': print,
-            'sometimes': lambda f: f(),
-            'kinda_repeat': lambda n: range(n)
-        })()
+        kinda_mock = type(
+            "KindaMock",
+            (),
+            {
+                "kinda_int": lambda x: x,
+                "kinda_float": lambda x: x,
+                "sorta_print": print,
+                "sometimes": lambda f: f(),
+                "kinda_repeat": lambda n: range(n),
+            },
+        )()
 
-        globals_dict = {'__builtins__': __builtins__, 'kinda': kinda_mock}
+        globals_dict = {"__builtins__": __builtins__, "kinda": kinda_mock}
 
         for _ in range(iterations):
             start_time = time.perf_counter()
@@ -114,8 +121,12 @@ class PerformanceBenchmarker:
         original_time = statistics.mean(original_times)
         kinda_time = statistics.mean(kinda_times)
 
-        overhead_percent = ((kinda_time - original_time) / original_time * 100) if original_time > 0 else 0
-        memory_overhead_percent = ((memory_kinda - memory_original) / memory_original * 100) if memory_original > 0 else 0
+        overhead_percent = (
+            ((kinda_time - original_time) / original_time * 100) if original_time > 0 else 0
+        )
+        memory_overhead_percent = (
+            ((memory_kinda - memory_original) / memory_original * 100) if memory_original > 0 else 0
+        )
 
         # Check if performance meets requirements (<20% overhead)
         passed = overhead_percent < 20.0
@@ -129,7 +140,7 @@ class PerformanceBenchmarker:
             memory_kinda=memory_kinda,
             memory_overhead_percent=memory_overhead_percent,
             iterations=iterations,
-            passed=passed
+            passed=passed,
         )
 
         self.results.append(result)
@@ -138,7 +149,7 @@ class PerformanceBenchmarker:
     def generate_report(self) -> Dict:
         """Generate comprehensive performance report"""
         if not self.results:
-            return {'error': 'No benchmark results available'}
+            return {"error": "No benchmark results available"}
 
         passed_count = sum(1 for r in self.results if r.passed)
         total_count = len(self.results)
@@ -150,13 +161,13 @@ class PerformanceBenchmarker:
         min_overhead = min(overhead_values)
 
         return {
-            'total_benchmarks': total_count,
-            'passed_benchmarks': passed_count,
-            'pass_rate': pass_rate,
-            'average_overhead_percent': avg_overhead,
-            'max_overhead_percent': max_overhead,
-            'min_overhead_percent': min_overhead,
-            'meets_requirements': avg_overhead < 20.0 and max_overhead < 25.0
+            "total_benchmarks": total_count,
+            "passed_benchmarks": passed_count,
+            "pass_rate": pass_rate,
+            "average_overhead_percent": avg_overhead,
+            "max_overhead_percent": max_overhead,
+            "min_overhead_percent": min_overhead,
+            "meets_requirements": avg_overhead < 20.0 and max_overhead < 25.0,
         }
 
 
@@ -169,7 +180,7 @@ class TestPerformanceBenchmarks:
 
     def test_simple_arithmetic_performance(self):
         """Test performance overhead for simple arithmetic operations"""
-        arithmetic_code = '''
+        arithmetic_code = """
 def arithmetic_operations():
     # Basic arithmetic with kinda injection points
     x = 42
@@ -187,20 +198,20 @@ def arithmetic_operations():
     return total
 
 arithmetic_operations()
-'''
+"""
 
         result = self.benchmarker.benchmark_code(
-            "Simple Arithmetic",
-            arithmetic_code,
-            iterations=1000
+            "Simple Arithmetic", arithmetic_code, iterations=1000
         )
 
-        assert result.passed, f"Simple arithmetic overhead {result.overhead_percent:.2f}% exceeds 20% limit"
+        assert (
+            result.passed
+        ), f"Simple arithmetic overhead {result.overhead_percent:.2f}% exceeds 20% limit"
         assert result.overhead_percent < 15.0, "Simple arithmetic should have minimal overhead"
 
     def test_loop_performance(self):
         """Test performance overhead for loop constructs"""
-        loop_code = '''
+        loop_code = """
 def loop_operations():
     total = 0
     iterations = 100
@@ -214,19 +225,15 @@ def loop_operations():
     return total
 
 loop_operations()
-'''
+"""
 
-        result = self.benchmarker.benchmark_code(
-            "Loop Operations",
-            loop_code,
-            iterations=500
-        )
+        result = self.benchmarker.benchmark_code("Loop Operations", loop_code, iterations=500)
 
         assert result.passed, f"Loop overhead {result.overhead_percent:.2f}% exceeds 20% limit"
 
     def test_function_call_performance(self):
         """Test performance overhead for function calls with prints"""
-        function_code = '''
+        function_code = """
 def process_data():
     data = []
     count = 50
@@ -241,19 +248,17 @@ def process_data():
     return len(data)
 
 process_data()
-'''
+"""
 
-        result = self.benchmarker.benchmark_code(
-            "Function Calls",
-            function_code,
-            iterations=200
-        )
+        result = self.benchmarker.benchmark_code("Function Calls", function_code, iterations=200)
 
-        assert result.passed, f"Function call overhead {result.overhead_percent:.2f}% exceeds 20% limit"
+        assert (
+            result.passed
+        ), f"Function call overhead {result.overhead_percent:.2f}% exceeds 20% limit"
 
     def test_conditional_performance(self):
         """Test performance overhead for conditional statements"""
-        conditional_code = '''
+        conditional_code = """
 def conditional_logic():
     results = []
     threshold = 75
@@ -272,19 +277,19 @@ def conditional_logic():
     return sum(results)
 
 conditional_logic()
-'''
+"""
 
         result = self.benchmarker.benchmark_code(
-            "Conditional Logic",
-            conditional_code,
-            iterations=300
+            "Conditional Logic", conditional_code, iterations=300
         )
 
-        assert result.passed, f"Conditional overhead {result.overhead_percent:.2f}% exceeds 20% limit"
+        assert (
+            result.passed
+        ), f"Conditional overhead {result.overhead_percent:.2f}% exceeds 20% limit"
 
     def test_string_operations_performance(self):
         """Test performance overhead for string operations"""
-        string_code = '''
+        string_code = """
 def string_operations():
     texts = []
     count = 30
@@ -301,19 +306,17 @@ def string_operations():
     return len(texts)
 
 string_operations()
-'''
+"""
 
-        result = self.benchmarker.benchmark_code(
-            "String Operations",
-            string_code,
-            iterations=400
-        )
+        result = self.benchmarker.benchmark_code("String Operations", string_code, iterations=400)
 
-        assert result.passed, f"String operations overhead {result.overhead_percent:.2f}% exceeds 20% limit"
+        assert (
+            result.passed
+        ), f"String operations overhead {result.overhead_percent:.2f}% exceeds 20% limit"
 
     def test_list_comprehension_performance(self):
         """Test performance overhead for list comprehensions"""
-        comprehension_code = '''
+        comprehension_code = """
 def list_comprehensions():
     size = 100
     threshold = 50
@@ -332,19 +335,19 @@ def list_comprehensions():
     return average
 
 list_comprehensions()
-'''
+"""
 
         result = self.benchmarker.benchmark_code(
-            "List Comprehensions",
-            comprehension_code,
-            iterations=500
+            "List Comprehensions", comprehension_code, iterations=500
         )
 
-        assert result.passed, f"List comprehension overhead {result.overhead_percent:.2f}% exceeds 20% limit"
+        assert (
+            result.passed
+        ), f"List comprehension overhead {result.overhead_percent:.2f}% exceeds 20% limit"
 
     def test_nested_loops_performance(self):
         """Test performance overhead for nested loops"""
-        nested_code = '''
+        nested_code = """
 def nested_operations():
     matrix = []
     rows = 20
@@ -367,19 +370,17 @@ def nested_operations():
     return total_elements
 
 nested_operations()
-'''
+"""
 
-        result = self.benchmarker.benchmark_code(
-            "Nested Loops",
-            nested_code,
-            iterations=200
-        )
+        result = self.benchmarker.benchmark_code("Nested Loops", nested_code, iterations=200)
 
-        assert result.passed, f"Nested loops overhead {result.overhead_percent:.2f}% exceeds 20% limit"
+        assert (
+            result.passed
+        ), f"Nested loops overhead {result.overhead_percent:.2f}% exceeds 20% limit"
 
     def test_dictionary_operations_performance(self):
         """Test performance overhead for dictionary operations"""
-        dict_code = '''
+        dict_code = """
 def dictionary_operations():
     data = {}
     count = 80
@@ -404,20 +405,18 @@ def dictionary_operations():
     return 0
 
 dictionary_operations()
-'''
+"""
 
-        result = self.benchmarker.benchmark_code(
-            "Dictionary Operations",
-            dict_code,
-            iterations=300
-        )
+        result = self.benchmarker.benchmark_code("Dictionary Operations", dict_code, iterations=300)
 
-        assert result.passed, f"Dictionary operations overhead {result.overhead_percent:.2f}% exceeds 20% limit"
+        assert (
+            result.passed
+        ), f"Dictionary operations overhead {result.overhead_percent:.2f}% exceeds 20% limit"
 
     @pytest.mark.performance
     def test_numpy_like_operations_performance(self):
         """Test performance overhead for NumPy-like operations"""
-        numpy_like_code = '''
+        numpy_like_code = """
 def numpy_like_operations():
     # Simulate NumPy-like operations without actual NumPy
     data = []
@@ -449,20 +448,20 @@ def numpy_like_operations():
     return mean
 
 numpy_like_operations()
-'''
+"""
 
         result = self.benchmarker.benchmark_code(
-            "NumPy-like Operations",
-            numpy_like_code,
-            iterations=100
+            "NumPy-like Operations", numpy_like_code, iterations=100
         )
 
-        assert result.passed, f"NumPy-like operations overhead {result.overhead_percent:.2f}% exceeds 20% limit"
+        assert (
+            result.passed
+        ), f"NumPy-like operations overhead {result.overhead_percent:.2f}% exceeds 20% limit"
 
     @pytest.mark.performance
     def test_pandas_like_operations_performance(self):
         """Test performance overhead for Pandas-like operations"""
-        pandas_like_code = '''
+        pandas_like_code = """
 def pandas_like_operations():
     # Simulate Pandas-like operations without actual Pandas
     records = []
@@ -502,44 +501,48 @@ def pandas_like_operations():
     return avg_score
 
 pandas_like_operations()
-'''
+"""
 
         result = self.benchmarker.benchmark_code(
-            "Pandas-like Operations",
-            pandas_like_code,
-            iterations=100
+            "Pandas-like Operations", pandas_like_code, iterations=100
         )
 
-        assert result.passed, f"Pandas-like operations overhead {result.overhead_percent:.2f}% exceeds 20% limit"
+        assert (
+            result.passed
+        ), f"Pandas-like operations overhead {result.overhead_percent:.2f}% exceeds 20% limit"
 
     def test_comprehensive_performance_report(self):
         """Generate and validate comprehensive performance report"""
         # Ensure we have run several benchmarks
         if len(self.benchmarker.results) < 5:
             # Run a few quick benchmarks to have data
-            simple_code = '''
+            simple_code = """
 x = 10
 y = 20
 if x < y:
     print("x is less than y")
 result = x + y
-'''
+"""
             for i in range(3):
                 self.benchmarker.benchmark_code(f"Quick Test {i}", simple_code, iterations=50)
 
         report = self.benchmarker.generate_report()
 
         # Validate report structure
-        assert 'total_benchmarks' in report
-        assert 'passed_benchmarks' in report
-        assert 'pass_rate' in report
-        assert 'average_overhead_percent' in report
-        assert 'meets_requirements' in report
+        assert "total_benchmarks" in report
+        assert "passed_benchmarks" in report
+        assert "pass_rate" in report
+        assert "average_overhead_percent" in report
+        assert "meets_requirements" in report
 
         # Architecture requirement validation
-        assert report['average_overhead_percent'] < 20.0, f"Average overhead {report['average_overhead_percent']:.2f}% exceeds 20% limit"
-        assert report['pass_rate'] >= 0.8, f"Pass rate {report['pass_rate']:.2%} is below 80%"
-        assert report['meets_requirements'], "Performance benchmarks do not meet architecture requirements"
+        assert (
+            report["average_overhead_percent"] < 20.0
+        ), f"Average overhead {report['average_overhead_percent']:.2f}% exceeds 20% limit"
+        assert report["pass_rate"] >= 0.8, f"Pass rate {report['pass_rate']:.2%} is below 80%"
+        assert report[
+            "meets_requirements"
+        ], "Performance benchmarks do not meet architecture requirements"
 
         print(f"\nPerformance Report:")
         print(f"  Total Benchmarks: {report['total_benchmarks']}")
@@ -558,13 +561,12 @@ class TestMemoryPerformance:
         """Setup for memory tests"""
         self.engine = InjectionEngine()
         self.config = InjectionConfig(
-            enabled_patterns={PatternType.KINDA_INT, PatternType.SORTA_PRINT},
-            safety_level="safe"
+            enabled_patterns={PatternType.KINDA_INT, PatternType.SORTA_PRINT}, safety_level="safe"
         )
 
     def test_memory_overhead_simple(self):
         """Test memory overhead for simple operations"""
-        simple_code = '''
+        simple_code = """
 def memory_test():
     data = []
     for i in range(100):
@@ -574,7 +576,7 @@ def memory_test():
     return len(data)
 
 memory_test()
-'''
+"""
 
         # Get memory usage before injection
         process = psutil.Process(os.getpid())
@@ -585,18 +587,20 @@ memory_test()
         assert result.success
 
         # Compile both versions
-        original_compiled = compile(simple_code, '<original>', 'exec')
-        kinda_compiled = compile(result.transformed_code, '<kinda>', 'exec')
+        original_compiled = compile(simple_code, "<original>", "exec")
+        kinda_compiled = compile(result.transformed_code, "<kinda>", "exec")
 
         memory_after = process.memory_info().rss / 1024 / 1024  # MB
         injection_memory_overhead = memory_after - memory_before
 
         # Memory overhead should be minimal for compilation
-        assert injection_memory_overhead < 10.0, f"Injection memory overhead {injection_memory_overhead:.2f} MB is too high"
+        assert (
+            injection_memory_overhead < 10.0
+        ), f"Injection memory overhead {injection_memory_overhead:.2f} MB is too high"
 
     def test_execution_memory_stability(self):
         """Test that execution memory usage remains stable"""
-        loop_code = '''
+        loop_code = """
 def memory_loop():
     total = 0
     for i in range(1000):
@@ -606,20 +610,20 @@ def memory_loop():
     return total
 
 memory_loop()
-'''
+"""
 
         result = self.engine.inject_source(loop_code, self.config)
         assert result.success
 
         # Mock kinda module
-        kinda_mock = type('KindaMock', (), {
-            'kinda_int': lambda x: x,
-            'kinda_float': lambda x: x,
-            'sorta_print': print
-        })()
+        kinda_mock = type(
+            "KindaMock",
+            (),
+            {"kinda_int": lambda x: x, "kinda_float": lambda x: x, "sorta_print": print},
+        )()
 
-        compiled_code = compile(result.transformed_code, '<test>', 'exec')
-        globals_dict = {'__builtins__': __builtins__, 'kinda': kinda_mock}
+        compiled_code = compile(result.transformed_code, "<test>", "exec")
+        globals_dict = {"__builtins__": __builtins__, "kinda": kinda_mock}
 
         # Measure memory during multiple executions
         process = psutil.Process(os.getpid())
@@ -637,7 +641,9 @@ memory_loop()
         max_memory = max(memory_readings)
 
         assert max_memory < 5.0, f"Memory usage {max_memory:.2f} MB per execution is too high"
-        assert avg_memory < 2.0, f"Average memory usage {avg_memory:.2f} MB per execution is too high"
+        assert (
+            avg_memory < 2.0
+        ), f"Average memory usage {avg_memory:.2f} MB per execution is too high"
 
 
 class TestScalabilityPerformance:
@@ -649,25 +655,23 @@ class TestScalabilityPerformance:
 
     def test_small_code_performance(self):
         """Test performance with small code snippets"""
-        small_code = '''
+        small_code = """
 x = 5
 y = 10
 if x < y:
     result = x + y
-'''
+"""
 
-        result = self.benchmarker.benchmark_code(
-            "Small Code",
-            small_code,
-            iterations=1000
-        )
+        result = self.benchmarker.benchmark_code("Small Code", small_code, iterations=1000)
 
         # Small code should have very low overhead
-        assert result.overhead_percent < 10.0, f"Small code overhead {result.overhead_percent:.2f}% is too high"
+        assert (
+            result.overhead_percent < 10.0
+        ), f"Small code overhead {result.overhead_percent:.2f}% is too high"
 
     def test_medium_code_performance(self):
         """Test performance with medium-sized code"""
-        medium_code = '''
+        medium_code = """
 def process_data():
     data = []
     for i in range(50):
@@ -697,19 +701,17 @@ def process_data():
     }
 
 result = process_data()
-'''
+"""
 
-        result = self.benchmarker.benchmark_code(
-            "Medium Code",
-            medium_code,
-            iterations=200
-        )
+        result = self.benchmarker.benchmark_code("Medium Code", medium_code, iterations=200)
 
-        assert result.overhead_percent < 15.0, f"Medium code overhead {result.overhead_percent:.2f}% is too high"
+        assert (
+            result.overhead_percent < 15.0
+        ), f"Medium code overhead {result.overhead_percent:.2f}% is too high"
 
     def test_large_code_performance(self):
         """Test performance with large code blocks"""
-        large_code = '''
+        large_code = """
 def large_computation():
     results = {}
     matrix = []
@@ -795,16 +797,14 @@ def large_computation():
     return final_result
 
 result = large_computation()
-'''
+"""
 
-        result = self.benchmarker.benchmark_code(
-            "Large Code",
-            large_code,
-            iterations=50
-        )
+        result = self.benchmarker.benchmark_code("Large Code", large_code, iterations=50)
 
         # Large code can have higher overhead but should still be under 20%
-        assert result.overhead_percent < 20.0, f"Large code overhead {result.overhead_percent:.2f}% exceeds 20% limit"
+        assert (
+            result.overhead_percent < 20.0
+        ), f"Large code overhead {result.overhead_percent:.2f}% exceeds 20% limit"
 
 
 if __name__ == "__main__":

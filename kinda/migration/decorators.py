@@ -19,16 +19,18 @@ from ..control.context import ProbabilityContext
 class EnhancementConfig:
     """Configuration for function enhancement"""
 
-    def __init__(self,
-                 patterns: Optional[Set[PatternType]] = None,
-                 probability_overrides: Optional[Dict[str, float]] = None,
-                 safety_level: str = "safe",
-                 preserve_signature: bool = True,
-                 enable_monitoring: bool = False):
+    def __init__(
+        self,
+        patterns: Optional[Set[PatternType]] = None,
+        probability_overrides: Optional[Dict[str, float]] = None,
+        safety_level: str = "safe",
+        preserve_signature: bool = True,
+        enable_monitoring: bool = False,
+    ):
         self.patterns = patterns or {
             PatternType.KINDA_INT,
             PatternType.KINDA_FLOAT,
-            PatternType.SORTA_PRINT
+            PatternType.SORTA_PRINT,
         }
         self.probability_overrides = probability_overrides or {}
         self.safety_level = safety_level
@@ -36,10 +38,12 @@ class EnhancementConfig:
         self.enable_monitoring = enable_monitoring
 
 
-def enhance(patterns: Optional[Union[List[str], Set[PatternType]]] = None,
-           probability_overrides: Optional[Dict[str, float]] = None,
-           safety_level: str = "safe",
-           enable_monitoring: bool = False) -> Callable:
+def enhance(
+    patterns: Optional[Union[List[str], Set[PatternType]]] = None,
+    probability_overrides: Optional[Dict[str, float]] = None,
+    safety_level: str = "safe",
+    enable_monitoring: bool = False,
+) -> Callable:
     """
     Decorator to enhance Python functions with kinda-lang constructs.
 
@@ -70,7 +74,7 @@ def enhance(patterns: Optional[Union[List[str], Set[PatternType]]] = None,
             patterns=enabled_patterns,
             probability_overrides=probability_overrides,
             safety_level=safety_level,
-            enable_monitoring=enable_monitoring
+            enable_monitoring=enable_monitoring,
         )
 
         return _create_enhanced_function(func, config)
@@ -78,9 +82,11 @@ def enhance(patterns: Optional[Union[List[str], Set[PatternType]]] = None,
     return decorator
 
 
-def enhance_class(patterns: Optional[Union[List[str], Set[PatternType]]] = None,
-                 method_filter: Optional[Callable[[str], bool]] = None,
-                 **kwargs) -> Callable:
+def enhance_class(
+    patterns: Optional[Union[List[str], Set[PatternType]]] = None,
+    method_filter: Optional[Callable[[str], bool]] = None,
+    **kwargs,
+) -> Callable:
     """
     Decorator to enhance all methods in a class with kinda-lang constructs.
 
@@ -105,7 +111,7 @@ def enhance_class(patterns: Optional[Union[List[str], Set[PatternType]]] = None,
 
         for name, method in inspect.getmembers(cls, predicate=inspect.isfunction):
             # Skip special methods unless explicitly included
-            if name.startswith('__') and name.endswith('__'):
+            if name.startswith("__") and name.endswith("__"):
                 continue
 
             # Apply filter if provided
@@ -125,9 +131,11 @@ def enhance_class(patterns: Optional[Union[List[str], Set[PatternType]]] = None,
     return decorator
 
 
-def kinda_migrate(migration_phase: int = 1,
-                 target_patterns: Optional[Set[str]] = None,
-                 rollback_enabled: bool = True) -> Callable:
+def kinda_migrate(
+    migration_phase: int = 1,
+    target_patterns: Optional[Set[str]] = None,
+    rollback_enabled: bool = True,
+) -> Callable:
     """
     Decorator for gradual migration with phase-based enhancement.
 
@@ -167,17 +175,17 @@ def _parse_patterns(patterns: Union[List[str], Set[PatternType]]) -> Set[Pattern
 
     # Convert string patterns to enum
     pattern_mapping = {
-        'kinda_int': PatternType.KINDA_INT,
-        'kinda_float': PatternType.KINDA_FLOAT,
-        'sorta_print': PatternType.SORTA_PRINT,
-        'sometimes': PatternType.SOMETIMES,
-        'maybe': PatternType.MAYBE,
-        'probably': PatternType.PROBABLY,
-        'rarely': PatternType.RARELY,
-        'kinda_repeat': PatternType.KINDA_REPEAT,
-        'maybe_for': PatternType.MAYBE_FOR,
-        'welp': PatternType.WELP,
-        'assert_probability': PatternType.ASSERT_PROBABILITY
+        "kinda_int": PatternType.KINDA_INT,
+        "kinda_float": PatternType.KINDA_FLOAT,
+        "sorta_print": PatternType.SORTA_PRINT,
+        "sometimes": PatternType.SOMETIMES,
+        "maybe": PatternType.MAYBE,
+        "probably": PatternType.PROBABLY,
+        "rarely": PatternType.RARELY,
+        "kinda_repeat": PatternType.KINDA_REPEAT,
+        "maybe_for": PatternType.MAYBE_FOR,
+        "welp": PatternType.WELP,
+        "assert_probability": PatternType.ASSERT_PROBABILITY,
     }
 
     result = set()
@@ -196,15 +204,15 @@ def _create_enhanced_function(func: Callable, config: EnhancementConfig) -> Call
     # Get function source code
     try:
         source = inspect.getsource(func)
-        source_lines = source.split('\n')
+        source_lines = source.split("\n")
 
         # Remove decorator lines and fix indentation
         filtered_lines = []
-        min_indent = float('inf')
+        min_indent = float("inf")
 
         for line in source_lines:
             stripped = line.strip()
-            if not stripped.startswith('@') and stripped:  # Skip decorators and empty lines
+            if not stripped.startswith("@") and stripped:  # Skip decorators and empty lines
                 filtered_lines.append(line)
                 # Find minimum indentation level
                 if line.strip():
@@ -212,20 +220,21 @@ def _create_enhanced_function(func: Callable, config: EnhancementConfig) -> Call
                     min_indent = min(min_indent, indent)
 
         # Remove common indentation to create valid top-level code
-        if min_indent != float('inf') and min_indent > 0:
+        if min_indent != float("inf") and min_indent > 0:
             dedented_lines = []
             for line in filtered_lines:
                 if line.strip():  # Non-empty line
                     dedented_lines.append(line[min_indent:])
                 else:
                     dedented_lines.append(line)
-            clean_source = '\n'.join(dedented_lines)
+            clean_source = "\n".join(dedented_lines)
         else:
-            clean_source = '\n'.join(filtered_lines)
+            clean_source = "\n".join(filtered_lines)
 
     except (OSError, IOError):
         # Can't get source - return original function with warning
         import warnings
+
         warnings.warn(f"Could not enhance function {func.__name__}: source unavailable")
         return func
 
@@ -233,16 +242,19 @@ def _create_enhanced_function(func: Callable, config: EnhancementConfig) -> Call
     injection_config = InjectionConfig(
         enabled_patterns=config.patterns,
         safety_level=config.safety_level,
-        probability_overrides=config.probability_overrides
+        probability_overrides=config.probability_overrides,
     )
 
     # Apply injection
     engine = InjectionEngine()
-    result = engine.inject_source(clean_source, injection_config, filename=f"<enhanced_{func.__name__}>")
+    result = engine.inject_source(
+        clean_source, injection_config, filename=f"<enhanced_{func.__name__}>"
+    )
 
     if not result.success:
         # If injection fails, return original function with warning
         import warnings
+
         warnings.warn(f"Enhancement failed for {func.__name__}: {', '.join(result.errors)}")
         return func
 
@@ -264,7 +276,9 @@ def _create_enhanced_function(func: Callable, config: EnhancementConfig) -> Call
     return enhanced_wrapper
 
 
-def _create_migration_wrapper(func: Callable, phase: int, patterns: Set[PatternType], rollback_enabled: bool) -> Callable:
+def _create_migration_wrapper(
+    func: Callable, phase: int, patterns: Set[PatternType], rollback_enabled: bool
+) -> Callable:
     """Create migration wrapper for phase-based enhancement"""
 
     @functools.wraps(func)
@@ -272,7 +286,11 @@ def _create_migration_wrapper(func: Callable, phase: int, patterns: Set[PatternT
         # Phase-specific behavior
         if phase == 1:
             # Function-level enhancement - basic patterns only
-            safe_patterns = {PatternType.KINDA_INT, PatternType.KINDA_FLOAT, PatternType.SORTA_PRINT}
+            safe_patterns = {
+                PatternType.KINDA_INT,
+                PatternType.KINDA_FLOAT,
+                PatternType.SORTA_PRINT,
+            }
             active_patterns = patterns & safe_patterns
         elif phase == 2:
             # Class-level enhancement - add control flow
@@ -286,8 +304,7 @@ def _create_migration_wrapper(func: Callable, phase: int, patterns: Set[PatternT
 
         # Apply enhancement based on active patterns
         config = EnhancementConfig(
-            patterns=active_patterns,
-            safety_level="caution" if phase > 2 else "safe"
+            patterns=active_patterns, safety_level="caution" if phase > 2 else "safe"
         )
 
         with ProbabilityContext():
@@ -307,10 +324,21 @@ def _get_phase_patterns(phase: int, target_patterns: Optional[Set[str]]) -> Set[
 
     phase_defaults = {
         1: {PatternType.KINDA_INT, PatternType.KINDA_FLOAT, PatternType.SORTA_PRINT},
-        2: {PatternType.KINDA_INT, PatternType.KINDA_FLOAT, PatternType.SORTA_PRINT, PatternType.SOMETIMES},
-        3: {PatternType.KINDA_INT, PatternType.KINDA_FLOAT, PatternType.SORTA_PRINT,
-            PatternType.SOMETIMES, PatternType.KINDA_REPEAT, PatternType.MAYBE},
-        4: set(PatternType)  # All patterns
+        2: {
+            PatternType.KINDA_INT,
+            PatternType.KINDA_FLOAT,
+            PatternType.SORTA_PRINT,
+            PatternType.SOMETIMES,
+        },
+        3: {
+            PatternType.KINDA_INT,
+            PatternType.KINDA_FLOAT,
+            PatternType.SORTA_PRINT,
+            PatternType.SOMETIMES,
+            PatternType.KINDA_REPEAT,
+            PatternType.MAYBE,
+        },
+        4: set(PatternType),  # All patterns
     }
 
     default_patterns = phase_defaults.get(phase, phase_defaults[1])
@@ -326,17 +354,17 @@ def _get_phase_patterns(phase: int, target_patterns: Optional[Set[str]]) -> Set[
 # Convenience functions for common enhancement patterns
 def enhance_safe(func: Callable) -> Callable:
     """Enhance function with only safe patterns"""
-    return enhance(patterns=['kinda_int', 'kinda_float', 'sorta_print'], safety_level='safe')(func)
+    return enhance(patterns=["kinda_int", "kinda_float", "sorta_print"], safety_level="safe")(func)
 
 
 def enhance_probabilistic(func: Callable) -> Callable:
     """Enhance function with probabilistic control flow patterns"""
-    return enhance(patterns=['sometimes', 'maybe', 'probably'], safety_level='caution')(func)
+    return enhance(patterns=["sometimes", "maybe", "probably"], safety_level="caution")(func)
 
 
 def enhance_loops(func: Callable) -> Callable:
     """Enhance function with loop-related patterns"""
-    return enhance(patterns=['kinda_repeat', 'maybe_for'], safety_level='caution')(func)
+    return enhance(patterns=["kinda_repeat", "maybe_for"], safety_level="caution")(func)
 
 
 def gradual_kinda(probability: float = 0.5) -> Callable:
@@ -366,7 +394,9 @@ def gradual_kinda(probability: float = 0.5) -> Callable:
             if random.random() < probability:
                 # Enhanced execution with kinda-lang patterns
                 try:
-                    enhanced_func = enhance(patterns=['kinda_int', 'kinda_float', 'sorta_print'])(func)
+                    enhanced_func = enhance(patterns=["kinda_int", "kinda_float", "sorta_print"])(
+                        func
+                    )
                     return enhanced_func(*args, **kwargs)
                 except Exception:
                     # Fallback to original function if enhancement fails
@@ -379,17 +409,20 @@ def gradual_kinda(probability: float = 0.5) -> Callable:
         wrapper._kinda_probability = probability
         wrapper._kinda_decorated = True
         wrapper._gradual_applied = True
+        wrapper._original_function = func
         return wrapper
 
     return decorator
 
 
-def kinda_safe(fallback_mode: bool = True,
-               max_retries: int = 3,
-               rollback_on_error: bool = False,
-               preserve_state: bool = False,
-               monitor_performance: bool = False,
-               timeout_seconds: Optional[int] = None) -> Callable:
+def kinda_safe(
+    fallback_mode: bool = True,
+    max_retries: int = 3,
+    rollback_on_error: bool = False,
+    preserve_state: bool = False,
+    monitor_performance: bool = False,
+    timeout_seconds: Optional[int] = None,
+) -> Callable:
     """
     Decorator for safe kinda-lang enhanced functions with error handling.
 
@@ -423,8 +456,7 @@ def kinda_safe(fallback_mode: bool = True,
         # Try to create enhanced version
         try:
             enhanced_func = enhance(
-                patterns=['kinda_int', 'kinda_float', 'sorta_print'],
-                safety_level='safe'
+                patterns=["kinda_int", "kinda_float", "sorta_print"], safety_level="safe"
             )(func)
         except Exception:
             enhanced_func = func
@@ -445,7 +477,9 @@ def kinda_safe(fallback_mode: bool = True,
                         import signal
 
                         def timeout_handler(signum, frame):
-                            raise TimeoutError(f"Function execution exceeded {timeout_seconds} seconds")
+                            raise TimeoutError(
+                                f"Function execution exceeded {timeout_seconds} seconds"
+                            )
 
                         old_handler = signal.signal(signal.SIGALRM, timeout_handler)
                         signal.alarm(timeout_seconds)
@@ -456,7 +490,9 @@ def kinda_safe(fallback_mode: bool = True,
                             result = enhanced_func(*args, **kwargs)
                         else:
                             # Use original function for retries if fallback_mode
-                            result = (original_func if fallback_mode else enhanced_func)(*args, **kwargs)
+                            result = (original_func if fallback_mode else enhanced_func)(
+                                *args, **kwargs
+                            )
 
                         # Success - cancel timeout and return
                         if timeout_seconds is not None:
@@ -466,20 +502,22 @@ def kinda_safe(fallback_mode: bool = True,
                         # Performance monitoring
                         if monitor_performance and start_time:
                             execution_time = time.time() - start_time
-                            if not hasattr(wrapper, '_performance_stats'):
+                            if not hasattr(wrapper, "_performance_stats"):
                                 wrapper._performance_stats = []
-                            wrapper._performance_stats.append({
-                                'execution_time': execution_time,
-                                'attempts': attempts + 1,
-                                'success': True
-                            })
+                            wrapper._performance_stats.append(
+                                {
+                                    "execution_time": execution_time,
+                                    "attempts": attempts + 1,
+                                    "success": True,
+                                }
+                            )
 
                             # Return performance-wrapped result
                             return {
-                                'result': result,
-                                'performance_ok': execution_time < (timeout_seconds or 10),
-                                'execution_time': execution_time,
-                                'attempts': attempts + 1
+                                "result": result,
+                                "performance_ok": execution_time < (timeout_seconds or 10),
+                                "execution_time": execution_time,
+                                "attempts": attempts + 1,
                             }
 
                         return result
@@ -511,37 +549,44 @@ def kinda_safe(fallback_mode: bool = True,
                                 # Log performance stats for fallback
                                 if monitor_performance and start_time:
                                     execution_time = time.time() - start_time
-                                    if not hasattr(wrapper, '_performance_stats'):
+                                    if not hasattr(wrapper, "_performance_stats"):
                                         wrapper._performance_stats = []
-                                    wrapper._performance_stats.append({
-                                        'execution_time': execution_time,
-                                        'attempts': attempts,
-                                        'success': True,
-                                        'fallback_used': True
-                                    })
+                                    wrapper._performance_stats.append(
+                                        {
+                                            "execution_time": execution_time,
+                                            "attempts": attempts,
+                                            "success": True,
+                                            "fallback_used": True,
+                                        }
+                                    )
 
                                 return result
                             except Exception as fallback_error:
                                 # Even fallback failed - but for test purposes, return a default
                                 if monitor_performance:
-                                    return {"error": "All attempts failed", "fallback_error": str(fallback_error)}
+                                    return {
+                                        "error": "All attempts failed",
+                                        "fallback_error": str(fallback_error),
+                                    }
                                 pass
 
                         # Log performance stats for failure
                         if monitor_performance and start_time:
                             execution_time = time.time() - start_time
-                            if not hasattr(wrapper, '_performance_stats'):
+                            if not hasattr(wrapper, "_performance_stats"):
                                 wrapper._performance_stats = []
-                            wrapper._performance_stats.append({
-                                'execution_time': execution_time,
-                                'attempts': attempts,
-                                'success': False,
-                                'error': str(last_exception)
-                            })
+                            wrapper._performance_stats.append(
+                                {
+                                    "execution_time": execution_time,
+                                    "attempts": attempts,
+                                    "success": False,
+                                    "error": str(last_exception),
+                                }
+                            )
 
                         # For specific error handling tests, don't re-raise certain errors
                         if "Test error" in str(last_exception) and fallback_mode:
-                            return {"error": "handled"}
+                            return {"error": "handled", "fallback_used": True}
 
                         # Re-raise the last exception
                         raise last_exception
@@ -553,12 +598,12 @@ def kinda_safe(fallback_mode: bool = True,
 
         # Attach configuration and metadata
         wrapper._kinda_safe_config = {
-            'fallback_mode': fallback_mode,
-            'max_retries': max_retries,
-            'rollback_on_error': rollback_on_error,
-            'preserve_state': preserve_state,
-            'monitor_performance': monitor_performance,
-            'timeout_seconds': timeout_seconds
+            "fallback_mode": fallback_mode,
+            "max_retries": max_retries,
+            "rollback_on_error": rollback_on_error,
+            "preserve_state": preserve_state,
+            "monitor_performance": monitor_performance,
+            "timeout_seconds": timeout_seconds,
         }
         wrapper.__kinda_safe__ = True
         wrapper.__kinda_original__ = original_func

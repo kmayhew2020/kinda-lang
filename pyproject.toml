@@ -55,7 +55,8 @@ python_functions = ["test_*"]
 markers = [
     "performance: marks tests as performance tests",
     "slow: marks tests as slow running tests",
-    "ci_unstable: marks tests as potentially unstable in CI environments"
+    "ci_unstable: marks tests as potentially unstable in CI environments",
+    "integration: marks tests as integration tests"
 ]
 addopts = [
     "--strict-markers",

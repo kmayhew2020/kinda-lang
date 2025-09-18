@@ -34,44 +34,46 @@ class TestPlatformDetection:
         current_platform = platform.system().lower()
 
         # Verify we can detect the current platform
-        assert current_platform in ['linux', 'darwin', 'windows']
+        assert current_platform in ["linux", "darwin", "windows"]
 
         # Test platform-specific behaviors
-        if current_platform == 'linux':
-            assert os.path.sep == '/'
-            assert os.name == 'posix'
-        elif current_platform == 'darwin':  # macOS
-            assert os.path.sep == '/'
-            assert os.name == 'posix'
-        elif current_platform == 'windows':
-            assert os.path.sep == '\\'
-            assert os.name == 'nt'
+        if current_platform == "linux":
+            assert os.path.sep == "/"
+            assert os.name == "posix"
+        elif current_platform == "darwin":  # macOS
+            assert os.path.sep == "/"
+            assert os.name == "posix"
+        elif current_platform == "windows":
+            assert os.path.sep == "\\"
+            assert os.name == "nt"
 
     @pytest.mark.parametrize("target_platform", ["linux", "darwin", "windows"])
     def test_platform_specific_adaptations(self, target_platform):
         """Test platform-specific adaptations in kinda-lang"""
 
-        with patch('platform.system') as mock_platform:
-            mock_platform.return_value = target_platform.title() if target_platform != 'darwin' else 'Darwin'
+        with patch("platform.system") as mock_platform:
+            mock_platform.return_value = (
+                target_platform.title() if target_platform != "darwin" else "Darwin"
+            )
 
             # Mock platform-specific behaviors
-            with patch.object(self.engine, 'adapt_for_platform') as mock_adapt:
+            with patch.object(self.engine, "adapt_for_platform") as mock_adapt:
                 mock_adapt.return_value = {
-                    'platform': target_platform,
-                    'adaptations_applied': [
-                        f'{target_platform}_path_handling',
-                        f'{target_platform}_file_permissions',
-                        f'{target_platform}_process_management'
+                    "platform": target_platform,
+                    "adaptations_applied": [
+                        f"{target_platform}_path_handling",
+                        f"{target_platform}_file_permissions",
+                        f"{target_platform}_process_management",
                     ],
-                    'compatibility_ensured': True
+                    "compatibility_ensured": True,
                 }
 
-                if hasattr(self.engine, 'adapt_for_platform'):
+                if hasattr(self.engine, "adapt_for_platform"):
                     result = self.engine.adapt_for_platform(target_platform)
 
-                    assert result['platform'] == target_platform
-                    assert result['compatibility_ensured']
-                    assert len(result['adaptations_applied']) > 0
+                    assert result["platform"] == target_platform
+                    assert result["compatibility_ensured"]
+                    assert len(result["adaptations_applied"]) > 0
 
 
 class TestFileSystemCompatibility:
@@ -81,8 +83,7 @@ class TestFileSystemCompatibility:
         """Setup for file system tests"""
         self.engine = InjectionEngine()
         self.config = InjectionConfig(
-            enabled_patterns={PatternType.KINDA_INT, PatternType.SORTA_PRINT},
-            safety_level="safe"
+            enabled_patterns={PatternType.KINDA_INT, PatternType.SORTA_PRINT}, safety_level="safe"
         )
 
     def test_path_handling_cross_platform(self):
@@ -91,7 +92,7 @@ class TestFileSystemCompatibility:
             "/tmp/test_file.py",  # Unix-style
             "C:\\temp\\test_file.py",  # Windows-style
             "./relative/path/file.py",  # Relative path
-            "~/user/home/file.py"  # Home directory
+            "~/user/home/file.py",  # Home directory
         ]
 
         for test_path in test_paths:
@@ -101,20 +102,30 @@ class TestFileSystemCompatibility:
             # Test that pathlib handles different formats
             assert isinstance(path_obj, Path)
 
-            # Test path operations work
-            assert path_obj.name in ['test_file.py', 'file.py']
-            assert path_obj.suffix == '.py'
+            # Test path operations work - handle cross-platform differences
+            if platform.system().lower() == "windows":
+                # On Windows, all paths should parse correctly
+                assert path_obj.name in ["test_file.py", "file.py"]
+                assert path_obj.suffix == ".py"
+            else:
+                # On Unix-like systems, Windows paths are treated as filenames
+                if test_path.startswith("C:"):
+                    # Windows path on Unix system - name will be the full path
+                    assert "test_file.py" in path_obj.name
+                else:
+                    assert path_obj.name in ["test_file.py", "file.py"]
+                    assert path_obj.suffix == ".py"
 
     def test_file_permissions_cross_platform(self):
         """Test file permission handling across platforms"""
-        test_code = '''
+        test_code = """
 def test_function():
     x = 42
     print(f"Value: {x}")
     return x
-'''
+"""
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as f:
             f.write(test_code)
             f.flush()
             temp_file = Path(f.name)
@@ -126,7 +137,7 @@ def test_function():
 
             # Test reading
             content = temp_file.read_text()
-            assert 'def test_function' in content
+            assert "def test_function" in content
 
             # Test injection works regardless of platform
             result = self.engine.inject_source(test_code, self.config)
@@ -134,7 +145,7 @@ def test_function():
 
             # Test writing transformed code
             if result.success:
-                output_file = temp_file.with_suffix('.transformed.py')
+                output_file = temp_file.with_suffix(".transformed.py")
                 output_file.write_text(result.transformed_code)
                 assert output_file.exists()
                 output_file.unlink()
@@ -156,13 +167,13 @@ def test_function():
         try:
             # Test directory operations
             test_file = test_dir / "test_injection.py"
-            test_content = '''
+            test_content = """
 def platform_test():
     value = 100
     if value > 50:
         print("Platform test passed")
     return value
-'''
+"""
             test_file.write_text(test_content)
 
             # Test injection on temporary file
@@ -172,13 +183,14 @@ def platform_test():
         finally:
             shutil.rmtree(test_dir, ignore_errors=True)
 
-    @pytest.mark.skipif(platform.system() == 'Windows',
-                       reason="Unix permissions not applicable on Windows")
+    @pytest.mark.skipif(
+        platform.system() == "Windows", reason="Unix permissions not applicable on Windows"
+    )
     def test_unix_permissions(self):
         """Test Unix-specific permission handling"""
         test_code = 'def unix_test(): return "unix"'
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as f:
             f.write(test_code)
             f.flush()
             temp_file = Path(f.name)
@@ -197,8 +209,7 @@ def platform_test():
         finally:
             temp_file.unlink()
 
-    @pytest.mark.skipif(platform.system() != 'Windows',
-                       reason="Windows-specific test")
+    @pytest.mark.skipif(platform.system() != "Windows", reason="Windows-specific test")
     def test_windows_file_handling(self):
         """Test Windows-specific file handling"""
         test_code = 'def windows_test(): return "windows"'
@@ -215,7 +226,7 @@ def platform_test():
             assert result.success
 
             # Test Windows path handling
-            assert '\\' in str(test_file) or test_file.as_posix()
+            assert "\\" in str(test_file) or test_file.as_posix()
 
         finally:
             if test_file.exists():
@@ -229,8 +240,7 @@ class TestPythonVersionCompatibility:
         """Setup for Python version tests"""
         self.engine = InjectionEngine()
         self.config = InjectionConfig(
-            enabled_patterns={PatternType.KINDA_INT, PatternType.KINDA_FLOAT},
-            safety_level="safe"
+            enabled_patterns={PatternType.KINDA_INT, PatternType.KINDA_FLOAT}, safety_level="safe"
         )
 
     def test_current_python_version_support(self):
@@ -242,12 +252,12 @@ class TestPythonVersionCompatibility:
         assert current_version.minor >= 8
 
         # Test that kinda-lang features work with current version
-        test_code = '''
+        test_code = """
 def version_test():
     x = 42
     y = 3.14
     return x + y
-'''
+"""
 
         result = self.engine.inject_source(test_code, self.config)
         assert result.success
@@ -255,7 +265,7 @@ def version_test():
     def test_python_syntax_compatibility(self):
         """Test Python syntax compatibility across versions"""
         # Test modern Python features that should work across supported versions
-        modern_python_code = '''
+        modern_python_code = """
 def modern_features():
     # f-strings (Python 3.6+)
     name = "kinda"
@@ -273,20 +283,20 @@ def modern_features():
         print(message)
 
     return value * rate
-'''
+"""
 
         result = self.engine.inject_source(modern_python_code, self.config)
         assert result.success
 
         # Verify the transformed code is still valid Python
         try:
-            compile(result.transformed_code, '<test>', 'exec')
+            compile(result.transformed_code, "<test>", "exec")
         except SyntaxError as e:
             pytest.fail(f"Generated code has syntax errors: {e}")
 
     def test_async_code_compatibility(self):
         """Test async/await compatibility"""
-        async_code = '''
+        async_code = """
 import asyncio
 
 async def async_function():
@@ -306,14 +316,14 @@ def run_async_test():
         return result
     finally:
         loop.close()
-'''
+"""
 
         result = self.engine.inject_source(async_code, self.config)
         assert result.success
 
         # Verify async syntax is preserved
-        assert 'async def' in result.transformed_code
-        assert 'await' in result.transformed_code
+        assert "async def" in result.transformed_code
+        assert "await" in result.transformed_code
 
 
 class TestDependencyCompatibility:
@@ -323,13 +333,12 @@ class TestDependencyCompatibility:
         """Setup for dependency tests"""
         self.engine = InjectionEngine()
         self.config = InjectionConfig(
-            enabled_patterns={PatternType.KINDA_INT, PatternType.SOMETIMES},
-            safety_level="safe"
+            enabled_patterns={PatternType.KINDA_INT, PatternType.SOMETIMES}, safety_level="safe"
         )
 
     def test_standard_library_compatibility(self):
         """Test compatibility with standard library modules"""
-        stdlib_code = '''
+        stdlib_code = """
 import json
 import datetime
 import hashlib
@@ -357,18 +366,18 @@ def stdlib_test():
         print(f"Hash computed: {hash_value[:16]}...")
 
     return len(json_str)
-'''
+"""
 
         result = self.engine.inject_source(stdlib_code, self.config)
         assert result.success
 
         # Verify imports are preserved
-        assert 'import json' in result.transformed_code
-        assert 'import datetime' in result.transformed_code
+        assert "import json" in result.transformed_code
+        assert "import datetime" in result.transformed_code
 
     def test_optional_dependency_handling(self):
         """Test handling of optional dependencies"""
-        optional_deps_code = '''
+        optional_deps_code = """
 try:
     import numpy as np
     HAS_NUMPY = True
@@ -398,14 +407,14 @@ def optional_deps_test():
         print(f"Result with optional deps: {result}")
 
     return result
-'''
+"""
 
         result = self.engine.inject_source(optional_deps_code, self.config)
         assert result.success
 
         # Verify try/except structure is preserved
-        assert 'try:' in result.transformed_code
-        assert 'except ImportError:' in result.transformed_code
+        assert "try:" in result.transformed_code
+        assert "except ImportError:" in result.transformed_code
 
 
 class TestEnvironmentVariableCompatibility:
@@ -413,7 +422,7 @@ class TestEnvironmentVariableCompatibility:
 
     def test_environment_variable_access(self):
         """Test environment variable access across platforms"""
-        env_code = '''
+        env_code = """
 import os
 
 def env_test():
@@ -433,12 +442,11 @@ def env_test():
         print(f"PATH length: {path_length}")
 
     return len(temp_dir)
-'''
+"""
 
         engine = InjectionEngine()
         config = InjectionConfig(
-            enabled_patterns={PatternType.KINDA_INT, PatternType.SOMETIMES},
-            safety_level="safe"
+            enabled_patterns={PatternType.KINDA_INT, PatternType.SOMETIMES}, safety_level="safe"
         )
 
         result = engine.inject_source(env_code, config)
@@ -450,7 +458,7 @@ class TestPackageImportCompatibility:
 
     def test_relative_import_handling(self):
         """Test relative import handling"""
-        relative_import_code = '''
+        relative_import_code = """
 from . import utils
 from ..common import helpers
 from .submodule import processor
@@ -465,22 +473,21 @@ def import_test():
         print(f"Processed value: {processed}")
 
     return processed
-'''
+"""
 
         engine = InjectionEngine()
         config = InjectionConfig(
-            enabled_patterns={PatternType.KINDA_INT, PatternType.SOMETIMES},
-            safety_level="safe"
+            enabled_patterns={PatternType.KINDA_INT, PatternType.SOMETIMES}, safety_level="safe"
         )
 
         # Note: This may fail in test environment, but the transformation should work
         result = engine.inject_source(relative_import_code, config)
         # Focus on transformation success rather than import resolution
-        assert result.success or 'import' in str(result.errors)
+        assert result.success or "import" in str(result.errors)
 
     def test_absolute_import_handling(self):
         """Test absolute import handling"""
-        absolute_import_code = '''
+        absolute_import_code = """
 import sys
 import os.path
 from pathlib import Path
@@ -497,12 +504,11 @@ def absolute_import_test():
         print(f"Python {version_major} detected")
 
     return version_major
-'''
+"""
 
         engine = InjectionEngine()
         config = InjectionConfig(
-            enabled_patterns={PatternType.KINDA_INT, PatternType.SOMETIMES},
-            safety_level="safe"
+            enabled_patterns={PatternType.KINDA_INT, PatternType.SOMETIMES}, safety_level="safe"
         )
 
         result = engine.inject_source(absolute_import_code, config)
@@ -516,7 +522,7 @@ class TestCrossPlatformIntegration:
         """Test complete workflow across platforms"""
 
         # Create a realistic cross-platform code example
-        cross_platform_code = '''
+        cross_platform_code = """
 import os
 import sys
 import platform
@@ -562,7 +568,7 @@ def cross_platform_analysis():
         f.write(f"Results: {result_count}\\n")
 
     return result_count
-'''
+"""
 
         engine = InjectionEngine()
         config = InjectionConfig(
@@ -570,9 +576,9 @@ def cross_platform_analysis():
                 PatternType.KINDA_INT,
                 PatternType.KINDA_FLOAT,
                 PatternType.SOMETIMES,
-                PatternType.SORTA_PRINT
+                PatternType.SORTA_PRINT,
             },
-            safety_level="safe"
+            safety_level="safe",
         )
 
         # Test injection works
@@ -580,16 +586,16 @@ def cross_platform_analysis():
         assert result.success
 
         # Verify cross-platform elements are preserved
-        assert 'platform.system()' in result.transformed_code
-        assert 'Path(' in result.transformed_code
+        assert "platform.system()" in result.transformed_code
+        assert "Path(" in result.transformed_code
 
         # Verify kinda-lang elements are injected
-        assert 'import kinda' in result.transformed_code
+        assert "import kinda" in result.transformed_code
         assert len(result.applied_patterns) > 0
 
     def test_error_handling_cross_platform(self):
         """Test error handling works across platforms"""
-        error_prone_code = '''
+        error_prone_code = """
 import os
 
 def error_handling_test():
@@ -608,20 +614,19 @@ def error_handling_test():
         print(f"Handled division by zero, errors: {error_count}")
 
     return result
-'''
+"""
 
         engine = InjectionEngine()
         config = InjectionConfig(
-            enabled_patterns={PatternType.KINDA_INT, PatternType.SOMETIMES},
-            safety_level="safe"
+            enabled_patterns={PatternType.KINDA_INT, PatternType.SOMETIMES}, safety_level="safe"
         )
 
         result = engine.inject_source(error_prone_code, config)
         assert result.success
 
         # Verify error handling structure is preserved
-        assert 'try:' in result.transformed_code
-        assert 'except' in result.transformed_code
+        assert "try:" in result.transformed_code
+        assert "except" in result.transformed_code
 
 
 if __name__ == "__main__":

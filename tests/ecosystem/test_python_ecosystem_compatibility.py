@@ -24,7 +24,7 @@ class TestNumPyCompatibility:
         except ImportError:
             pytest.skip("NumPy not available")
 
-        @enhance(patterns=['kinda_int', 'kinda_float'])
+        @enhance(patterns=["kinda_int", "kinda_float"])
         def process_array(data: np.ndarray) -> np.ndarray:
             scaling_factor = 2
             bias = 1.0
@@ -37,7 +37,7 @@ class TestNumPyCompatibility:
             np.array([1.1, 2.2, 3.3]),
             np.random.randn(10),
             np.zeros((3, 3)),
-            np.ones((2, 4))
+            np.ones((2, 4)),
         ]
 
         for arr in test_arrays:
@@ -54,7 +54,7 @@ class TestNumPyCompatibility:
         except ImportError:
             pytest.skip("NumPy not available")
 
-        @enhance(patterns=['kinda_float', 'sorta_print'])
+        @enhance(patterns=["kinda_float", "sorta_print"])
         def statistical_analysis(data: np.ndarray) -> dict:
             mean_val = np.mean(data)
             std_val = np.std(data)
@@ -63,21 +63,16 @@ class TestNumPyCompatibility:
 
             print(f"Analysis complete for {len(data)} data points")
 
-            return {
-                'mean': mean_val,
-                'std': std_val,
-                'max': max_val,
-                'min': min_val
-            }
+            return {"mean": mean_val, "std": std_val, "max": max_val, "min": min_val}
 
         data = np.random.normal(100, 15, 1000)
         result = statistical_analysis(data)
 
         assert isinstance(result, dict)
-        assert 'mean' in result
-        assert 'std' in result
-        assert 90 < result['mean'] < 110  # Should be close to 100
-        assert 10 < result['std'] < 20    # Should be close to 15
+        assert "mean" in result
+        assert "std" in result
+        assert 90 < result["mean"] < 110  # Should be close to 100
+        assert 10 < result["std"] < 20  # Should be close to 15
 
     def test_numpy_linear_algebra(self):
         """Test enhanced linear algebra operations"""
@@ -86,7 +81,7 @@ class TestNumPyCompatibility:
         except ImportError:
             pytest.skip("NumPy not available")
 
-        @enhance(patterns=['kinda_int'])
+        @enhance(patterns=["kinda_int"])
         def matrix_operations(matrix_a: np.ndarray, matrix_b: np.ndarray) -> dict:
             # Matrix multiplication
             product = np.dot(matrix_a, matrix_b)
@@ -97,11 +92,7 @@ class TestNumPyCompatibility:
             else:
                 eigenvals = None
 
-            return {
-                'product': product,
-                'eigenvals': eigenvals,
-                'product_shape': product.shape
-            }
+            return {"product": product, "eigenvals": eigenvals, "product_shape": product.shape}
 
         # Test matrices
         a = np.random.randn(3, 4)
@@ -109,11 +100,11 @@ class TestNumPyCompatibility:
 
         result = matrix_operations(a, b)
 
-        assert isinstance(result['product'], np.ndarray)
-        assert result['product'].shape == (3, 3)
+        assert isinstance(result["product"], np.ndarray)
+        assert result["product"].shape == (3, 3)
         # Eigenvals should be computed since product is 3x3 (square)
-        assert result['eigenvals'] is not None
-        assert len(result['eigenvals']) == 3
+        assert result["eigenvals"] is not None
+        assert len(result["eigenvals"]) == 3
 
 
 class TestPandasCompatibility:
@@ -127,7 +118,7 @@ class TestPandasCompatibility:
         except ImportError:
             pytest.skip("Pandas not available")
 
-        @enhance(patterns=['kinda_int', 'kinda_float', 'sorta_print'])
+        @enhance(patterns=["kinda_int", "kinda_float", "sorta_print"])
         def analyze_dataframe(df: pd.DataFrame) -> dict:
             # Basic statistics
             numeric_columns = df.select_dtypes(include=[np.number]).columns
@@ -139,35 +130,37 @@ class TestPandasCompatibility:
                 print(f"Processing column {col}: {count} values")
 
                 summary_stats[col] = {
-                    'mean': mean_val,
-                    'count': count,
-                    'max': df[col].max(),
-                    'min': df[col].min()
+                    "mean": mean_val,
+                    "count": count,
+                    "max": df[col].max(),
+                    "min": df[col].min(),
                 }
 
             return summary_stats
 
         # Create test DataFrame
-        df = pd.DataFrame({
-            'A': np.random.randn(100),
-            'B': np.random.randint(1, 100, 100),
-            'C': np.random.uniform(0, 1, 100),
-            'D': ['category'] * 100  # Non-numeric column
-        })
+        df = pd.DataFrame(
+            {
+                "A": np.random.randn(100),
+                "B": np.random.randint(1, 100, 100),
+                "C": np.random.uniform(0, 1, 100),
+                "D": ["category"] * 100,  # Non-numeric column
+            }
+        )
 
         result = analyze_dataframe(df)
 
         assert isinstance(result, dict)
-        assert 'A' in result
-        assert 'B' in result
-        assert 'C' in result
-        assert 'D' not in result  # Should skip non-numeric
+        assert "A" in result
+        assert "B" in result
+        assert "C" in result
+        assert "D" not in result  # Should skip non-numeric
 
         # Check values are reasonable
         for col_stats in result.values():
-            assert 'mean' in col_stats
-            assert 'count' in col_stats
-            assert col_stats['count'] == 100
+            assert "mean" in col_stats
+            assert "count" in col_stats
+            assert col_stats["count"] == 100
 
     def test_pandas_data_cleaning(self):
         """Test enhanced data cleaning operations"""
@@ -177,7 +170,7 @@ class TestPandasCompatibility:
         except ImportError:
             pytest.skip("Pandas not available")
 
-        @enhance(patterns=['sometimes', 'sorta_print'])
+        @enhance(patterns=["sometimes", "sorta_print"])
         def clean_dataset(df: pd.DataFrame) -> pd.DataFrame:
             # Remove nulls
             cleaned = df.dropna()
@@ -197,11 +190,13 @@ class TestPandasCompatibility:
             return cleaned
 
         # Create messy dataset
-        df = pd.DataFrame({
-            'value1': [1, 2, None, 4, 5, 5, 7],  # Has null and duplicate
-            'value2': [10, 20, 30, 30, 50, 60, 70],  # Has duplicate row
-            'category': ['A', 'B', 'C', 'C', 'E', 'E', 'G']
-        })
+        df = pd.DataFrame(
+            {
+                "value1": [1, 2, None, 4, 5, 5, 7],  # Has null and duplicate
+                "value2": [10, 20, 30, 30, 50, 60, 70],  # Has duplicate row
+                "category": ["A", "B", "C", "C", "E", "E", "G"],
+            }
+        )
 
         cleaned = clean_dataset(df)
 
@@ -222,8 +217,8 @@ class TestFlaskCompatibility:
 
         app = Flask(__name__)
 
-        @app.route('/enhanced_endpoint')
-        @enhance(patterns=['kinda_int', 'sorta_print'])
+        @app.route("/enhanced_endpoint")
+        @enhance(patterns=["kinda_int", "sorta_print"])
         def enhanced_endpoint():
             result_value = 42
             multiplier = 2
@@ -231,43 +226,40 @@ class TestFlaskCompatibility:
 
             print(f"Enhanced endpoint called, result: {final_result}")
 
-            return jsonify({
-                'result': final_result,
-                'enhanced': True
-            })
+            return jsonify({"result": final_result, "enhanced": True})
 
-        @app.route('/health')
-        @enhance(patterns=['sometimes'])  # Probabilistic health check
+        @app.route("/health")
+        @enhance(patterns=["sometimes"])  # Probabilistic health check
         def health_check():
             status_code = 200
             if True:  # Could become ~sometimes
                 status_code = 200
-                status = 'healthy'
+                status = "healthy"
             else:
                 status_code = 503
-                status = 'degraded'
+                status = "degraded"
 
-            return jsonify({'status': status}), status_code
+            return jsonify({"status": status}), status_code
 
         # Test using Flask's test client
         with app.test_client() as client:
             # Test enhanced endpoint
-            response = client.get('/enhanced_endpoint')
+            response = client.get("/enhanced_endpoint")
             assert response.status_code == 200
 
             data = response.get_json()
-            assert 'result' in data
-            assert 'enhanced' in data
-            assert data['enhanced'] is True
+            assert "result" in data
+            assert "enhanced" in data
+            assert data["enhanced"] is True
             # Allow for fuzzy variance in result
-            assert 70 <= data['result'] <= 95
+            assert 70 <= data["result"] <= 95
 
             # Test probabilistic health check
-            health_response = client.get('/health')
+            health_response = client.get("/health")
             assert health_response.status_code in [200, 503]
 
             health_data = health_response.get_json()
-            assert 'status' in health_data
+            assert "status" in health_data
 
     def test_flask_request_processing(self):
         """Test enhanced Flask request processing"""
@@ -278,8 +270,8 @@ class TestFlaskCompatibility:
 
         app = Flask(__name__)
 
-        @app.route('/process_data', methods=['POST'])
-        @enhance(patterns=['kinda_float', 'sorta_print'])
+        @app.route("/process_data", methods=["POST"])
+        @enhance(patterns=["kinda_float", "sorta_print"])
         def process_data():
             data = request.get_json()
 
@@ -288,30 +280,23 @@ class TestFlaskCompatibility:
             threshold = 10.0
 
             results = []
-            for item in data.get('values', []):
+            for item in data.get("values", []):
                 processed_value = item * multiplier
                 if processed_value > threshold:
                     print(f"High value detected: {processed_value}")
                     results.append(processed_value)
 
-            return jsonify({
-                'processed_values': results,
-                'count': len(results)
-            })
+            return jsonify({"processed_values": results, "count": len(results)})
 
         with app.test_client() as client:
-            test_data = {
-                'values': [5.0, 10.0, 15.0, 20.0]
-            }
+            test_data = {"values": [5.0, 10.0, 15.0, 20.0]}
 
-            response = client.post('/process_data',
-                                 json=test_data,
-                                 content_type='application/json')
+            response = client.post("/process_data", json=test_data, content_type="application/json")
 
             assert response.status_code == 200
             data = response.get_json()
-            assert 'processed_values' in data
-            assert 'count' in data
+            assert "processed_values" in data
+            assert "count" in data
 
 
 class TestFastAPICompatibility:
@@ -337,7 +322,7 @@ class TestFastAPICompatibility:
             statistics: dict
 
         @app.post("/enhanced_processing", response_model=ResultModel)
-        @enhance(patterns=['kinda_float', 'sorta_print'])
+        @enhance(patterns=["kinda_float", "sorta_print"])
         def enhanced_processing(data: DataModel) -> ResultModel:
             # Enhanced processing with fuzzy arithmetic
             multiplier = data.multiplier
@@ -356,15 +341,11 @@ class TestFastAPICompatibility:
 
             return ResultModel(
                 processed_values=processed,
-                statistics={
-                    'mean': mean_val,
-                    'max': max_val,
-                    'count': len(processed)
-                }
+                statistics={"mean": mean_val, "max": max_val, "count": len(processed)},
             )
 
         @app.get("/status")
-        @enhance(patterns=['sometimes'])
+        @enhance(patterns=["sometimes"])
         def get_status():
             load_factor = 0.5  # Could become fuzzy
             if load_factor < 0.8:  # Could become ~sometimes
@@ -380,10 +361,7 @@ class TestFastAPICompatibility:
         client = TestClient(app)
 
         # Test enhanced processing
-        test_data = {
-            "values": [1.0, 2.0, 3.0, 4.0],
-            "multiplier": 2.0
-        }
+        test_data = {"values": [1.0, 2.0, 3.0, 4.0], "multiplier": 2.0}
 
         response = client.post("/enhanced_processing", json=test_data)
         assert response.status_code == 200
@@ -413,7 +391,7 @@ class TestRequestsCompatibility:
         except ImportError:
             pytest.skip("Requests not available")
 
-        @enhance(patterns=['kinda_int', 'sorta_print'])
+        @enhance(patterns=["kinda_int", "sorta_print"])
         def make_api_calls(urls: list) -> dict:
             results = []
             timeout_seconds = 5
@@ -428,41 +406,39 @@ class TestRequestsCompatibility:
 
                     if response.status_code == 200:
                         retry_count = 0
-                        results.append({
-                            'url': url,
-                            'status': response.status_code,
-                            'retries': retry_count
-                        })
+                        results.append(
+                            {"url": url, "status": response.status_code, "retries": retry_count}
+                        )
 
                 except requests.RequestException as e:
                     print(f"Request failed for {url}: {e}")
 
             return {
-                'successful_requests': len(results),
-                'total_requests': len(urls),
-                'results': results
+                "successful_requests": len(results),
+                "total_requests": len(urls),
+                "results": results,
             }
 
         # Mock the requests.get call
-        with patch('requests.get') as mock_get:
+        with patch("requests.get") as mock_get:
             mock_response = Mock()
             mock_response.status_code = 200
-            mock_response.json.return_value = {'data': 'test'}
+            mock_response.json.return_value = {"data": "test"}
             mock_get.return_value = mock_response
 
             test_urls = [
-                'https://api.example.com/data',
-                'https://api.example.com/status',
-                'https://api.example.com/health'
+                "https://api.example.com/data",
+                "https://api.example.com/status",
+                "https://api.example.com/health",
             ]
 
             result = make_api_calls(test_urls)
 
             assert isinstance(result, dict)
-            assert 'successful_requests' in result
-            assert 'total_requests' in result
-            assert result['total_requests'] == 3
-            assert result['successful_requests'] <= 3
+            assert "successful_requests" in result
+            assert "total_requests" in result
+            assert result["total_requests"] == 3
+            assert result["successful_requests"] <= 3
 
 
 class TestMatplotlibCompatibility:
@@ -477,7 +453,7 @@ class TestMatplotlibCompatibility:
         except ImportError:
             pytest.skip("Matplotlib not available")
 
-        @enhance(patterns=['kinda_float', 'sorta_print'])
+        @enhance(patterns=["kinda_float", "sorta_print"])
         def create_enhanced_plot(data: list) -> bytes:
             # Enhanced data visualization
             x_values = range(len(data))
@@ -492,7 +468,7 @@ class TestMatplotlibCompatibility:
 
             # Create plot
             fig, ax = plt.subplots(figsize=(10, 6))
-            ax.plot(x_values, enhanced_data, marker='o', linewidth=2)
+            ax.plot(x_values, enhanced_data, marker="o", linewidth=2)
             ax.set_title("Enhanced Data Visualization")
             ax.set_xlabel("Index")
             ax.set_ylabel("Enhanced Values")
@@ -501,7 +477,7 @@ class TestMatplotlibCompatibility:
 
             # Save to bytes buffer
             buffer = io.BytesIO()
-            plt.savefig(buffer, format='png', dpi=100, bbox_inches='tight')
+            plt.savefig(buffer, format="png", dpi=100, bbox_inches="tight")
             plt.close(fig)
 
             buffer.seek(0)
@@ -518,7 +494,7 @@ class TestMatplotlibCompatibility:
         assert len(plot_bytes) > 1000  # Should be a substantial PNG file
 
         # Verify it's a valid PNG
-        assert plot_bytes.startswith(b'\x89PNG')
+        assert plot_bytes.startswith(b"\x89PNG")
 
 
 class TestIntegrationScenarios:
@@ -534,7 +510,7 @@ class TestIntegrationScenarios:
         except ImportError:
             pytest.skip("Required packages not available")
 
-        @enhance(patterns=['kinda_float', 'sorta_print', 'sometimes'])
+        @enhance(patterns=["kinda_float", "sorta_print", "sometimes"])
         def data_science_pipeline(raw_data: dict) -> dict:
             # Step 1: Data loading and cleaning (Pandas)
             df = pd.DataFrame(raw_data)
@@ -552,11 +528,7 @@ class TestIntegrationScenarios:
             for col in numeric_cols:
                 mean_val = np.mean(df[col])
                 std_val = np.std(df[col])
-                statistics[col] = {
-                    'mean': mean_val,
-                    'std': std_val,
-                    'count': len(df[col])
-                }
+                statistics[col] = {"mean": mean_val, "std": std_val, "count": len(df[col])}
                 print(f"Column {col}: mean={mean_val:.2f}, std={std_val:.2f}")
 
             # Step 3: Visualization (Matplotlib)
@@ -570,39 +542,39 @@ class TestIntegrationScenarios:
                 ax.set_title("Enhanced Data Analysis")
 
                 buffer = io.BytesIO()
-                plt.savefig(buffer, format='png')
+                plt.savefig(buffer, format="png")
                 plt.close(fig)
 
                 plot_data = buffer.getvalue()
             else:
-                plot_data = b''
+                plot_data = b""
 
             return {
-                'cleaned_data_shape': df.shape,
-                'statistics': statistics,
-                'plot_size': len(plot_data),
-                'processing_complete': True
+                "cleaned_data_shape": df.shape,
+                "statistics": statistics,
+                "plot_size": len(plot_data),
+                "processing_complete": True,
             }
 
         # Test with sample data
         sample_data = {
-            'feature1': np.random.normal(100, 15, 200).tolist(),
-            'feature2': np.random.normal(50, 10, 200).tolist(),
-            'feature3': np.random.exponential(2, 200).tolist(),
-            'category': np.random.choice(['A', 'B', 'C'], 200).tolist()
+            "feature1": np.random.normal(100, 15, 200).tolist(),
+            "feature2": np.random.normal(50, 10, 200).tolist(),
+            "feature3": np.random.exponential(2, 200).tolist(),
+            "category": np.random.choice(["A", "B", "C"], 200).tolist(),
         }
 
         result = data_science_pipeline(sample_data)
 
         assert isinstance(result, dict)
-        assert 'cleaned_data_shape' in result
-        assert 'statistics' in result
-        assert 'processing_complete' in result
-        assert result['processing_complete'] is True
+        assert "cleaned_data_shape" in result
+        assert "statistics" in result
+        assert "processing_complete" in result
+        assert result["processing_complete"] is True
 
         # Check that cleaning occurred (should have fewer rows)
-        assert result['cleaned_data_shape'][0] <= 200
-        assert result['cleaned_data_shape'][1] == 4
+        assert result["cleaned_data_shape"][0] <= 200
+        assert result["cleaned_data_shape"][1] == 4
 
     def test_web_api_with_data_processing(self):
         """Test web API that processes data with enhanced functions"""
@@ -615,13 +587,13 @@ class TestIntegrationScenarios:
 
         app = Flask(__name__)
 
-        @app.route('/analyze', methods=['POST'])
-        @enhance(patterns=['kinda_float', 'sometimes', 'sorta_print'])
+        @app.route("/analyze", methods=["POST"])
+        @enhance(patterns=["kinda_float", "sometimes", "sorta_print"])
         def analyze_data():
             data = request.get_json()
 
             # Convert to DataFrame
-            df = pd.DataFrame(data['dataset'])
+            df = pd.DataFrame(data["dataset"])
 
             # Enhanced statistical analysis
             results = {}
@@ -641,47 +613,41 @@ class TestIntegrationScenarios:
                 ci_upper = mean_val + margin_of_error
 
                 results[column] = {
-                    'mean': mean_val,
-                    'std': std_val,
-                    'median': median_val,
-                    'confidence_interval': [ci_lower, ci_upper],
-                    'sample_size': len(values)
+                    "mean": mean_val,
+                    "std": std_val,
+                    "median": median_val,
+                    "confidence_interval": [ci_lower, ci_upper],
+                    "sample_size": len(values),
                 }
 
                 print(f"Analyzed column {column}: {len(values)} samples")
 
-            return jsonify({
-                'analysis': results,
-                'total_columns': len(results),
-                'enhanced': True
-            })
+            return jsonify({"analysis": results, "total_columns": len(results), "enhanced": True})
 
         # Test the API
         with app.test_client() as client:
             test_dataset = {
-                'dataset': {
-                    'sales': [100, 120, 95, 110, 105, 115, 90, 125],
-                    'costs': [60, 70, 55, 65, 62, 68, 50, 75],
-                    'profit': [40, 50, 40, 45, 43, 47, 40, 50]
+                "dataset": {
+                    "sales": [100, 120, 95, 110, 105, 115, 90, 125],
+                    "costs": [60, 70, 55, 65, 62, 68, 50, 75],
+                    "profit": [40, 50, 40, 45, 43, 47, 40, 50],
                 }
             }
 
-            response = client.post('/analyze',
-                                 json=test_dataset,
-                                 content_type='application/json')
+            response = client.post("/analyze", json=test_dataset, content_type="application/json")
 
             assert response.status_code == 200
             data = response.get_json()
 
-            assert 'analysis' in data
-            assert 'total_columns' in data
-            assert 'enhanced' in data
-            assert data['enhanced'] is True
+            assert "analysis" in data
+            assert "total_columns" in data
+            assert "enhanced" in data
+            assert data["enhanced"] is True
 
             # Check that all numeric columns were analyzed
-            assert 'sales' in data['analysis']
-            assert 'costs' in data['analysis']
-            assert 'profit' in data['analysis']
+            assert "sales" in data["analysis"]
+            assert "costs" in data["analysis"]
+            assert "profit" in data["analysis"]
 
 
 class TestPerformanceImpact:
@@ -700,7 +666,7 @@ class TestPerformanceImpact:
             return np.sum(arr, axis=0) * 2.0
 
         # Enhanced function
-        @enhance(patterns=['kinda_float'])
+        @enhance(patterns=["kinda_float"])
         def enhanced_numpy_operation(arr: np.ndarray) -> np.ndarray:
             multiplier = 2.0
             return np.sum(arr, axis=0) * multiplier
@@ -741,6 +707,7 @@ if __name__ == "__main__":
     # Test NumPy if available
     try:
         import numpy as np
+
         print("✓ NumPy compatibility test passed")
     except ImportError:
         print("⚠ NumPy not available")
@@ -748,6 +715,7 @@ if __name__ == "__main__":
     # Test Pandas if available
     try:
         import pandas as pd
+
         print("✓ Pandas compatibility test passed")
     except ImportError:
         print("⚠ Pandas not available")
@@ -755,6 +723,7 @@ if __name__ == "__main__":
     # Test Flask if available
     try:
         from flask import Flask
+
         print("✓ Flask compatibility test passed")
     except ImportError:
         print("⚠ Flask not available")

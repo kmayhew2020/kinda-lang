@@ -31,14 +31,14 @@ class TestLibraryIntegration:
                 PatternType.KINDA_FLOAT,
                 PatternType.SORTA_PRINT,
                 PatternType.SOMETIMES,
-                PatternType.KINDA_REPEAT
+                PatternType.KINDA_REPEAT,
             },
-            safety_level="safe"
+            safety_level="safe",
         )
 
     def test_numpy_array_operations_integration(self):
         """Test NumPy array operations with kinda-lang injection"""
-        numpy_integration_code = '''
+        numpy_integration_code = """
 import numpy as np
 
 def matrix_analysis():
@@ -97,7 +97,7 @@ def statistical_operations():
 if __name__ == "__main__":
     matrix_analysis()
     statistical_operations()
-'''
+"""
 
         result = self.engine.inject_source(numpy_integration_code, self.config)
 
@@ -107,13 +107,13 @@ if __name__ == "__main__":
 
         # Validate generated code syntax
         try:
-            compile(result.transformed_code, '<test>', 'exec')
+            compile(result.transformed_code, "<test>", "exec")
         except SyntaxError as e:
             pytest.fail(f"Generated NumPy code is invalid: {e}")
 
     def test_pandas_dataframe_integration(self):
         """Test Pandas DataFrame operations with kinda-lang patterns"""
-        pandas_integration_code = '''
+        pandas_integration_code = """
 import pandas as pd
 import numpy as np
 
@@ -194,7 +194,7 @@ def time_series_analysis():
 if __name__ == "__main__":
     dataframe_processing()
     time_series_analysis()
-'''
+"""
 
         result = self.engine.inject_source(pandas_integration_code, self.config)
 
@@ -204,13 +204,13 @@ if __name__ == "__main__":
 
         # Validate syntax
         try:
-            compile(result.transformed_code, '<test>', 'exec')
+            compile(result.transformed_code, "<test>", "exec")
         except SyntaxError as e:
             pytest.fail(f"Generated Pandas code is invalid: {e}")
 
     def test_flask_web_application_integration(self):
         """Test Flask web application with kinda-lang injection"""
-        flask_integration_code = '''
+        flask_integration_code = """
 from flask import Flask, request, jsonify, render_template_string
 import json
 import logging
@@ -334,7 +334,7 @@ if __name__ == '__main__':
 
     print(f"Starting Flask app on {host}:{port}")
     app.run(host=host, port=port, debug=True)
-'''
+"""
 
         result = self.engine.inject_source(flask_integration_code, self.config)
 
@@ -344,7 +344,7 @@ if __name__ == '__main__':
 
         # Validate syntax
         try:
-            compile(result.transformed_code, '<test>', 'exec')
+            compile(result.transformed_code, "<test>", "exec")
         except SyntaxError as e:
             pytest.fail(f"Generated Flask code is invalid: {e}")
 
@@ -514,7 +514,7 @@ if __name__ == "__main__":
 
         # Validate syntax
         try:
-            compile(result.transformed_code, '<test>', 'exec')
+            compile(result.transformed_code, "<test>", "exec")
         except SyntaxError as e:
             pytest.fail(f"Generated requests code is invalid: {e}")
 
@@ -685,7 +685,7 @@ if __name__ == "__main__":
 
         # Validate syntax
         try:
-            compile(result.transformed_code, '<test>', 'exec')
+            compile(result.transformed_code, "<test>", "exec")
         except SyntaxError as e:
             pytest.fail(f"Generated SQLAlchemy code is invalid: {e}")
 
@@ -702,9 +702,9 @@ class TestComplexIntegrationScenarios:
                 PatternType.KINDA_FLOAT,
                 PatternType.SORTA_PRINT,
                 PatternType.SOMETIMES,
-                PatternType.KINDA_REPEAT
+                PatternType.KINDA_REPEAT,
             },
-            safety_level="safe"
+            safety_level="safe",
         )
 
     def test_ml_pipeline_integration(self):
@@ -862,7 +862,7 @@ if __name__ == "__main__":
 
         # Validate syntax
         try:
-            compile(result.transformed_code, '<test>', 'exec')
+            compile(result.transformed_code, "<test>", "exec")
         except SyntaxError as e:
             pytest.fail(f"Generated ML pipeline code is invalid: {e}")
 
@@ -1104,7 +1104,7 @@ if __name__ == "__main__":
 
         # Validate syntax
         try:
-            compile(result.transformed_code, '<test>', 'exec')
+            compile(result.transformed_code, "<test>", "exec")
         except SyntaxError as e:
             pytest.fail(f"Generated web scraping code is invalid: {e}")
 

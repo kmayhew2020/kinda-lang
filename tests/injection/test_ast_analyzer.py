@@ -17,7 +17,7 @@ from kinda.injection.ast_analyzer import (
     CodeLocation,
     ValidationResult,
     InjectionVisitor,
-    ComplexityChecker
+    ComplexityChecker,
 )
 
 
@@ -142,9 +142,9 @@ if x > 0:
         assert len(result.suggestions) > 0
 
         # Should suggest loop and condition enhancements
-        suggestions_text = ' '.join(result.suggestions)
-        assert 'loops' in suggestions_text.lower()
-        assert 'conditions' in suggestions_text.lower()
+        suggestions_text = " ".join(result.suggestions)
+        assert "loops" in suggestions_text.lower()
+        assert "conditions" in suggestions_text.lower()
 
 
 class TestInjectionVisitor:
@@ -175,7 +175,7 @@ class TestInjectionVisitor:
         points = self.visitor.injection_points
         assert len(points) == 1
         assert points[0].pattern_type == PatternType.KINDA_FLOAT
-        assert points[0].context['value'] == 3.14159
+        assert points[0].context["value"] == 3.14159
 
     def test_visit_call_print(self):
         """Test visiting print calls"""
@@ -186,7 +186,7 @@ class TestInjectionVisitor:
         points = self.visitor.injection_points
         assert len(points) == 1
         assert points[0].pattern_type == PatternType.SORTA_PRINT
-        assert points[0].context['args'] == 1
+        assert points[0].context["args"] == 1
 
     def test_visit_if_simple(self):
         """Test visiting simple if statements"""
@@ -213,7 +213,7 @@ for i in range(10):
         points = self.visitor.injection_points
         repeat_points = [p for p in points if p.pattern_type == PatternType.KINDA_REPEAT]
         assert len(repeat_points) == 1
-        assert repeat_points[0].context['range_args'] == 1
+        assert repeat_points[0].context["range_args"] == 1
 
     def test_visit_assert_statement(self):
         """Test visiting assert statements"""
@@ -348,7 +348,7 @@ class TestInjectionPoint:
             safety_level=SecurityLevel.SAFE,
             confidence=0.9,
             node=ast.Assign(),
-            context={}
+            context={},
         )
 
         str_repr = str(point)

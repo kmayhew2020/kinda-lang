@@ -21,7 +21,7 @@ class TestFourPhaseMigrationStrategy:
         """Test Phase 1: Function-Level Enhancement"""
 
         # Sample Python function for enhancement
-        @enhance(patterns=['kinda_int', 'sorta_print'], safety_level='safe')
+        @enhance(patterns=["kinda_int", "sorta_print"], safety_level="safe")
         def calculate_total(items: list) -> int:
             total = 0
             count = 0
@@ -36,18 +36,18 @@ class TestFourPhaseMigrationStrategy:
             return total
 
         # Test the enhanced function
-        test_items = [10, 20, 30, 'skip', 40]
+        test_items = [10, 20, 30, "skip", 40]
         result = calculate_total(test_items)
 
         # Should work and produce reasonable results
         assert isinstance(result, int)
         assert result >= 100  # 10+20+30+40 = 100, may be higher due to fuzzy enhancement
-        assert hasattr(calculate_total, '__kinda_enhanced__')
+        assert hasattr(calculate_total, "__kinda_enhanced__")
 
     def test_phase_2_class_enhancement(self):
         """Test Phase 2: Class-Level Enhancement"""
 
-        @enhance_class(patterns=['kinda_int', 'kinda_float'])
+        @enhance_class(patterns=["kinda_int", "kinda_float"])
         class Calculator:
             def __init__(self):
                 self.precision = 2
@@ -79,14 +79,14 @@ class TestFourPhaseMigrationStrategy:
         assert isinstance(divide_result, float)
 
         # Methods should be enhanced
-        assert hasattr(calc.add, '__kinda_enhanced__')
-        assert hasattr(calc.multiply, '__kinda_enhanced__')
-        assert hasattr(calc.divide, '__kinda_enhanced__')
+        assert hasattr(calc.add, "__kinda_enhanced__")
+        assert hasattr(calc.multiply, "__kinda_enhanced__")
+        assert hasattr(calc.divide, "__kinda_enhanced__")
 
     def test_phase_3_migration_decorator(self):
         """Test Phase 3: Migration-specific decorators"""
 
-        @kinda_migrate(migration_phase=2, target_patterns={'kinda_int', 'sometimes'})
+        @kinda_migrate(migration_phase=2, target_patterns={"kinda_int", "sometimes"})
         def process_data(data: list) -> dict:
             results = {}
             counter = 0
@@ -104,14 +104,14 @@ class TestFourPhaseMigrationStrategy:
         # Should process data with migration enhancements
         assert isinstance(result, dict)
         assert len(result) > 0  # Should have some positive results
-        assert hasattr(process_data, '__kinda_migration_phase__')
+        assert hasattr(process_data, "__kinda_migration_phase__")
         assert process_data.__kinda_migration_phase__ == 2
 
     def test_phase_4_comprehensive_integration(self):
         """Test Phase 4: Comprehensive integration scenario"""
 
         # Simulate a complete application module with multiple components
-        @enhance(patterns=['kinda_int', 'kinda_float', 'sorta_print'], safety_level='safe')
+        @enhance(patterns=["kinda_int", "kinda_float", "sorta_print"], safety_level="safe")
         def analyze_sales_data(sales_records: list) -> dict:
             """Analyze sales data with enhanced kinda-lang features"""
 
@@ -121,7 +121,7 @@ class TestFourPhaseMigrationStrategy:
             threshold = 100.0  # Could become fuzzy
 
             for record in sales_records:
-                amount = record.get('amount', 0)
+                amount = record.get("amount", 0)
                 transaction_count += 1
 
                 if amount > threshold:
@@ -131,38 +131,40 @@ class TestFourPhaseMigrationStrategy:
                 total_sales += amount
 
             average_sale = total_sales / transaction_count if transaction_count > 0 else 0
-            high_value_percentage = (high_value_count / transaction_count * 100) if transaction_count > 0 else 0
+            high_value_percentage = (
+                (high_value_count / transaction_count * 100) if transaction_count > 0 else 0
+            )
 
             print(f"Analysis complete: {transaction_count} transactions processed")
 
             return {
-                'total_sales': total_sales,
-                'transaction_count': transaction_count,
-                'average_sale': average_sale,
-                'high_value_count': high_value_count,
-                'high_value_percentage': high_value_percentage
+                "total_sales": total_sales,
+                "transaction_count": transaction_count,
+                "average_sale": average_sale,
+                "high_value_count": high_value_count,
+                "high_value_percentage": high_value_percentage,
             }
 
         # Test with sample data
         sample_data = [
-            {'amount': 50.0, 'date': '2023-01-01'},
-            {'amount': 150.0, 'date': '2023-01-02'},
-            {'amount': 75.0, 'date': '2023-01-03'},
-            {'amount': 200.0, 'date': '2023-01-04'},
-            {'amount': 25.0, 'date': '2023-01-05'}
+            {"amount": 50.0, "date": "2023-01-01"},
+            {"amount": 150.0, "date": "2023-01-02"},
+            {"amount": 75.0, "date": "2023-01-03"},
+            {"amount": 200.0, "date": "2023-01-04"},
+            {"amount": 25.0, "date": "2023-01-05"},
         ]
 
         result = analyze_sales_data(sample_data)
 
         # Validate results
         assert isinstance(result, dict)
-        assert 'total_sales' in result
-        assert 'transaction_count' in result
-        assert result['transaction_count'] == 5
-        assert result['total_sales'] >= 500.0  # Base total, may be higher due to fuzzy enhancement
+        assert "total_sales" in result
+        assert "transaction_count" in result
+        assert result["transaction_count"] == 5
+        assert result["total_sales"] >= 500.0  # Base total, may be higher due to fuzzy enhancement
 
         # Should be enhanced
-        assert hasattr(analyze_sales_data, '__kinda_enhanced__')
+        assert hasattr(analyze_sales_data, "__kinda_enhanced__")
 
     def test_migration_utilities_integration(self):
         """Test integration with migration utilities"""
@@ -170,8 +172,9 @@ class TestFourPhaseMigrationStrategy:
         utilities = MigrationUtilities()
 
         # Create a sample Python file for analysis
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as f:
-            f.write('''
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as f:
+            f.write(
+                '''
 def data_processor(values: list) -> dict:
     """Process data values and return statistics"""
     total = 0
@@ -213,7 +216,8 @@ class DataAnalyzer:
             return "close"
         else:
             return "different"
-''')
+'''
+            )
             temp_path = Path(f.name)
 
         try:
@@ -231,15 +235,17 @@ class DataAnalyzer:
             # Handle different possible structures for injection opportunities
             opportunity_types = []
             for op in analysis.injection_opportunities:
-                if hasattr(op, 'pattern_type') and hasattr(op.pattern_type, 'name'):
+                if hasattr(op, "pattern_type") and hasattr(op.pattern_type, "name"):
                     opportunity_types.append(op.pattern_type.name)
-                elif isinstance(op, dict) and 'pattern_type' in op:
-                    opportunity_types.append(str(op['pattern_type']))
-                elif hasattr(op, 'name'):
+                elif isinstance(op, dict) and "pattern_type" in op:
+                    opportunity_types.append(str(op["pattern_type"]))
+                elif hasattr(op, "name"):
                     opportunity_types.append(op.name)
 
             # Should find some enhancement opportunities
-            assert len(opportunity_types) > 0, f"No pattern types found in opportunities: {analysis.injection_opportunities}"
+            assert (
+                len(opportunity_types) > 0
+            ), f"No pattern types found in opportunities: {analysis.injection_opportunities}"
 
         finally:
             temp_path.unlink()
@@ -248,7 +254,7 @@ class DataAnalyzer:
         """Test error handling during migration phases"""
 
         # Test with problematic code
-        @enhance(patterns=['kinda_int'], safety_level='safe')
+        @enhance(patterns=["kinda_int"], safety_level="safe")
         def problematic_function():
             # This might cause issues depending on implementation
             try:
@@ -271,10 +277,10 @@ class DataAnalyzer:
         original_result = original_function(5)
 
         # Apply enhancement
-        enhanced_function = enhance(patterns=['kinda_int'])(original_function)
+        enhanced_function = enhance(patterns=["kinda_int"])(original_function)
 
         # Should still have access to original function
-        if hasattr(enhanced_function, '__kinda_original__'):
+        if hasattr(enhanced_function, "__kinda_original__"):
             rollback_result = enhanced_function.__kinda_original__(5)
             assert rollback_result == original_result
 
@@ -297,7 +303,7 @@ class DataAnalyzer:
         original_doc = documented_function.__doc__
 
         # Apply enhancement
-        enhanced_function = enhance(patterns=['kinda_int'])(documented_function)
+        enhanced_function = enhance(patterns=["kinda_int"])(documented_function)
 
         # Should preserve metadata
         assert enhanced_function.__name__ == original_name
@@ -319,7 +325,7 @@ class DataAnalyzer:
         baseline_time = time.perf_counter() - start_time
 
         # Time enhanced version
-        enhanced_function = enhance(patterns=['kinda_int'])(simple_function)
+        enhanced_function = enhance(patterns=["kinda_int"])(simple_function)
 
         start_time = time.perf_counter()
         for _ in range(100):
@@ -341,7 +347,7 @@ class DataAnalyzer:
         import threading
         import queue
 
-        @enhance(patterns=['kinda_int'], safety_level='safe')
+        @enhance(patterns=["kinda_int"], safety_level="safe")
         def concurrent_function(thread_id: int) -> int:
             result = thread_id * 10
             return result
@@ -382,14 +388,15 @@ if __name__ == "__main__":
 
     # Test basic functionality
     try:
-        @enhance(patterns=['kinda_int'])
+
+        @enhance(patterns=["kinda_int"])
         def test_function(x: int) -> int:
             return x * 2
 
         result = test_function(5)
         print(f"✓ Function enhancement test: {result}")
 
-        @enhance_class(patterns=['kinda_int'])
+        @enhance_class(patterns=["kinda_int"])
         class TestClass:
             def method(self, x: int) -> int:
                 return x + 1
@@ -410,4 +417,5 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"✗ Migration test failed: {e}")
         import traceback
+
         traceback.print_exc()

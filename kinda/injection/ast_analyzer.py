@@ -17,6 +17,7 @@ from ..security import secure_condition_check, is_condition_dangerous
 
 class PatternType(Enum):
     """Types of injection patterns available"""
+
     KINDA_INT = "kinda_int"
     KINDA_FLOAT = "kinda_float"
     SORTA_PRINT = "sorta_print"
@@ -32,6 +33,7 @@ class PatternType(Enum):
 
 class SecurityLevel(Enum):
     """Security risk levels for injection operations"""
+
     SAFE = "safe"
     CAUTION = "caution"
     RISKY = "risky"
@@ -41,6 +43,7 @@ class SecurityLevel(Enum):
 @dataclass
 class CodeLocation:
     """Represents a location in source code"""
+
     line: int
     column: int
     end_line: Optional[int] = None
@@ -55,6 +58,7 @@ class CodeLocation:
 @dataclass
 class InjectionPoint:
     """Represents an injection opportunity in the code"""
+
     location: CodeLocation
     pattern_type: PatternType
     safety_level: SecurityLevel
@@ -69,6 +73,7 @@ class InjectionPoint:
 @dataclass
 class ValidationResult:
     """Result of AST validation for injection compatibility"""
+
     is_valid: bool
     errors: List[str]
     warnings: List[str]
@@ -89,15 +94,21 @@ class InjectionVisitor(ast.NodeVisitor):
                 # Check for integer assignments
                 if isinstance(node.value, ast.Constant) and isinstance(node.value.value, int):
                     self._add_injection_point(
-                        node, PatternType.KINDA_INT, SecurityLevel.SAFE, 0.9,
-                        {"variable_name": target.id, "value": node.value.value}
+                        node,
+                        PatternType.KINDA_INT,
+                        SecurityLevel.SAFE,
+                        0.9,
+                        {"variable_name": target.id, "value": node.value.value},
                     )
 
                 # Check for float assignments
                 elif isinstance(node.value, ast.Constant) and isinstance(node.value.value, float):
                     self._add_injection_point(
-                        node, PatternType.KINDA_FLOAT, SecurityLevel.SAFE, 0.9,
-                        {"variable_name": target.id, "value": node.value.value}
+                        node,
+                        PatternType.KINDA_FLOAT,
+                        SecurityLevel.SAFE,
+                        0.9,
+                        {"variable_name": target.id, "value": node.value.value},
                     )
 
         self.generic_visit(node)
@@ -105,10 +116,13 @@ class InjectionVisitor(ast.NodeVisitor):
     def visit_Call(self, node: ast.Call) -> None:
         """Visit function calls to find print and other injection opportunities"""
         # Check for print statements
-        if (isinstance(node.func, ast.Name) and node.func.id == 'print'):
+        if isinstance(node.func, ast.Name) and node.func.id == "print":
             self._add_injection_point(
-                node, PatternType.SORTA_PRINT, SecurityLevel.SAFE, 0.8,
-                {"args": len(node.args), "has_kwargs": bool(node.keywords)}
+                node,
+                PatternType.SORTA_PRINT,
+                SecurityLevel.SAFE,
+                0.8,
+                {"args": len(node.args), "has_kwargs": bool(node.keywords)},
             )
 
         self.generic_visit(node)
@@ -118,11 +132,16 @@ class InjectionVisitor(ast.NodeVisitor):
         # Check for simple conditions that could use sometimes/maybe
         if self._is_simple_condition(node.test):
             confidence = 0.7 if self._has_side_effects(node.body) else 0.9
-            safety = SecurityLevel.CAUTION if self._has_side_effects(node.body) else SecurityLevel.SAFE
+            safety = (
+                SecurityLevel.CAUTION if self._has_side_effects(node.body) else SecurityLevel.SAFE
+            )
 
             self._add_injection_point(
-                node, PatternType.SOMETIMES, safety, confidence,
-                {"condition_type": type(node.test).__name__, "has_else": bool(node.orelse)}
+                node,
+                PatternType.SOMETIMES,
+                safety,
+                confidence,
+                {"condition_type": type(node.test).__name__, "has_else": bool(node.orelse)},
             )
 
         self.generic_visit(node)
@@ -130,10 +149,13 @@ class InjectionVisitor(ast.NodeVisitor):
     def visit_For(self, node: ast.For) -> None:
         """Visit for loops for loop injection opportunities"""
         if isinstance(node.iter, ast.Call) and isinstance(node.iter.func, ast.Name):
-            if node.iter.func.id == 'range':
+            if node.iter.func.id == "range":
                 self._add_injection_point(
-                    node, PatternType.KINDA_REPEAT, SecurityLevel.SAFE, 0.8,
-                    {"range_args": len(node.iter.args), "has_else": bool(node.orelse)}
+                    node,
+                    PatternType.KINDA_REPEAT,
+                    SecurityLevel.SAFE,
+                    0.8,
+                    {"range_args": len(node.iter.args), "has_else": bool(node.orelse)},
                 )
 
         self.generic_visit(node)
@@ -141,20 +163,28 @@ class InjectionVisitor(ast.NodeVisitor):
     def visit_Assert(self, node: ast.Assert) -> None:
         """Visit assert statements for probabilistic assertion opportunities"""
         self._add_injection_point(
-            node, PatternType.ASSERT_PROBABILITY, SecurityLevel.CAUTION, 0.6,
-            {"has_msg": bool(node.msg)}
+            node,
+            PatternType.ASSERT_PROBABILITY,
+            SecurityLevel.CAUTION,
+            0.6,
+            {"has_msg": bool(node.msg)},
         )
         self.generic_visit(node)
 
-    def _add_injection_point(self, node: ast.AST, pattern_type: PatternType,
-                           safety_level: SecurityLevel, confidence: float,
-                           context: Dict[str, Any]) -> None:
+    def _add_injection_point(
+        self,
+        node: ast.AST,
+        pattern_type: PatternType,
+        safety_level: SecurityLevel,
+        confidence: float,
+        context: Dict[str, Any],
+    ) -> None:
         """Add an injection point to the list"""
         location = CodeLocation(
             line=node.lineno,
             column=node.col_offset,
-            end_line=getattr(node, 'end_lineno', None),
-            end_column=getattr(node, 'end_col_offset', None)
+            end_line=getattr(node, "end_lineno", None),
+            end_column=getattr(node, "end_col_offset", None),
         )
 
         injection_point = InjectionPoint(
@@ -163,7 +193,7 @@ class InjectionVisitor(ast.NodeVisitor):
             safety_level=safety_level,
             confidence=confidence,
             node=node,
-            context=context
+            context=context,
         )
 
         self.injection_points.append(injection_point)
@@ -190,7 +220,7 @@ class PythonASTAnalyzer:
     def parse_file(self, file_path: Path) -> ast.AST:
         """Parse Python file into AST"""
         try:
-            with open(file_path, 'r', encoding='utf-8') as f:
+            with open(file_path, "r", encoding="utf-8") as f:
                 source = f.read()
             return ast.parse(source, filename=str(file_path))
         except (IOError, OSError) as e:
@@ -198,7 +228,7 @@ class PythonASTAnalyzer:
         except SyntaxError as e:
             raise ValueError(f"Syntax error in {file_path}: {e}")
 
-    def parse_source(self, source: str, filename: str = '<string>') -> ast.AST:
+    def parse_source(self, source: str, filename: str = "<string>") -> ast.AST:
         """Parse Python source code into AST"""
         try:
             return ast.parse(source, filename=filename)
@@ -227,7 +257,7 @@ class PythonASTAnalyzer:
         # Basic AST validation
         try:
             # Ensure the tree is compilable
-            compile(tree, '<ast>', 'exec')
+            compile(tree, "<ast>", "exec")
         except Exception as e:
             errors.append(f"AST compilation failed: {e}")
 
@@ -246,16 +276,17 @@ class PythonASTAnalyzer:
 
         # Add suggestions based on findings
         if complexity_visitor.simple_loops > 0:
-            suggestions.append(f"Found {complexity_visitor.simple_loops} loops suitable for kinda_repeat")
+            suggestions.append(
+                f"Found {complexity_visitor.simple_loops} loops suitable for kinda_repeat"
+            )
 
         if complexity_visitor.simple_conditions > 0:
-            suggestions.append(f"Found {complexity_visitor.simple_conditions} conditions suitable for sometimes/maybe")
+            suggestions.append(
+                f"Found {complexity_visitor.simple_conditions} conditions suitable for sometimes/maybe"
+            )
 
         return ValidationResult(
-            is_valid=len(errors) == 0,
-            errors=errors,
-            warnings=warnings,
-            suggestions=suggestions
+            is_valid=len(errors) == 0, errors=errors, warnings=warnings, suggestions=suggestions
         )
 
 
@@ -280,7 +311,7 @@ class ComplexityChecker(ast.NodeVisitor):
     def visit_ClassDef(self, node: ast.ClassDef) -> None:
         # Check for metaclasses
         for keyword in node.keywords:
-            if keyword.arg == 'metaclass':
+            if keyword.arg == "metaclass":
                 self.has_metaclasses = True
         self._enter_scope()
         self.generic_visit(node)
@@ -288,7 +319,7 @@ class ComplexityChecker(ast.NodeVisitor):
 
     def visit_For(self, node: ast.For) -> None:
         if isinstance(node.iter, ast.Call) and isinstance(node.iter.func, ast.Name):
-            if node.iter.func.id == 'range':
+            if node.iter.func.id == "range":
                 self.simple_loops += 1
         self._enter_scope()
         self.generic_visit(node)

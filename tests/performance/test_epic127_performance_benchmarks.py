@@ -22,6 +22,7 @@ from kinda.injection.ast_analyzer import PatternType
 @dataclass
 class PerformanceResult:
     """Results from a performance benchmark"""
+
     baseline_time: float
     enhanced_time: float
     overhead_ratio: float
@@ -61,8 +62,9 @@ class PerformanceBenchmark:
 
         return times
 
-    def compare_functions(self, baseline_func: Callable, enhanced_func: Callable,
-                         *args, **kwargs) -> PerformanceResult:
+    def compare_functions(
+        self, baseline_func: Callable, enhanced_func: Callable, *args, **kwargs
+    ) -> PerformanceResult:
         """Compare baseline and enhanced function performance"""
 
         # Benchmark baseline function
@@ -79,6 +81,7 @@ class PerformanceBenchmark:
 
         # Memory usage (simplified)
         import sys
+
         memory_baseline = sys.getsizeof(baseline_func)
         memory_enhanced = sys.getsizeof(enhanced_func)
         memory_overhead = memory_enhanced - memory_baseline
@@ -90,7 +93,7 @@ class PerformanceBenchmark:
             overhead_percentage=overhead_percentage,
             memory_baseline=memory_baseline,
             memory_enhanced=memory_enhanced,
-            memory_overhead=memory_overhead
+            memory_overhead=memory_overhead,
         )
 
 
@@ -107,7 +110,7 @@ class TestBasicFunctionOverhead:
             result = x + y
             return result * 2
 
-        @enhance(patterns=['kinda_int'])
+        @enhance(patterns=["kinda_int"])
         def enhanced_arithmetic(x: int, y: int) -> int:
             result = x + y
             return result * 2
@@ -117,7 +120,9 @@ class TestBasicFunctionOverhead:
         )
 
         print(f"Simple arithmetic overhead: {perf_result.overhead_percentage:.2f}%")
-        assert perf_result.meets_target, f"Overhead {perf_result.overhead_percentage:.2f}% exceeds 20% target"
+        assert (
+            perf_result.meets_target
+        ), f"Overhead {perf_result.overhead_percentage:.2f}% exceeds 20% target"
 
     def test_string_operations_overhead(self):
         """Test overhead for string operations"""
@@ -126,7 +131,7 @@ class TestBasicFunctionOverhead:
             result = text.upper()
             return result + "_processed"
 
-        @enhance(patterns=['sorta_print'])
+        @enhance(patterns=["sorta_print"])
         def enhanced_string(text: str) -> str:
             result = text.upper()
             print(f"Processing: {text}")  # Will become probabilistic
@@ -137,7 +142,9 @@ class TestBasicFunctionOverhead:
         )
 
         print(f"String operations overhead: {perf_result.overhead_percentage:.2f}%")
-        assert perf_result.meets_target, f"Overhead {perf_result.overhead_percentage:.2f}% exceeds 20% target"
+        assert (
+            perf_result.meets_target
+        ), f"Overhead {perf_result.overhead_percentage:.2f}% exceeds 20% target"
 
     def test_loop_operations_overhead(self):
         """Test overhead for loop operations"""
@@ -148,7 +155,7 @@ class TestBasicFunctionOverhead:
                 total += i * 2
             return total
 
-        @enhance(patterns=['kinda_int'])
+        @enhance(patterns=["kinda_int"])
         def enhanced_loop(n: int) -> int:
             total = 0
             for i in range(n):
@@ -156,12 +163,12 @@ class TestBasicFunctionOverhead:
                 total += i * multiplier
             return total
 
-        perf_result = self.benchmark.compare_functions(
-            baseline_loop, enhanced_loop, 1000
-        )
+        perf_result = self.benchmark.compare_functions(baseline_loop, enhanced_loop, 1000)
 
         print(f"Loop operations overhead: {perf_result.overhead_percentage:.2f}%")
-        assert perf_result.meets_target, f"Overhead {perf_result.overhead_percentage:.2f}% exceeds 20% target"
+        assert (
+            perf_result.meets_target
+        ), f"Overhead {perf_result.overhead_percentage:.2f}% exceeds 20% target"
 
     def test_conditional_operations_overhead(self):
         """Test overhead for conditional operations"""
@@ -175,7 +182,7 @@ class TestBasicFunctionOverhead:
                     results.append(val)
             return results
 
-        @enhance(patterns=['sometimes', 'kinda_int'])
+        @enhance(patterns=["sometimes", "kinda_int"])
         def enhanced_conditional(values: List[int]) -> List[int]:
             results = []
             for val in values:
@@ -192,7 +199,9 @@ class TestBasicFunctionOverhead:
         )
 
         print(f"Conditional operations overhead: {perf_result.overhead_percentage:.2f}%")
-        assert perf_result.meets_target, f"Overhead {perf_result.overhead_percentage:.2f}% exceeds 20% target"
+        assert (
+            perf_result.meets_target
+        ), f"Overhead {perf_result.overhead_percentage:.2f}% exceeds 20% target"
 
 
 class TestInjectionEnginePerformance:
@@ -226,12 +235,17 @@ def test_function(x: int, y: float) -> float:
 '''
 
         config = InjectionConfig(
-            enabled_patterns={PatternType.KINDA_INT, PatternType.KINDA_FLOAT, PatternType.SORTA_PRINT}
+            enabled_patterns={
+                PatternType.KINDA_INT,
+                PatternType.KINDA_FLOAT,
+                PatternType.SORTA_PRINT,
+            }
         )
 
         def baseline_parsing():
             # Simulate baseline parsing (just parse without injection)
             import ast
+
             return ast.parse(test_source)
 
         def enhanced_parsing():
@@ -241,7 +255,9 @@ def test_function(x: int, y: float) -> float:
 
         print(f"Source parsing overhead: {perf_result.overhead_percentage:.2f}%")
         # Injection engine may have higher overhead, but should be reasonable
-        assert perf_result.overhead_percentage < 200, f"Parsing overhead {perf_result.overhead_percentage:.2f}% is too high"
+        assert (
+            perf_result.overhead_percentage < 200
+        ), f"Parsing overhead {perf_result.overhead_percentage:.2f}% is too high"
 
     def test_pattern_detection_performance(self):
         """Test performance of pattern detection"""
@@ -275,8 +291,10 @@ def complex_function(data: list, config: dict) -> dict:
 
         config = InjectionConfig(
             enabled_patterns={
-                PatternType.KINDA_INT, PatternType.KINDA_FLOAT,
-                PatternType.SORTA_PRINT, PatternType.SOMETIMES
+                PatternType.KINDA_INT,
+                PatternType.KINDA_FLOAT,
+                PatternType.SORTA_PRINT,
+                PatternType.SOMETIMES,
             }
         )
 
@@ -307,27 +325,27 @@ class TestRealWorldScenarios:
             max_val = 0
 
             for item in data:
-                value = item.get('value', 0)
+                value = item.get("value", 0)
                 total += value
                 count += 1
                 if value > max_val:
                     max_val = value
 
             return {
-                'total': total,
-                'count': count,
-                'average': total / count if count > 0 else 0,
-                'max': max_val
+                "total": total,
+                "count": count,
+                "average": total / count if count > 0 else 0,
+                "max": max_val,
             }
 
-        @enhance(patterns=['kinda_int', 'kinda_float', 'sorta_print'])
+        @enhance(patterns=["kinda_int", "kinda_float", "sorta_print"])
         def enhanced_data_processing(data: List[Dict[str, Any]]) -> Dict[str, Any]:
             total = 0
             count = 0
             max_val = 0
 
             for item in data:
-                value = item.get('value', 0)
+                value = item.get("value", 0)
                 total += value
                 count += 1
                 if value > max_val:
@@ -335,117 +353,114 @@ class TestRealWorldScenarios:
                     print(f"New max value: {max_val}")
 
             return {
-                'total': total,
-                'count': count,
-                'average': total / count if count > 0 else 0,
-                'max': max_val
+                "total": total,
+                "count": count,
+                "average": total / count if count > 0 else 0,
+                "max": max_val,
             }
 
         # Create test data
-        test_data = [{'value': i * 1.5} for i in range(1000)]
+        test_data = [{"value": i * 1.5} for i in range(1000)]
 
         perf_result = self.benchmark.compare_functions(
             baseline_data_processing, enhanced_data_processing, test_data
         )
 
         print(f"Data processing overhead: {perf_result.overhead_percentage:.2f}%")
-        assert perf_result.meets_target, f"Overhead {perf_result.overhead_percentage:.2f}% exceeds 20% target"
+        assert (
+            perf_result.meets_target
+        ), f"Overhead {perf_result.overhead_percentage:.2f}% exceeds 20% target"
 
     def test_web_request_handler_performance(self):
         """Test performance for web request handler scenarios"""
 
         def baseline_handler(request_data: Dict[str, Any]) -> Dict[str, Any]:
-            user_id = request_data.get('user_id', 0)
-            action = request_data.get('action', 'default')
-            timestamp = request_data.get('timestamp', 0)
+            user_id = request_data.get("user_id", 0)
+            action = request_data.get("action", "default")
+            timestamp = request_data.get("timestamp", 0)
 
             # Simulate processing
             processing_time = 10  # milliseconds
             status_code = 200
 
-            if action == 'special':
+            if action == "special":
                 processing_time *= 2
                 status_code = 201
 
             return {
-                'user_id': user_id,
-                'action': action,
-                'processing_time': processing_time,
-                'status': status_code,
-                'timestamp': timestamp
+                "user_id": user_id,
+                "action": action,
+                "processing_time": processing_time,
+                "status": status_code,
+                "timestamp": timestamp,
             }
 
-        @enhance(patterns=['kinda_int', 'sometimes', 'sorta_print'])
+        @enhance(patterns=["kinda_int", "sometimes", "sorta_print"])
         def enhanced_handler(request_data: Dict[str, Any]) -> Dict[str, Any]:
-            user_id = request_data.get('user_id', 0)
-            action = request_data.get('action', 'default')
-            timestamp = request_data.get('timestamp', 0)
+            user_id = request_data.get("user_id", 0)
+            action = request_data.get("action", "default")
+            timestamp = request_data.get("timestamp", 0)
 
             # Enhanced processing
             processing_time = 10  # milliseconds (could become fuzzy)
             status_code = 200
 
-            if action == 'special':  # Could become ~sometimes
+            if action == "special":  # Could become ~sometimes
                 processing_time *= 2
                 status_code = 201
                 print(f"Special action for user {user_id}")
 
             return {
-                'user_id': user_id,
-                'action': action,
-                'processing_time': processing_time,
-                'status': status_code,
-                'timestamp': timestamp
+                "user_id": user_id,
+                "action": action,
+                "processing_time": processing_time,
+                "status": status_code,
+                "timestamp": timestamp,
             }
 
-        test_request = {
-            'user_id': 12345,
-            'action': 'process',
-            'timestamp': int(time.time())
-        }
+        test_request = {"user_id": 12345, "action": "process", "timestamp": int(time.time())}
 
         perf_result = self.benchmark.compare_functions(
             baseline_handler, enhanced_handler, test_request
         )
 
         print(f"Web handler overhead: {perf_result.overhead_percentage:.2f}%")
-        assert perf_result.meets_target, f"Overhead {perf_result.overhead_percentage:.2f}% exceeds 20% target"
+        assert (
+            perf_result.meets_target
+        ), f"Overhead {perf_result.overhead_percentage:.2f}% exceeds 20% target"
 
     def test_file_processing_performance(self):
         """Test performance for file processing scenarios"""
 
-        with tempfile.NamedTemporaryFile(mode='w', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", delete=False) as f:
             # Create test file content
             for i in range(1000):
                 f.write(f"line {i}: some data here {i * 2}\n")
             test_file_path = Path(f.name)
 
         try:
+
             def baseline_file_processing(file_path: Path) -> Dict[str, int]:
                 line_count = 0
                 word_count = 0
                 char_count = 0
 
-                with open(file_path, 'r') as f:
+                with open(file_path, "r") as f:
                     for line in f:
                         line_count += 1
                         words = line.split()
                         word_count += len(words)
                         char_count += len(line)
 
-                return {
-                    'lines': line_count,
-                    'words': word_count,
-                    'characters': char_count
-                }
+                return {"lines": line_count, "words": word_count, "characters": char_count}
 
-            @enhance(patterns=['kinda_int', 'sorta_print'])
+            @enhance(patterns=["kinda_int", "sorta_print"])
             def enhanced_file_processing(file_path: Path) -> Dict[str, int]:
                 line_count = 0
                 word_count = 0
                 char_count = 0
 
-                with open(file_path, 'r') as f:
+                with open(file_path, "r") as f:
                     for line in f:
                         line_count += 1
                         words = line.split()
@@ -455,18 +470,16 @@ class TestRealWorldScenarios:
                         if line_count % 100 == 0:
                             print(f"Processed {line_count} lines")
 
-                return {
-                    'lines': line_count,
-                    'words': word_count,
-                    'characters': char_count
-                }
+                return {"lines": line_count, "words": word_count, "characters": char_count}
 
             perf_result = self.benchmark.compare_functions(
                 baseline_file_processing, enhanced_file_processing, test_file_path
             )
 
             print(f"File processing overhead: {perf_result.overhead_percentage:.2f}%")
-            assert perf_result.meets_target, f"Overhead {perf_result.overhead_percentage:.2f}% exceeds 20% target"
+            assert (
+                perf_result.meets_target
+            ), f"Overhead {perf_result.overhead_percentage:.2f}% exceeds 20% target"
 
         finally:
             test_file_path.unlink()
@@ -481,7 +494,7 @@ class TestMemoryUsage:
         def baseline_function(data: List[int]) -> List[int]:
             return [x * 2 for x in data if x > 0]
 
-        @enhance(patterns=['kinda_int', 'sometimes'])
+        @enhance(patterns=["kinda_int", "sometimes"])
         def enhanced_function(data: List[int]) -> List[int]:
             result = []
             for x in data:
@@ -496,6 +509,7 @@ class TestMemoryUsage:
 
             # Measure memory for baseline
             import sys
+
             baseline_result = baseline_function(test_data)
             baseline_memory = sys.getsizeof(baseline_result)
 
@@ -508,7 +522,9 @@ class TestMemoryUsage:
             print(f"Memory overhead for {size} items: {memory_overhead:.2f}%")
 
             # Memory overhead should be minimal
-            assert memory_overhead < 50, f"Memory overhead {memory_overhead:.2f}% too high for {size} items"
+            assert (
+                memory_overhead < 50
+            ), f"Memory overhead {memory_overhead:.2f}% too high for {size} items"
 
 
 class TestScalingCharacteristics:
@@ -520,14 +536,14 @@ class TestScalingCharacteristics:
         complexities = [
             ("simple", lambda x: x + 1),
             ("medium", lambda x: sum(i * x for i in range(10))),
-            ("complex", lambda x: sum(i * x * (i % 3 + 1) for i in range(100) if i % 2 == 0))
+            ("complex", lambda x: sum(i * x * (i % 3 + 1) for i in range(100) if i % 2 == 0)),
         ]
 
         benchmark = PerformanceBenchmark(iterations=200, warmup_iterations=20)
 
         for name, base_func in complexities:
             # Create enhanced version
-            enhanced_func = enhance(patterns=['kinda_int'])(base_func)
+            enhanced_func = enhance(patterns=["kinda_int"])(base_func)
 
             perf_result = benchmark.compare_functions(base_func, enhanced_func, 42)
 
@@ -535,7 +551,9 @@ class TestScalingCharacteristics:
 
             # More complex functions should have relatively lower overhead
             if name == "complex":
-                assert perf_result.overhead_percentage < 30, f"Complex function overhead too high: {perf_result.overhead_percentage:.2f}%"
+                assert (
+                    perf_result.overhead_percentage < 30
+                ), f"Complex function overhead too high: {perf_result.overhead_percentage:.2f}%"
 
     def test_pattern_count_scaling(self):
         """Test how overhead scales with number of patterns"""
@@ -550,7 +568,7 @@ class TestScalingCharacteristics:
             (["kinda_int"], "single pattern"),
             (["kinda_int", "kinda_float"], "two patterns"),
             (["kinda_int", "kinda_float", "sorta_print"], "three patterns"),
-            (["kinda_int", "kinda_float", "sorta_print", "sometimes"], "four patterns")
+            (["kinda_int", "kinda_float", "sorta_print", "sometimes"], "four patterns"),
         ]
 
         benchmark = PerformanceBenchmark(iterations=100, warmup_iterations=10)
@@ -564,7 +582,9 @@ class TestScalingCharacteristics:
             print(f"{description} overhead: {perf_result.overhead_percentage:.2f}%")
 
             # Overhead should remain reasonable even with multiple patterns
-            assert perf_result.overhead_percentage < 50, f"Too many patterns cause excessive overhead: {perf_result.overhead_percentage:.2f}%"
+            assert (
+                perf_result.overhead_percentage < 50
+            ), f"Too many patterns cause excessive overhead: {perf_result.overhead_percentage:.2f}%"
 
 
 class TestConcurrencyPerformance:
@@ -575,7 +595,7 @@ class TestConcurrencyPerformance:
         import threading
         import queue
 
-        @enhance(patterns=['kinda_int', 'sorta_print'])
+        @enhance(patterns=["kinda_int", "sorta_print"])
         def concurrent_function(thread_id: int, iterations: int) -> int:
             total = 0
             for i in range(iterations):
@@ -622,9 +642,9 @@ class TestConcurrencyPerformance:
 
 def run_performance_summary():
     """Run a summary of key performance tests"""
-    print("\n" + "="*80)
+    print("\n" + "=" * 80)
     print("Epic #127 Performance Benchmark Summary")
-    print("="*80)
+    print("=" * 80)
 
     benchmark = PerformanceBenchmark(iterations=100, warmup_iterations=10)
 
@@ -632,19 +652,21 @@ def run_performance_summary():
     scenarios = [
         ("Simple arithmetic", lambda: (5 + 3) * 2),
         ("String processing", lambda: "hello world".upper().replace("WORLD", "PYTHON")),
-        ("List comprehension", lambda: [x*2 for x in range(100) if x % 2 == 0]),
-        ("Dictionary operations", lambda: {f"key_{i}": i**2 for i in range(50)})
+        ("List comprehension", lambda: [x * 2 for x in range(100) if x % 2 == 0]),
+        ("Dictionary operations", lambda: {f"key_{i}": i**2 for i in range(50)}),
     ]
 
     total_overhead = 0
     test_count = 0
 
     for name, base_func in scenarios:
-        enhanced_func = enhance(patterns=['kinda_int', 'sorta_print'])(base_func)
+        enhanced_func = enhance(patterns=["kinda_int", "sorta_print"])(base_func)
 
         try:
             perf_result = benchmark.compare_functions(base_func, enhanced_func)
-            print(f"{name:25} | Overhead: {perf_result.overhead_percentage:6.2f}% | Target: {'✓' if perf_result.meets_target else '✗'}")
+            print(
+                f"{name:25} | Overhead: {perf_result.overhead_percentage:6.2f}% | Target: {'✓' if perf_result.meets_target else '✗'}"
+            )
 
             total_overhead += perf_result.overhead_percentage
             test_count += 1
@@ -656,7 +678,7 @@ def run_performance_summary():
         print(f"\nAverage overhead: {avg_overhead:.2f}%")
         print(f"Target achievement: {'PASS' if avg_overhead < 20 else 'FAIL'}")
 
-    print("="*80)
+    print("=" * 80)
 
 
 if __name__ == "__main__":
