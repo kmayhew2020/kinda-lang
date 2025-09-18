@@ -363,6 +363,243 @@ def detect_language(path: Path, forced: Union[str, None]) -> str:
     return "python"
 
 
+def handle_inject_command(args) -> int:
+    """Handle Epic #127 injection commands"""
+    try:
+        from kinda.injection.injection_engine import InjectionEngine, InjectionConfig
+        from kinda.injection.ast_analyzer import PatternType
+        from pathlib import Path
+
+        if args.inject_command == "run":
+            return handle_inject_run(args)
+        elif args.inject_command == "analyze":
+            return handle_inject_analyze(args)
+        elif args.inject_command == "convert":
+            return handle_inject_convert(args)
+        elif args.inject_command == "examples":
+            return handle_inject_examples(args)
+        else:
+            safe_print(f"Unknown inject command: {args.inject_command}")
+            return 1
+
+    except ImportError as e:
+        safe_print(f"Injection framework not available: {e}")
+        safe_print("Epic #127 components may not be fully implemented yet.")
+        return 1
+
+
+def handle_inject_run(args) -> int:
+    """Handle inject run command"""
+    from kinda.injection.injection_engine import InjectionEngine, InjectionConfig
+    from kinda.injection.ast_analyzer import PatternType
+    from pathlib import Path
+    import subprocess
+    import tempfile
+
+    file_path = Path(args.file)
+    if not file_path.exists():
+        safe_print(f"File not found: {file_path}")
+        return 1
+
+    # Parse patterns
+    patterns = set()
+    if args.patterns:
+        pattern_map = {
+            'kinda_int': PatternType.KINDA_INT,
+            'kinda_float': PatternType.KINDA_FLOAT,
+            'sorta_print': PatternType.SORTA_PRINT,
+            'sometimes': PatternType.SOMETIMES,
+            'maybe': PatternType.MAYBE,
+            'kinda_repeat': PatternType.KINDA_REPEAT
+        }
+        for pattern_name in args.patterns:
+            if pattern_name in pattern_map:
+                patterns.add(pattern_map[pattern_name])
+    else:
+        # Default patterns based on level
+        if args.level == "basic":
+            patterns = {PatternType.KINDA_INT, PatternType.KINDA_FLOAT, PatternType.SORTA_PRINT}
+        elif args.level == "intermediate":
+            patterns = {PatternType.KINDA_INT, PatternType.KINDA_FLOAT, PatternType.SORTA_PRINT, PatternType.SOMETIMES}
+        else:  # advanced
+            patterns = {PatternType.KINDA_INT, PatternType.KINDA_FLOAT, PatternType.SORTA_PRINT,
+                       PatternType.SOMETIMES, PatternType.MAYBE, PatternType.KINDA_REPEAT}
+
+    # Create injection config
+    config = InjectionConfig(
+        enabled_patterns=patterns,
+        safety_level=args.safety
+    )
+
+    # Inject and run
+    engine = InjectionEngine()
+    result = engine.inject_file(file_path, config)
+
+    if not result.success:
+        safe_print("Injection failed:")
+        for error in result.errors:
+            safe_print(f"  • {error}")
+        return 1
+
+    safe_print(f"Enhanced with patterns: {', '.join(result.applied_patterns)}")
+
+    # Write enhanced code to temporary file and run it
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as f:
+        f.write(result.transformed_code)
+        temp_path = f.name
+
+    try:
+        # Run the enhanced Python file
+        subprocess.run(['python', temp_path], check=True)
+        return 0
+    except subprocess.CalledProcessError as e:
+        safe_print(f"Execution failed: {e}")
+        return 1
+    finally:
+        Path(temp_path).unlink()
+
+
+def handle_inject_analyze(args) -> int:
+    """Handle inject analyze command"""
+    from kinda.injection.ast_analyzer import PythonASTAnalyzer
+    from pathlib import Path
+
+    file_path = Path(args.file)
+    if not file_path.exists():
+        safe_print(f"File not found: {file_path}")
+        return 1
+
+    analyzer = PythonASTAnalyzer()
+
+    try:
+        tree = analyzer.parse_file(file_path)
+        points = analyzer.find_injection_points(tree)
+        validation = analyzer.validate_syntax(tree)
+
+        safe_print(f"Analysis of {file_path.name}:")
+        safe_print(f"  Found {len(points)} injection opportunities")
+
+        if args.verbose:
+            for point in points:
+                safe_print(f"    • {point}")
+        else:
+            pattern_counts = {}
+            for point in points:
+                pattern_name = point.pattern_type.value
+                pattern_counts[pattern_name] = pattern_counts.get(pattern_name, 0) + 1
+
+            for pattern, count in pattern_counts.items():
+                safe_print(f"    • {pattern}: {count} opportunities")
+
+        if validation.warnings:
+            safe_print("  Warnings:")
+            for warning in validation.warnings:
+                safe_print(f"    ⚠ {warning}")
+
+        if validation.suggestions:
+            safe_print("  Suggestions:")
+            for suggestion in validation.suggestions:
+                safe_print(f"    💡 {suggestion}")
+
+        return 0
+
+    except Exception as e:
+        safe_print(f"Analysis failed: {e}")
+        return 1
+
+
+def handle_inject_convert(args) -> int:
+    """Handle inject convert command"""
+    from kinda.injection.injection_engine import InjectionEngine, InjectionConfig
+    from kinda.injection.ast_analyzer import PatternType
+    from pathlib import Path
+
+    file_path = Path(args.file)
+    if not file_path.exists():
+        safe_print(f"File not found: {file_path}")
+        return 1
+
+    # Determine output path
+    if args.output:
+        output_path = Path(args.output)
+    else:
+        output_path = file_path.with_name(f"{file_path.stem}_enhanced{file_path.suffix}")
+
+    # Pattern selection based on level
+    if args.level == "basic":
+        patterns = {PatternType.KINDA_INT, PatternType.KINDA_FLOAT, PatternType.SORTA_PRINT}
+    elif args.level == "intermediate":
+        patterns = {PatternType.KINDA_INT, PatternType.KINDA_FLOAT, PatternType.SORTA_PRINT, PatternType.SOMETIMES}
+    else:  # advanced
+        patterns = {PatternType.KINDA_INT, PatternType.KINDA_FLOAT, PatternType.SORTA_PRINT,
+                   PatternType.SOMETIMES, PatternType.MAYBE, PatternType.KINDA_REPEAT}
+
+    config = InjectionConfig(enabled_patterns=patterns)
+
+    engine = InjectionEngine()
+    result = engine.inject_file(file_path, config)
+
+    if not result.success:
+        safe_print("Conversion failed:")
+        for error in result.errors:
+            safe_print(f"  • {error}")
+        return 1
+
+    # Write enhanced code
+    output_path.write_text(result.transformed_code, encoding='utf-8')
+
+    safe_print(f"Enhanced file written to: {output_path}")
+    safe_print(f"Applied patterns: {', '.join(result.applied_patterns)}")
+    safe_print(f"Estimated performance impact: {result.performance_estimate:.1f}%")
+
+    return 0
+
+
+def handle_inject_examples(args) -> int:
+    """Handle inject examples command"""
+    from kinda.injection.patterns import PatternLibrary
+
+    library = PatternLibrary()
+
+    if args.pattern:
+        # Show examples for specific pattern
+        from kinda.injection.ast_analyzer import PatternType
+        try:
+            pattern_type = PatternType(args.pattern)
+            pattern = library.get_pattern(pattern_type)
+            if pattern:
+                safe_print(f"Examples for {pattern.info.name}:")
+                safe_print(f"  Description: {pattern.info.description}")
+                for example in pattern.info.examples:
+                    safe_print(f"    {example}")
+            else:
+                safe_print(f"Pattern not found: {args.pattern}")
+                return 1
+        except ValueError:
+            safe_print(f"Invalid pattern: {args.pattern}")
+            return 1
+    else:
+        # Show general examples
+        safe_print("Kinda-Lang Python Injection Examples:")
+        safe_print("")
+        safe_print("Basic Enhancement:")
+        safe_print("  @kinda.enhance(patterns=['kinda_int', 'sorta_print'])")
+        safe_print("  def calculate_score(base):")
+        safe_print("      bonus = 10  # Becomes fuzzy")
+        safe_print("      print(f'Score: {base + bonus}')  # Maybe prints")
+        safe_print("      return base + bonus")
+        safe_print("")
+        safe_print("Class Enhancement:")
+        safe_print("  @kinda.enhance_class(patterns=['sometimes', 'kinda_float'])")
+        safe_print("  class Calculator:")
+        safe_print("      def multiply(self, a, b):")
+        safe_print("          return a * b  # Values become fuzzy")
+        safe_print("")
+        safe_print("Use 'kinda inject examples --pattern <name>' for pattern-specific examples")
+
+    return 0
+
+
 def main(argv=None) -> int:
     argv = argv or sys.argv[1:]
     parser = argparse.ArgumentParser(
@@ -501,6 +738,39 @@ def main(argv=None) -> int:
     )
     p_analyze.add_argument("--construct", "-c", help="Focus analysis on specific construct type")
     p_analyze.add_argument("--export", "-e", help="Export analysis to file (format: csv, json)")
+
+    # Epic #127: Python Injection Commands
+    p_inject = sub.add_parser("inject", help="Inject kinda-lang constructs into Python code (Epic #127)")
+    inject_sub = p_inject.add_subparsers(dest="inject_command", required=True)
+
+    # inject run command
+    p_inject_run = inject_sub.add_parser("run", help="Run Python file with injected kinda constructs")
+    p_inject_run.add_argument("file", help="Python file to enhance and run")
+    p_inject_run.add_argument("--level", choices=["basic", "intermediate", "advanced"], default="basic",
+                              help="Enhancement level")
+    p_inject_run.add_argument("--patterns", nargs="*",
+                              help="Specific patterns to enable (e.g., kinda_int sorta_print)")
+    p_inject_run.add_argument("--safety", choices=["safe", "caution", "risky"], default="safe",
+                              help="Safety level for injection operations")
+
+    # inject analyze command
+    p_inject_analyze = inject_sub.add_parser("analyze", help="Analyze Python file for injection opportunities")
+    p_inject_analyze.add_argument("file", help="Python file to analyze")
+    p_inject_analyze.add_argument("--verbose", "-v", action="store_true",
+                                  help="Show detailed analysis")
+
+    # inject convert command
+    p_inject_convert = inject_sub.add_parser("convert", help="Convert Python file with kinda enhancements")
+    p_inject_convert.add_argument("file", help="Python file to convert")
+    p_inject_convert.add_argument("--output", "-o", help="Output file (default: <file>_enhanced.py)")
+    p_inject_convert.add_argument("--level", choices=["basic", "intermediate", "advanced"], default="basic")
+    p_inject_convert.add_argument("--interactive", action="store_true",
+                                  help="Interactive enhancement selection")
+
+    # inject examples command
+    p_inject_examples = inject_sub.add_parser("examples", help="Show injection examples")
+    p_inject_examples.add_argument("--pattern", help="Show examples for specific pattern")
+    p_inject_examples.add_argument("--level", help="Show examples for specific enhancement level")
 
     args = parser.parse_args(argv)
 
@@ -1149,6 +1419,9 @@ def main(argv=None) -> int:
     if args.command == "syntax":
         show_syntax_reference()
         return 0
+
+    if args.command == "inject":
+        return handle_inject_command(args)
 
     return 1
 
