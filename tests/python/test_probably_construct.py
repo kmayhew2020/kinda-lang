@@ -223,7 +223,7 @@ class TestProbablyRuntimeBehavior:
                 if "fuzzy" in sys.modules:
                     del sys.modules["fuzzy"]
 
-                from fuzzy import probably
+                from fuzzy import probably  # type: ignore[import-not-found]
 
                 # Test that function returns boolean values (basic functionality)
                 result1 = probably(True)
@@ -285,7 +285,7 @@ class TestProbablyRuntimeBehavior:
                 if "fuzzy" in sys.modules:
                     del sys.modules["fuzzy"]
 
-                from fuzzy import probably
+                from fuzzy import probably  # type: ignore[import-not-found]
 
                 # Test statistical behavior over multiple calls
                 # With 70% probability, we should get a mix of True/False
@@ -333,7 +333,7 @@ class TestProbablyRuntimeBehavior:
                 if "fuzzy" in sys.modules:
                     del sys.modules["fuzzy"]
 
-                from fuzzy import probably
+                from fuzzy import probably  # type: ignore[import-not-found]
 
                 # Test that False condition always returns False
                 # Run multiple times to ensure consistency

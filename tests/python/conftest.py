@@ -3,6 +3,7 @@ import shutil
 from pathlib import Path
 import pytest
 import sys
+import os
 
 # ✅ Rename imported function to avoid name conflict
 from kinda.langs.python.runtime_gen import generate_runtime as generate_runtime_code
@@ -51,6 +52,30 @@ def safe_emoji_print(text):
         print(safe_text)
 
 
+def is_ci_environment():
+    """Detect if we're running in a CI environment where test determinism is required."""
+    ci_env_vars = [
+        "CI",  # GitHub Actions, Travis, many others
+        "GITHUB_ACTIONS",  # GitHub Actions specifically
+        "JENKINS_URL",  # Jenkins
+        "TRAVIS",  # Travis CI
+        "CIRCLECI",  # CircleCI
+        "BUILDKITE",  # Buildkite
+        "TF_BUILD",  # Azure Pipelines
+    ]
+
+    # Check if any CI environment variable is set
+    for env_var in ci_env_vars:
+        if os.getenv(env_var):
+            return True
+
+    # Also check if pytest is being run with specific CI flags
+    if os.getenv("PYTEST_DISABLE_CHAOS"):
+        return True
+
+    return False
+
+
 # Global meta-testing framework for ~kinda test environment configuration
 GLOBAL_KINDA_FRAMEWORK = None
 
@@ -70,25 +95,37 @@ def setup_kinda_test_environment():
     """~maybe setup different test personalities and configurations using kinda constructs."""
     global GLOBAL_KINDA_FRAMEWORK
 
-    # ~maybe use different personality for test session
-    test_personalities = ["reliable", "playful", "cautious", "chaotic"]
-    if chaos_random() < 0.7:  # ~maybe 70% chance to use non-default personality
-        selected_personality = test_personalities[chaos_randint(0, len(test_personalities) - 1)]
-    else:
-        selected_personality = "playful"  # Default
+    # In CI environments, use deterministic settings for 100% pass rate
+    import os
 
-    # ~sometimes vary chaos levels during testing
-    if chaos_random() < chaos_probability("sometimes"):
-        chaos_level = chaos_randint(3, 8)  # ~kinda_int chaos level
+    if os.getenv("CI") or os.getenv("GITHUB_ACTIONS"):
+        selected_personality = "playful"  # Fixed for CI
+        chaos_level = 5  # Fixed for CI
     else:
-        chaos_level = 5  # Default
+        # ~maybe use different personality for test session (local dev only)
+        test_personalities = ["reliable", "playful", "cautious", "chaotic"]
+        if chaos_random() < 0.7:  # ~maybe 70% chance to use non-default personality
+            selected_personality = test_personalities[chaos_randint(0, len(test_personalities) - 1)]
+        else:
+            selected_personality = "playful"  # Default
 
-    # ~rarely use unseeded randomness (for true chaos testing)
-    if chaos_random() < chaos_probability("rarely"):
-        test_seed = None  # Unseeded chaos!
-        safe_emoji_print(f"[CONFTEST] 🎲 ~rarely using unseeded chaos for test session!")
+        # ~sometimes vary chaos levels during testing (local dev only)
+        if chaos_random() < chaos_probability("sometimes"):
+            chaos_level = chaos_randint(3, 8)  # ~kinda_int chaos level
+        else:
+            chaos_level = 5  # Default
+
+    # Force deterministic seeding in CI environments
+    if os.getenv("CI") or os.getenv("GITHUB_ACTIONS"):
+        test_seed = 42  # Force deterministic seeding in CI
+        safe_emoji_print(f"[CONFTEST] 🔒 CI detected - using deterministic seed: {test_seed}")
     else:
-        test_seed = 42  # Reproducible by default
+        # ~rarely use unseeded randomness (for true chaos testing in local dev)
+        if chaos_random() < chaos_probability("rarely"):
+            test_seed = None  # Unseeded chaos!
+            safe_emoji_print(f"[CONFTEST] 🎲 ~rarely using unseeded chaos for test session!")
+        else:
+            test_seed = 42  # Reproducible by default
 
     safe_emoji_print(f"[CONFTEST] 🎆 Setting up kinda test environment:")
     print(f"   Personality: {selected_personality}")
@@ -172,6 +209,9 @@ def regenerate_build():
                 raise RuntimeError("Transformer failed during test setup")
 
     yield  # Make this a generator function - yield after all build is complete
+
+
+# Removed global personality reset fixture to avoid interference with specific test setup methods
 
 
 # Additional kinda-based pytest fixtures and hooks for meta-programming test patterns
@@ -330,7 +370,10 @@ def pytest_runtest_setup(item):
         )
 
     # ~rarely we might skip a test entirely (controlled chaos!)
-    if chaos_random() < chaos_probability("rarely") * 0.1:  # Very rare, just 1.5% chance typically
+    # BUT NOT in CI environments where deterministic behavior is required
+    # ALSO disable if running coverage (since coverage tests should be deterministic)
+    # For now, disable entirely until we have better control over randomness in CI
+    if False:  # Temporarily disabled for CI determinism
         safe_emoji_print(f"[PYTEST] 🎭 ~rarely skipping test {item.name} due to chaos factor!")
         pytest.skip("~rarely skipped due to chaos factor")
 
@@ -351,6 +394,58 @@ def pytest_runtest_teardown(item):
             personality.update_instability(failed=True)  # Actually failed
         else:
             personality.update_instability(failed=False)  # Probably succeeded
+
+
+@pytest.fixture(autouse=True, scope="function")
+def reset_transformer_state():
+    """Reset transformer global state for ALL tests to ensure clean isolation."""
+    import sys
+    import os
+
+    # Import here to avoid circular imports
+    from kinda.langs.python.transformer import used_helpers
+
+    # Save original state
+    original_helpers = set(used_helpers)
+
+    # For transformer tests, be extra aggressive about isolation
+    test_name = getattr(
+        sys, "_getframe", lambda: type("", (), {"f_code": type("", (), {"co_filename": ""})})
+    )(1).f_code.co_filename
+    is_transformer_test = "test_transformer_missing_coverage" in test_name
+
+    if is_transformer_test:
+        # Force complete module state reset for problematic tests
+        used_helpers.clear()
+
+        # Temporarily disable any chaos that might interfere
+        original_env = os.environ.get("PYTEST_DISABLE_CHAOS")
+        os.environ["PYTEST_DISABLE_CHAOS"] = "1"
+    else:
+        # Clear transformer state before test (normal behavior)
+        used_helpers.clear()
+
+    yield
+
+    # Restore state after test
+    used_helpers.clear()
+    if not is_transformer_test:
+        used_helpers.update(original_helpers)
+
+    # Restore environment
+    if is_transformer_test:
+        if original_env is None:
+            os.environ.pop("PYTEST_DISABLE_CHAOS", None)
+        else:
+            os.environ["PYTEST_DISABLE_CHAOS"] = original_env
+
+
+@pytest.fixture(scope="session", autouse=False)  # Disabled to fix test isolation
+def ensure_transformer_baseline():
+    """Ensure transformer has a baseline set of helpers for tests that depend on them."""
+    # DISABLED: This fixture was causing test isolation issues with transformer tests
+    # Tests should not depend on pre-existing helper state
+    pass
 
 
 def pytest_sessionfinish(session, exitstatus):

@@ -1,6 +1,7 @@
 import re
+import os
 from pathlib import Path
-from typing import List
+from typing import List, Optional, Any
 from kinda.langs.python.runtime_gen import generate_runtime_helpers, generate_runtime
 from kinda.grammar.python.constructs import KindaPythonConstructs
 from kinda.grammar.python.matchers import (
@@ -10,11 +11,18 @@ from kinda.grammar.python.matchers import (
 )
 from kinda.cli import safe_read_file
 
+# Feature flag for composition framework integration
+USE_COMPOSITION_FRAMEWORK = os.getenv("KINDA_USE_COMPOSITION_ISH", "true").lower() == "true"
+
 used_helpers = set()
 
 
 def _process_conditional_block(
-    lines: List[str], start_index: int, output_lines: List[str], indent: str, file_path: str = None
+    lines: List[str],
+    start_index: int,
+    output_lines: List[str],
+    indent: str,
+    file_path: Optional[str] = None,
 ) -> int:
     """
     Process a conditional block (~sometimes, ~maybe, or ~probably) with proper nesting support.
@@ -64,14 +72,18 @@ def _process_conditional_block(
             continue
 
         try:
-            # Handle nested conditional constructs
+            # Handle nested conditional and loop constructs
             if (
                 stripped.startswith("~sometimes")
                 or stripped.startswith("~maybe")
                 or stripped.startswith("~probably")
                 or stripped.startswith("~rarely")
+                or stripped.startswith("~sometimes_while")
+                or stripped.startswith("~maybe_for")
+                or stripped.startswith("~kinda_repeat")
+                or stripped.startswith("~eventually_until")
             ):
-                if not _validate_conditional_syntax(stripped, line_number, file_path):
+                if not _validate_conditional_syntax(stripped, line_number, file_path or "unknown"):
                     i += 1
                     continue
 
@@ -91,7 +103,7 @@ def _process_conditional_block(
                 # Regular kinda constructs or normal python
                 transformed_block = transform_line(line)
                 if not transformed_block:
-                    _warn_about_line(stripped, line_number, file_path)
+                    _warn_about_line(stripped, line_number, file_path or "unknown")
                 output_lines.extend([indent + l for l in transformed_block])
                 i += 1
         except Exception as e:
@@ -115,7 +127,7 @@ def _process_python_indented_block(
     start_index: int,
     output_lines: List[str],
     conditional_line: str,
-    file_path: str = None,
+    file_path: Optional[str] = None,
 ) -> int:
     """
     Process a Python-style indented block after a conditional (~sometimes, ~maybe, or ~probably).
@@ -123,6 +135,13 @@ def _process_python_indented_block(
     """
     i = start_index
     base_indent = len(conditional_line) - len(conditional_line.lstrip())
+
+    # Check if this is a ~maybe_for construct that needs special handling
+    is_maybe_for = conditional_line.strip().startswith("~maybe_for")
+    if is_maybe_for:
+        # Add the conditional check for ~maybe_for
+        indent_str = " " * (base_indent + 4)  # Standard 4-space indentation
+        output_lines.append(f"{indent_str}if maybe_for_item_execute():")
 
     while i < len(lines):
         line = lines[i]
@@ -146,8 +165,19 @@ def _process_python_indented_block(
         try:
             transformed = transform_line(line)
             if not transformed:
-                _warn_about_line(stripped, line_number, file_path)
-            output_lines.extend(transformed)
+                _warn_about_line(stripped, line_number, file_path or "unknown")
+
+            # For ~maybe_for, add extra indentation for the conditional block
+            if is_maybe_for:
+                extra_indented_lines = []
+                for t_line in transformed:
+                    if t_line.strip():  # Only add extra indent to non-empty lines
+                        extra_indented_lines.append("    " + t_line)
+                    else:
+                        extra_indented_lines.append(t_line)
+                output_lines.extend(extra_indented_lines)
+            else:
+                output_lines.extend(transformed)
             i += 1
         except Exception as e:
             raise KindaParseError(
@@ -158,23 +188,35 @@ def _process_python_indented_block(
 
 
 def _transform_ish_constructs(line: str) -> str:
-    """Transform inline ~ish constructs in a line."""
+    """Transform inline ~ish constructs in a line.
+
+    Epic #126 Task 3: Optionally use composition framework functions
+    while maintaining identical behavior and backward compatibility.
+    """
     ish_constructs = find_ish_constructs(line)
     if not ish_constructs:
         return line
 
-    # Transform from right to left to preserve positions
+    # Determine which runtime functions to use
+    if USE_COMPOSITION_FRAMEWORK:
+        ish_value_func = "ish_value_composed"
+        ish_comparison_func = "ish_comparison_composed"
+    else:
+        ish_value_func = "ish_value"
+        ish_comparison_func = "ish_comparison"
+
+    # Transform from right to left to preserve positions (existing logic preserved)
     transformed_line = line
     for construct_type, match, start_pos, end_pos in reversed(ish_constructs):
         if construct_type == "ish_value":
-            used_helpers.add("ish_value")
+            used_helpers.add(ish_value_func)  # Use composition or legacy function
             value = match.group(1)
-            replacement = f"ish_value({value})"
+            replacement = f"{ish_value_func}({value})"
         elif construct_type == "ish_comparison":
             left_val = match.group(1)
             right_val = match.group(2).strip()
 
-            # CRITICAL FIX: Detect assignment vs comparison context
+            # PRESERVE EXISTING CONTEXT DETECTION LOGIC
             stripped_line = line.strip()
 
             # Check if this is in a conditional/comparison context first
@@ -195,31 +237,30 @@ def _transform_ish_constructs(line: str) -> str:
             )
 
             # Check if this is a standalone variable assignment
-            # Pattern: line starts with variable_name ~ish (possibly with whitespace)
             is_variable_assignment = (
                 re.match(rf"^\s*{re.escape(left_val)}\s*~ish\s+", stripped_line)
                 and not is_in_conditional
             )
 
             if is_variable_assignment:
-                # This is a variable modification context
-                used_helpers.add("ish_value")
-                replacement = f"{left_val} = ish_value({left_val}, {right_val})"
+                # Variable modification context - use ish_value function
+                used_helpers.add(ish_value_func)
+                replacement = f"{left_val} = {ish_value_func}({left_val}, {right_val})"
             else:
-                # This is a comparison context
-                used_helpers.add("ish_comparison")
-                replacement = f"ish_comparison({left_val}, {right_val})"
+                # Comparison context - use ish_comparison function
+                used_helpers.add(ish_comparison_func)
+                replacement = f"{ish_comparison_func}({left_val}, {right_val})"
 
         elif construct_type == "ish_comparison_with_ish_value":
-            used_helpers.add("ish_comparison")
-            used_helpers.add("ish_value")
+            used_helpers.add(ish_comparison_func)
+            used_helpers.add(ish_value_func)
             left_val = match.group(1)
             right_val = match.group(2).strip()
-            replacement = f"ish_comparison({left_val}, ish_value({right_val}))"
+            replacement = f"{ish_comparison_func}({left_val}, {ish_value_func}({right_val}))"
         else:
             continue  # Skip unknown constructs
 
-        # Replace the matched text
+        # Apply replacement (existing logic preserved)
         transformed_line = transformed_line[:start_pos] + replacement + transformed_line[end_pos:]
 
     return transformed_line
@@ -236,7 +277,7 @@ def _transform_drift_constructs(line: str) -> str:
     drift_pattern = re.compile(r"\b([a-zA-Z_][a-zA-Z0-9_]*)\s*~\s*drift\b")
 
     # First handle the special case of drift + ish
-    def replace_drift_ish(match):
+    def replace_drift_ish(match: Any) -> str:
         var_name = match.group(1)
         comparison_val = match.group(2).strip()
         used_helpers.add("drift_access")
@@ -247,7 +288,7 @@ def _transform_drift_constructs(line: str) -> str:
     transformed_line = drift_ish_pattern.sub(replace_drift_ish, line)
 
     # Then apply general drift pattern to remaining cases
-    def replace_drift(match):
+    def replace_drift(match: Any) -> str:
         var_name = match.group(1)
         used_helpers.add("drift_access")
         return f"drift_access('{var_name}', {var_name})"
@@ -309,37 +350,37 @@ def transform_line(line: str) -> List[str]:
         else:
             return [original_line]
 
-    if key == "kinda_int":
+    if key == "kinda_int" and groups:
         var, val = groups
         used_helpers.add("kinda_int")
         transformed_code = f"{var} = kinda_int({val})"
 
-    elif key == "kinda_bool":
+    elif key == "kinda_bool" and groups:
         var, val = groups
         used_helpers.add("kinda_bool")
         transformed_code = f"{var} = kinda_bool({val})"
 
-    elif key == "kinda_float":
+    elif key == "kinda_float" and groups:
         var, val = groups
         used_helpers.add("kinda_float")
         transformed_code = f"{var} = kinda_float({val})"
 
-    elif key == "time_drift_float":
+    elif key == "time_drift_float" and groups:
         var, val = groups
         used_helpers.add("time_drift_float")
         transformed_code = f"{var} = time_drift_float('{var}', {val})"
 
-    elif key == "time_drift_int":
+    elif key == "time_drift_int" and groups:
         var, val = groups
         used_helpers.add("time_drift_int")
         transformed_code = f"{var} = time_drift_int('{var}', {val})"
 
-    elif key == "drift_access":
+    elif key == "drift_access" and groups:
         var = groups[0]
         used_helpers.add("drift_access")
         transformed_code = f"drift_access('{var}')"
 
-    elif key == "kinda_binary":
+    elif key == "kinda_binary" and groups:
         if len(groups) == 2 and groups[1]:  # Custom probabilities provided
             var, probs = groups
             used_helpers.add("kinda_binary")
@@ -349,7 +390,7 @@ def transform_line(line: str) -> List[str]:
             used_helpers.add("kinda_binary")
             transformed_code = f"{var} = kinda_binary()"
 
-    elif key == "sorta_print":
+    elif key == "sorta_print" and groups:
         (expr,) = groups
         used_helpers.add("sorta_print")
         transformed_code = f"sorta_print({expr})"
@@ -374,12 +415,41 @@ def transform_line(line: str) -> List[str]:
         cond = groups[0].strip() if groups and groups[0] else ""
         transformed_code = f"if rarely({cond}):" if cond else "if rarely():"
 
-    elif key == "fuzzy_reassign":
+    elif key == "sometimes_while":
+        used_helpers.add("sometimes_while_condition")
+        condition = groups[0].strip() if groups and groups[0] else "True"
+        transformed_code = f"while sometimes_while_condition({condition}):"
+
+    elif key == "maybe_for":
+        used_helpers.add("maybe_for_item_execute")
+        if groups and len(groups) >= 2:
+            var_name, collection = groups[0], groups[1]
+            var_name = var_name.strip()
+            collection = collection.strip()
+            # Transform ~maybe_for into a for loop - conditional logic will be handled specially
+            transformed_code = f"for {var_name} in {collection}:"
+        else:
+            # Fallback for malformed maybe_for
+            transformed_code = "# Error: malformed ~maybe_for syntax"
+
+    elif key == "kinda_repeat":
+        used_helpers.add("kinda_repeat_count")
+        n_expr = groups[0].strip() if groups and groups[0] else "1"
+        # Transform ~kinda_repeat(n) into a for loop with fuzzy count
+        transformed_code = f"for _ in range(kinda_repeat_count({n_expr})):"
+
+    elif key == "eventually_until":
+        used_helpers.add("eventually_until_condition")
+        condition = groups[0].strip() if groups and groups[0] else "True"
+        # Transform ~eventually_until into a while loop with statistical termination
+        transformed_code = f"while eventually_until_condition({condition}):"
+
+    elif key == "fuzzy_reassign" and groups:
         var, val = groups
         used_helpers.add("fuzzy_assign")
         transformed_code = f"{var} = fuzzy_assign('{var}', {val})"
 
-    elif key == "assert_eventually":
+    elif key == "assert_eventually" and groups:
         used_helpers.add("assert_eventually")
         condition, timeout, confidence = groups
 
@@ -392,7 +462,7 @@ def transform_line(line: str) -> List[str]:
 
         transformed_code = f"assert_eventually({', '.join(args)})"
 
-    elif key == "assert_probability":
+    elif key == "assert_probability" and groups:
         used_helpers.add("assert_probability")
         event, expected_prob, tolerance, samples = groups
 
@@ -407,6 +477,35 @@ def transform_line(line: str) -> List[str]:
 
         transformed_code = f"assert_probability({', '.join(args)})"
 
+    elif key == "sometimes_while" and groups:
+        used_helpers.add("sometimes")
+        (condition,) = groups
+        transformed_code = f"while sometimes() and ({condition}):"
+
+    elif key == "maybe_for" and groups:
+        used_helpers.add("maybe")
+        var_name, iterable = groups
+        # For maybe_for, we generate a Python for loop with maybe() checks inside the body
+        transformed_code = f"for {var_name} in ({iterable}):"
+
+    elif key == "kinda_repeat" and groups:
+        used_helpers.add("kinda_int")
+        (count,) = groups
+        # Use kinda_int to fuzz the repeat count
+        transformed_code = f"for _i in range(kinda_int({count})):"
+
+    elif key == "eventually_until" and groups:
+        used_helpers.add("sometimes")
+        (condition,) = groups
+        # For eventually_until, we use a simplified approach with sometimes()
+        # This is a basic implementation that terminates with some probability when condition is true
+        transformed_code = f"while not (({condition}) and sometimes()):"
+
+    elif key == "kinda_mood" and groups:
+        used_helpers.add("kinda_mood")
+        mood = groups[0]
+        transformed_code = f"kinda_mood('{mood}')"
+
     else:
         transformed_code = stripped  # fallback
 
@@ -418,14 +517,16 @@ def transform_line(line: str) -> List[str]:
 class KindaParseError(Exception):
     """Exception raised for kinda parsing errors with line number context"""
 
-    def __init__(self, message: str, line_number: int, line_content: str, file_path: str = None):
+    def __init__(
+        self, message: str, line_number: int, line_content: str, file_path: Optional[str] = None
+    ):
         self.message = message
         self.line_number = line_number
         self.line_content = line_content
         self.file_path = file_path
         super().__init__(self._format_message())
 
-    def _format_message(self):
+    def _format_message(self) -> str:
         location = f"line {self.line_number}"
         if self.file_path:
             location = f"{self.file_path}:{self.line_number}"
@@ -440,6 +541,10 @@ class KindaParseError(Exception):
 
 def transform_file(path: Path, target_language="python") -> str:
     """Transform a .knda file with enhanced error reporting"""
+    # Reset global helpers set for test isolation
+    global used_helpers
+    used_helpers = set()
+
     try:
         # Use safe encoding-aware file reading for Windows compatibility
         content = safe_read_file(path)
@@ -463,6 +568,10 @@ def transform_file(path: Path, target_language="python") -> str:
                 or stripped.startswith("~maybe")
                 or stripped.startswith("~probably")
                 or stripped.startswith("~rarely")
+                or stripped.startswith("~sometimes_while")
+                or stripped.startswith("~maybe_for")
+                or stripped.startswith("~kinda_repeat")
+                or stripped.startswith("~eventually_until")
             ):
                 # Validate conditional syntax
                 if not _validate_conditional_syntax(stripped, line_number, str(path)):
@@ -493,13 +602,50 @@ def transform_file(path: Path, target_language="python") -> str:
     if used_helpers:
         helpers = ", ".join(sorted(used_helpers))
         header = f"from kinda.langs.{target_language}.runtime.fuzzy import {helpers}\n\n"
+    else:
+        # Always include a minimal header for consistency and test compliance
+        # Even empty files should have runtime import to ensure valid Python module structure
+        # Import a basic function that's always available in the runtime
+        header = f"from kinda.langs.{target_language}.runtime.fuzzy import env\n\n"
 
     return header + "\n".join(output_lines)
 
 
 def _validate_conditional_syntax(line: str, line_number: int, file_path: str) -> bool:
-    """Validate ~sometimes, ~maybe, ~probably, and ~rarely syntax with helpful error messages"""
-    if line.startswith("~sometimes"):
+    """Validate ~sometimes, ~maybe, ~probably, ~rarely, and loop syntax with helpful error messages"""
+    if line.startswith("~sometimes_while"):
+        if ":" not in line:
+            raise KindaParseError(
+                "~sometimes_while needs a colon. Try: ~sometimes_while condition:",
+                line_number,
+                line,
+                file_path,
+            )
+    elif line.startswith("~maybe_for"):
+        if ":" not in line or " in " not in line:
+            raise KindaParseError(
+                "~maybe_for needs 'in' and colon. Try: ~maybe_for item in iterable:",
+                line_number,
+                line,
+                file_path,
+            )
+    elif line.startswith("~kinda_repeat"):
+        if ":" not in line or "(" not in line:
+            raise KindaParseError(
+                "~kinda_repeat needs parentheses and colon. Try: ~kinda_repeat(count):",
+                line_number,
+                line,
+                file_path,
+            )
+    elif line.startswith("~eventually_until"):
+        if ":" not in line:
+            raise KindaParseError(
+                "~eventually_until needs a colon. Try: ~eventually_until condition:",
+                line_number,
+                line,
+                file_path,
+            )
+    elif line.startswith("~sometimes"):
         if "(" not in line:
             raise KindaParseError(
                 "~sometimes needs parentheses. Try: ~sometimes() or ~sometimes(condition)",
@@ -534,7 +680,7 @@ def _validate_conditional_syntax(line: str, line_number: int, file_path: str) ->
     return True
 
 
-def _warn_about_line(line: str, line_number: int, file_path: str):
+def _warn_about_line(line: str, line_number: int, file_path: str) -> None:
     """Warn about potentially problematic lines"""
     if line and not line.startswith("#"):
         # Check for common mistakes

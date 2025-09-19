@@ -1,5 +1,6 @@
 import importlib.util
 import sys
+from typing import Any
 
 from kinda.langs.python import transformer as transformer
 from kinda.grammar.python import matchers
@@ -18,15 +19,19 @@ LANG_DISPATCH = {
 }
 
 
-def load_fuzzy_runtime(runtime_path: Path):
+def load_fuzzy_runtime(runtime_path: Path) -> Any:
     spec = importlib.util.spec_from_file_location("fuzzy", runtime_path)
+    if spec is None:
+        raise RuntimeError(f"Could not load spec from {runtime_path}")
     fuzzy = importlib.util.module_from_spec(spec)
     sys.modules["fuzzy"] = fuzzy
+    if spec.loader is None:
+        raise RuntimeError(f"Loader is None for spec {spec}")
     spec.loader.exec_module(fuzzy)
     return fuzzy
 
 
-def run_interpreter(filepath, lang="python"):
+def run_interpreter(filepath: str, lang: str = "python") -> None:
     # Clean execution - no debug spam
     input_path = Path(filepath)
 
@@ -48,7 +53,13 @@ def run_interpreter(filepath, lang="python"):
     if not hasattr(fuzzy, "env"):
         fuzzy.env = {}
 
-    exec(helper_imports, {}, fuzzy.env)
+    # Create execution context where 'env' variable points to fuzzy.env
+    exec_context = {"env": fuzzy.env}
+    exec_context.update(fuzzy.env)
+    exec(helper_imports, {}, exec_context)
+
+    # Update fuzzy.env with any new values from execution
+    fuzzy.env.update(exec_context)
 
     try:
         exec(code, fuzzy.env, fuzzy.env)

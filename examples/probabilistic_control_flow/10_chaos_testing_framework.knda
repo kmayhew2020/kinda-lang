@@ -1,0 +1,563 @@
+# Chaos Testing Framework
+# Real-world example: Chaos engineering with probabilistic failure injection
+# Demonstrates: All 4 constructs for comprehensive system resilience testing
+
+import random
+import time
+import threading
+from dataclasses import dataclass
+from typing import List, Dict, Set, Optional, Callable
+from enum import Enum
+import json
+
+class FailureType(Enum):
+    SERVICE_CRASH = "service_crash"
+    NETWORK_PARTITION = "network_partition"
+    HIGH_LATENCY = "high_latency"
+    RESOURCE_EXHAUSTION = "resource_exhaustion"
+    CORRUPT_DATA = "corrupt_data"
+    CASCADING_FAILURE = "cascading_failure"
+
+class ServiceState(Enum):
+    HEALTHY = "healthy"
+    DEGRADED = "degraded"
+    FAILING = "failing"
+    DOWN = "down"
+    RECOVERING = "recovering"
+
+@dataclass
+class ChaosExperiment:
+    experiment_id: str
+    target_services: List[str]
+    failure_type: FailureType
+    intensity: float  # 0.0 to 1.0
+    duration: float   # seconds
+    expected_impact: str
+    started_at: Optional[float] = None
+    completed_at: Optional[float] = None
+    actual_impact: Optional[str] = None
+
+@dataclass
+class ServiceMetrics:
+    service_name: str
+    state: ServiceState
+    response_time_ms: float
+    error_rate: float
+    throughput_rps: float
+    cpu_usage: float
+    memory_usage: float
+    timestamp: float
+
+class Service:
+    def __init__(self, name: str, dependencies: List[str] = None):
+        self.name = name
+        self.dependencies = dependencies or []
+        self.state = ServiceState.HEALTHY
+        self.base_response_time = random.uniform(10, 100)  # Base response time in ms
+        self.base_error_rate = random.uniform(0.001, 0.01)  # Base error rate
+        self.base_throughput = random.uniform(100, 1000)    # Base throughput RPS
+
+        # Failure simulation state
+        self.injected_failures: Set[FailureType] = set()
+        self.recovery_start_time: Optional[float] = None
+        self.failure_intensity = 0.0
+
+        # Metrics history
+        self.metrics_history: List[ServiceMetrics] = []
+
+    def inject_failure(self, failure_type: FailureType, intensity: float):
+        """Inject a specific type of failure"""
+        print(f"  💥 Injecting {failure_type.value} into {self.name} (intensity: {intensity:.2f})")
+        self.injected_failures.add(failure_type)
+        self.failure_intensity = max(self.failure_intensity, intensity)
+
+        # Update service state based on failure severity
+        if intensity > 0.8:
+            self.state = ServiceState.DOWN
+        elif intensity > 0.5:
+            self.state = ServiceState.FAILING
+        else:
+            self.state = ServiceState.DEGRADED
+
+    def remove_failure(self, failure_type: FailureType):
+        """Remove a failure and start recovery"""
+        if failure_type in self.injected_failures:
+            print(f"  🔧 Removing {failure_type.value} from {self.name}")
+            self.injected_failures.discard(failure_type)
+
+            if not self.injected_failures:
+                self.failure_intensity = 0.0
+                self.state = ServiceState.RECOVERING
+                self.recovery_start_time = time.time()
+
+    def simulate_recovery(self):
+        """Simulate gradual service recovery"""
+        if self.state == ServiceState.RECOVERING and self.recovery_start_time:
+            recovery_time = time.time() - self.recovery_start_time
+            if recovery_time > 30:  # Recovery takes ~30 seconds
+                self.state = ServiceState.HEALTHY
+                self.recovery_start_time = None
+                print(f"  ✅ {self.name} fully recovered")
+
+    def get_current_metrics(self) -> ServiceMetrics:
+        """Get current service metrics affected by failures"""
+        # Base metrics
+        response_time = self.base_response_time
+        error_rate = self.base_error_rate
+        throughput = self.base_throughput
+        cpu_usage = random.uniform(10, 30)
+        memory_usage = random.uniform(20, 40)
+
+        # Apply failure effects
+        for failure_type in self.injected_failures:
+            if failure_type == FailureType.SERVICE_CRASH:
+                response_time = float('inf')
+                error_rate = 1.0
+                throughput = 0.0
+                cpu_usage = 0.0
+
+            elif failure_type == FailureType.HIGH_LATENCY:
+                response_time *= (1 + self.failure_intensity * 10)
+                throughput *= (1 - self.failure_intensity * 0.8)
+
+            elif failure_type == FailureType.RESOURCE_EXHAUSTION:
+                cpu_usage = min(100, cpu_usage * (1 + self.failure_intensity * 3))
+                memory_usage = min(100, memory_usage * (1 + self.failure_intensity * 2))
+                response_time *= (1 + self.failure_intensity * 5)
+                error_rate = min(1.0, error_rate + self.failure_intensity * 0.3)
+
+            elif failure_type == FailureType.NETWORK_PARTITION:
+                if random.random() < self.failure_intensity:
+                    response_time = float('inf')
+                    error_rate = 1.0
+                else:
+                    response_time *= 2  # Intermittent connectivity
+
+        # Recovery effects
+        if self.state == ServiceState.RECOVERING:
+            recovery_factor = min(1.0, (time.time() - self.recovery_start_time) / 30)
+            response_time = self.base_response_time + (response_time - self.base_response_time) * (1 - recovery_factor)
+            error_rate = self.base_error_rate + (error_rate - self.base_error_rate) * (1 - recovery_factor)
+            throughput = self.base_throughput * recovery_factor
+
+        metrics = ServiceMetrics(
+            service_name=self.name,
+            state=self.state,
+            response_time_ms=response_time,
+            error_rate=error_rate,
+            throughput_rps=throughput,
+            cpu_usage=cpu_usage,
+            memory_usage=memory_usage,
+            timestamp=time.time()
+        )
+
+        self.metrics_history.append(metrics)
+        return metrics
+
+class ChaosTestingFramework:
+    def __init__(self):
+        self.services: Dict[str, Service] = {}
+        self.active_experiments: List[ChaosExperiment] = []
+        self.completed_experiments: List[ChaosExperiment] = []
+        self.system_health_history: List[Dict] = []
+        self.monitoring_active = False
+
+    def register_service(self, name: str, dependencies: List[str] = None):
+        """Register a service in the system"""
+        self.services[name] = Service(name, dependencies)
+        print(f"📝 Registered service: {name} (deps: {dependencies or 'none'})")
+
+    def create_service_topology(self):
+        """Create a realistic microservice topology"""
+        print("\\n🏗️  Creating service topology...")
+
+        # Frontend services
+        self.register_service("web-frontend", [])
+        self.register_service("mobile-api", [])
+
+        # API Gateway
+        self.register_service("api-gateway", ["auth-service", "rate-limiter"])
+
+        # Core services
+        self.register_service("auth-service", ["user-db", "session-store"])
+        self.register_service("user-service", ["user-db", "auth-service"])
+        self.register_service("product-service", ["product-db", "search-service"])
+        self.register_service("order-service", ["order-db", "payment-service", "inventory-service"])
+        self.register_service("payment-service", ["payment-gateway", "fraud-detection"])
+        self.register_service("inventory-service", ["inventory-db", "product-service"])
+
+        # Support services
+        self.register_service("notification-service", ["message-queue", "email-service"])
+        self.register_service("search-service", ["search-index"])
+        self.register_service("analytics-service", ["analytics-db"])
+
+        # Infrastructure services
+        self.register_service("rate-limiter", [])
+        self.register_service("message-queue", [])
+        self.register_service("session-store", [])
+
+        # External dependencies
+        self.register_service("user-db", [])
+        self.register_service("product-db", [])
+        self.register_service("order-db", [])
+        self.register_service("inventory-db", [])
+        self.register_service("analytics-db", [])
+        self.register_service("search-index", [])
+        self.register_service("payment-gateway", [])
+        self.register_service("email-service", [])
+        self.register_service("fraud-detection", [])
+
+        print(f"✅ Created topology with {len(self.services)} services")
+
+    def start_monitoring(self):
+        """Start system monitoring"""
+        self.monitoring_active = True
+        monitoring_thread = threading.Thread(target=self._monitoring_loop, daemon=True)
+        monitoring_thread.start()
+        print("📊 Started system monitoring")
+
+    def _monitoring_loop(self):
+        """Continuous monitoring loop"""
+        while self.monitoring_active:
+            system_health = self._assess_system_health()
+            self.system_health_history.append(system_health)
+
+            # Simulate service recovery
+            for service in self.services.values():
+                service.simulate_recovery()
+
+            time.sleep(2)  # Monitor every 2 seconds
+
+    def _assess_system_health(self) -> Dict:
+        """Assess overall system health"""
+        healthy_services = sum(1 for s in self.services.values() if s.state == ServiceState.HEALTHY)
+        total_services = len(self.services)
+
+        avg_response_time = 0
+        avg_error_rate = 0
+        total_throughput = 0
+
+        for service in self.services.values():
+            metrics = service.get_current_metrics()
+            if metrics.response_time_ms != float('inf'):
+                avg_response_time += metrics.response_time_ms
+            avg_error_rate += metrics.error_rate
+            total_throughput += metrics.throughput_rps
+
+        avg_response_time /= total_services
+        avg_error_rate /= total_services
+
+        return {
+            'timestamp': time.time(),
+            'healthy_services': healthy_services,
+            'total_services': total_services,
+            'health_percentage': (healthy_services / total_services) * 100,
+            'avg_response_time': avg_response_time,
+            'avg_error_rate': avg_error_rate,
+            'total_throughput': total_throughput,
+            'active_experiments': len(self.active_experiments)
+        }
+
+    def run_chaos_experiment(self, experiment: ChaosExperiment):
+        """Run a single chaos experiment"""
+        print(f"\\n🧪 Starting experiment: {experiment.experiment_id}")
+        print(f"   Target: {experiment.target_services}")
+        print(f"   Failure: {experiment.failure_type.value} (intensity: {experiment.intensity})")
+
+        experiment.started_at = time.time()
+        self.active_experiments.append(experiment)
+
+        # Inject failures into target services
+        ~maybe_for service_name in experiment.target_services:
+            if service_name in self.services:
+                service = self.services[service_name]
+                service.inject_failure(experiment.failure_type, experiment.intensity)
+
+                # Simulate cascading failures
+                if experiment.failure_type == FailureType.CASCADING_FAILURE:
+                    self._trigger_cascading_failures(service_name, experiment.intensity)
+
+        # Monitor experiment duration
+        experiment_start = time.time()
+        health_before = self._assess_system_health()
+
+        # Wait for experiment duration with fuzzy timing
+        actual_duration = 0
+        ~kinda_repeat(int(experiment.duration / 5)):  # Break duration into 5-second chunks
+            actual_duration += 5
+            time.sleep(5)
+
+            current_health = self._assess_system_health()
+            print(f"   Experiment progress: {actual_duration}s, "
+                  f"system health: {current_health['health_percentage']:.1f}%")
+
+            # Early termination if system becomes too unhealthy
+            if current_health['health_percentage'] < 20:
+                print(f"   ⚠️  Emergency termination - system critically unhealthy")
+                break
+
+        # Clean up experiment
+        ~maybe_for service_name in experiment.target_services:
+            if service_name in self.services:
+                self.services[service_name].remove_failure(experiment.failure_type)
+
+        experiment.completed_at = time.time()
+        health_after = self._assess_system_health()
+
+        # Assess impact
+        health_drop = health_before['health_percentage'] - health_after['health_percentage']
+        if health_drop > 50:
+            experiment.actual_impact = "severe"
+        elif health_drop > 25:
+            experiment.actual_impact = "moderate"
+        elif health_drop > 10:
+            experiment.actual_impact = "mild"
+        else:
+            experiment.actual_impact = "minimal"
+
+        print(f"   ✅ Experiment complete - impact: {experiment.actual_impact}")
+
+        self.active_experiments.remove(experiment)
+        self.completed_experiments.append(experiment)
+
+    def _trigger_cascading_failures(self, initial_service: str, intensity: float):
+        """Simulate cascading failures through dependencies"""
+        print(f"   🔗 Triggering cascading failures from {initial_service}")
+
+        # Find services that depend on the failing service
+        dependent_services = [
+            name for name, service in self.services.items()
+            if initial_service in service.dependencies
+        ]
+
+        cascade_intensity = intensity * 0.6  # Reduced intensity for cascade
+
+        ~maybe_for dependent_name in dependent_services:
+            if cascade_intensity > 0.3:  # Only cascade if intensity is significant
+                dependent_service = self.services[dependent_name]
+                dependent_service.inject_failure(FailureType.HIGH_LATENCY, cascade_intensity)
+                print(f"     ↳ Cascaded to {dependent_name}")
+
+                # Second-level cascading (with further reduced intensity)
+                if cascade_intensity > 0.5:
+                    second_level = [
+                        name for name, service in self.services.items()
+                        if dependent_name in service.dependencies
+                    ]
+
+                    ~maybe_for second_level_service in second_level[:2]:  # Limit cascade spread
+                        if cascade_intensity > 0.4:
+                            self.services[second_level_service].inject_failure(
+                                FailureType.DEGRADED, cascade_intensity * 0.4
+                            )
+                            print(f"       ↳ Second-level cascade to {second_level_service}")
+
+    def run_comprehensive_chaos_testing(self, duration: int = 300):
+        """Run comprehensive chaos testing session"""
+        print(f"\\n=== Comprehensive Chaos Testing ({duration}s) ===")
+
+        # Set personality for chaos testing
+        ~kinda mood chaotic  # Embrace chaos for testing
+
+        # Start monitoring
+        self.start_monitoring()
+
+        testing_start = time.time()
+        experiment_count = 0
+
+        # Generate and run experiments until time limit
+        ~sometimes_while (time.time() - testing_start) < duration:
+            experiment_count += 1
+
+            # Create experiment with probabilistic parameters
+            experiment = self._generate_chaos_experiment(experiment_count)
+
+            # Run experiment
+            self.run_chaos_experiment(experiment)
+
+            # Wait for system recovery before next experiment
+            print("\\n🔄 Waiting for system recovery...")
+            recovery_start = time.time()
+
+            ~eventually_until self._is_system_stable() or (time.time() - recovery_start) > 60:
+                current_health = self._assess_system_health()
+                print(f"   Recovery progress: {current_health['health_percentage']:.1f}% healthy")
+                time.sleep(5)
+
+            if not self._is_system_stable():
+                print("   ⚠️  System did not fully recover - continuing with degraded state")
+
+            # Brief pause between experiments
+            time.sleep(random.uniform(10, 30))
+
+        # Stop monitoring
+        self.monitoring_active = False
+
+        print(f"\\n=== Chaos Testing Complete ===")
+        print(f"Total experiments: {len(self.completed_experiments)}")
+        self._analyze_chaos_testing_results()
+
+    def _generate_chaos_experiment(self, experiment_num: int) -> ChaosExperiment:
+        """Generate a random chaos experiment"""
+        # Select target services probabilistically
+        all_services = list(self.services.keys())
+        target_services = []
+
+        ~maybe_for service_name in all_services:
+            # Bias towards core services
+            core_services = ["api-gateway", "auth-service", "user-service", "order-service"]
+            selection_probability = 0.6 if service_name in core_services else 0.3
+
+            if random.random() < selection_probability:
+                target_services.append(service_name)
+
+        # Ensure at least one target
+        if not target_services:
+            target_services = [random.choice(all_services)]
+
+        # Select failure type
+        failure_types = list(FailureType)
+        failure_type = random.choice(failure_types)
+
+        # Determine intensity and duration
+        intensity = random.uniform(0.3, 0.9)
+        duration = random.uniform(30, 120)  # 30s to 2 minutes
+
+        return ChaosExperiment(
+            experiment_id=f"chaos_exp_{experiment_num:03d}",
+            target_services=target_services[:3],  # Limit to 3 services max
+            failure_type=failure_type,
+            intensity=intensity,
+            duration=duration,
+            expected_impact="unknown"
+        )
+
+    def _is_system_stable(self) -> bool:
+        """Check if system is in stable state"""
+        current_health = self._assess_system_health()
+
+        # System is stable if:
+        # 1. >80% of services are healthy
+        # 2. Average response time is reasonable
+        # 3. Error rate is low
+        return (current_health['health_percentage'] > 80 and
+                current_health['avg_response_time'] < 200 and
+                current_health['avg_error_rate'] < 0.05)
+
+    def _analyze_chaos_testing_results(self):
+        """Analyze chaos testing results"""
+        print(f"\\n=== Chaos Testing Analysis ===")
+
+        if not self.completed_experiments:
+            return
+
+        # Impact distribution
+        impact_counts = {}
+        for exp in self.completed_experiments:
+            impact = exp.actual_impact or "unknown"
+            impact_counts[impact] = impact_counts.get(impact, 0) + 1
+
+        print(f"\\nImpact Distribution:")
+        for impact, count in impact_counts.items():
+            percentage = (count / len(self.completed_experiments)) * 100
+            print(f"  {impact}: {count} ({percentage:.1f}%)")
+
+        # Failure type effectiveness
+        failure_effectiveness = {}
+        for exp in self.completed_experiments:
+            failure_type = exp.failure_type.value
+            if failure_type not in failure_effectiveness:
+                failure_effectiveness[failure_type] = []
+            if exp.actual_impact:
+                impact_score = {"minimal": 1, "mild": 2, "moderate": 3, "severe": 4}.get(exp.actual_impact, 0)
+                failure_effectiveness[failure_type].append(impact_score)
+
+        print(f"\\nFailure Type Effectiveness:")
+        for failure_type, scores in failure_effectiveness.items():
+            if scores:
+                avg_score = sum(scores) / len(scores)
+                print(f"  {failure_type}: {avg_score:.2f} avg impact")
+
+        # Most resilient services
+        service_failure_counts = {}
+        for exp in self.completed_experiments:
+            for service_name in exp.target_services:
+                service_failure_counts[service_name] = service_failure_counts.get(service_name, 0) + 1
+
+        print(f"\\nMost Targeted Services:")
+        sorted_services = sorted(service_failure_counts.items(), key=lambda x: x[1], reverse=True)
+        for service, count in sorted_services[:5]:
+            print(f"  {service}: {count} experiments")
+
+        # System recovery analysis
+        if self.system_health_history:
+            min_health = min(h['health_percentage'] for h in self.system_health_history)
+            max_health = max(h['health_percentage'] for h in self.system_health_history)
+            avg_health = sum(h['health_percentage'] for h in self.system_health_history) / len(self.system_health_history)
+
+            print(f"\\nSystem Resilience Metrics:")
+            print(f"  Lowest health reached: {min_health:.1f}%")
+            print(f"  Average health during testing: {avg_health:.1f}%")
+            print(f"  Health range: {max_health - min_health:.1f}%")
+
+def main():
+    print("=== Chaos Testing Framework ===\\n")
+
+    framework = ChaosTestingFramework()
+
+    # Create service topology
+    framework.create_service_topology()
+
+    # Run comprehensive chaos testing
+    framework.run_comprehensive_chaos_testing(duration=90)
+
+    # Additional targeted experiments
+    print("\\n🎯 Running targeted chaos experiments...")
+
+    critical_experiments = [
+        ChaosExperiment(
+            experiment_id="critical_db_failure",
+            target_services=["user-db", "order-db"],
+            failure_type=FailureType.SERVICE_CRASH,
+            intensity=0.9,
+            duration=60,
+            expected_impact="severe"
+        ),
+        ChaosExperiment(
+            experiment_id="api_gateway_overload",
+            target_services=["api-gateway"],
+            failure_type=FailureType.RESOURCE_EXHAUSTION,
+            intensity=0.8,
+            duration=45,
+            expected_impact="moderate"
+        ),
+        ChaosExperiment(
+            experiment_id="network_partition_test",
+            target_services=["payment-service", "fraud-detection"],
+            failure_type=FailureType.NETWORK_PARTITION,
+            intensity=0.7,
+            duration=90,
+            expected_impact="moderate"
+        )
+    ]
+
+    ~maybe_for experiment in critical_experiments:
+        framework.run_chaos_experiment(experiment)
+
+        # Recovery wait
+        recovery_start = time.time()
+        ~eventually_until framework._is_system_stable() or (time.time() - recovery_start) > 60:
+            time.sleep(5)
+
+    # Final analysis
+    framework._analyze_chaos_testing_results()
+
+    print(f"\\n=== Personality Impact on Chaos Testing ===")
+    print("Different personalities affect chaos testing behavior:")
+    print("  reliable: Conservative failure injection, thorough recovery validation")
+    print("  cautious: Moderate failure intensities, careful experiment pacing")
+    print("  playful: Balanced chaos with creative failure combinations")
+    print("  chaotic: Aggressive failure injection, overlapping experiments")
+
+if __name__ == "__main__":
+    main()

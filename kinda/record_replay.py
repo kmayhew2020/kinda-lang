@@ -13,7 +13,7 @@ import time
 import threading
 from dataclasses import dataclass, asdict
 from pathlib import Path
-from typing import Dict, List, Optional, Any, Union
+from typing import Dict, List, Optional, Any, Union, Tuple
 from uuid import uuid4
 import traceback
 
@@ -66,9 +66,9 @@ class RecordingSession:
     duration: Optional[float] = None
     total_calls: int = 0
     notes: str = ""
-    tags: List[str] = None
+    tags: Optional[List[str]] = None
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if self.tags is None:
             self.tags = []
 
@@ -187,6 +187,9 @@ class ExecutionRecorder:
         if not self.recording:
             raise RuntimeError("No recording session in progress")
 
+        if self.session is None:
+            raise RuntimeError("Recording session is None")
+
         # Validate hook integrity before stopping
         if not self._validate_hook_integrity():
             raise RuntimeError(
@@ -300,10 +303,10 @@ class ExecutionRecorder:
         self._hook_checksums.clear()
         self._hooked = False
 
-    def _create_hook(self, method_name: str, original_method, method_checksum: str):
+    def _create_hook(self, method_name: str, original_method: Any, method_checksum: str) -> Any:
         """Create a hooked version of an RNG method that records calls with security validation."""
 
-        def hooked_method(*args, **kwargs):
+        def hooked_method(*args: Any, **kwargs: Any) -> Any:
             # Call original method first
             result = original_method(*args, **kwargs)
 
@@ -319,9 +322,9 @@ class ExecutionRecorder:
             return result
 
         # Add security metadata to the hooked method
-        hooked_method._kinda_hook_token = self._security_token
-        hooked_method._kinda_hook_checksum = method_checksum
-        hooked_method._kinda_original_method = original_method
+        setattr(hooked_method, "_kinda_hook_token", self._security_token)
+        setattr(hooked_method, "_kinda_hook_checksum", method_checksum)
+        setattr(hooked_method, "_kinda_original_method", original_method)
 
         return hooked_method
 
@@ -340,10 +343,9 @@ class ExecutionRecorder:
             return False
 
         # Validate security token and checksum
-        return (
-            current_method._kinda_hook_token == self._security_token
-            and current_method._kinda_hook_checksum == expected_checksum
-        )
+        hook_token = getattr(current_method, "_kinda_hook_token", None)
+        hook_checksum = getattr(current_method, "_kinda_hook_checksum", None)
+        return hook_token == self._security_token and hook_checksum == expected_checksum
 
     def _validate_hook_integrity(self) -> bool:
         """Validate the integrity of all installed hooks."""
@@ -406,7 +408,9 @@ class ExecutionRecorder:
 
         return True
 
-    def _record_rng_call(self, method_name: str, args: tuple, kwargs: dict, result: Any) -> None:
+    def _record_rng_call(
+        self, method_name: str, args: Tuple[Any, ...], kwargs: Dict[str, Any], result: Any
+    ) -> None:
         """Record a single RNG call with full context."""
 
         # Security check: Validate hook integrity on every recording call
@@ -464,13 +468,14 @@ class ExecutionRecorder:
             )
 
             # Add to session
-            self.session.rng_calls.append(call_record)
+            if self.session is not None:
+                self.session.rng_calls.append(call_record)
 
-            # Update construct usage stats
-            if call_record.construct_type:
-                self.session.construct_usage[call_record.construct_type] = (
-                    self.session.construct_usage.get(call_record.construct_type, 0) + 1
-                )
+                # Update construct usage stats
+                if call_record.construct_type:
+                    self.session.construct_usage[call_record.construct_type] = (
+                        self.session.construct_usage.get(call_record.construct_type, 0) + 1
+                    )
 
     def _infer_construct_context(self, stack_trace: List[str]) -> Dict[str, Optional[str]]:
         """
@@ -832,10 +837,10 @@ class ReplayEngine:
         self._original_methods.clear()
         self._hooked = False
 
-    def _create_replay_hook(self, method_name: str, original_method):
+    def _create_replay_hook(self, method_name: str, original_method: Any) -> Any:
         """Create a replay hook that returns pre-recorded values."""
 
-        def replay_method(*args, **kwargs):
+        def replay_method(*args: Any, **kwargs: Any) -> Any:
             # Return pre-recorded value if we're actively replaying
             if self.replaying:
                 try:
@@ -851,7 +856,9 @@ class ReplayEngine:
 
         return replay_method
 
-    def _get_recorded_result(self, method_name: str, args: tuple, kwargs: dict) -> Any:
+    def _get_recorded_result(
+        self, method_name: str, args: Tuple[Any, ...], kwargs: Dict[str, Any]
+    ) -> Any:
         """Get the next recorded result for this RNG call."""
 
         with self._lock:
@@ -925,8 +932,8 @@ class ReplayEngine:
     def _log_replay_mismatch(
         self,
         method_name: str,
-        actual_args: tuple,
-        actual_kwargs: dict,
+        actual_args: Tuple[Any, ...],
+        actual_kwargs: Dict[str, Any],
         expected_args: Any,
         fallback_result: Any,
         reason: str,

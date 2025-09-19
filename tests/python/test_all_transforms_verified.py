@@ -2,6 +2,8 @@
 
 import pytest
 import subprocess
+import sys
+import os
 from pathlib import Path
 
 
@@ -16,8 +18,15 @@ def run_transform_and_execute(knda_content, tmp_path):
     output_paths = transform(knda_file, tmp_path / "output")
     py_file = output_paths[0]
 
-    # Execute and capture output
-    result = subprocess.run(["python", str(py_file)], capture_output=True, text=True, timeout=5)
+    # Execute and capture output using the same Python interpreter as the test
+    # Set up environment to ensure kinda module can be imported
+    env = os.environ.copy()
+    project_root = Path(__file__).parent.parent.parent  # Go up from tests/python/ to project root
+    env["PYTHONPATH"] = str(project_root)
+
+    result = subprocess.run(
+        [sys.executable, str(py_file)], capture_output=True, text=True, timeout=5, env=env
+    )
     return result.stdout, result.stderr, result.returncode, py_file.read_text()
 
 

@@ -5,12 +5,19 @@ Kinda-Lang Personality and Chaos Control System
 
 Provides configurable chaos levels through personality profiles that affect
 fuzzy construct behavior, randomness, and error message tone.
+
+Advanced Performance Optimization (Epic #125 Task 3):
+- Pre-computed probability caches
+- Optimized random number generation
+- Memory-efficient state management
 """
 
 import random
 import time
+import weakref
 from dataclasses import dataclass
-from typing import Dict, Optional, Any, Tuple
+from typing import Dict, Optional, Any, Tuple, List
+from collections import deque, defaultdict
 
 
 @dataclass
@@ -23,6 +30,16 @@ class ChaosProfile:
     probably_base: float = 0.7  # Base probability for ~probably
     rarely_base: float = 0.15  # Base probability for ~rarely
     sorta_print_base: float = 0.8  # Base probability for ~sorta print
+
+    # Loop construct continuation probabilities
+    sometimes_while_base: float = 0.6  # Base probability for ~sometimes_while continuation
+    maybe_for_base: float = 0.7  # Base probability for ~maybe_for item execution
+
+    # Repetition construct variance settings
+    kinda_repeat_variance: float = 0.1  # Standard deviation as fraction of n for ~kinda_repeat
+
+    # Eventually until confidence thresholds
+    eventually_until_confidence: float = 0.8  # Confidence threshold for termination
 
     # Variance modifiers for numeric constructs
     int_fuzz_range: Tuple[int, int] = (-1, 1)  # Range for kinda int fuzz
@@ -47,14 +64,293 @@ class ChaosProfile:
     error_snark_level: float = 0.5  # How snarky error messages are (0-1)
 
 
+class ProbabilityCache:
+    """
+    Optimized probability cache for Epic #125 Task 3 performance requirements.
+    Pre-computes and caches personality-specific probabilities to avoid
+    repeated calculations in performance-critical scenarios.
+    """
+
+    def __init__(self, personality_context: Any) -> None:
+        self.context = weakref.ref(personality_context)  # Avoid circular references
+        self._cache: Dict[str, float] = {}
+        self._cache_generation = 0
+        self._build_cache()
+
+    def _build_cache(self) -> None:
+        """Pre-compute all commonly used probabilities."""
+        ctx = self.context()
+        if not ctx:
+            return
+
+        # Cache all construct probabilities with chaos adjustments
+        constructs = [
+            "sometimes",
+            "maybe",
+            "probably",
+            "rarely",
+            "sorta_print",
+            "sometimes_while",
+            "maybe_for",
+        ]
+
+        for construct in constructs:
+            self._cache[construct] = ctx.get_chaos_probability(construct)
+
+        # Cache chaos-adjusted ranges and variances
+        self._cache["int_fuzz_range"] = ctx.get_fuzz_range("int")
+        self._cache["float_drift_range"] = ctx.get_float_drift_range()
+        self._cache["ish_variance"] = ctx.get_ish_variance()
+        self._cache["ish_tolerance"] = ctx.get_ish_tolerance()
+        self._cache["bool_uncertainty"] = ctx.get_bool_uncertainty()
+        self._cache["binary_probs"] = ctx.get_binary_probabilities()
+
+        # Cache repetition construct parameters
+        self._cache["kinda_repeat_variance"] = (
+            ctx.profile.kinda_repeat_variance * ctx.profile.chaos_amplifier * ctx.chaos_multiplier
+        )
+        self._cache["eventually_until_confidence"] = self._get_eventually_until_confidence(ctx)
+
+    def _get_eventually_until_confidence(self, ctx: Any) -> float:
+        """Calculate cached eventually_until confidence threshold."""
+        base_confidence = float(ctx.profile.eventually_until_confidence)
+        combined_amplifier = float(ctx.profile.chaos_amplifier * ctx.chaos_multiplier)
+        if combined_amplifier > 1.0:
+            factor = min(0.3, (combined_amplifier - 1.0) * 0.2)
+            adjusted = base_confidence - factor
+        else:
+            factor = (1.0 - combined_amplifier) * 0.1
+            adjusted = base_confidence + factor
+        return float(max(0.5, min(0.99, adjusted)))
+
+    def get_cached_probability(self, construct_name: str) -> Optional[float]:
+        """Get cached probability or None if not cached."""
+        return self._cache.get(construct_name)
+
+    def get_cached_value(self, key: str) -> Optional[Any]:
+        """Get any cached value by key."""
+        return self._cache.get(key)
+
+    def invalidate(self) -> None:
+        """Invalidate cache when personality changes."""
+        self._cache.clear()
+        self._cache_generation += 1
+        self._build_cache()
+
+
+class MemoryOptimizedEventuallyUntil:
+    """
+    Memory-optimized eventually_until evaluator with circular buffer.
+    Implements bounded memory usage for long-running loops per Epic #125 Task 3 requirements.
+    """
+
+    def __init__(self, confidence_threshold: float, max_history: int = 100):
+        self.confidence_threshold = confidence_threshold
+        self.evaluations: deque[bool] = deque(maxlen=max_history)  # Circular buffer
+        self.min_samples = 3
+
+    def add_evaluation(self, result: bool) -> bool:
+        """
+        Add evaluation and return whether loop should continue.
+        Returns True to continue, False to terminate.
+        """
+        self.evaluations.append(bool(result))
+        n = len(self.evaluations)
+
+        if n < self.min_samples:
+            return True  # Continue until we have enough data
+
+        # Count recent consecutive successes
+        consecutive_successes = 0
+        for i in range(len(self.evaluations) - 1, -1, -1):
+            if self.evaluations[i]:
+                consecutive_successes += 1
+            else:
+                break
+
+        # Check recent success rate (last 5-10 evaluations)
+        recent_window = min(5, n)
+        recent_evaluations = list(self.evaluations)[-recent_window:]
+        recent_successes = sum(recent_evaluations)
+        recent_success_rate = recent_successes / recent_window if recent_window > 0 else 0
+
+        # Terminate if we have 2+ consecutive successes OR high recent success rate
+        should_terminate = (consecutive_successes >= 2) or (recent_success_rate >= 0.8)
+        return not should_terminate  # Continue while not terminated
+
+    def get_stats(self) -> Dict[str, Any]:
+        """Get evaluator statistics for debugging."""
+        if not self.evaluations:
+            return {"total": 0, "success_rate": 0.0}
+
+        total = len(self.evaluations)
+        successes = sum(self.evaluations)
+        return {
+            "total": total,
+            "successes": successes,
+            "success_rate": successes / total,
+            "recent_5": list(self.evaluations)[-5:] if total >= 5 else list(self.evaluations),
+        }
+
+
+class OptimizedRandomState:
+    """
+    Fast random number generator optimized for personality-based chaos.
+    Pre-generates random numbers in batches for improved performance.
+    """
+
+    def __init__(self, seed: Optional[int] = None, batch_size: int = 1000):
+        self.rng = random.Random(seed)
+        self.batch_size = batch_size
+        self._float_batch: List[float] = []
+        self._int_ranges: Dict[Tuple[int, int], List[int]] = defaultdict(list)
+
+    def _refill_float_batch(self) -> None:
+        """Pre-generate a batch of random floats."""
+        self._float_batch = [self.rng.random() for _ in range(self.batch_size)]
+
+    def _refill_int_batch(self, a: int, b: int) -> None:
+        """Pre-generate a batch of random integers for a given range."""
+        key = (a, b)
+        self._int_ranges[key] = [self.rng.randint(a, b) for _ in range(self.batch_size)]
+
+    def random(self) -> float:
+        """Get next random float from batch."""
+        if not self._float_batch:
+            self._refill_float_batch()
+        return self._float_batch.pop()
+
+    def randint(self, a: int, b: int) -> int:
+        """Get next random integer from batch."""
+        key = (a, b)
+        if not self._int_ranges[key]:
+            self._refill_int_batch(a, b)
+        return self._int_ranges[key].pop()
+
+    def uniform(self, a: float, b: float) -> float:
+        """Generate uniform random float."""
+        return a + (b - a) * self.random()
+
+    def choice(self, seq: Any) -> Any:
+        """Choose random element from sequence."""
+        if not seq:
+            raise IndexError("Cannot choose from empty sequence")
+        return seq[self.randint(0, len(seq) - 1)]
+
+    def gauss(self, mu: float, sigma: float) -> float:
+        """Generate Gaussian random number."""
+        return self.rng.gauss(mu, sigma)
+
+    def getstate(self) -> Tuple[Any, ...]:
+        """Get RNG state."""
+        return self.rng.getstate()
+
+    def setstate(self, state: Any) -> None:
+        """Set RNG state."""
+        self.rng.setstate(state)
+
+
+# Global eventually_until evaluator registry for memory optimization
+_eventually_until_evaluators: Dict[str, MemoryOptimizedEventuallyUntil] = {}
+
+
+def get_eventually_until_evaluator(context_id: str = "default") -> MemoryOptimizedEventuallyUntil:
+    """Get or create a memory-optimized eventually_until evaluator."""
+    from kinda.personality import get_personality
+
+    if context_id not in _eventually_until_evaluators:
+        confidence = get_personality().profile.eventually_until_confidence
+        _eventually_until_evaluators[context_id] = MemoryOptimizedEventuallyUntil(confidence)
+
+    return _eventually_until_evaluators[context_id]
+
+
+def clear_eventually_until_evaluators() -> None:
+    """Clear all evaluators (useful for testing)."""
+    _eventually_until_evaluators.clear()
+
+
 # Pre-defined personality profiles based on user feedback requirements
 PERSONALITY_PROFILES: Dict[str, ChaosProfile] = {
+    "professional": ChaosProfile(
+        sometimes_base=0.85,  # Professional but still fuzzy
+        maybe_base=0.8,  # High reliability
+        probably_base=0.9,  # Very reliable
+        rarely_base=0.1,  # Professional rarely
+        sorta_print_base=0.9,  # Almost always print
+        sometimes_while_base=0.8,  # 80% continuation probability
+        maybe_for_base=0.85,  # 85% execution probability per item
+        kinda_repeat_variance=0.15,  # ±15% variance
+        eventually_until_confidence=0.85,  # 85% confidence threshold
+        int_fuzz_range=(-1, 1),  # Minimal fuzz
+        float_drift_range=(-0.1, 0.1),  # Minimal float drift
+        ish_variance=1.0,  # Low variance
+        ish_tolerance=1.5,  # Tight tolerance
+        bool_uncertainty=0.05,  # Very low boolean uncertainty
+        binary_pos_prob=0.6,  # Professional positive
+        binary_neg_prob=0.2,  # Less negative
+        binary_neutral_prob=0.2,  # Standard neutral
+        chaos_amplifier=0.5,  # Low chaos
+        drift_rate=0.01,  # Minimal drift
+        cascade_strength=0.05,  # Minimal cascade
+        error_snark_level=0.2,  # Professional error messages
+    ),
+    "friendly": ChaosProfile(
+        sometimes_base=0.75,  # Friendly reliability
+        maybe_base=0.7,  # Moderate reliability
+        probably_base=0.8,  # Good reliability
+        rarely_base=0.2,  # Friendly rarely
+        sorta_print_base=0.85,  # Usually prints
+        sometimes_while_base=0.7,  # 70% continuation probability
+        maybe_for_base=0.8,  # 80% execution probability per item
+        kinda_repeat_variance=0.25,  # ±25% variance
+        eventually_until_confidence=0.75,  # 75% confidence threshold
+        int_fuzz_range=(-1, 1),  # Standard fuzz
+        float_drift_range=(-0.3, 0.3),  # Moderate float drift
+        ish_variance=1.5,  # Moderate variance
+        ish_tolerance=2.0,  # Standard tolerance
+        bool_uncertainty=0.08,  # Low boolean uncertainty
+        binary_pos_prob=0.5,  # Balanced positive
+        binary_neg_prob=0.3,  # Less negative
+        binary_neutral_prob=0.2,  # Standard neutral
+        chaos_amplifier=0.8,  # Moderate chaos
+        drift_rate=0.03,  # Slow drift
+        cascade_strength=0.15,  # Some cascade
+        error_snark_level=0.4,  # Friendly error messages
+    ),
+    "snarky": ChaosProfile(
+        sometimes_base=0.6,  # Snarky unpredictability
+        maybe_base=0.65,  # Moderate reliability
+        probably_base=0.75,  # Still reliable but snarky
+        rarely_base=0.1,  # Snarky rarely
+        sorta_print_base=0.7,  # Sometimes skips printing
+        sometimes_while_base=0.65,  # 65% continuation probability
+        maybe_for_base=0.7,  # 70% execution probability per item
+        kinda_repeat_variance=0.35,  # ±35% variance
+        eventually_until_confidence=0.75,  # 75% confidence threshold
+        int_fuzz_range=(-2, 2),  # More fuzz
+        float_drift_range=(-0.8, 0.8),  # Higher float drift
+        ish_variance=3.0,  # Higher variance
+        ish_tolerance=3.0,  # Looser tolerance
+        bool_uncertainty=0.15,  # Moderate boolean uncertainty
+        binary_pos_prob=0.3,  # Less positive (snarky)
+        binary_neg_prob=0.5,  # More negative (snarky)
+        binary_neutral_prob=0.2,  # Standard neutral
+        chaos_amplifier=1.2,  # Higher chaos
+        drift_rate=0.07,  # Moderate drift
+        cascade_strength=0.3,  # Moderate cascade
+        error_snark_level=0.7,  # Snarky error messages
+    ),
     "reliable": ChaosProfile(
         sometimes_base=0.95,  # Almost always execute
         maybe_base=0.95,  # Almost always execute
         probably_base=0.95,  # Almost always execute
         rarely_base=0.85,  # Reliable even when "rarely"
         sorta_print_base=0.95,  # Almost always print
+        sometimes_while_base=0.90,  # 90% continuation probability per task spec
+        maybe_for_base=0.95,  # 95% execution probability per item per task spec
+        kinda_repeat_variance=0.10,  # ±10% variance per task spec
+        eventually_until_confidence=0.95,  # 95% confidence threshold per task spec
         int_fuzz_range=(0, 0),  # No fuzz on integers
         float_drift_range=(0.0, 0.0),  # No drift on floats
         ish_variance=0.5,  # Minimal variance
@@ -74,6 +370,10 @@ PERSONALITY_PROFILES: Dict[str, ChaosProfile] = {
         probably_base=0.8,  # Conservative but reliable
         rarely_base=0.25,  # Still cautious about rare events
         sorta_print_base=0.85,  # Usually prints
+        sometimes_while_base=0.75,  # 75% continuation probability per task spec
+        maybe_for_base=0.85,  # 85% execution probability per item per task spec
+        kinda_repeat_variance=0.20,  # ±20% variance per task spec
+        eventually_until_confidence=0.90,  # 90% confidence threshold per task spec
         int_fuzz_range=(-1, 1),  # Standard fuzz
         float_drift_range=(-0.2, 0.2),  # Minimal float drift
         ish_variance=1.5,  # Reduced variance
@@ -93,6 +393,10 @@ PERSONALITY_PROFILES: Dict[str, ChaosProfile] = {
         probably_base=0.7,  # Standard probably (default)
         rarely_base=0.15,  # Standard rarely (default)
         sorta_print_base=0.8,  # Standard print rate
+        sometimes_while_base=0.60,  # 60% continuation probability per task spec
+        maybe_for_base=0.70,  # 70% execution probability per item per task spec
+        kinda_repeat_variance=0.30,  # ±30% variance per task spec
+        eventually_until_confidence=0.80,  # 80% confidence threshold per task spec
         int_fuzz_range=(-2, 2),  # More fuzz
         float_drift_range=(-0.5, 0.5),  # Standard float drift (default)
         ish_variance=2.5,  # Standard variance
@@ -112,6 +416,10 @@ PERSONALITY_PROFILES: Dict[str, ChaosProfile] = {
         probably_base=0.5,  # Chaotic probably (reduced reliability)
         rarely_base=0.05,  # Almost never in chaotic mode
         sorta_print_base=0.6,  # Often skips printing
+        sometimes_while_base=0.40,  # 40% continuation probability per task spec
+        maybe_for_base=0.50,  # 50% execution probability per item per task spec
+        kinda_repeat_variance=0.40,  # ±40% variance per task spec
+        eventually_until_confidence=0.70,  # 70% confidence threshold per task spec
         int_fuzz_range=(-5, 5),  # High fuzz
         float_drift_range=(-2.0, 2.0),  # High float drift
         ish_variance=5.0,  # High variance
@@ -140,9 +448,13 @@ class PersonalityContext:
         self.chaos_multiplier = self._calculate_chaos_multiplier(chaos_level)
         self.execution_count = 0
         self.instability_level = 0.0  # For cascade failures
-        self.drift_accumulator = {}  # For time-based drift
+        self.drift_accumulator: Dict[str, Dict[str, Any]] = {}  # For time-based drift
 
-        # Centralized random number generator for reproducibility
+        # Performance optimizations (Epic #125 Task 3)
+        self._probability_cache: Optional[ProbabilityCache] = None  # Lazy initialization
+        self._optimized_rng = OptimizedRandomState(seed)  # Pre-generate batches of random numbers
+
+        # Centralized random number generator for reproducibility (keeping for backward compatibility)
         self.seed = seed
         self.rng = random.Random(seed)  # Create seeded RNG instance
 
@@ -178,12 +490,52 @@ class PersonalityContext:
             # Maximum chaos (highly unpredictable)
             return 1.8 + (chaos_level - 8) * 0.2  # 1.8 to 2.2
 
+    def _get_probability_cache(self) -> ProbabilityCache:
+        """Get or create the probability cache for performance optimization."""
+        if self._probability_cache is None:
+            self._probability_cache = ProbabilityCache(self)
+        return self._probability_cache
+
+    def _invalidate_caches(self) -> None:
+        """Invalidate all performance caches when personality changes."""
+        if self._probability_cache is not None:
+            self._probability_cache.invalidate()
+        # Reset optimized RNG with new seed
+        self._optimized_rng = OptimizedRandomState(self.seed)
+
+    def get_cached_probability(self, construct_name: str) -> Optional[float]:
+        """Get cached probability for performance optimization (Epic #125 Task 3)."""
+        cache = self._get_probability_cache()
+        return cache.get_cached_probability(construct_name)
+
+    def get_optimized_random(self) -> float:
+        """Get optimized random float for performance (Epic #125 Task 3)."""
+        return self._optimized_rng.random()
+
+    def get_optimized_randint(self, a: int, b: int) -> int:
+        """Get optimized random integer for performance (Epic #125 Task 3)."""
+        return self._optimized_rng.randint(a, b)
+
+    def get_optimized_uniform(self, a: float, b: float) -> float:
+        """Get optimized uniform random float for performance (Epic #125 Task 3)."""
+        return self._optimized_rng.uniform(a, b)
+
+    def get_optimized_choice(self, seq: Any) -> Any:
+        """Get optimized random choice for performance (Epic #125 Task 3)."""
+        return self._optimized_rng.choice(seq)
+
+    def get_optimized_gauss(self, mu: float, sigma: float) -> float:
+        """Get optimized Gaussian random number for performance (Epic #125 Task 3)."""
+        return self._optimized_rng.gauss(mu, sigma)
+
     @classmethod
     def set_mood(cls, mood: str) -> None:
         """Set the global mood/personality."""
         current_chaos_level = cls._instance.chaos_level if cls._instance else 5
         current_seed = cls._instance.seed if cls._instance else None
         cls._instance = cls(mood, current_chaos_level, current_seed)
+        # Clear performance optimization state when personality changes
+        clear_eventually_until_evaluators()
 
     @classmethod
     def set_chaos_level(cls, chaos_level: int) -> None:
@@ -191,6 +543,8 @@ class PersonalityContext:
         current_mood = cls._instance.mood if cls._instance else "playful"
         current_seed = cls._instance.seed if cls._instance else None
         cls._instance = cls(current_mood, chaos_level, current_seed)
+        # Clear performance optimization state when personality changes
+        clear_eventually_until_evaluators()
 
     @classmethod
     def set_seed(cls, seed: Optional[int]) -> None:
@@ -198,6 +552,8 @@ class PersonalityContext:
         current_mood = cls._instance.mood if cls._instance else "playful"
         current_chaos_level = cls._instance.chaos_level if cls._instance else 5
         cls._instance = cls(current_mood, current_chaos_level, seed)
+        # Clear performance optimization state when personality changes
+        clear_eventually_until_evaluators()
 
     def get_chaos_probability(self, base_key: str, condition: Any = True) -> float:
         """Get chaos-adjusted probability for a construct."""
@@ -397,7 +753,10 @@ class PersonalityContext:
         """Get the age of a variable in seconds."""
         if var_name not in self.drift_accumulator:
             return 0.0
-        return time.time() - self.drift_accumulator[var_name]["creation_time"]
+        creation_time = self.drift_accumulator[var_name]["creation_time"]
+        if isinstance(creation_time, (int, float)):
+            return float(time.time() - creation_time)
+        return 0.0
 
     def get_variable_drift_stats(self, var_name: str) -> Dict[str, Any]:
         """Get drift statistics for a variable."""
@@ -406,7 +765,7 @@ class PersonalityContext:
 
         var_info = self.drift_accumulator[var_name].copy()
         var_info["age_seconds"] = self.get_variable_age(var_name)
-        return var_info
+        return dict(var_info)
 
     # Centralized random number generation methods for reproducibility
     def random(self) -> float:
@@ -421,7 +780,7 @@ class PersonalityContext:
         """Get a uniform random float from seeded RNG."""
         return self.rng.uniform(a, b)
 
-    def choice(self, seq):
+    def choice(self, seq: Any) -> Any:
         """Choose a random element from a sequence using seeded RNG."""
         return self.rng.choice(seq)
 
@@ -459,6 +818,10 @@ class PersonalityContext:
             return "snarky"  # Moderate snark, personality
         else:
             return "chaotic"  # Maximum snark, chaos
+
+    def chaos_random(self) -> float:
+        """Get a random float in [0.0, 1.0) from personality-controlled seeded RNG (instance method)."""
+        return self.random()
 
 
 # Global convenience functions for use in constructs
@@ -504,9 +867,14 @@ def chaos_bool_uncertainty() -> float:
 
 def update_chaos_state(failed: bool = False) -> None:
     """Update chaos state tracking."""
-    personality = get_personality()
-    personality.update_instability(failed)
-    personality.increment_execution()
+    try:
+        personality = get_personality()
+        personality.update_instability(failed)
+        personality.increment_execution()
+    except Exception:
+        # If chaos state update fails (e.g., personality system is broken), just continue
+        # This prevents cascading exceptions in error handling paths
+        pass
 
 
 # Time-based drift convenience functions
@@ -551,7 +919,7 @@ def chaos_uniform(a: float, b: float) -> float:
     return get_personality().uniform(a, b)
 
 
-def chaos_choice(seq):
+def chaos_choice(seq: Any) -> Any:
     """Choose a random element from a sequence using personality-controlled seeded RNG."""
     return get_personality().choice(seq)
 
@@ -559,6 +927,34 @@ def chaos_choice(seq):
 def chaos_gauss(mu: float, sigma: float) -> float:
     """Get a Gaussian random number from personality-controlled seeded RNG."""
     return get_personality().gauss(mu, sigma)
+
+
+def get_kinda_repeat_variance() -> float:
+    """Get personality-adjusted variance for ~kinda_repeat constructs."""
+    personality = get_personality()
+    base_variance = personality.profile.kinda_repeat_variance
+    # Apply chaos multiplier for additional variance scaling
+    combined_amplifier = personality.profile.chaos_amplifier * personality.chaos_multiplier
+    return base_variance * combined_amplifier
+
+
+def get_eventually_until_confidence() -> float:
+    """Get personality-adjusted confidence threshold for ~eventually_until constructs."""
+    personality = get_personality()
+    base_confidence = personality.profile.eventually_until_confidence
+    # Apply chaos effects - more chaos means lower confidence thresholds
+    combined_amplifier = personality.profile.chaos_amplifier * personality.chaos_multiplier
+    if combined_amplifier > 1.0:
+        # More chaotic: reduce confidence threshold (terminate earlier)
+        factor = min(0.3, (combined_amplifier - 1.0) * 0.2)  # Cap reduction
+        adjusted = base_confidence - factor
+    else:
+        # More reliable: increase confidence threshold (be more certain)
+        factor = (1.0 - combined_amplifier) * 0.1
+        adjusted = base_confidence + factor
+
+    # Keep confidence in reasonable bounds
+    return max(0.5, min(0.99, adjusted))
 
 
 def get_seed_info() -> Dict[str, Any]:

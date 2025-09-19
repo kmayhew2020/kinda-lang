@@ -1,0 +1,491 @@
+# Machine Learning Training with Probabilistic Optimization
+# Real-world example: ML model training with fuzzy hyperparameter tuning
+# Demonstrates: ~kinda_repeat, ~eventually_until for ML optimization
+
+import random
+import time
+import math
+from dataclasses import dataclass
+from typing import List, Dict, Tuple, Optional
+from enum import Enum
+
+class OptimizationStrategy(Enum):
+    RANDOM_SEARCH = "random_search"
+    GRID_SEARCH = "grid_search"
+    BAYESIAN = "bayesian"
+    EVOLUTIONARY = "evolutionary"
+
+@dataclass
+class Hyperparameters:
+    learning_rate: float
+    batch_size: int
+    hidden_layers: List[int]
+    dropout_rate: float
+    l2_regularization: float
+    optimizer: str = "adam"
+
+    def to_dict(self) -> Dict:
+        return {
+            'learning_rate': self.learning_rate,
+            'batch_size': self.batch_size,
+            'hidden_layers': self.hidden_layers,
+            'dropout_rate': self.dropout_rate,
+            'l2_regularization': self.l2_regularization,
+            'optimizer': self.optimizer
+        }
+
+@dataclass
+class TrainingMetrics:
+    epoch: int
+    train_loss: float
+    train_accuracy: float
+    val_loss: float
+    val_accuracy: float
+    learning_rate: float
+    timestamp: float
+
+class MLModel:
+    def __init__(self, hyperparams: Hyperparameters):
+        self.hyperparams = hyperparams
+        self.training_history: List[TrainingMetrics] = []
+        self.current_epoch = 0
+        self.best_val_accuracy = 0.0
+        self.best_epoch = 0
+        self.convergence_patience = 10
+        self.epochs_without_improvement = 0
+
+    def simulate_training_epoch(self) -> TrainingMetrics:
+        """Simulate one training epoch with realistic loss/accuracy curves"""
+        self.current_epoch += 1
+
+        # Base performance influenced by hyperparameters
+        base_performance = self._calculate_base_performance()
+
+        # Simulate learning curve with diminishing returns
+        epoch_factor = 1.0 - math.exp(-self.current_epoch / 20)
+        performance_factor = base_performance * epoch_factor
+
+        # Add realistic noise and variance
+        train_loss = max(0.01, 2.0 * (1 - performance_factor) + random.gauss(0, 0.1))
+        train_accuracy = min(0.99, performance_factor + random.gauss(0, 0.02))
+
+        # Validation metrics with overfitting simulation
+        overfitting_penalty = max(0, (self.current_epoch - 50) * 0.005)
+        val_loss = train_loss + overfitting_penalty + random.gauss(0, 0.05)
+        val_accuracy = train_accuracy - overfitting_penalty + random.gauss(0, 0.03)
+        val_accuracy = max(0.1, min(0.99, val_accuracy))
+
+        # Track best validation performance
+        if val_accuracy > self.best_val_accuracy:
+            self.best_val_accuracy = val_accuracy
+            self.best_epoch = self.current_epoch
+            self.epochs_without_improvement = 0
+        else:
+            self.epochs_without_improvement += 1
+
+        # Simulate learning rate decay
+        current_lr = self.hyperparams.learning_rate * (0.95 ** (self.current_epoch // 10))
+
+        metrics = TrainingMetrics(
+            epoch=self.current_epoch,
+            train_loss=train_loss,
+            train_accuracy=train_accuracy,
+            val_loss=val_loss,
+            val_accuracy=val_accuracy,
+            learning_rate=current_lr,
+            timestamp=time.time()
+        )
+
+        self.training_history.append(metrics)
+        return metrics
+
+    def _calculate_base_performance(self) -> float:
+        """Calculate base model performance based on hyperparameters"""
+        score = 0.5  # Base score
+
+        # Learning rate impact
+        if 0.0001 <= self.hyperparams.learning_rate <= 0.01:
+            score += 0.3
+        elif 0.00001 <= self.hyperparams.learning_rate <= 0.1:
+            score += 0.1
+
+        # Batch size impact
+        if 16 <= self.hyperparams.batch_size <= 128:
+            score += 0.2
+        elif 8 <= self.hyperparams.batch_size <= 256:
+            score += 0.1
+
+        # Architecture complexity
+        total_neurons = sum(self.hyperparams.hidden_layers)
+        if 100 <= total_neurons <= 1000:
+            score += 0.2
+        elif 50 <= total_neurons <= 2000:
+            score += 0.1
+
+        # Regularization balance
+        if 0.0001 <= self.hyperparams.l2_regularization <= 0.01:
+            score += 0.1
+
+        if 0.1 <= self.hyperparams.dropout_rate <= 0.5:
+            score += 0.1
+
+        return min(0.95, score)
+
+    def has_converged(self) -> bool:
+        """Check if model has converged based on validation performance"""
+        return (self.epochs_without_improvement >= self.convergence_patience or
+                self.current_epoch >= 200)
+
+    def early_stopping_check(self) -> bool:
+        """Check if training should stop early"""
+        if len(self.training_history) < 10:
+            return False
+
+        recent_metrics = self.training_history[-10:]
+        recent_val_losses = [m.val_loss for m in recent_metrics]
+
+        # Stop if validation loss is increasing consistently
+        increasing_trend = all(recent_val_losses[i] <= recent_val_losses[i+1]
+                              for i in range(len(recent_val_losses)-1))
+
+        return increasing_trend and self.epochs_without_improvement >= 5
+
+class HyperparameterOptimizer:
+    def __init__(self, strategy: OptimizationStrategy = OptimizationStrategy.RANDOM_SEARCH):
+        self.strategy = strategy
+        self.optimization_history: List[Tuple[Hyperparameters, float]] = []
+        self.best_hyperparams: Optional[Hyperparameters] = None
+        self.best_score = 0.0
+
+    def suggest_hyperparameters(self, iteration: int = 0) -> Hyperparameters:
+        """Suggest hyperparameters based on optimization strategy"""
+        if self.strategy == OptimizationStrategy.RANDOM_SEARCH:
+            return self._random_search()
+        elif self.strategy == OptimizationStrategy.GRID_SEARCH:
+            return self._grid_search(iteration)
+        elif self.strategy == OptimizationStrategy.BAYESIAN:
+            return self._bayesian_optimization()
+        else:  # EVOLUTIONARY
+            return self._evolutionary_optimization()
+
+    def _random_search(self) -> Hyperparameters:
+        """Random hyperparameter search"""
+        learning_rates = [0.0001, 0.0005, 0.001, 0.005, 0.01, 0.05]
+        batch_sizes = [16, 32, 64, 128, 256]
+        optimizers = ["adam", "sgd", "rmsprop"]
+
+        # Generate random architecture
+        num_layers = random.randint(2, 5)
+        hidden_layers = [random.choice([64, 128, 256, 512]) for _ in range(num_layers)]
+
+        return Hyperparameters(
+            learning_rate=random.choice(learning_rates),
+            batch_size=random.choice(batch_sizes),
+            hidden_layers=hidden_layers,
+            dropout_rate=random.uniform(0.1, 0.6),
+            l2_regularization=random.uniform(0.0001, 0.01),
+            optimizer=random.choice(optimizers)
+        )
+
+    def _grid_search(self, iteration: int) -> Hyperparameters:
+        """Systematic grid search (simplified)"""
+        learning_rates = [0.001, 0.01, 0.1]
+        batch_sizes = [32, 64, 128]
+        dropout_rates = [0.2, 0.4, 0.6]
+
+        total_combinations = len(learning_rates) * len(batch_sizes) * len(dropout_rates)
+        lr_idx = (iteration // (len(batch_sizes) * len(dropout_rates))) % len(learning_rates)
+        bs_idx = (iteration // len(dropout_rates)) % len(batch_sizes)
+        dr_idx = iteration % len(dropout_rates)
+
+        return Hyperparameters(
+            learning_rate=learning_rates[lr_idx],
+            batch_size=batch_sizes[bs_idx],
+            hidden_layers=[128, 64],  # Fixed architecture for grid search
+            dropout_rate=dropout_rates[dr_idx],
+            l2_regularization=0.001,
+            optimizer="adam"
+        )
+
+    def _bayesian_optimization(self) -> Hyperparameters:
+        """Simplified Bayesian optimization"""
+        if not self.optimization_history:
+            return self._random_search()
+
+        # Simple acquisition function: explore around best parameters
+        best_params = self.best_hyperparams
+        if best_params is None:
+            return self._random_search()
+
+        # Add Gaussian noise to best parameters
+        return Hyperparameters(
+            learning_rate=max(0.0001, best_params.learning_rate * random.gauss(1.0, 0.3)),
+            batch_size=max(16, int(best_params.batch_size * random.gauss(1.0, 0.2))),
+            hidden_layers=[max(32, int(layer * random.gauss(1.0, 0.2))) for layer in best_params.hidden_layers],
+            dropout_rate=max(0.1, min(0.8, best_params.dropout_rate + random.gauss(0, 0.1))),
+            l2_regularization=max(0.0001, best_params.l2_regularization * random.gauss(1.0, 0.3)),
+            optimizer=best_params.optimizer
+        )
+
+    def _evolutionary_optimization(self) -> Hyperparameters:
+        """Evolutionary hyperparameter optimization"""
+        if len(self.optimization_history) < 4:
+            return self._random_search()
+
+        # Select best performing hyperparameters as parents
+        sorted_history = sorted(self.optimization_history, key=lambda x: x[1], reverse=True)
+        parent1_params, _ = sorted_history[0]
+        parent2_params, _ = sorted_history[1]
+
+        # Create offspring through crossover and mutation
+        return Hyperparameters(
+            learning_rate=random.choice([parent1_params.learning_rate, parent2_params.learning_rate]) * random.gauss(1.0, 0.2),
+            batch_size=random.choice([parent1_params.batch_size, parent2_params.batch_size]),
+            hidden_layers=parent1_params.hidden_layers if random.random() > 0.5 else parent2_params.hidden_layers,
+            dropout_rate=random.choice([parent1_params.dropout_rate, parent2_params.dropout_rate]) + random.gauss(0, 0.1),
+            l2_regularization=random.choice([parent1_params.l2_regularization, parent2_params.l2_regularization]),
+            optimizer=random.choice([parent1_params.optimizer, parent2_params.optimizer])
+        )
+
+    def update_optimization_history(self, hyperparams: Hyperparameters, score: float):
+        """Update optimization history with new results"""
+        self.optimization_history.append((hyperparams, score))
+
+        if score > self.best_score:
+            self.best_score = score
+            self.best_hyperparams = hyperparams
+
+class MLTrainingPipeline:
+    def __init__(self, optimization_strategy: OptimizationStrategy = OptimizationStrategy.RANDOM_SEARCH):
+        self.optimizer = HyperparameterOptimizer(optimization_strategy)
+        self.training_experiments: List[MLModel] = []
+        self.total_training_time = 0.0
+
+    def run_hyperparameter_optimization(self, max_trials: int = 20, max_training_time: int = 300):
+        """Run hyperparameter optimization with probabilistic training"""
+        print(f"\\n=== ML Hyperparameter Optimization ({self.optimizer.strategy.value}) ===")
+
+        # Set personality for ML training
+        ~kinda mood playful  # Balanced approach to exploration vs exploitation
+
+        optimization_start = time.time()
+        successful_trials = 0
+        failed_trials = 0
+
+        # Run optimization trials until convergence or limits
+        ~sometimes_while (successful_trials < max_trials and
+                         (time.time() - optimization_start) < max_training_time):
+
+            trial_num = successful_trials + failed_trials + 1
+            print(f"\\n🧪 Trial {trial_num}/{max_trials}")
+
+            # Get hyperparameter suggestion
+            hyperparams = self.optimizer.suggest_hyperparameters(trial_num - 1)
+            print(f"   Testing: LR={hyperparams.learning_rate:.4f}, "
+                  f"BS={hyperparams.batch_size}, "
+                  f"Layers={hyperparams.hidden_layers}, "
+                  f"Dropout={hyperparams.dropout_rate:.2f}")
+
+            # Create and train model
+            model = MLModel(hyperparams)
+            training_start = time.time()
+
+            try:
+                # Train until convergence with fuzzy patience
+                training_successful = False
+                ~eventually_until model.has_converged() or training_successful:
+                    # Train for fuzzy number of epochs per cycle
+                    epochs_this_cycle = 0
+                    ~kinda_repeat(5):  # Train 3-7 epochs per cycle
+                        metrics = model.simulate_training_epoch()
+                        epochs_this_cycle += 1
+
+                        # Print progress occasionally
+                        if model.current_epoch % 10 == 0:
+                            print(f"     Epoch {model.current_epoch}: "
+                                  f"train_acc={metrics.train_accuracy:.3f}, "
+                                  f"val_acc={metrics.val_accuracy:.3f}")
+
+                        # Early stopping check
+                        if model.early_stopping_check():
+                            print(f"     Early stopping at epoch {model.current_epoch}")
+                            training_successful = True
+                            break
+
+                    # Check for successful training
+                    if model.best_val_accuracy > 0.7:  # Decent performance threshold
+                        training_successful = True
+
+                    # Brief pause between training cycles
+                    time.sleep(0.1)
+
+                training_time = time.time() - training_start
+                self.total_training_time += training_time
+
+                final_score = model.best_val_accuracy
+                print(f"   ✅ Completed: Best accuracy={final_score:.3f} "
+                      f"(epoch {model.best_epoch}), time={training_time:.1f}s")
+
+                # Update optimization history
+                self.optimizer.update_optimization_history(hyperparams, final_score)
+                self.training_experiments.append(model)
+                successful_trials += 1
+
+            except Exception as e:
+                print(f"   ❌ Training failed: {e}")
+                failed_trials += 1
+                continue
+
+        # Optimization complete
+        optimization_time = time.time() - optimization_start
+        print(f"\\n=== Hyperparameter Optimization Complete ===")
+        print(f"Successful trials: {successful_trials}")
+        print(f"Failed trials: {failed_trials}")
+        print(f"Total optimization time: {optimization_time:.1f}s")
+        print(f"Total training time: {self.total_training_time:.1f}s")
+
+        if self.optimizer.best_hyperparams:
+            print(f"Best hyperparameters: {self.optimizer.best_hyperparams.to_dict()}")
+            print(f"Best validation accuracy: {self.optimizer.best_score:.3f}")
+
+    def run_ensemble_training(self, num_models: int = 5):
+        """Train ensemble of models with different probabilistic configurations"""
+        print(f"\\n=== Ensemble Training ({num_models} models) ===")
+
+        ensemble_models = []
+
+        ~maybe_for model_idx in range(num_models):
+            print(f"\\n🤖 Training ensemble model {model_idx + 1}")
+
+            # Use different personality for each model
+            personalities = ["reliable", "cautious", "playful", "chaotic"]
+            personality = personalities[model_idx % len(personalities)]
+            ~kinda mood {personality}
+
+            print(f"   Using {personality} personality")
+
+            # Get hyperparameters (with slight variations for diversity)
+            if self.optimizer.best_hyperparams:
+                base_params = self.optimizer.best_hyperparams
+                # Add variation for ensemble diversity
+                varied_params = Hyperparameters(
+                    learning_rate=base_params.learning_rate * random.uniform(0.8, 1.2),
+                    batch_size=base_params.batch_size,
+                    hidden_layers=[int(layer * random.uniform(0.9, 1.1)) for layer in base_params.hidden_layers],
+                    dropout_rate=max(0.1, min(0.6, base_params.dropout_rate + random.gauss(0, 0.05))),
+                    l2_regularization=base_params.l2_regularization * random.uniform(0.8, 1.2),
+                    optimizer=base_params.optimizer
+                )
+            else:
+                varied_params = self.optimizer.suggest_hyperparameters()
+
+            # Train model with probabilistic epochs
+            model = MLModel(varied_params)
+
+            epochs_trained = 0
+            ~kinda_repeat(50):  # Train for fuzzy number of epochs (35-65 typically)
+                metrics = model.simulate_training_epoch()
+                epochs_trained += 1
+
+                if model.early_stopping_check():
+                    print(f"     Early stopping at epoch {epochs_trained}")
+                    break
+
+            print(f"   ✅ Model {model_idx + 1}: "
+                  f"accuracy={model.best_val_accuracy:.3f} "
+                  f"({epochs_trained} epochs)")
+
+            ensemble_models.append(model)
+
+        # Ensemble performance analysis
+        if ensemble_models:
+            ensemble_accuracies = [m.best_val_accuracy for m in ensemble_models]
+            avg_accuracy = sum(ensemble_accuracies) / len(ensemble_accuracies)
+            max_accuracy = max(ensemble_accuracies)
+            min_accuracy = min(ensemble_accuracies)
+
+            print(f"\\n=== Ensemble Results ===")
+            print(f"Individual accuracies: {[f'{acc:.3f}' for acc in ensemble_accuracies]}")
+            print(f"Average accuracy: {avg_accuracy:.3f}")
+            print(f"Best individual: {max_accuracy:.3f}")
+            print(f"Worst individual: {min_accuracy:.3f}")
+            print(f"Ensemble diversity: {max_accuracy - min_accuracy:.3f}")
+
+    def analyze_training_patterns(self):
+        """Analyze training patterns across experiments"""
+        if not self.training_experiments:
+            return
+
+        print(f"\\n=== Training Pattern Analysis ===")
+
+        # Convergence analysis
+        convergence_epochs = [m.best_epoch for m in self.training_experiments]
+        avg_convergence = sum(convergence_epochs) / len(convergence_epochs)
+
+        print(f"Average convergence epoch: {avg_convergence:.1f}")
+        print(f"Fastest convergence: {min(convergence_epochs)} epochs")
+        print(f"Slowest convergence: {max(convergence_epochs)} epochs")
+
+        # Performance distribution
+        final_scores = [m.best_val_accuracy for m in self.training_experiments]
+        score_ranges = {
+            "Excellent (>0.9)": sum(1 for s in final_scores if s > 0.9),
+            "Good (0.8-0.9)": sum(1 for s in final_scores if 0.8 <= s <= 0.9),
+            "Fair (0.7-0.8)": sum(1 for s in final_scores if 0.7 <= s < 0.8),
+            "Poor (<0.7)": sum(1 for s in final_scores if s < 0.7)
+        }
+
+        print(f"\\nPerformance distribution:")
+        for range_name, count in score_ranges.items():
+            print(f"  {range_name}: {count} models")
+
+        # Hyperparameter correlation analysis
+        if len(self.training_experiments) >= 5:
+            print(f"\\nTop performing hyperparameter patterns:")
+
+            # Find common patterns in top 3 models
+            top_models = sorted(self.training_experiments,
+                              key=lambda m: m.best_val_accuracy,
+                              reverse=True)[:3]
+
+            for i, model in enumerate(top_models):
+                params = model.hyperparams
+                print(f"  #{i+1} (acc={model.best_val_accuracy:.3f}): "
+                      f"LR={params.learning_rate:.4f}, "
+                      f"BS={params.batch_size}, "
+                      f"Layers={len(params.hidden_layers)}")
+
+def main():
+    print("=== Machine Learning Training with Probabilistic Optimization ===\\n")
+
+    # Test different optimization strategies
+    strategies = [
+        OptimizationStrategy.RANDOM_SEARCH,
+        OptimizationStrategy.BAYESIAN,
+        OptimizationStrategy.EVOLUTIONARY
+    ]
+
+    ~maybe_for strategy in strategies:
+        print(f"\\n🔬 Testing {strategy.value} optimization...")
+
+        pipeline = MLTrainingPipeline(strategy)
+
+        # Run hyperparameter optimization
+        pipeline.run_hyperparameter_optimization(max_trials=8, max_training_time=60)
+
+        # Train ensemble if we found good hyperparameters
+        if pipeline.optimizer.best_score > 0.6:
+            pipeline.run_ensemble_training(num_models=3)
+
+        # Analyze results
+        pipeline.analyze_training_patterns()
+
+    print(f"\\n=== Personality Impact on ML Training ===")
+    print("Different personalities affect training behavior:")
+    print("  reliable: Longer training, more thorough hyperparameter search")
+    print("  cautious: Conservative learning rates, careful early stopping")
+    print("  playful: Balanced exploration, adaptive training strategies")
+    print("  chaotic: Aggressive hyperparameters, faster but riskier training")
+
+if __name__ == "__main__":
+    main()

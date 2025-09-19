@@ -1,0 +1,97 @@
+# Fuzzy Batch Processing with Retry Logic
+# Real-world example: Processing data batches with probabilistic retry behavior
+# Demonstrates: ~sometimes_while, ~maybe_for, ~kinda_repeat integration
+
+import random
+import time
+
+def simulate_network_delay():
+    """Simulate variable network conditions"""
+    delay = random.uniform(0.1, 2.0)
+    time.sleep(delay)
+    return delay
+
+def simulate_processing_success():
+    """Simulate processing with realistic failure rates"""
+    return random.random() > 0.2  # 80% success rate
+
+def process_data_item(item):
+    """Simulate data processing with realistic characteristics"""
+    simulate_network_delay()
+    success = simulate_processing_success()
+    if success:
+        return {"original": item, "processed": item * 2, "timestamp": time.time()}
+    return None
+
+def get_data_batch(batch_id, size=20):
+    """Generate a realistic data batch"""
+    return [random.randint(1, 1000) for _ in range(size)]
+
+def main():
+    print("=== Fuzzy Batch Processing Demo ===\\n")
+
+    # Set personality for demonstration
+    ~kinda mood playful
+
+    batch_id = 0
+    total_processed = 0
+    total_batches_attempted = 0
+
+    # Process batches until we have enough data or hit limits
+    ~sometimes_while batch_id < 10 and total_processed < 150:
+        batch_id += 1
+        total_batches_attempted += 1
+        print(f"\\n--- Processing Batch {batch_id} ---")
+
+        # Get data batch
+        current_batch = get_data_batch(batch_id)
+        print(f"Batch contains {len(current_batch)} items")
+
+        # Process items probabilistically
+        batch_results = []
+        items_attempted = 0
+
+        ~maybe_for item in current_batch:
+            items_attempted += 1
+            print(f"  Processing item {item}...", end="")
+
+            # Try processing multiple times for robustness
+            result = None
+            attempts = 0
+            ~kinda_repeat(3):  # Usually 2-4 attempts
+                attempts += 1
+                result = process_data_item(item)
+                if result:
+                    break
+                else:
+                    print(f" (retry {attempts})", end="")
+
+            if result:
+                batch_results.append(result)
+                print(f" ✓ Success after {attempts} attempts")
+            else:
+                print(f" ✗ Failed after {attempts} attempts")
+
+        # Update statistics
+        batch_success_count = len(batch_results)
+        total_processed += batch_success_count
+
+        print(f"Batch {batch_id} summary:")
+        print(f"  - Attempted: {items_attempted}/{len(current_batch)} items")
+        print(f"  - Succeeded: {batch_success_count} items")
+        print(f"  - Success rate: {batch_success_count/items_attempted*100:.1f}%")
+        print(f"  - Total processed so far: {total_processed}")
+
+    print(f"\\n=== Final Results ===")
+    print(f"Total batches attempted: {total_batches_attempted}")
+    print(f"Total items processed: {total_processed}")
+    print(f"Average items per batch: {total_processed/total_batches_attempted:.1f}")
+
+    # Demonstrate personality impact
+    print(f"\\n=== Try Different Personalities ===")
+    print("Run with different personalities to see behavior changes:")
+    print("  ~kinda mood reliable  # More items processed, fewer early exits")
+    print("  ~kinda mood chaotic   # Fewer items processed, more early exits")
+
+if __name__ == "__main__":
+    main()

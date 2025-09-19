@@ -1,0 +1,66 @@
+# 🎲 Kinda v0.4.0 Feature Showcase
+# Demonstrating new probabilistic constructs and chaos control
+
+~sorta print("=== 🎉 Welcome to Kinda v0.4.0 Feature Demo! ===")
+
+# New construct: ~probably (70% chance)
+~sorta print("\n🎯 Testing ~probably construct:")
+~probably (True) {
+    ~sorta print("This should show up most of the time!")
+}
+~probably (True) {
+    ~sorta print("Me too! (~probably means 70% chance)")
+}
+
+# New construct: ~rarely (15% chance)  
+~sorta print("\n🦄 Testing ~rarely construct:")
+~rarely (True) {
+    ~sorta print("Rare message! You're lucky to see this! (15% chance)")
+}
+~rarely (True) {
+    ~sorta print("Another rare one - like finding a unicorn!")
+}
+~rarely (True) {
+    ~sorta print("If you see all three rare messages, buy a lottery ticket!")
+}
+
+# New construct: ~kinda bool - fuzzy boolean logic
+~sorta print("\n🤔 Testing ~kinda bool:")
+~kinda bool fuzzy_decision = True  # Might flip to False
+~sometimes (fuzzy_decision) {
+    ~sorta print("The fuzzy decision was kinda True!")
+} {
+    ~sorta print("The fuzzy decision was kinda False!")
+}
+
+# Combining constructs for chaos!
+~sorta print("\n🌪️  Chaos Combination Demo:")
+~kinda int iteration = 0
+~kinda int probably_count = 0
+~kinda int rarely_count = 0
+
+~sometimes (True) { iteration ~= 1 }
+~sometimes (True) { iteration ~= 1 }
+~sometimes (True) { iteration ~= 1 }
+~sometimes (True) { iteration ~= 1 }
+~sometimes (True) { iteration ~= 1 }
+
+~probably (True) { probably_count ~= 1 }
+~probably (True) { probably_count ~= 1 }
+~probably (True) { probably_count ~= 1 }
+~probably (True) { probably_count ~= 1 }
+~probably (True) { probably_count ~= 1 }
+
+~rarely (True) { rarely_count ~= 1 }
+~rarely (True) { rarely_count ~= 1 }
+~rarely (True) { rarely_count ~= 1 }
+~rarely (True) { rarely_count ~= 1 }
+~rarely (True) { rarely_count ~= 1 }
+
+# Statistical demonstration  
+~sorta print("\n📈 Probabilistic Results:")
+~sorta print("Iterations that ~sometimes executed:", iteration)
+~sorta print("Times ~probably triggered:", probably_count)
+~sorta print("Times ~rarely triggered:", rarely_count)
+
+~sorta print("\n🎲 Demo complete! The chaos is controlled but still chaotic!")

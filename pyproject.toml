@@ -6,8 +6,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "kinda-lang"
-version = "0.4.0"
-description = "🤷 A programming language for people who aren't totally sure"
+version = "0.5.0"
+description = "🤷 A programming language for people who aren't totally sure - install with pipx"
 authors = [
     { name = "Kevin Mayhew", email = "kevin@example.com" }
 ]
@@ -16,7 +16,7 @@ license = { file = "LICENSE" }
 requires-python = ">=3.8"
 classifiers = [
     "Development Status :: 3 - Alpha",
-    "Intended Audience :: Developers", 
+    "Intended Audience :: Developers",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9", 
@@ -26,7 +26,7 @@ classifiers = [
     "Topic :: Software Development :: Compilers",
     "Topic :: Software Development :: Interpreters",
 ]
-keywords = ["programming-language", "fuzzy-logic", "chaos", "humor", "transpiler"]
+keywords = ["programming-language", "fuzzy-logic", "chaos", "humor", "transpiler", "cli-tool", "pipx"]
 
 [project.urls]
 Homepage = "https://github.com/kmayhew2020/kinda-lang"
@@ -42,6 +42,7 @@ dev = [
     "pytest-cov>=2.0",
     "black>=22.0",
     "mypy>=0.910",
+    "psutil>=5.8.0",
 ]
 
 [tool.pytest.ini_options]
@@ -52,12 +53,14 @@ python_functions = ["test_*"]
 
 [tool.black]
 line-length = 100
-target-version = ['py38']
+target-version = ['py39']
 
 [tool.setuptools]
 packages = ["kinda", "kinda.grammar", "kinda.grammar.python", "kinda.grammar.c", "kinda.interpreter", "kinda.langs"]
 
 [tool.mypy]
-python_version = "3.8"
+python_version = "3.10"
 warn_return_any = true
 warn_unused_configs = true
+explicit_package_bases = true
+exclude = ["build/", "kinda/langs/python/runtime/fuzzy.py"]

@@ -207,7 +207,10 @@ class TestSeedCLIIntegration(unittest.TestCase):
 
         finally:
             # Clean up
-            os.unlink(test_file)
+            try:
+                os.unlink(test_file)
+            except (OSError, PermissionError):
+                pass  # Ignore Windows file permission issues
 
     def test_cli_environment_integration(self):
         """Test CLI integration with KINDA_SEED environment variable"""
@@ -237,7 +240,10 @@ class TestSeedCLIIntegration(unittest.TestCase):
 
         finally:
             # Clean up
-            os.unlink(test_file)
+            try:
+                os.unlink(test_file)
+            except (OSError, PermissionError):
+                pass  # Ignore Windows file permission issues
 
     def test_multiple_cli_commands_seed_support(self):
         """Test that all CLI commands (transform, run, interpret) support --seed"""
@@ -293,7 +299,10 @@ class TestSeedCLIIntegration(unittest.TestCase):
 
         finally:
             # Clean up
-            os.unlink(test_file)
+            try:
+                os.unlink(test_file)
+            except (OSError, PermissionError):
+                pass  # Ignore Windows file permission issues
 
     def test_seed_preserves_other_functionality(self):
         """Test that seed functionality doesn't break existing features"""

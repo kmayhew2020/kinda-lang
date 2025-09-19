@@ -1,0 +1,362 @@
+# Network Request Handling with Fuzzy Timeouts
+# Real-world example: HTTP client with probabilistic retry and timeout behavior
+# Demonstrates: ~eventually_until, ~kinda_repeat for network resilience
+
+import random
+import time
+import json
+from enum import Enum
+from dataclasses import dataclass
+from typing import Optional, Dict, List
+
+class RequestStatus(Enum):
+    PENDING = "pending"
+    SUCCESS = "success"
+    TIMEOUT = "timeout"
+    ERROR = "error"
+    RETRYING = "retrying"
+
+@dataclass
+class NetworkResponse:
+    status_code: int
+    data: Optional[Dict] = None
+    error_message: Optional[str] = None
+    response_time: float = 0.0
+    attempt_number: int = 1
+
+class FuzzyHTTPClient:
+    def __init__(self):
+        self.total_requests = 0
+        self.successful_requests = 0
+        self.failed_requests = 0
+        self.total_retry_attempts = 0
+        self.response_times = []
+
+    def simulate_network_conditions(self):
+        """Simulate various network conditions"""
+        conditions = {
+            "excellent": {"latency": (0.05, 0.2), "failure_rate": 0.01},
+            "good": {"latency": (0.1, 0.5), "failure_rate": 0.05},
+            "poor": {"latency": (0.5, 2.0), "failure_rate": 0.15},
+            "terrible": {"latency": (2.0, 10.0), "failure_rate": 0.30}
+        }
+
+        # Simulate changing network conditions
+        condition_name = random.choices(
+            ["excellent", "good", "poor", "terrible"],
+            weights=[30, 40, 20, 10]  # Weighted probability
+        )[0]
+
+        return conditions[condition_name]
+
+    def make_http_request(self, url, timeout=5.0, attempt=1):
+        """Simulate HTTP request with realistic network behavior"""
+        self.total_requests += 1
+
+        # Simulate network conditions
+        network = self.simulate_network_conditions()
+        latency_range = network["latency"]
+        failure_rate = network["failure_rate"]
+
+        # Simulate request time
+        request_time = random.uniform(*latency_range)
+        time.sleep(min(request_time, timeout))  # Don't exceed timeout in simulation
+
+        # Check for timeout
+        if request_time > timeout:
+            return NetworkResponse(
+                status_code=408,  # Request Timeout
+                error_message=f"Request timed out after {timeout}s",
+                response_time=timeout,
+                attempt_number=attempt
+            )
+
+        # Check for network failures
+        if random.random() < failure_rate:
+            error_types = [
+                (500, "Internal Server Error"),
+                (502, "Bad Gateway"),
+                (503, "Service Unavailable"),
+                (0, "Connection refused")
+            ]
+            status_code, error_message = random.choice(error_types)
+
+            return NetworkResponse(
+                status_code=status_code,
+                error_message=error_message,
+                response_time=request_time,
+                attempt_number=attempt
+            )
+
+        # Successful response
+        mock_data = {
+            "id": random.randint(1000, 9999),
+            "timestamp": time.time(),
+            "data": f"Response for {url}",
+            "server_load": random.uniform(0.1, 0.9)
+        }
+
+        response = NetworkResponse(
+            status_code=200,
+            data=mock_data,
+            response_time=request_time,
+            attempt_number=attempt
+        )
+
+        self.successful_requests += 1
+        self.response_times.append(request_time)
+        return response
+
+    def request_with_fuzzy_retry(self, url, max_attempts=5):
+        """Make HTTP request with probabilistic retry logic"""
+        print(f"\\nRequesting: {url}")
+
+        attempt = 0
+        last_response = None
+
+        # Try until successful or max attempts reached
+        ~eventually_until (last_response and last_response.status_code == 200) or attempt >= max_attempts:
+            attempt += 1
+
+            # Dynamic timeout based on attempt number
+            base_timeout = 5.0
+            timeout = base_timeout * (1.5 ** (attempt - 1))  # Exponential backoff
+
+            print(f"  Attempt {attempt}: timeout={timeout:.1f}s")
+
+            last_response = self.make_http_request(url, timeout, attempt)
+
+            if last_response.status_code == 200:
+                print(f"  ✓ Success! ({last_response.response_time:.2f}s)")
+                break
+            else:
+                self.failed_requests += 1
+                self.total_retry_attempts += 1
+                print(f"  ✗ Failed: {last_response.status_code} - {last_response.error_message}")
+
+                # Probabilistic backoff delay
+                if attempt < max_attempts:
+                    backoff_base = 1.0
+                    ~kinda_repeat(int(backoff_base * attempt)):  # Fuzzy backoff repeats
+                        time.sleep(0.1)  # 0.1s per repeat
+                    print(f"    Backing off before retry...")
+
+        return last_response
+
+    def batch_request_handler(self, urls, concurrent_limit=5):
+        """Handle batch of requests with fuzzy concurrency"""
+        print(f"\\n=== Processing {len(urls)} URLs ===")
+
+        completed_requests = []
+        active_requests = 0
+        request_queue = urls.copy()
+
+        # Process requests until queue is empty
+        ~sometimes_while len(request_queue) > 0 or active_requests > 0:
+            # Start new requests if under concurrency limit
+            ~maybe_for url in request_queue[:concurrent_limit]:
+                if active_requests < concurrent_limit and url in request_queue:
+                    print(f"Starting request for {url}")
+                    active_requests += 1
+                    request_queue.remove(url)
+
+                    # Simulate async request processing
+                    response = self.request_with_fuzzy_retry(url)
+                    completed_requests.append((url, response))
+                    active_requests -= 1
+
+            # Brief processing delay
+            time.sleep(random.uniform(0.1, 0.5))
+
+        return completed_requests
+
+    def adaptive_request_pattern(self, base_urls, duration=30):
+        """Adaptive request pattern that responds to network conditions"""
+        print(f"\\n=== Adaptive Requesting ({duration}s) ===")
+
+        start_time = time.time()
+        request_intervals = []
+        recent_success_rate = 1.0
+
+        ~sometimes_while (time.time() - start_time) < duration:
+            # Adapt request frequency based on recent success rate
+            if recent_success_rate > 0.8:
+                # High success rate: increase frequency
+                urls_to_request = random.sample(base_urls, min(3, len(base_urls)))
+                request_interval = 2.0
+            elif recent_success_rate > 0.5:
+                # Medium success rate: moderate frequency
+                urls_to_request = random.sample(base_urls, min(2, len(base_urls)))
+                request_interval = 4.0
+            else:
+                # Low success rate: reduce frequency
+                urls_to_request = random.sample(base_urls, 1)
+                request_interval = 8.0
+
+            print(f"\\nAdaptive cycle: requesting {len(urls_to_request)} URLs (success rate: {recent_success_rate:.2f})")
+
+            # Make requests for this cycle
+            cycle_responses = []
+            ~maybe_for url in urls_to_request:
+                response = self.request_with_fuzzy_retry(url, max_attempts=3)
+                cycle_responses.append(response)
+
+            # Update success rate based on recent results
+            if cycle_responses:
+                cycle_successes = sum(1 for r in cycle_responses if r.status_code == 200)
+                recent_success_rate = cycle_successes / len(cycle_responses)
+
+            # Fuzzy interval before next cycle
+            actual_interval = request_interval
+            ~kinda_repeat(int(request_interval)):  # Convert to fuzzy timing
+                time.sleep(1.0)
+
+            request_intervals.append(actual_interval)
+
+        return request_intervals
+
+    def get_statistics(self):
+        """Get client performance statistics"""
+        if not self.response_times:
+            return {"error": "No successful requests"}
+
+        avg_response_time = sum(self.response_times) / len(self.response_times)
+        success_rate = self.successful_requests / max(1, self.total_requests)
+
+        return {
+            "total_requests": self.total_requests,
+            "successful_requests": self.successful_requests,
+            "failed_requests": self.failed_requests,
+            "total_retry_attempts": self.total_retry_attempts,
+            "success_rate": success_rate,
+            "average_response_time": avg_response_time,
+            "min_response_time": min(self.response_times),
+            "max_response_time": max(self.response_times)
+        }
+
+def demonstrate_fuzzy_http_client():
+    print("=== Network Request Handling with Fuzzy Timeouts ===\\n")
+
+    # Set personality for network handling
+    ~kinda mood playful
+
+    client = FuzzyHTTPClient()
+
+    # Test URLs for demonstration
+    test_urls = [
+        "https://api.example.com/users",
+        "https://api.example.com/products",
+        "https://api.example.com/orders",
+        "https://api.example.com/analytics",
+        "https://api.example.com/health"
+    ]
+
+    # Scenario 1: Single request with retry
+    print("=== Scenario 1: Single Request with Fuzzy Retry ===")
+    response = client.request_with_fuzzy_retry(test_urls[0])
+    print(f"Final result: {response.status_code} (attempt {response.attempt_number})")
+
+    # Scenario 2: Batch processing
+    print("\\n=== Scenario 2: Batch Request Processing ===")
+    batch_results = client.batch_request_handler(test_urls[:3])
+    for url, response in batch_results:
+        print(f"{url}: {response.status_code} ({response.response_time:.2f}s)")
+
+    # Scenario 3: Adaptive request pattern
+    print("\\n=== Scenario 3: Adaptive Request Pattern ===")
+    intervals = client.adaptive_request_pattern(test_urls, duration=20)
+
+    # Print statistics
+    print("\\n=== Client Statistics ===")
+    stats = client.get_statistics()
+    for key, value in stats.items():
+        if isinstance(value, float):
+            print(f"{key}: {value:.3f}")
+        else:
+            print(f"{key}: {value}")
+
+    # Demonstrate different timeout strategies
+    print("\\n=== Different Timeout Strategies ===")
+
+    # Strategy 1: Conservative (reliable personality)
+    print("\\nConservative strategy (reliable personality):")
+    ~kinda mood reliable
+    conservative_client = FuzzyHTTPClient()
+    response = conservative_client.request_with_fuzzy_retry("https://api.slow-service.com/data")
+
+    # Strategy 2: Aggressive (chaotic personality)
+    print("\\nAggressive strategy (chaotic personality):")
+    ~kinda mood chaotic
+    aggressive_client = FuzzyHTTPClient()
+    response = aggressive_client.request_with_fuzzy_retry("https://api.fast-service.com/data")
+
+    # Show personality impact
+    print(f"\\n=== Personality Impact on Network Requests ===")
+    print("Different personalities affect request behavior:")
+    print("  reliable: Longer timeouts, more retry attempts, higher success rates")
+    print("  cautious: Moderate timeouts, careful retry logic")
+    print("  playful: Balanced approach with adaptive strategies")
+    print("  chaotic: Shorter timeouts, fewer retries, faster failures")
+
+def simulate_network_resilience_testing():
+    """Demonstrate network resilience under various conditions"""
+    print("\\n=== Network Resilience Testing ===")
+
+    ~kinda mood cautious  # Use cautious approach for resilience testing
+
+    client = FuzzyHTTPClient()
+    critical_services = [
+        "https://payment-api.com/process",
+        "https://user-auth.com/verify",
+        "https://inventory.com/check"
+    ]
+
+    # Test resilience with multiple failure scenarios
+    resilience_results = []
+
+    ~maybe_for service_url in critical_services:
+        print(f"\\nTesting resilience for: {service_url}")
+
+        # Simulate degraded network conditions
+        consecutive_failures = 0
+        total_attempts = 0
+
+        # Keep trying until service is available or we give up
+        ~eventually_until consecutive_failures < 2:  # Success when failures drop
+            total_attempts += 1
+            response = client.request_with_fuzzy_retry(service_url, max_attempts=3)
+
+            if response.status_code == 200:
+                consecutive_failures = 0
+                print(f"  ✓ Service recovered after {total_attempts} total attempts")
+            else:
+                consecutive_failures += 1
+                print(f"  ✗ Failure #{consecutive_failures}")
+
+                # Circuit breaker logic
+                if consecutive_failures >= 5:
+                    print(f"  🔌 Circuit breaker activated for {service_url}")
+                    break
+
+                # Exponential backoff
+                backoff_time = 2 ** consecutive_failures
+                ~kinda_repeat(backoff_time):
+                    time.sleep(0.5)
+
+        resilience_results.append({
+            "service": service_url,
+            "total_attempts": total_attempts,
+            "final_status": "recovered" if consecutive_failures < 2 else "failed"
+        })
+
+    # Resilience summary
+    print("\\n=== Resilience Test Results ===")
+    for result in resilience_results:
+        print(f"{result['service']}: {result['final_status']} ({result['total_attempts']} attempts)")
+
+def main():
+    demonstrate_fuzzy_http_client()
+    simulate_network_resilience_testing()
+
+if __name__ == "__main__":
+    main()

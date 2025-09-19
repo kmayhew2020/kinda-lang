@@ -1,0 +1,4 @@
+~sometimes:
+    print("Hello from kinda!")
+
+print("Finished")
