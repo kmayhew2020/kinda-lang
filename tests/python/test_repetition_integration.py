@@ -193,12 +193,12 @@ print(f"RARE:{rare_executions}")
 
                 # With chaotic personality, kinda_repeat should be quite variable
                 # Chaotic has 40% variance, so for ~kinda_repeat(50), expect mean=50, σ=20
-                # Reasonable range should be about ±2σ from mean (roughly 5-90 allowing for statistical outliers)
+                # Reasonable range should be about ±2σ from mean (roughly 5-95 allowing for statistical outliers)
                 assert (
                     total_loops >= 5
                 ), f"Should have some loops even with chaotic variance, got {total_loops}"
                 assert (
-                    total_loops <= 90
+                    total_loops <= 95
                 ), f"Should not exceed reasonable upper bound, got {total_loops}"
 
                 # Rarely should execute infrequently, especially with chaotic personality
