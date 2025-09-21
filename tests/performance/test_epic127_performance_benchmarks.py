@@ -124,7 +124,17 @@ class PerformanceBenchmark:
 
 
 @pytest.mark.skipif(
-    os.getenv("GITHUB_ACTIONS") == "true",
+    any(
+        os.getenv(var)
+        for var in [
+            "CI",
+            "CONTINUOUS_INTEGRATION",
+            "GITHUB_ACTIONS",
+            "JENKINS_URL",
+            "TRAVIS",
+            "CIRCLECI",
+        ]
+    ),
     reason="Performance benchmarks are CPU intensive and may timeout in CI",
 )
 class TestBasicFunctionOverhead:
@@ -258,7 +268,17 @@ class TestBasicFunctionOverhead:
 
 
 @pytest.mark.skipif(
-    os.getenv("GITHUB_ACTIONS") == "true",
+    any(
+        os.getenv(var)
+        for var in [
+            "CI",
+            "CONTINUOUS_INTEGRATION",
+            "GITHUB_ACTIONS",
+            "JENKINS_URL",
+            "TRAVIS",
+            "CIRCLECI",
+        ]
+    ),
     reason="Performance benchmarks are CPU intensive and may timeout in CI",
 )
 class TestInjectionEnginePerformance:
@@ -371,7 +391,17 @@ def complex_function(data: list, config: dict) -> dict:
 
 
 @pytest.mark.skipif(
-    os.getenv("GITHUB_ACTIONS") == "true",
+    any(
+        os.getenv(var)
+        for var in [
+            "CI",
+            "CONTINUOUS_INTEGRATION",
+            "GITHUB_ACTIONS",
+            "JENKINS_URL",
+            "TRAVIS",
+            "CIRCLECI",
+        ]
+    ),
     reason="Performance benchmarks are CPU intensive and may timeout in CI",
 )
 class TestRealWorldScenarios:
@@ -565,7 +595,17 @@ class TestRealWorldScenarios:
 
 
 @pytest.mark.skipif(
-    os.getenv("GITHUB_ACTIONS") == "true",
+    any(
+        os.getenv(var)
+        for var in [
+            "CI",
+            "CONTINUOUS_INTEGRATION",
+            "GITHUB_ACTIONS",
+            "JENKINS_URL",
+            "TRAVIS",
+            "CIRCLECI",
+        ]
+    ),
     reason="Performance benchmarks are CPU intensive and may timeout in CI",
 )
 class TestMemoryUsage:
@@ -611,7 +651,17 @@ class TestMemoryUsage:
 
 
 @pytest.mark.skipif(
-    os.getenv("GITHUB_ACTIONS") == "true",
+    any(
+        os.getenv(var)
+        for var in [
+            "CI",
+            "CONTINUOUS_INTEGRATION",
+            "GITHUB_ACTIONS",
+            "JENKINS_URL",
+            "TRAVIS",
+            "CIRCLECI",
+        ]
+    ),
     reason="Performance benchmarks are CPU intensive and may timeout in CI",
 )
 class TestScalingCharacteristics:
@@ -704,7 +754,17 @@ class TestScalingCharacteristics:
 
 
 @pytest.mark.skipif(
-    os.getenv("GITHUB_ACTIONS") == "true",
+    any(
+        os.getenv(var)
+        for var in [
+            "CI",
+            "CONTINUOUS_INTEGRATION",
+            "GITHUB_ACTIONS",
+            "JENKINS_URL",
+            "TRAVIS",
+            "CIRCLECI",
+        ]
+    ),
     reason="Performance benchmarks are CPU intensive and may timeout in CI",
 )
 class TestConcurrencyPerformance:

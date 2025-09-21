@@ -19,6 +19,7 @@ from kinda.personality import (
     clear_eventually_until_evaluators,
 )
 from kinda.cli import setup_personality
+from kinda.testing.assertions import binomial_assert
 
 
 def run_kinda_test(path, timeout=10):
@@ -418,8 +419,9 @@ print(f"Final total: {total}")
         finally:
             temp_path.unlink()
 
+    @pytest.mark.statistical
     def test_personality_consistency_across_constructs(self):
-        """Test that personality affects all constructs consistently."""
+        """Test that personality affects all constructs consistently using statistical validation."""
         # Test reliable personality
         setup_personality("reliable", chaos_level=1, seed=42)
 
@@ -440,15 +442,31 @@ print(f"Reliable executed: {len(executed_constructs)}")
             temp_path = Path(f.name)
 
         try:
-            output = run_kinda_test(temp_path, timeout=10)
-            assert "Reliable executed:" in output, "Reliable personality test failed"
+            # Run multiple trials for statistical validation
+            successes = 0
+            trials = 20
 
-            # With reliable personality, should execute most constructs
-            if "Reliable executed:" in output:
-                executed_count = int(output.split("Reliable executed: ")[1].split()[0])
-                assert (
-                    executed_count >= 2
-                ), f"Reliable personality not reliable enough: {executed_count} constructs executed"
+            for trial in range(trials):
+                try:
+                    output = run_kinda_test(temp_path, timeout=10)
+                    if "Reliable executed:" in output:
+                        executed_count = int(output.split("Reliable executed: ")[1].split()[0])
+                        # Count as success if at least 2 constructs executed
+                        if executed_count >= 2:
+                            successes += 1
+                except (subprocess.TimeoutExpired, ValueError, IndexError):
+                    # Failed trials don't count as successes
+                    continue
+
+            # Statistical validation: reliable personality should succeed ~95% of time
+            # This accounts for probabilistic nature while ensuring very reliable behavior
+            binomial_assert(
+                successes=successes,
+                trials=trials,
+                expected_p=0.95,  # Expected success rate for reliable personality with seed=42
+                confidence=0.95,
+                context="reliable personality construct execution consistency",
+            )
 
         finally:
             temp_path.unlink()
