@@ -531,7 +531,7 @@ def handle_inject_convert(args) -> int:
     if args.output:
         output_path = Path(args.output)
     else:
-        output_path = file_path.with_name(f"{file_path.name}.knda")
+        output_path = file_path.with_name(f"{file_path.stem}.knda")
 
     # Pattern selection based on level
     if args.level == "basic":
@@ -553,7 +553,7 @@ def handle_inject_convert(args) -> int:
             PatternType.KINDA_REPEAT,
         }
 
-    config = InjectionConfig(enabled_patterns=patterns)
+    config = InjectionConfig(enabled_patterns=patterns, add_kinda_imports=False)
 
     engine = InjectionEngine()
     result = engine.inject_file(file_path, config)

@@ -379,18 +379,24 @@ class InjectionEngine:
             )
 
         # Apply kinda transformations to source code
-        # Generate executable Python code with kinda runtime calls
-        transformed_source = self._transform_to_python_runtime(original_source, points)
-        applied_patterns = [point.pattern_type.value for point in points]
+        if config.add_kinda_imports:
+            # Generate Python runtime code with imports for programmatic usage
+            transformed_source = self._transform_to_python_runtime(original_source, points)
+            applied_patterns = [point.pattern_type.value for point in points]
 
-        final_code = transformed_source
+            final_code = transformed_source
 
-        # Add imports if requested and there are patterns applied
-        if config.add_kinda_imports and applied_patterns:
-            # Add both import kinda for tests and specific runtime imports
-            import_lines = "import kinda\nfrom kinda.langs.python.runtime.fuzzy import kinda_int, kinda_float, sorta_print\n"
-            if "import kinda" not in final_code:
-                final_code = import_lines + final_code
+            # Add imports if there are patterns applied
+            if applied_patterns:
+                import_lines = "import kinda\nfrom kinda.langs.python.runtime.fuzzy import kinda_int, kinda_float, sorta_print\n"
+                if "import kinda" not in final_code:
+                    final_code = import_lines + final_code
+        else:
+            # Generate pure kinda syntax for .knda files
+            transformed_source = self._transform_to_kinda_syntax(original_source, points)
+            applied_patterns = [point.pattern_type.value for point in points]
+
+            final_code = transformed_source
 
         # Calculate performance estimate (rough approximation)
         # Use a very conservative scale to keep estimates under test thresholds
