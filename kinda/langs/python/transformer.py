@@ -297,6 +297,8 @@ def _transform_conditional_constructs(line: str) -> str:
         if _is_inside_string_literal(line, match.start()):
             return match.group(0)  # Return original text
         args = match.group(1)
+        # Preserve kinda syntax in the arguments
+        args = _restore_kinda_syntax_in_condition(args)
         used_helpers.add("assert_eventually")
         return f"assert_eventually({args})"
 
@@ -313,6 +315,15 @@ def _transform_conditional_constructs(line: str) -> str:
         # Skip if inside string literal
         if _is_inside_string_literal(line, match.start()):
             return match.group(0)  # Return original text
+
+        # Skip if inside a statistical assertion to preserve kinda syntax
+        start_pos = match.start()
+        line_before = line[:start_pos]
+        if 'assert_eventually(' in line_before and ')' not in line_before[line_before.rfind('assert_eventually('):]:
+            return match.group(0)  # Preserve original kinda syntax
+        if 'assert_probability(' in line_before and ')' not in line_before[line_before.rfind('assert_probability('):]:
+            return match.group(0)  # Preserve original kinda syntax
+
         construct_name = match.group(1)
         condition = match.group(2).strip()
         used_helpers.add(construct_name)
@@ -389,6 +400,28 @@ def _transform_welp_constructs(line: str) -> str:
     return transformed_line
 
 
+def _restore_kinda_syntax_in_condition(condition: str) -> str:
+    """
+    Restore kinda syntax in statistical assertion conditions.
+    Converts function calls like 'sometimes(True)' back to '~sometimes True'.
+    """
+    import re
+
+    # Mapping of function patterns to kinda syntax
+    patterns = [
+        (r'sometimes\((.*?)\)', r'~sometimes \1'),
+        (r'maybe\((.*?)\)', r'~maybe \1'),
+        (r'rarely\((.*?)\)', r'~rarely \1'),
+        (r'probably\((.*?)\)', r'~probably \1'),
+    ]
+
+    result = condition
+    for pattern, replacement in patterns:
+        result = re.sub(pattern, replacement, result)
+
+    return result
+
+
 def transform_line(line: str) -> List[str]:
     original_line = line
     stripped = line.strip()
@@ -414,6 +447,12 @@ def transform_line(line: str) -> List[str]:
 
     # Then check for main kinda constructs on the (potentially transformed) line
     stripped_for_matching = welp_transformed_line.strip()
+
+    # If the line has been transformed by inline transforms and no longer starts with ~,
+    # skip the main construct matching to avoid false positives from content inside strings
+    if welp_transformed_line != line and not stripped_for_matching.startswith('~'):
+        return [welp_transformed_line]
+
     key, groups = match_python_construct(stripped_for_matching)
     if not key:
         # If no main construct found but transforms were applied, return the transformed line
@@ -606,6 +645,10 @@ def transform_line(line: str) -> List[str]:
         used_helpers.add("assert_eventually")
         condition, timeout, confidence = groups
 
+        # Preserve kinda syntax in condition by converting function calls back to tilde syntax
+        if condition:
+            condition = _restore_kinda_syntax_in_condition(condition)
+
         # Build function call with optional parameters
         args = [condition] if condition else ["True"]
         if timeout is not None:
@@ -618,6 +661,10 @@ def transform_line(line: str) -> List[str]:
     elif key == "assert_probability" and groups:
         used_helpers.add("assert_probability")
         event, expected_prob, tolerance, samples = groups
+
+        # Preserve kinda syntax in event by converting function calls back to tilde syntax
+        if event:
+            event = _restore_kinda_syntax_in_condition(event)
 
         # Build function call with optional parameters
         args = [event] if event else ["True"]
