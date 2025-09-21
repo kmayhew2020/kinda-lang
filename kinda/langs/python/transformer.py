@@ -319,9 +319,15 @@ def _transform_conditional_constructs(line: str) -> str:
         # Skip if inside a statistical assertion to preserve kinda syntax
         start_pos = match.start()
         line_before = line[:start_pos]
-        if 'assert_eventually(' in line_before and ')' not in line_before[line_before.rfind('assert_eventually('):]:
+        if (
+            "assert_eventually(" in line_before
+            and ")" not in line_before[line_before.rfind("assert_eventually(") :]
+        ):
             return match.group(0)  # Preserve original kinda syntax
-        if 'assert_probability(' in line_before and ')' not in line_before[line_before.rfind('assert_probability('):]:
+        if (
+            "assert_probability(" in line_before
+            and ")" not in line_before[line_before.rfind("assert_probability(") :]
+        ):
             return match.group(0)  # Preserve original kinda syntax
 
         construct_name = match.group(1)
@@ -409,10 +415,10 @@ def _restore_kinda_syntax_in_condition(condition: str) -> str:
 
     # Mapping of function patterns to kinda syntax
     patterns = [
-        (r'sometimes\((.*?)\)', r'~sometimes \1'),
-        (r'maybe\((.*?)\)', r'~maybe \1'),
-        (r'rarely\((.*?)\)', r'~rarely \1'),
-        (r'probably\((.*?)\)', r'~probably \1'),
+        (r"sometimes\((.*?)\)", r"~sometimes \1"),
+        (r"maybe\((.*?)\)", r"~maybe \1"),
+        (r"rarely\((.*?)\)", r"~rarely \1"),
+        (r"probably\((.*?)\)", r"~probably \1"),
     ]
 
     result = condition
@@ -450,7 +456,7 @@ def transform_line(line: str) -> List[str]:
 
     # If the line has been transformed by inline transforms and no longer starts with ~,
     # skip the main construct matching to avoid false positives from content inside strings
-    if welp_transformed_line != line and not stripped_for_matching.startswith('~'):
+    if welp_transformed_line != line and not stripped_for_matching.startswith("~"):
         return [welp_transformed_line]
 
     key, groups = match_python_construct(stripped_for_matching)
