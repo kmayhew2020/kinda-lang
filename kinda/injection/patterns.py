@@ -141,9 +141,10 @@ class KindaFloatPattern(InjectionPattern):
         """Float assignments are generally safe, but check for critical values"""
         if isinstance(node, ast.Assign) and isinstance(node.value, ast.Constant):
             value = node.value.value
-            # Avoid critical system values
-            if abs(value) < 1e-10 or abs(value) > 1e10:
-                return False
+            # Avoid critical system values for numeric types
+            if isinstance(value, (int, float, complex)):
+                if abs(value) < 1e-10 or abs(value) > 1e10:
+                    return False
         return True
 
     def estimate_impact(self, node: ast.AST) -> float:
@@ -230,7 +231,7 @@ class SometimesPattern(InjectionPattern):
         """Check if condition is simple enough for probabilistic execution"""
         return isinstance(node, (ast.Compare, ast.BoolOp, ast.Name, ast.Constant))
 
-    def _has_critical_operations(self, body: List[ast.AST]) -> bool:
+    def _has_critical_operations(self, body: List[ast.stmt]) -> bool:
         """Check if body contains critical operations"""
         for stmt in body:
             if isinstance(stmt, (ast.Return, ast.Raise, ast.Break, ast.Continue)):
@@ -286,7 +287,7 @@ class KindaRepeatPattern(InjectionPattern):
         """Moderate to high impact for loop fuzzing"""
         return 5.0  # 5% overhead
 
-    def _has_critical_loop_operations(self, body: List[ast.AST]) -> bool:
+    def _has_critical_loop_operations(self, body: List[ast.stmt]) -> bool:
         """Check if loop body has critical operations"""
         for stmt in body:
             if isinstance(stmt, (ast.Return, ast.Raise, ast.Break, ast.Continue)):
@@ -340,7 +341,7 @@ class PatternLibrary:
 
     def validate_pattern_compatibility(self, patterns: List[PatternType]) -> Dict[str, Any]:
         """Check compatibility between multiple patterns"""
-        results = {"compatible": True, "conflicts": [], "warnings": []}
+        results: Dict[str, Any] = {"compatible": True, "conflicts": [], "warnings": []}
 
         # Check for known conflicts
         if PatternType.KINDA_INT in patterns and PatternType.KINDA_FLOAT in patterns:

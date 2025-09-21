@@ -491,7 +491,7 @@ def handle_inject_analyze(args) -> int:
             for point in points:
                 safe_print(f"    • {point}")
         else:
-            pattern_counts = {}
+            pattern_counts: Dict[str, int] = {}
             for point in points:
                 pattern_name = point.pattern_type.value
                 pattern_counts[pattern_name] = pattern_counts.get(pattern_name, 0) + 1
@@ -531,7 +531,7 @@ def handle_inject_convert(args) -> int:
     if args.output:
         output_path = Path(args.output)
     else:
-        output_path = file_path.with_name(f"{file_path.stem}_enhanced{file_path.suffix}")
+        output_path = file_path.with_name(f"{file_path.name}.knda")
 
     # Pattern selection based on level
     if args.level == "basic":
@@ -800,9 +800,7 @@ def main(argv=None) -> int:
         "convert", help="Convert Python file with kinda enhancements"
     )
     p_inject_convert.add_argument("file", help="Python file to convert")
-    p_inject_convert.add_argument(
-        "--output", "-o", help="Output file (default: <file>_enhanced.py)"
-    )
+    p_inject_convert.add_argument("--output", "-o", help="Output file (default: <file>.py.knda)")
     p_inject_convert.add_argument(
         "--level", choices=["basic", "intermediate", "advanced"], default="basic"
     )

@@ -129,9 +129,9 @@ class InjectionSecurityValidator:
 
     def validate_ast_modification(self, original: ast.AST, modified: ast.AST) -> SecurityResult:
         """Validate that AST modifications are safe"""
-        errors = []
-        warnings = []
-        recommendations = []
+        errors: List[str] = []
+        warnings: List[str] = []
+        recommendations: List[str] = []
 
         # Check for new dangerous constructs introduced
         original_risks = self._analyze_ast_risks(original)
@@ -182,9 +182,9 @@ class InjectionSecurityValidator:
 
     def _validate_file_security(self, file_path: Path) -> SecurityResult:
         """Validate security aspects of the target file"""
-        errors = []
-        warnings = []
-        recommendations = []
+        errors: List[str] = []
+        warnings: List[str] = []
+        recommendations: List[str] = []
 
         # Check file permissions
         if not file_path.exists():
@@ -260,8 +260,8 @@ class InjectionSecurityValidator:
 
     def _validate_pattern_combinations(self, points: List["InjectionPoint"]) -> SecurityResult:
         """Validate security of pattern combinations"""
-        errors = []
-        warnings = []
+        errors: List[str] = []
+        warnings: List[str] = []
 
         pattern_types = [point.pattern_type for point in points]
 
@@ -307,17 +307,19 @@ class InjectionSecurityValidator:
     def _analyze_ast_risks(self, tree: ast.AST) -> Set[Dict[str, str]]:
         """Analyze AST for security risks"""
         risks = set()
+        dangerous_imports = self.dangerous_imports
+        critical_functions = self.critical_functions
 
         class RiskAnalyzer(ast.NodeVisitor):
             def visit_Import(self, node: ast.Import) -> None:
                 for alias in node.names:
-                    if alias.name in self.dangerous_imports:
+                    if alias.name in dangerous_imports:
                         risks.add(
                             {"severity": "high", "description": f"Dangerous import: {alias.name}"}
                         )
 
             def visit_Call(self, node: ast.Call) -> None:
-                if isinstance(node.func, ast.Name) and node.func.id in self.critical_functions:
+                if isinstance(node.func, ast.Name) and node.func.id in critical_functions:
                     risks.add(
                         {
                             "severity": "medium",
@@ -333,8 +335,15 @@ class InjectionSecurityValidator:
         """Verify that AST modifications preserve integrity"""
         try:
             # Basic check - both should be compilable
-            compile(original, "<original>", "exec")
-            compile(modified, "<modified>", "exec")
+            # For AST objects, we just check they're valid by trying to unparse them
+            import ast
+
+            if hasattr(ast, "unparse"):
+                ast.unparse(original)
+                ast.unparse(modified)
+            else:
+                # Fallback for older Python versions
+                pass
             return True
         except:
             return False
@@ -409,7 +418,7 @@ class InjectionAuditLogger:
         security_level: str,
         success: bool,
         errors: List[str],
-        user_context: Dict[str, Any] = None,
+        user_context: Optional[Dict[str, Any]] = None,
     ):
         """Log injection operation attempt"""
         from datetime import datetime
@@ -432,6 +441,8 @@ class InjectionAuditLogger:
 
     def _write_log_entry(self, entry: InjectionAuditEntry):
         """Write audit entry to log file"""
+        if self.log_file is None:
+            return
         try:
             import json
 

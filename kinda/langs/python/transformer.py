@@ -709,9 +709,9 @@ def transform(input_path: Path, out_dir: Path) -> List[Path]:
                 relative_path = file.relative_to(input_path)
 
                 if file.name.endswith(".py.knda"):
-                    new_name = file.name.replace(".py.knda", ".py")
+                    new_name = file.name.replace(".py.knda", ".knda.py")
                 else:
-                    new_name = file.stem + ".py"
+                    new_name = file.stem + ".knda.py"
 
                 output_file_path = out_dir / relative_path.with_name(new_name)
                 output_file_path.parent.mkdir(parents=True, exist_ok=True)
@@ -726,9 +726,9 @@ def transform(input_path: Path, out_dir: Path) -> List[Path]:
         try:
             output_code = transform_file(input_path)
             if input_path.name.endswith(".py.knda"):
-                new_name = input_path.name.replace(".py.knda", ".py")
+                new_name = input_path.name.replace(".py.knda", ".knda.py")
             else:
-                new_name = input_path.stem + ".py"
+                new_name = input_path.stem + ".knda.py"
             output_file_path = out_dir / new_name
             output_file_path.parent.mkdir(parents=True, exist_ok=True)
             output_file_path.write_text(output_code, encoding="utf-8")

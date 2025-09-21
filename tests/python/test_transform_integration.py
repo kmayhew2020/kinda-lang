@@ -213,7 +213,7 @@ class TestTransformCLI:
         )
 
         if result.returncode == 0:  # CLI might not be fully implemented
-            output_file = tmp_path / "output" / "test.py"
+            output_file = tmp_path / "output" / "test.knda.py"
             assert output_file.exists()
 
             content = output_file.read_text()

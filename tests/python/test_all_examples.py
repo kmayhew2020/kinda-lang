@@ -39,8 +39,8 @@ def test_example_transforms_successfully(example_file):
     )
 
     # Check that build file was created
-    expected_build_file = Path("build") / example_file.stem  # Remove .knda and add .py
-    expected_build_file = expected_build_file.with_suffix(".py")
+    expected_build_file = Path("build") / example_file.stem  # Remove .knda and add .knda.py
+    expected_build_file = expected_build_file.with_suffix(".knda.py")
     assert expected_build_file.exists(), f"Build file not created for {example_file}"
 
 
@@ -140,7 +140,7 @@ class TestExampleIntegration:
         ), f"chaos_arena_complete transformation failed: {result.stderr}"
 
         # Check for expected constructs in output
-        build_file = Path("build/chaos_arena_complete.py")
+        build_file = Path("build/chaos_arena_complete.knda.py")
         assert build_file.exists(), "chaos_arena_complete build file not created"
 
         content = build_file.read_text(encoding="utf-8")

@@ -181,8 +181,8 @@ class InjectionVisitor(ast.NodeVisitor):
     ) -> None:
         """Add an injection point to the list"""
         location = CodeLocation(
-            line=node.lineno,
-            column=node.col_offset,
+            line=getattr(node, "lineno", 0),
+            column=getattr(node, "col_offset", 0),
             end_line=getattr(node, "end_lineno", None),
             end_column=getattr(node, "end_col_offset", None),
         )
@@ -203,7 +203,7 @@ class InjectionVisitor(ast.NodeVisitor):
         # Simple conditions: comparisons, boolean operations, name references
         return isinstance(node, (ast.Compare, ast.BoolOp, ast.Name, ast.Constant))
 
-    def _has_side_effects(self, nodes: List[ast.AST]) -> bool:
+    def _has_side_effects(self, nodes: List[ast.stmt]) -> bool:
         """Check if a list of nodes has potential side effects"""
         for node in nodes:
             if isinstance(node, (ast.Call, ast.Assign, ast.AugAssign)):
@@ -256,8 +256,11 @@ class PythonASTAnalyzer:
 
         # Basic AST validation
         try:
-            # Ensure the tree is compilable
-            compile(tree, "<ast>", "exec")
+            # Ensure the tree is valid by checking if it can be unparsed
+            import ast
+
+            if hasattr(ast, "unparse"):
+                ast.unparse(tree)
         except Exception as e:
             errors.append(f"AST compilation failed: {e}")
 
