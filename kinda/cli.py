@@ -457,12 +457,37 @@ def handle_inject_run(args) -> int:
         temp_path = f.name
 
     try:
-        # Run the enhanced Python file
-        subprocess.run(["python", temp_path], check=True)
-        return 0
-    except subprocess.CalledProcessError as e:
-        safe_print(f"Execution failed: {e}")
-        return 1
+        # Run the enhanced Python file with security protection
+        from kinda.security.execution import SecureExecutionEngine, SecurityLevel
+
+        # Map safety level to security level
+        security_mapping = {
+            "safe": SecurityLevel.SAFE,
+            "caution": SecurityLevel.CAUTION,
+            "risky": SecurityLevel.RISKY,
+        }
+        security_level = security_mapping.get(args.safety, SecurityLevel.SAFE)
+
+        safe_print(f"🛡️ Running with security level: {security_level.value}")
+
+        engine = SecureExecutionEngine(security_level)
+        exec_result = engine.execute_file(Path(temp_path))
+
+        if exec_result.success:
+            if exec_result.stdout:
+                print(exec_result.stdout, end="")
+            if exec_result.has_security_issues:
+                safe_print("⚠️ Security restrictions were applied:")
+                for violation in exec_result.security_violations:
+                    safe_print(f"   • {violation}")
+            return 0
+        else:
+            safe_print(f"Execution failed: {exec_result.stderr}")
+            if exec_result.has_security_issues:
+                safe_print("🔒 Security violations detected:")
+                for violation in exec_result.security_violations:
+                    safe_print(f"   • {violation}")
+            return 1
     finally:
         Path(temp_path).unlink()
 
@@ -673,6 +698,12 @@ def main(argv=None) -> int:
         default=None,
         help="Random seed for reproducible chaos (overrides KINDA_SEED environment variable)",
     )
+    p_run.add_argument(
+        "--security-level",
+        choices=["safe", "caution", "risky"],
+        default="safe",
+        help="Security level for execution (safe=maximum security, risky=minimal security)",
+    )
 
     p_interpret = sub.add_parser(
         "interpret", help="Run directly in fuzzy runtime (maximum chaos mode)"
@@ -696,6 +727,12 @@ def main(argv=None) -> int:
         type=int,
         default=None,
         help="Random seed for reproducible chaos (overrides KINDA_SEED environment variable)",
+    )
+    p_interpret.add_argument(
+        "--security-level",
+        choices=["safe", "caution", "risky"],
+        default="safe",
+        help="Security level for execution (safe=maximum security, risky=minimal security)",
     )
 
     p_examples = sub.add_parser("examples", help="Show example kinda programs (for inspiration)")
@@ -938,16 +975,51 @@ def main(argv=None) -> int:
             out_dir = Path(".kinda-build")
             out_paths = transformer.transform(input_path, out_dir=out_dir)
             if lang == "python":
-                import runpy
+                # Use secure execution engine for Issue #109 protection
+                from kinda.security.execution import SecureExecutionEngine, SecurityLevel
 
-                safe_print("🎮 Running your questionable code...")
-                # Execute the transformed file
-                try:
-                    runpy.run_path(str(out_paths[0]), run_name="__main__")
+                # Map CLI security level to enum
+                security_mapping = {
+                    "safe": SecurityLevel.SAFE,
+                    "caution": SecurityLevel.CAUTION,
+                    "risky": SecurityLevel.RISKY,
+                }
+                security_level = security_mapping.get(
+                    getattr(args, "security_level", "safe"), SecurityLevel.SAFE
+                )
+
+                safe_print("🎮 Running your questionable code with security protection...")
+                safe_print(f"🛡️ Security level: {security_level.value}")
+
+                # Execute with security sandbox
+                engine = SecureExecutionEngine(security_level)
+                result = engine.execute_file(out_paths[0], working_directory=out_dir)
+
+                if result.success:
                     safe_print("🎉 Well, that didn't crash. Success?")
-                except Exception as e:
-                    safe_print(f"💥 Runtime error: {e}")
+                    if result.stdout:
+                        print(result.stdout, end="")
+                    if result.has_security_issues:
+                        safe_print(
+                            "⚠️ Note: Some security restrictions were applied during execution"
+                        )
+                        for violation in result.security_violations:
+                            safe_print(f"   • Security: {violation}")
+                        for blocked in result.blocked_operations:
+                            safe_print(f"   • Blocked: {blocked}")
+                else:
+                    safe_print(f"💥 Runtime error: {result.stderr}")
                     safe_print("[?] Your code transformed fine but crashed during execution")
+
+                    if result.has_security_issues:
+                        safe_print("🔒 Security violations detected:")
+                        for violation in result.security_violations:
+                            safe_print(f"   • {violation}")
+                        for blocked in result.blocked_operations:
+                            safe_print(f"   • {blocked}")
+
+                    # Provide error handling for the new result format
+                    e = Exception(result.stderr)
 
                     # Provide snarky but helpful suggestions based on error type
                     error_str = str(e).lower()
@@ -979,7 +1051,9 @@ def main(argv=None) -> int:
                         safe_print("   • Missing ~ before kinda constructs (very important)")
                         safe_print("   • General syntax weirdness")
                     return 1
-                return 0
+
+                # Return based on execution result
+                return 0 if result.success else 1
             safe_print(f"😅 I can transform {lang} but can't run it. Try 'transform' instead?")
             return 1
         except Exception as e:
