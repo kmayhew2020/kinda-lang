@@ -8,6 +8,7 @@ from kinda.grammar.python.matchers import (
     match_python_construct,
     find_ish_constructs,
     find_welp_constructs,
+    _is_inside_string_literal,
 )
 from kinda.cli import safe_read_file
 
@@ -266,6 +267,72 @@ def _transform_ish_constructs(line: str) -> str:
     return transformed_line
 
 
+def _extract_single_line_block(line: str, construct_end_pos: int):
+    """Extract content from single-line blocks like { code }."""
+    remaining = line[construct_end_pos:].strip()
+    if remaining.startswith('{') and remaining.endswith('}'):
+        # Single-line block
+        block_content = remaining[1:-1].strip()
+        return block_content, ""
+    elif '{' in remaining:
+        # Multi-line block or invalid - let the regular block processor handle it
+        return "", remaining
+    else:
+        # No block
+        return "", remaining
+
+
+def _transform_conditional_constructs(line: str) -> str:
+    """Transform inline conditional constructs like ~sometimes True, ~maybe False."""
+    import re
+
+    # Only transform inline conditional constructs when they are NOT followed by opening braces
+    # This avoids interfering with statement-level constructs like ~probably (...) { ... }
+
+    # First handle ~assert_eventually inline usage (this needs to be first)
+    assert_eventually_pattern = re.compile(r'~assert_eventually\s*\(([^)]+)\)')
+
+    def replace_assert_eventually(match):
+        # Skip if inside string literal
+        if _is_inside_string_literal(line, match.start()):
+            return match.group(0)  # Return original text
+        args = match.group(1)
+        used_helpers.add("assert_eventually")
+        return f"assert_eventually({args})"
+
+    line = assert_eventually_pattern.sub(replace_assert_eventually, line)
+
+    # Pattern to match inline conditional constructs without parentheses
+    # Only match when NOT followed by braces (statement-level constructs)
+    # Look ahead to ensure there's no { after the condition
+    conditional_pattern = re.compile(r'~(sometimes|maybe|probably|rarely)\s+([^,\(\)\{\~]+?)(?=\s*[,\)\]\}]|$)(?!\s*\{)')
+
+    def replace_conditional(match):
+        # Skip if inside string literal
+        if _is_inside_string_literal(line, match.start()):
+            return match.group(0)  # Return original text
+        construct_name = match.group(1)
+        condition = match.group(2).strip()
+        used_helpers.add(construct_name)
+        return f"{construct_name}({condition})"
+
+    # Also handle ~sorta print inline usage
+    sorta_print_pattern = re.compile(r'~sorta\s+print\s*\(([^)]+)\)')
+
+    def replace_sorta_print(match):
+        # Skip if inside string literal
+        if _is_inside_string_literal(line, match.start()):
+            return match.group(0)  # Return original text
+        args = match.group(1)
+        used_helpers.add("sorta_print")
+        return f"sorta_print({args})"
+
+    line = conditional_pattern.sub(replace_conditional, line)
+    line = sorta_print_pattern.sub(replace_sorta_print, line)
+
+    return line
+
+
 def _transform_drift_constructs(line: str) -> str:
     """Transform inline ~drift constructs in a line."""
     import re
@@ -331,8 +398,11 @@ def transform_line(line: str) -> List[str]:
         return [original_line]
 
     # Check for inline constructs in a single pass for efficiency
-    # First check for inline ~drift constructs (must be before ~ish due to ~drift ~ish pattern)
-    drift_transformed_line = _transform_drift_constructs(line)
+    # First check for inline conditional constructs (~sometimes True, etc.)
+    conditional_transformed_line = _transform_conditional_constructs(line)
+
+    # Then check for inline ~drift constructs (must be before ~ish due to ~drift ~ish pattern)
+    drift_transformed_line = _transform_drift_constructs(conditional_transformed_line)
 
     # Then check for inline ~ish constructs
     ish_transformed_line = _transform_ish_constructs(drift_transformed_line)
@@ -398,22 +468,91 @@ def transform_line(line: str) -> List[str]:
     elif key == "sometimes":
         used_helpers.add("sometimes")
         cond = groups[0].strip() if groups and groups[0] else ""
-        transformed_code = f"if sometimes({cond}):" if cond else "if sometimes():"
+        base_code = f"if sometimes({cond}):" if cond else "if sometimes():"
+
+        # Check for single-line block
+        construct_match = welp_transformed_line.find("~sometimes")
+        if construct_match != -1:
+            # Find where the construct pattern ends
+            import re
+            pattern = re.compile(r"~sometimes\s*\([^)]*\)")
+            match = pattern.search(welp_transformed_line)
+            if match:
+                block_content, remaining = _extract_single_line_block(welp_transformed_line, match.end())
+                if block_content:
+                    transformed_code = f"{base_code} {block_content}"
+                else:
+                    transformed_code = base_code
+            else:
+                transformed_code = base_code
+        else:
+            transformed_code = base_code
 
     elif key == "maybe":
         used_helpers.add("maybe")
         cond = groups[0].strip() if groups and groups[0] else ""
-        transformed_code = f"if maybe({cond}):" if cond else "if maybe():"
+        base_code = f"if maybe({cond}):" if cond else "if maybe():"
+
+        # Check for single-line block
+        construct_match = welp_transformed_line.find("~maybe")
+        if construct_match != -1:
+            import re
+            pattern = re.compile(r"~maybe\s*\([^)]*\)")
+            match = pattern.search(welp_transformed_line)
+            if match:
+                block_content, remaining = _extract_single_line_block(welp_transformed_line, match.end())
+                if block_content:
+                    transformed_code = f"{base_code} {block_content}"
+                else:
+                    transformed_code = base_code
+            else:
+                transformed_code = base_code
+        else:
+            transformed_code = base_code
 
     elif key == "probably":
         used_helpers.add("probably")
         cond = groups[0].strip() if groups and groups[0] else ""
-        transformed_code = f"if probably({cond}):" if cond else "if probably():"
+        base_code = f"if probably({cond}):" if cond else "if probably():"
+
+        # Check for single-line block
+        construct_match = welp_transformed_line.find("~probably")
+        if construct_match != -1:
+            import re
+            pattern = re.compile(r"~probably\s*\([^)]*\)")
+            match = pattern.search(welp_transformed_line)
+            if match:
+                block_content, remaining = _extract_single_line_block(welp_transformed_line, match.end())
+                if block_content:
+                    transformed_code = f"{base_code} {block_content}"
+                else:
+                    transformed_code = base_code
+            else:
+                transformed_code = base_code
+        else:
+            transformed_code = base_code
 
     elif key == "rarely":
         used_helpers.add("rarely")
         cond = groups[0].strip() if groups and groups[0] else ""
-        transformed_code = f"if rarely({cond}):" if cond else "if rarely():"
+        base_code = f"if rarely({cond}):" if cond else "if rarely():"
+
+        # Check for single-line block
+        construct_match = welp_transformed_line.find("~rarely")
+        if construct_match != -1:
+            import re
+            pattern = re.compile(r"~rarely\s*\([^)]*\)")
+            match = pattern.search(welp_transformed_line)
+            if match:
+                block_content, remaining = _extract_single_line_block(welp_transformed_line, match.end())
+                if block_content:
+                    transformed_code = f"{base_code} {block_content}"
+                else:
+                    transformed_code = base_code
+            else:
+                transformed_code = base_code
+        else:
+            transformed_code = base_code
 
     elif key == "sometimes_while":
         used_helpers.add("sometimes_while_condition")
@@ -503,8 +642,13 @@ def transform_line(line: str) -> List[str]:
 
     elif key == "kinda_mood" and groups:
         used_helpers.add("kinda_mood")
-        mood = groups[0]
-        transformed_code = f"kinda_mood('{mood}')"
+        # Handle both {variable} and bare word patterns
+        mood = groups[0] if groups[0] else groups[1]
+        # If it was {variable}, don't add quotes as it's a variable reference
+        if groups[0]:  # {variable} pattern
+            transformed_code = f"kinda_mood({mood})"
+        else:  # bare word pattern
+            transformed_code = f"kinda_mood('{mood}')"
 
     else:
         transformed_code = stripped  # fallback

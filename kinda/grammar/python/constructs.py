@@ -916,7 +916,7 @@ KindaPythonConstructs: Dict[str, Dict[str, Any]] = {
     },
     "maybe_for": {
         "type": "loop",
-        "pattern": re.compile(r"~maybe_for\s+(\w+)\s+in\s+(.+):\s*"),
+        "pattern": re.compile(r"~maybe_for\s+(.+?)\s+in\s+(.+):\s*"),
         "description": "Fuzzy for loop with personality-adjusted item execution probability",
         "body": (
             "def maybe_for(iterable, body_func=None):\n"
@@ -1086,7 +1086,7 @@ KindaPythonConstructs: Dict[str, Dict[str, Any]] = {
     },
     "kinda_mood": {
         "type": "personality",
-        "pattern": re.compile(r"~kinda mood\s+(\w+)"),
+        "pattern": re.compile(r"~kinda mood\s+(?:\{([^}]+)\}|(\w+))"),
         "description": "Set personality mood for probabilistic behavior control",
         "body": (
             "def kinda_mood(mood):\n"
