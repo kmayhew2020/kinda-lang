@@ -192,7 +192,10 @@ print(f"RARE:{rare_executions}")
                 rare_count = int(rare_line[0].split(":")[1])
 
                 # With chaotic personality, kinda_repeat should be quite variable
-                assert total_loops >= 20, f"Should have some loops, got {total_loops}"
+                # Chaotic has 40% variance, so for ~kinda_repeat(50), expect mean=50, σ=20
+                # Reasonable range should be about ±2σ from mean (roughly 10-90)
+                assert total_loops >= 10, f"Should have some loops even with chaotic variance, got {total_loops}"
+                assert total_loops <= 90, f"Should not exceed reasonable upper bound, got {total_loops}"
 
                 # Rarely should execute infrequently, especially with chaotic personality
                 rare_rate = rare_count / total_loops if total_loops > 0 else 0
