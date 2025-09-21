@@ -7,10 +7,7 @@ Testing the @enhance and @enhance_class decorators for function enhancement.
 
 import pytest
 
-# Skip Epic 127 migration tests temporarily for CI 100% pass rate
-pytestmark = pytest.mark.skip(
-    reason="Epic 127 experimental migration features - skipped for v0.5.1 release"
-)
+# Epic #127 Phase 1: Test Infrastructure Recovery - Migration Decorator Tests ENABLED
 import tempfile
 from pathlib import Path
 from typing import Set

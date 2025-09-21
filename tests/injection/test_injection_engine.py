@@ -7,10 +7,7 @@ with kinda-lang constructs.
 
 import pytest
 
-# Skip injection engine tests temporarily for CI 100% pass rate (related to Epic 127)
-pytestmark = pytest.mark.skip(
-    reason="Injection engine experimental features - skipped for v0.5.1 release"
-)
+# Epic #127 Phase 1: Test Infrastructure Recovery - Injection Engine Tests ENABLED
 from pathlib import Path
 import tempfile
 

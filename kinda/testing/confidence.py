@@ -356,6 +356,8 @@ def bootstrap_confidence_interval(
 
     for _ in range(n_bootstrap):
         bootstrap_sample = np.random.choice(samples, size=len(samples), replace=True)
+        # Convert numpy array to native Python types for statistics module compatibility
+        bootstrap_sample = [float(x) for x in bootstrap_sample]
         if statistic == "mean":
             stat = statistics.mean(bootstrap_sample)
         elif statistic == "median":

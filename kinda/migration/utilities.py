@@ -51,11 +51,30 @@ class CodeAnalysis:
     file_path: str
     function_count: int
     class_count: int
+    method_count: int
     complexity_score: int
-    injection_opportunities: List[Dict[str, Any]]
+    injection_opportunities: List[InjectionPoint]
     risks: List[str]
     recommendations: List[str]
     estimated_enhancement_impact: float
+    has_syntax_errors: bool = False
+
+
+@dataclass
+class DirectoryAnalysis:
+    """Analysis of a directory of Python files"""
+
+    directory_path: str
+    timestamp: str
+    files_analyzed: int
+    total_files: int
+    total_functions: int
+    total_classes: int
+    total_methods: int
+    total_opportunities: int
+    total_injection_opportunities: int
+    file_analyses: List[CodeAnalysis]
+    summary: Dict[str, Any]
 
 
 class MigrationUtilities:
@@ -125,6 +144,12 @@ class MigrationUtilities:
 
         Returns:
             CodeAnalysis object or None if analysis fails
+
+        Raises:
+            FileNotFoundError: If file doesn't exist
+            PermissionError: If file cannot be read due to permissions
+            UnicodeDecodeError: If file contains non-text data
+            ValueError: If file contains null bytes or other invalid content
         """
         try:
             with open(file_path, "r", encoding="utf-8") as f:
@@ -132,31 +157,31 @@ class MigrationUtilities:
 
             tree = ast.parse(source, filename=str(file_path))
 
-            # Count functions and classes
+            # Count functions, classes, and methods
             function_count = len([n for n in ast.walk(tree) if isinstance(n, ast.FunctionDef)])
             class_count = len([n for n in ast.walk(tree) if isinstance(n, ast.ClassDef)])
+
+            # Count methods (functions inside classes)
+            method_count = 0
+            for class_node in ast.walk(tree):
+                if isinstance(class_node, ast.ClassDef):
+                    for node in class_node.body:
+                        if isinstance(node, ast.FunctionDef):
+                            method_count += 1
 
             # Calculate complexity
             complexity = self._calculate_complexity(tree)
 
             # Find injection opportunities
             injection_points = self.injection_engine.analyzer.find_injection_points(tree)
-            opportunities = [
-                {
-                    "pattern": point.pattern_type.value,
-                    "location": f"line {point.location.line}",
-                    "confidence": point.confidence,
-                    "safety_level": point.safety_level.value,
-                }
-                for point in injection_points
-            ]
+            opportunities = injection_points  # Return actual InjectionPoint objects
 
             # Identify risks
             risks = self._identify_file_risks(tree, source)
 
             # Generate recommendations
             recommendations = self._generate_file_recommendations(
-                function_count, class_count, complexity, opportunities, risks
+                function_count, class_count, method_count, complexity, opportunities, risks
             )
 
             # Estimate impact
@@ -166,6 +191,7 @@ class MigrationUtilities:
                 file_path=str(file_path),
                 function_count=function_count,
                 class_count=class_count,
+                method_count=method_count,
                 complexity_score=complexity,
                 injection_opportunities=opportunities,
                 risks=risks,
@@ -173,12 +199,369 @@ class MigrationUtilities:
                 estimated_enhancement_impact=impact,
             )
 
+        except FileNotFoundError:
+            # Re-raise FileNotFoundError as expected by tests
+            raise
+        except PermissionError:
+            # Re-raise PermissionError as expected by tests
+            raise
+        except UnicodeDecodeError:
+            # Re-raise UnicodeDecodeError for binary files as expected by tests
+            raise
+        except ValueError as e:
+            # Re-raise ValueError for files with null bytes as expected by tests
+            if "null bytes" in str(e).lower():
+                raise
+            # For other ValueError cases (like syntax errors), return None
+            print(f"Failed to analyze {file_path}: {e}")
+            return None
+        except SyntaxError:
+            # For syntax errors, return CodeAnalysis with has_syntax_errors=True
+            print(f"Failed to analyze {file_path}: Syntax error")
+            return CodeAnalysis(
+                file_path=str(file_path),
+                function_count=0,
+                class_count=0,
+                method_count=0,
+                complexity_score=0,
+                injection_opportunities=[],
+                risks=["Syntax error in file"],
+                recommendations=["Fix syntax errors before migration"],
+                estimated_enhancement_impact=0.0,
+                has_syntax_errors=True,
+            )
         except Exception as e:
             print(f"Failed to analyze {file_path}: {e}")
             return None
 
+    def analyze_directory(
+        self,
+        directory_path: Path,
+        recursive: bool = False,
+        exclude_patterns: Optional[Set[str]] = None,
+    ) -> DirectoryAnalysis:
+        """
+        Analyze all Python files in a directory.
+
+        Args:
+            directory_path: Path to directory to analyze
+            recursive: Whether to search recursively
+            exclude_patterns: File patterns to exclude
+
+        Returns:
+            DirectoryAnalysis object with aggregated analysis results
+        """
+        exclude_patterns = exclude_patterns or {".git", ".venv", "__pycache__", "*.pyc"}
+
+        if recursive:
+            python_files = list(directory_path.rglob("*.py"))
+        else:
+            python_files = list(directory_path.glob("*.py"))
+
+        # Filter out excluded patterns
+        python_files = [
+            f for f in python_files if not any(pattern in str(f) for pattern in exclude_patterns)
+        ]
+
+        file_analyses = []
+        files_analyzed = 0
+        total_functions = 0
+        total_classes = 0
+        total_methods = 0
+        total_opportunities = 0
+
+        for file_path in python_files:
+            file_analysis = self.analyze_file(file_path)
+            if file_analysis:
+                files_analyzed += 1
+                total_functions += file_analysis.function_count
+                total_classes += file_analysis.class_count
+                total_methods += file_analysis.method_count
+                total_opportunities += len(file_analysis.injection_opportunities)
+                file_analyses.append(file_analysis)
+
+        # Generate summary
+        summary = {
+            "avg_complexity": sum(fa.complexity_score for fa in file_analyses)
+            / max(len(file_analyses), 1),
+            "files_with_opportunities": len(
+                [fa for fa in file_analyses if fa.injection_opportunities]
+            ),
+            "files_with_risks": len([fa for fa in file_analyses if fa.risks]),
+        }
+
+        return DirectoryAnalysis(
+            directory_path=str(directory_path),
+            timestamp=datetime.now().isoformat(),
+            files_analyzed=files_analyzed,
+            total_files=len(python_files),
+            total_functions=total_functions,
+            total_classes=total_classes,
+            total_methods=total_methods,
+            total_opportunities=total_opportunities,
+            total_injection_opportunities=total_opportunities,  # Same as total_opportunities
+            file_analyses=file_analyses,
+            summary=summary,
+        )
+
+    def suggest_enhancement_patterns(self, file_path: Path) -> List[Dict[str, Any]]:
+        """
+        Suggest enhancement patterns for a file based on analysis.
+
+        Args:
+            file_path: Path to Python file
+
+        Returns:
+            List of suggested enhancement patterns
+        """
+        analysis = self.analyze_file(file_path)
+        if not analysis:
+            return []
+
+        suggestions = []
+
+        for injection_point in analysis.injection_opportunities:
+            suggestion = {
+                "pattern_type": injection_point.pattern_type.value,
+                "location": f"line {injection_point.location.line}",
+                "confidence": injection_point.confidence,
+                "safety_level": injection_point.safety_level.value,
+                "suggested_replacement": self._generate_pattern_suggestion(injection_point),
+                "impact_estimate": (
+                    "low"
+                    if injection_point.confidence < 0.7
+                    else "medium" if injection_point.confidence < 0.9 else "high"
+                ),
+            }
+            suggestions.append(suggestion)
+
+        return suggestions
+
+    def estimate_enhancement_impact(
+        self, file_path: Path, patterns: Optional[List[str]] = None
+    ) -> Dict[str, Any]:
+        """
+        Estimate the impact of applying enhancement patterns to a file.
+
+        Args:
+            file_path: Path to Python file
+            patterns: Optional list of specific patterns to consider
+
+        Returns:
+            Dictionary with impact estimates
+        """
+        analysis = self.analyze_file(file_path)
+        if not analysis:
+            return {"error": "Failed to analyze file"}
+
+        opportunities = analysis.injection_opportunities
+        if patterns:
+            opportunities = [op for op in opportunities if op.pattern_type.value in patterns]
+
+        return {
+            "file_path": str(file_path),
+            "total_opportunities": len(opportunities),
+            "performance_impact_estimate": self._estimate_enhancement_impact(opportunities),
+            "safety_assessment": self._assess_enhancement_safety(opportunities),
+            "complexity_change": self._estimate_complexity_change(opportunities),
+            "recommended_approach": self._recommend_enhancement_approach(analysis),
+        }
+
+    def generate_enhancement_preview(
+        self, file_path: Path, patterns: Optional[List[str]] = None
+    ) -> Dict[str, Any]:
+        """
+        Generate a preview of what the enhanced code would look like.
+
+        Args:
+            file_path: Path to Python file
+            patterns: Optional list of specific patterns to apply
+
+        Returns:
+            Dictionary with preview information
+        """
+        try:
+            with open(file_path, "r", encoding="utf-8") as f:
+                original_source = f.read()
+
+            # Create an injection config
+            from ..injection.ast_analyzer import PatternType
+
+            enabled_patterns = set()
+            if patterns:
+                for pattern in patterns:
+                    try:
+                        enabled_patterns.add(PatternType(pattern))
+                    except ValueError:
+                        pass  # Skip invalid pattern types
+            else:
+                # Default patterns
+                enabled_patterns = {PatternType.SOMETIMES, PatternType.MAYBE, PatternType.RARELY}
+
+            config = InjectionConfig(
+                enabled_patterns=enabled_patterns,
+                safety_level="safe",
+                preserve_comments=True,
+                add_kinda_imports=True,
+            )
+
+            # Use injection engine to transform the code
+            result = self.injection_engine.inject_source(original_source, config)
+
+            preview = {
+                "file_path": str(file_path),
+                "original_lines": len(original_source.splitlines()),
+                "enhanced_lines": (
+                    len(result.transformed_code.splitlines()) if result.success else 0
+                ),
+                "patterns_applied": result.applied_patterns if result.success else [],
+                "enhancement_successful": result.success,
+                "preview_snippet": self._generate_preview_snippet(
+                    original_source,
+                    result.transformed_code if result.success else original_source,
+                ),
+                "warnings": result.warnings if hasattr(result, "warnings") else [],
+            }
+
+            return preview
+
+        except Exception as e:
+            return {
+                "file_path": str(file_path),
+                "error": f"Failed to generate preview: {e}",
+                "enhancement_successful": False,
+            }
+
+    def validate_enhancement_safety(self, file_path: Path) -> Dict[str, Any]:
+        """
+        Validate the safety of applying enhancements to a file.
+
+        Args:
+            file_path: Path to Python file
+
+        Returns:
+            Dictionary with safety validation results
+        """
+        analysis = self.analyze_file(file_path)
+        if not analysis:
+            return {"error": "Failed to analyze file", "safe": False}
+
+        safety_report = {
+            "file_path": str(file_path),
+            "timestamp": datetime.now().isoformat(),
+            "overall_safety": "safe",
+            "risk_factors": [],
+            "recommendations": [],
+            "safe_patterns": [],
+            "risky_patterns": [],
+        }
+
+        for opportunity in analysis.injection_opportunities:
+            if opportunity.safety_level.value in ["safe", "caution"]:
+                safety_report["safe_patterns"].append(
+                    {
+                        "pattern": opportunity.pattern_type.value,
+                        "location": f"line {opportunity.location.line}",
+                        "safety_level": opportunity.safety_level.value,
+                    }
+                )
+            else:
+                safety_report["risky_patterns"].append(
+                    {
+                        "pattern": opportunity.pattern_type.value,
+                        "location": f"line {opportunity.location.line}",
+                        "safety_level": opportunity.safety_level.value,
+                    }
+                )
+                safety_report["overall_safety"] = "risky"
+
+        # Add risk factors from file analysis
+        if analysis.risks:
+            safety_report["risk_factors"].extend(analysis.risks)
+            if safety_report["overall_safety"] == "safe":
+                safety_report["overall_safety"] = "caution"
+
+        # Generate recommendations
+        if safety_report["risky_patterns"]:
+            safety_report["recommendations"].append(
+                "Review risky patterns manually before applying"
+            )
+        if analysis.complexity_score > 20:
+            safety_report["recommendations"].append(
+                "High complexity file - consider refactoring first"
+            )
+
+        return safety_report
+
+    def get_migration_statistics(self, project_path: Path) -> Dict[str, Any]:
+        """
+        Get comprehensive migration statistics for a project.
+
+        Args:
+            project_path: Path to project
+
+        Returns:
+            Dictionary with migration statistics
+        """
+        directory_analysis = self.analyze_directory(project_path, recursive=True)
+
+        stats = {
+            "project_path": str(project_path),
+            "timestamp": datetime.now().isoformat(),
+            "file_count": directory_analysis.files_analyzed,
+            "files_analyzed": directory_analysis.files_analyzed,  # Add this for test compatibility
+            "function_count": directory_analysis.total_functions,
+            "class_count": directory_analysis.total_classes,
+            "method_count": directory_analysis.total_methods,
+            "enhancement_opportunities": directory_analysis.total_opportunities,
+            "pattern_distribution": {},
+            "complexity_distribution": {},
+            "safety_distribution": {},
+            "readiness_score": 0.0,
+        }
+
+        # Calculate pattern distribution
+        all_opportunities = []
+        for fa in directory_analysis.file_analyses:
+            all_opportunities.extend(fa.injection_opportunities)
+
+        pattern_counts = {}
+        safety_counts = {"safe": 0, "caution": 0, "risky": 0, "dangerous": 0}
+
+        for opp in all_opportunities:
+            pattern_type = opp.pattern_type.value
+            pattern_counts[pattern_type] = pattern_counts.get(pattern_type, 0) + 1
+            safety_counts[opp.safety_level.value] = safety_counts.get(opp.safety_level.value, 0) + 1
+
+        stats["pattern_distribution"] = pattern_counts
+        stats["safety_distribution"] = safety_counts
+
+        # Calculate complexity distribution
+        complexities = [fa.complexity_score for fa in directory_analysis.file_analyses]
+        stats["complexity_distribution"] = {
+            "low": len([c for c in complexities if c <= 5]),
+            "medium": len([c for c in complexities if 5 < c <= 15]),
+            "high": len([c for c in complexities if 15 < c <= 30]),
+            "very_high": len([c for c in complexities if c > 30]),
+        }
+
+        # Calculate readiness score (0-100)
+        readiness_factors = [
+            min(
+                stats["enhancement_opportunities"] / max(stats["file_count"], 1) * 10, 30
+            ),  # Opportunity density
+            min(safety_counts["safe"] / max(len(all_opportunities), 1) * 40, 40),  # Safety ratio
+            max(0, 30 - stats["complexity_distribution"]["very_high"] * 5),  # Complexity penalty
+        ]
+        stats["readiness_score"] = sum(readiness_factors)
+
+        return stats
+
     def create_migration_backup(
-        self, project_path: Path, backup_name: Optional[str] = None
+        self,
+        project_path: Path,
+        backup_name: Optional[str] = None,
+        backup_suffix: Optional[str] = None,
     ) -> Path:
         """
         Create a complete backup of the project before migration.
@@ -186,72 +569,85 @@ class MigrationUtilities:
         Args:
             project_path: Path to the project to backup
             backup_name: Optional name for backup directory
+            backup_suffix: Optional suffix to add to backup name
 
         Returns:
             Path to the backup directory
         """
         if backup_name is None:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            backup_name = f"kinda_migration_backup_{timestamp}"
+            base_name = f"kinda_migration_backup_{timestamp}"
+            if backup_suffix:
+                base_name += backup_suffix
+            backup_name = base_name
 
         backup_path = project_path.parent / backup_name
 
-        # Create backup
-        shutil.copytree(
-            project_path,
-            backup_path,
-            ignore=shutil.ignore_patterns(".git", ".venv", "__pycache__", "*.pyc", ".pytest_cache"),
-        )
+        # Create backup - handle both files and directories
+        if project_path.is_file():
+            # For single files, create a backup file directly
+            backup_file_path = backup_path.with_suffix(project_path.suffix)
+            shutil.copy2(project_path, backup_file_path)
+            actual_backup_path = backup_file_path
+        else:
+            # For directories, copy the entire directory tree
+            shutil.copytree(
+                project_path,
+                backup_path,
+                ignore=shutil.ignore_patterns(
+                    ".git", ".venv", "__pycache__", "*.pyc", ".pytest_cache"
+                ),
+            )
+            actual_backup_path = backup_path
 
-        # Create backup metadata
-        metadata = {
-            "backup_timestamp": datetime.now().isoformat(),
-            "original_path": str(project_path),
-            "backup_path": str(backup_path),
-            "kinda_lang_version": "0.5.5-dev",  # Should get from actual version
-            "purpose": "Pre-migration backup",
-        }
+        # Create backup metadata (only for directories)
+        if actual_backup_path.is_dir():
+            metadata = {
+                "backup_timestamp": datetime.now().isoformat(),
+                "original_path": str(project_path),
+                "backup_path": str(actual_backup_path),
+                "kinda_lang_version": "0.5.5-dev",  # Should get from actual version
+                "purpose": "Pre-migration backup",
+            }
 
-        with open(backup_path / ".kinda_backup_metadata.json", "w") as f:
-            json.dump(metadata, f, indent=2)
+            with open(actual_backup_path / ".kinda_backup_metadata.json", "w") as f:
+                json.dump(metadata, f, indent=2)
 
-        return backup_path
+        return actual_backup_path
 
-    def restore_from_backup(self, backup_path: Path, target_path: Optional[Path] = None) -> bool:
+    def restore_from_backup(self, target_path: Path, backup_path: Path) -> bool:
         """
         Restore project from backup.
 
         Args:
-            backup_path: Path to backup directory
-            target_path: Target restoration path (uses original if None)
+            target_path: Target restoration path where backup should be restored
+            backup_path: Path to backup file or directory
 
         Returns:
             True if restoration successful
         """
         try:
-            # Read backup metadata
-            metadata_file = backup_path / ".kinda_backup_metadata.json"
-            if metadata_file.exists():
-                with open(metadata_file, "r") as f:
-                    metadata = json.load(f)
-                original_path = Path(metadata["original_path"])
+            if backup_path.is_file():
+                # Restoring a single file
+                # Remove existing file if it exists
+                if target_path.exists():
+                    target_path.unlink()
+
+                # Copy backup file to target location
+                shutil.copy2(backup_path, target_path)
+
             else:
-                if target_path is None:
-                    raise ValueError("No metadata found and no target path specified")
-                original_path = target_path
+                # Restoring a directory
+                # Remove existing directory if it exists
+                if target_path.exists():
+                    shutil.rmtree(target_path)
 
-            restore_path = target_path or original_path
-
-            # Remove existing directory if it exists
-            if restore_path.exists():
-                shutil.rmtree(restore_path)
-
-            # Copy backup to target location
-            shutil.copytree(
-                backup_path,
-                restore_path,
-                ignore=shutil.ignore_patterns(".kinda_backup_metadata.json"),
-            )
+                # Copy backup to target location
+                shutil.copytree(
+                    backup_path,
+                    target_path,
+                    ignore=shutil.ignore_patterns(".kinda_backup_metadata.json"),
+                )
 
             return True
 
@@ -437,7 +833,7 @@ class MigrationUtilities:
         # Check injection opportunities
         opportunities = analysis["injection_opportunities"]
         risky_opportunities = [
-            o for o in opportunities if o.get("safety_level") in ["risky", "dangerous"]
+            o for o in opportunities if o.safety_level.value in ["risky", "dangerous"]
         ]
 
         if len(risky_opportunities) > 10:
@@ -537,8 +933,9 @@ class MigrationUtilities:
         self,
         function_count: int,
         class_count: int,
+        method_count: int,
         complexity: int,
-        opportunities: List[Dict[str, Any]],
+        opportunities: List[InjectionPoint],
         risks: List[str],
     ) -> List[str]:
         """Generate recommendations for a specific file"""
@@ -566,7 +963,7 @@ class MigrationUtilities:
 
         # Adjust for opportunity types
         for opp in opportunities:
-            if opp.get("pattern") in ["kinda_repeat", "sometimes"]:
+            if opp.pattern_type.value in ["kinda_repeat", "sometimes"]:
                 total_impact += 1.0  # Higher impact patterns
 
         return min(total_impact, 25.0)  # Cap at 25%
@@ -652,3 +1049,73 @@ class MigrationUtilities:
             comparison["additional_checks"].append(f"Comparison failed: {e}")
 
         return comparison
+
+    def _generate_pattern_suggestion(self, injection_point: InjectionPoint) -> str:
+        """Generate a suggested replacement for an injection point"""
+        pattern_type = injection_point.pattern_type.value
+
+        if pattern_type == "kinda_int":
+            return f"kinda_int({injection_point.node.value})"
+        elif pattern_type == "kinda_float":
+            return f"kinda_float({injection_point.node.value})"
+        elif pattern_type == "sorta_print":
+            return f"sorta_print(...)"
+        elif pattern_type in ["sometimes", "maybe", "rarely"]:
+            return f"~{pattern_type} {{ ... }}"
+        else:
+            return f"# Apply {pattern_type} pattern here"
+
+    def _assess_enhancement_safety(self, opportunities: List[InjectionPoint]) -> str:
+        """Assess the safety of enhancement opportunities"""
+        if not opportunities:
+            return "safe"
+
+        risk_levels = [op.safety_level.value for op in opportunities]
+        if "dangerous" in risk_levels:
+            return "dangerous"
+        elif "risky" in risk_levels:
+            return "risky"
+        elif "caution" in risk_levels:
+            return "caution"
+        else:
+            return "safe"
+
+    def _estimate_complexity_change(self, opportunities: List[InjectionPoint]) -> Dict[str, Any]:
+        """Estimate how complexity will change with enhancements"""
+        return {
+            "base_complexity_increase": len(opportunities) * 0.1,
+            "pattern_complexity": {
+                op.pattern_type.value: (
+                    0.2 if op.pattern_type.value in ["kinda_repeat", "sometimes"] else 0.1
+                )
+                for op in opportunities
+            },
+            "overall_assessment": (
+                "minimal"
+                if len(opportunities) < 5
+                else "moderate" if len(opportunities) < 15 else "significant"
+            ),
+        }
+
+    def _recommend_enhancement_approach(self, analysis: CodeAnalysis) -> str:
+        """Recommend an enhancement approach based on analysis"""
+        if analysis.complexity_score > 25:
+            return "conservative - refactor first"
+        elif len(analysis.risks) > 3:
+            return "careful - manual review recommended"
+        elif len(analysis.injection_opportunities) > 20:
+            return "aggressive - good enhancement candidate"
+        else:
+            return "standard - proceed with normal caution"
+
+    def _generate_preview_snippet(self, original: str, enhanced: str) -> Dict[str, Any]:
+        """Generate a preview snippet showing changes"""
+        original_lines = original.splitlines()
+        enhanced_lines = enhanced.splitlines()
+
+        return {
+            "original_excerpt": original_lines[:10],  # First 10 lines
+            "enhanced_excerpt": enhanced_lines[:10],  # First 10 lines
+            "changes_detected": len(original_lines) != len(enhanced_lines) or original != enhanced,
+            "line_count_change": len(enhanced_lines) - len(original_lines),
+        }

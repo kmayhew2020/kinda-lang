@@ -7,10 +7,7 @@ Testing the four-phase gradual migration strategy for Python codebases.
 
 import pytest
 
-# Skip Epic 127 migration tests temporarily for CI 100% pass rate
-pytestmark = pytest.mark.skip(
-    reason="Epic 127 experimental migration features - skipped for v0.5.1 release"
-)
+# Epic #127 Phase 1: Test Infrastructure Recovery - Migration Strategy Tests ENABLED
 import tempfile
 from pathlib import Path
 from unittest.mock import Mock, patch

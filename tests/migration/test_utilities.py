@@ -7,10 +7,7 @@ Testing the migration utilities for analyzing and transforming Python codebases.
 
 import pytest
 
-# Skip Epic 127 migration tests temporarily for CI 100% pass rate
-pytestmark = pytest.mark.skip(
-    reason="Epic 127 experimental migration features - skipped for v0.5.1 release"
-)
+# Epic #127 Phase 1: Test Infrastructure Recovery - Migration Utilities Tests ENABLED
 import tempfile
 from pathlib import Path
 from unittest.mock import Mock, patch
@@ -479,7 +476,8 @@ but there's no actual code.
     def test_binary_file_handling(self):
         """Test handling binary files gracefully"""
         with tempfile.NamedTemporaryFile(suffix=".pyc", delete=False) as f:
-            f.write(b"\x00\x01\x02\x03")  # Binary content
+            # Write binary content that will definitely trigger UnicodeDecodeError
+            f.write(b"\x00\x01\x02\x03\xff\xfe\xfd\xfc\x80\x81\x82\x83")
             temp_path = Path(f.name)
 
         try:
@@ -515,6 +513,12 @@ def function_{i}(x: int) -> int:
 
     def test_permission_denied_file(self):
         """Test handling permission denied scenarios"""
+        import platform
+
+        # Skip on Windows as file permission model is different
+        if platform.system() == "Windows":
+            pytest.skip("File permission test not reliable on Windows")
+
         # This test might not work in all environments
         # but tests the error handling pathway
         with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as f:

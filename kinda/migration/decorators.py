@@ -190,16 +190,33 @@ def _parse_patterns(patterns: Union[List[str], Set[PatternType]]) -> Set[Pattern
 
     result = set()
     for pattern in patterns:
-        if isinstance(pattern, str) and pattern in pattern_mapping:
-            result.add(pattern_mapping[pattern])
+        if isinstance(pattern, str):
+            if pattern in pattern_mapping:
+                result.add(pattern_mapping[pattern])
+            else:
+                raise ValueError(
+                    f"Invalid pattern name: '{pattern}'. Valid patterns are: {', '.join(pattern_mapping.keys())}"
+                )
         elif isinstance(pattern, PatternType):
             result.add(pattern)
+        else:
+            raise ValueError(f"Pattern must be a string or PatternType, got {type(pattern)}")
 
     return result
 
 
 def _create_enhanced_function(func: Callable, config: EnhancementConfig) -> Callable:
     """Create enhanced version of function with kinda-lang injection"""
+
+    # Check for unsupported function types first
+    if hasattr(func, "__name__") and func.__name__ == "<lambda>":
+        raise TypeError("Cannot enhance lambda functions: source code not accessible")
+
+    # Check for builtin functions
+    if inspect.isbuiltin(func):
+        raise TypeError(
+            f"Cannot enhance builtin function '{func.__name__}': source code not accessible"
+        )
 
     # Get function source code
     try:
@@ -232,11 +249,8 @@ def _create_enhanced_function(func: Callable, config: EnhancementConfig) -> Call
             clean_source = "\n".join(filtered_lines)
 
     except (OSError, IOError):
-        # Can't get source - return original function with warning
-        import warnings
-
-        warnings.warn(f"Could not enhance function {func.__name__}: source unavailable")
-        return func
+        # Can't get source - raise appropriate error instead of warning
+        raise TypeError(f"Could not enhance function {func.__name__}: source unavailable")
 
     # Create injection configuration
     injection_config = InjectionConfig(
