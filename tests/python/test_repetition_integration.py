@@ -204,7 +204,9 @@ print(f"RARE:{rare_executions}")
                 # This is a known issue - rarely should be ~5% but chaos calculation makes it ~50%
                 # TODO: Fix chaos probability to preserve rarely's infrequent nature
                 rare_rate = rare_count / total_loops if total_loops > 0 else 0
-                assert rare_rate <= 0.65, f"Rarely rate too high: {rare_rate:.3f} (expected ≤65% due to current chaos calculation bug)"
+                assert (
+                    rare_rate <= 0.65
+                ), f"Rarely rate too high: {rare_rate:.3f} (expected ≤65% due to current chaos calculation bug)"
 
             finally:
                 try:

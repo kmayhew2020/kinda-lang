@@ -72,7 +72,9 @@ class TestDemoTransformerRegressions:
         # The specific pattern from statistical_testing_demo.py.knda line 102
         line = '~assert_eventually (False, timeout=0.5, confidence=0.95) ~welp ~sorta print("Expected failure!")'
         result = transform_line(line)
-        expected = ['welp_fallback(lambda: assert_eventually(False, timeout=0.5, confidence=0.95), sorta_print("Expected failure!"))']
+        expected = [
+            'welp_fallback(lambda: assert_eventually(False, timeout=0.5, confidence=0.95), sorta_print("Expected failure!"))'
+        ]
         assert result == expected
 
     def test_nested_inline_constructs(self):

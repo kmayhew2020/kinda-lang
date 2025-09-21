@@ -270,11 +270,11 @@ def _transform_ish_constructs(line: str) -> str:
 def _extract_single_line_block(line: str, construct_end_pos: int):
     """Extract content from single-line blocks like { code }."""
     remaining = line[construct_end_pos:].strip()
-    if remaining.startswith('{') and remaining.endswith('}'):
+    if remaining.startswith("{") and remaining.endswith("}"):
         # Single-line block
         block_content = remaining[1:-1].strip()
         return block_content, ""
-    elif '{' in remaining:
+    elif "{" in remaining:
         # Multi-line block or invalid - let the regular block processor handle it
         return "", remaining
     else:
@@ -290,7 +290,7 @@ def _transform_conditional_constructs(line: str) -> str:
     # This avoids interfering with statement-level constructs like ~probably (...) { ... }
 
     # First handle ~assert_eventually inline usage (this needs to be first)
-    assert_eventually_pattern = re.compile(r'~assert_eventually\s*\(([^)]+)\)')
+    assert_eventually_pattern = re.compile(r"~assert_eventually\s*\(([^)]+)\)")
 
     def replace_assert_eventually(match):
         # Skip if inside string literal
@@ -305,7 +305,9 @@ def _transform_conditional_constructs(line: str) -> str:
     # Pattern to match inline conditional constructs without parentheses
     # Only match when NOT followed by braces (statement-level constructs)
     # Look ahead to ensure there's no { after the condition
-    conditional_pattern = re.compile(r'~(sometimes|maybe|probably|rarely)\s+([^,\(\)\{\~]+?)(?=\s*[,\)\]\}]|$)(?!\s*\{)')
+    conditional_pattern = re.compile(
+        r"~(sometimes|maybe|probably|rarely)\s+([^,\(\)\{\~]+?)(?=\s*[,\)\]\}]|$)(?!\s*\{)"
+    )
 
     def replace_conditional(match):
         # Skip if inside string literal
@@ -317,7 +319,7 @@ def _transform_conditional_constructs(line: str) -> str:
         return f"{construct_name}({condition})"
 
     # Also handle ~sorta print inline usage
-    sorta_print_pattern = re.compile(r'~sorta\s+print\s*\(([^)]+)\)')
+    sorta_print_pattern = re.compile(r"~sorta\s+print\s*\(([^)]+)\)")
 
     def replace_sorta_print(match):
         # Skip if inside string literal
@@ -475,10 +477,13 @@ def transform_line(line: str) -> List[str]:
         if construct_match != -1:
             # Find where the construct pattern ends
             import re
+
             pattern = re.compile(r"~sometimes\s*\([^)]*\)")
             match = pattern.search(welp_transformed_line)
             if match:
-                block_content, remaining = _extract_single_line_block(welp_transformed_line, match.end())
+                block_content, remaining = _extract_single_line_block(
+                    welp_transformed_line, match.end()
+                )
                 if block_content:
                     transformed_code = f"{base_code} {block_content}"
                 else:
@@ -497,10 +502,13 @@ def transform_line(line: str) -> List[str]:
         construct_match = welp_transformed_line.find("~maybe")
         if construct_match != -1:
             import re
+
             pattern = re.compile(r"~maybe\s*\([^)]*\)")
             match = pattern.search(welp_transformed_line)
             if match:
-                block_content, remaining = _extract_single_line_block(welp_transformed_line, match.end())
+                block_content, remaining = _extract_single_line_block(
+                    welp_transformed_line, match.end()
+                )
                 if block_content:
                     transformed_code = f"{base_code} {block_content}"
                 else:
@@ -519,10 +527,13 @@ def transform_line(line: str) -> List[str]:
         construct_match = welp_transformed_line.find("~probably")
         if construct_match != -1:
             import re
+
             pattern = re.compile(r"~probably\s*\([^)]*\)")
             match = pattern.search(welp_transformed_line)
             if match:
-                block_content, remaining = _extract_single_line_block(welp_transformed_line, match.end())
+                block_content, remaining = _extract_single_line_block(
+                    welp_transformed_line, match.end()
+                )
                 if block_content:
                     transformed_code = f"{base_code} {block_content}"
                 else:
@@ -541,10 +552,13 @@ def transform_line(line: str) -> List[str]:
         construct_match = welp_transformed_line.find("~rarely")
         if construct_match != -1:
             import re
+
             pattern = re.compile(r"~rarely\s*\([^)]*\)")
             match = pattern.search(welp_transformed_line)
             if match:
-                block_content, remaining = _extract_single_line_block(welp_transformed_line, match.end())
+                block_content, remaining = _extract_single_line_block(
+                    welp_transformed_line, match.end()
+                )
                 if block_content:
                     transformed_code = f"{base_code} {block_content}"
                 else:
