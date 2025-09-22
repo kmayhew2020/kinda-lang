@@ -19,8 +19,12 @@ import os
 # Load the old security.py file directly
 security_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "security.py")
 spec = importlib.util.spec_from_file_location("old_security", security_path)
-old_security = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(old_security)
+if spec is not None:
+    old_security = importlib.util.module_from_spec(spec)
+    if spec.loader is not None:
+        spec.loader.exec_module(old_security)
+else:
+    raise ImportError(f"Could not load security module from {security_path}")
 
 # Import the functions we need
 secure_condition_check = old_security.secure_condition_check

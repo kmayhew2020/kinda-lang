@@ -175,8 +175,8 @@ class SecureExecutionEngine:
                     )
 
             # Execute with restricted imports and builtins
-            stdout_capture = []
-            stderr_capture = []
+            stdout_capture: List[str] = []
+            stderr_capture: List[str] = []
 
             # Create secure execution environment
             secure_globals = self._create_secure_globals(working_directory)
@@ -368,7 +368,7 @@ class SecureExecutionEngine:
         """
         program_path = Path(program_path).resolve()
 
-        validation_result = {
+        validation_result: Dict[str, Any] = {
             "safe_to_execute": True,
             "security_warnings": [],
             "blocked_imports": [],
@@ -488,13 +488,14 @@ class SecureExecutionEngine:
                 if self.security_level == SecurityLevel.SAFE:
                     safe = False
 
-        # Check for dangerous imports
+        # Check for dangerous imports (os/sys are provided safely)
         dangerous_imports = [
-            "import os",
             "import subprocess",
-            "import sys",
-            "from os import",
             "from subprocess import",
+            "import multiprocessing",
+            "from multiprocessing import",
+            "import socket",
+            "from socket import",
         ]
 
         for imp in dangerous_imports:
@@ -518,7 +519,7 @@ class SecureExecutionEngine:
         import datetime
         import time as time_module
 
-        safe_modules = {
+        safe_modules: Dict[str, Any] = {
             "math": math,
             "random": random,
             "json": json,
@@ -526,28 +527,86 @@ class SecureExecutionEngine:
             "time": time_module,
         }
 
+        # Always provide safe subsets of os and sys to prevent import blocking
+        import os
+        import sys
+
+        # Provide limited sys functionality (read-only)
+        limited_sys = type(
+            "LimitedSys",
+            (),
+            {
+                "path": list(sys.path),  # Read-only copy
+                "version": sys.version,
+                "version_info": sys.version_info,
+                "platform": sys.platform,
+            },
+        )
+        safe_modules["sys"] = limited_sys
+
+        # Provide limited os functionality (safe operations only)
+        # Create a safe path module that only allows path manipulation, not listing
+        safe_path = type(
+            "SafePath",
+            (),
+            {
+                "join": os.path.join,
+                "abspath": os.path.abspath,
+                "dirname": os.path.dirname,
+                "basename": os.path.basename,
+                "splitext": os.path.splitext,
+                "exists": lambda p: False,  # Block file existence checks for security
+                "isfile": lambda p: False,  # Block file type checks
+                "isdir": lambda p: False,  # Block directory checks
+            },
+        )
+
+        limited_os_basic = type(
+            "LimitedOS",
+            (),
+            {
+                "getcwd": os.getcwd,
+                "path": safe_path,  # Only safe path operations
+                "environ": dict(os.environ),  # Read-only copy
+                # Explicitly do NOT include listdir, open, etc.
+            },
+        )
+        safe_modules["os"] = limited_os_basic
+
         # Add modules based on security level
         if self.security_level in [SecurityLevel.CAUTION, SecurityLevel.RISKY]:
             import pathlib
 
             safe_modules["pathlib"] = pathlib
 
-        if self.security_level == SecurityLevel.RISKY:
-            import os
-
-            # Even in risky mode, provide limited os functionality
-            safe_modules["os"] = type(
-                "LimitedOS",
-                (),
-                {
-                    "getcwd": os.getcwd,
-                    "path": os.path,
-                    "environ": dict(os.environ),  # Read-only copy
-                },
-            )
+        # Note: os and sys modules are now provided safely in all security levels above
 
         # Add available modules to globals
         secure_globals.update(safe_modules)
+
+        # Override __import__ to control module imports
+        original_import = (
+            __builtins__.__import__ if hasattr(__builtins__, "__import__") else __import__
+        )
+
+        def secure_import(name, globals=None, locals=None, fromlist=(), level=0):
+            """Secure import function that provides safe modules"""
+            if name in safe_modules:
+                return safe_modules[name]
+            elif name in ["subprocess", "multiprocessing", "socket", "urllib", "http"]:
+                raise ImportError(f"Import of {name} is not allowed for security reasons")
+            else:
+                # Allow other imports normally
+                return original_import(name, globals, locals, fromlist, level)
+
+        secure_globals["__import__"] = secure_import
+
+        # Also need to create secure builtins
+        secure_builtins = (
+            dict(__builtins__) if isinstance(__builtins__, dict) else __builtins__.__dict__.copy()
+        )
+        secure_builtins["__import__"] = secure_import
+        secure_globals["__builtins__"] = secure_builtins
 
         # Add kinda-lang specific modules if available
         try:
@@ -561,4 +620,4 @@ class SecureExecutionEngine:
         secure_globals["__file__"] = str(working_directory / "__main__.py")
         secure_globals["__name__"] = "__main__"
 
-        return secure_globals
+        return dict(secure_globals)

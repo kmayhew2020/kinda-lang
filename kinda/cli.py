@@ -470,8 +470,8 @@ def handle_inject_run(args) -> int:
 
         safe_print(f"🛡️ Running with security level: {security_level.value}")
 
-        engine = SecureExecutionEngine(security_level)
-        exec_result = engine.execute_file(Path(temp_path))
+        secure_engine = SecureExecutionEngine(security_level)
+        exec_result = secure_engine.execute_file(Path(temp_path))
 
         if exec_result.success:
             if exec_result.stdout:
@@ -1019,10 +1019,8 @@ def main(argv=None) -> int:
                             safe_print(f"   • {blocked}")
 
                     # Provide error handling for the new result format
-                    e = Exception(result.stderr)
-
                     # Provide snarky but helpful suggestions based on error type
-                    error_str = str(e).lower()
+                    error_str = result.stderr.lower()
                     if "invalid syntax" in error_str:
                         safe_print(
                             "[shrug] Well, that's syntactically questionable. Common kinda fails:"

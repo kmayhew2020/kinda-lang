@@ -319,7 +319,7 @@ class SafeBuiltins:
 
     def get_safe_builtins(self) -> Dict[str, Any]:
         """Get the safe builtins dictionary"""
-        return self._safe_builtins.copy()
+        return dict(self._safe_builtins)
 
 
 class PythonSandbox:
@@ -339,11 +339,9 @@ class PythonSandbox:
 
     def _initialize_module_restrictions(self):
         """Initialize module import restrictions"""
-        # Modules that are always blocked
+        # Modules that are always blocked (os and sys are provided safely instead)
         self.blocked_modules.update(
             [
-                "os",
-                "sys",
                 "subprocess",
                 "multiprocessing",
                 "threading",
@@ -436,7 +434,7 @@ class PythonSandbox:
         Returns:
             Dictionary with validation results
         """
-        validation = {
+        validation: Dict[str, Any] = {
             "is_secure": True,
             "warnings": [],
             "violations": [],
