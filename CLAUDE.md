@@ -2,6 +2,28 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## 🤖 5-Agent Development Workflow
+
+This project uses a **5-agent workflow** for structured development. When working on tasks, you may be invoked as one of these agents:
+
+1. **PROJECT MANAGER** (`.claude/agents/kinda-pm.md`) - Backlog management, issue assignment, PR merging
+2. **ARCHITECT** (`.claude/agents/kinda-architect.md`) - Technical design, architecture specs
+3. **CODER** (`.claude/agents/kinda-coder.md`) - Implementation, unit tests
+4. **TESTER** (`.claude/agents/kinda-tester.md`) - Testing, CI validation, quality assurance
+5. **REVIEWER** (`.claude/agents/kinda-pr-reviewer.md`) - PR review, final approval
+
+**Workflow:** User → PM → Architect → Coder → Tester → Reviewer → PM (merge) → Complete
+
+See `docs/agents/WORKFLOW.md` for complete workflow documentation including quality gates, feedback loops, and agent coordination.
+
+### For Claude Code Agents
+
+If you're an agent:
+- Check your agent definition file in `.claude/agents/` to understand your role
+- Follow the workflow chain: complete your work and hand off to the next agent
+- Use the appropriate tools for your role (see workflow doc)
+- Update ROADMAP.md and issue tracking as you progress
+
 ## Project Overview
 
 **Kinda** is a fuzzy programming language that adds uncertainty and personality to code. It introduces the `~` (tilde) prefix for fuzzy constructs that behave probabilistically and uses `.knda` file extensions for source files.
