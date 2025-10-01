@@ -1119,3 +1119,343 @@ class MigrationUtilities:
             "changes_detected": len(original_lines) != len(enhanced_lines) or original != enhanced,
             "line_count_change": len(enhanced_lines) - len(original_lines),
         }
+
+    # ========================================================================
+    # Test Compatibility Methods
+    # ========================================================================
+    # These methods provide aliases and wrappers for test expectations
+    # They delegate to the actual implementation methods
+
+    def analyze_migration_potential(self, code: str) -> Dict[str, Any]:
+        """
+        Analyze code string for migration potential (test compatibility alias).
+
+        Args:
+            code: Python source code as string
+
+        Returns:
+            Dictionary with migration analysis results
+        """
+        # Create a temporary file to analyze the code
+        import tempfile
+
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as f:
+            f.write(code)
+            temp_path = Path(f.name)
+
+        try:
+            analysis = self.analyze_file(temp_path)
+            if not analysis:
+                return {
+                    "migration_score": 0.0,
+                    "injection_points": 0,
+                    "complexity_level": "unknown",
+                    "recommended_patterns": [],
+                }
+
+            # Convert to expected format
+            complexity_level = (
+                "low"
+                if analysis.complexity_score <= 5
+                else (
+                    "medium"
+                    if analysis.complexity_score <= 15
+                    else "high" if analysis.complexity_score <= 30 else "very_high"
+                )
+            )
+
+            # Calculate migration score (0-1)
+            score = min(
+                len(analysis.injection_opportunities) * 0.1
+                + (1.0 - min(analysis.complexity_score / 50.0, 1.0)) * 0.5,
+                1.0,
+            )
+
+            # Extract recommended patterns
+            recommended_patterns = list(
+                set(opp.pattern_type.value for opp in analysis.injection_opportunities)
+            )
+
+            return {
+                "migration_score": score,
+                "injection_points": len(analysis.injection_opportunities),
+                "complexity_level": complexity_level,
+                "recommended_patterns": recommended_patterns,
+            }
+        finally:
+            # Clean up temp file
+            temp_path.unlink(missing_ok=True)
+
+    def suggest_migration_points(self, code: str) -> List[Dict[str, Any]]:
+        """
+        Suggest specific migration points in code (test compatibility alias).
+
+        Args:
+            code: Python source code as string
+
+        Returns:
+            List of suggested migration points with line numbers and patterns
+        """
+        # Create a temporary file to analyze the code
+        import tempfile
+
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as f:
+            f.write(code)
+            temp_path = Path(f.name)
+
+        try:
+            analysis = self.analyze_file(temp_path)
+            if not analysis:
+                return []
+
+            suggestions = []
+            for opp in analysis.injection_opportunities:
+                suggestions.append(
+                    {
+                        "line": opp.location.line,
+                        "pattern": opp.pattern_type.value,
+                        "code": f"# Line {opp.location.line}",  # Simplified code reference
+                        "confidence": opp.confidence,
+                    }
+                )
+
+            return suggestions
+        finally:
+            # Clean up temp file
+            temp_path.unlink(missing_ok=True)
+
+    def estimate_migration_effort(self, code: str) -> Dict[str, Any]:
+        """
+        Estimate migration effort for code (test compatibility method).
+
+        Args:
+            code: Python source code as string
+
+        Returns:
+            Dictionary with effort estimates
+        """
+        # Create a temporary file to analyze the code
+        import tempfile
+
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as f:
+            f.write(code)
+            temp_path = Path(f.name)
+
+        try:
+            analysis = self.analyze_file(temp_path)
+            if not analysis:
+                return {
+                    "effort_level": "unknown",
+                    "estimated_hours": 0,
+                    "complexity_factors": [],
+                    "risk_factors": [],
+                }
+
+            # Calculate effort level based on complexity and opportunities
+            score = 0
+            if analysis.complexity_score > 30:
+                score += 3
+                effort_level = "high"
+                estimated_hours = 20
+            elif analysis.complexity_score > 15:
+                score += 2
+                effort_level = "medium"
+                estimated_hours = 8
+            else:
+                score += 1
+                effort_level = "low"
+                estimated_hours = 2
+
+            # Adjust for number of opportunities
+            if len(analysis.injection_opportunities) > 20:
+                score += 2
+                estimated_hours += 5
+            elif len(analysis.injection_opportunities) > 10:
+                score += 1
+                estimated_hours += 2
+
+            # Final effort level
+            if score >= 4:
+                effort_level = "high"
+            elif score >= 2:
+                effort_level = "medium"
+            else:
+                effort_level = "low"
+
+            return {
+                "effort_level": effort_level,
+                "estimated_hours": estimated_hours,
+                "complexity_factors": [
+                    f"Complexity score: {analysis.complexity_score}",
+                    f"Functions: {analysis.function_count}",
+                    f"Classes: {analysis.class_count}",
+                ],
+                "risk_factors": analysis.risks,
+                "injection_opportunities": len(analysis.injection_opportunities),
+            }
+        finally:
+            # Clean up temp file
+            temp_path.unlink(missing_ok=True)
+
+    def analyze_file_migration_potential(self, file_path: Path) -> Dict[str, Any]:
+        """
+        Analyze file for migration potential (test compatibility alias).
+        Delegates to suggest_enhancement_patterns.
+        """
+        return {"suggestions": self.suggest_enhancement_patterns(file_path)}
+
+    def batch_analyze_migration(
+        self, file_paths: List[Path], parallel: bool = False
+    ) -> List[Dict[str, Any]]:
+        """
+        Batch analyze multiple files for migration (test compatibility method).
+
+        Args:
+            file_paths: List of file paths to analyze
+            parallel: Whether to use parallel processing (ignored for now)
+
+        Returns:
+            List of analysis results for each file
+        """
+        results = []
+        for file_path in file_paths:
+            analysis = self.analyze_file(file_path)
+            if analysis:
+                results.append(
+                    {
+                        "file_path": str(file_path),
+                        "function_count": analysis.function_count,
+                        "class_count": analysis.class_count,
+                        "complexity_score": analysis.complexity_score,
+                        "injection_opportunities": len(analysis.injection_opportunities),
+                        "success": True,
+                    }
+                )
+            else:
+                results.append(
+                    {
+                        "file_path": str(file_path),
+                        "success": False,
+                        "error": "Analysis failed",
+                    }
+                )
+
+        return results
+
+    def validate_migration_safety(self, file_path: Path) -> Dict[str, Any]:
+        """
+        Validate migration safety (test compatibility alias).
+        Delegates to validate_enhancement_safety.
+        """
+        return self.validate_enhancement_safety(file_path)
+
+    def prepare_rollback_data(self, file_path: Path) -> Dict[str, Any]:
+        """
+        Prepare rollback data for a file (test compatibility method).
+
+        Args:
+            file_path: Path to file
+
+        Returns:
+            Dictionary with rollback preparation data
+        """
+        # Create backup
+        backup_path = self.create_migration_backup(file_path)
+
+        return {
+            "file_path": str(file_path),
+            "backup_path": str(backup_path),
+            "timestamp": datetime.now().isoformat(),
+            "rollback_ready": True,
+            "backup_size_bytes": backup_path.stat().st_size if backup_path.exists() else 0,
+        }
+
+    def check_library_compatibility(self, file_path: Path) -> Dict[str, Any]:
+        """
+        Check library compatibility for migration (test compatibility method).
+
+        Args:
+            file_path: Path to file
+
+        Returns:
+            Dictionary with compatibility check results
+        """
+        analysis = self.analyze_file(file_path)
+        if not analysis:
+            return {
+                "compatible": False,
+                "warnings": ["Failed to analyze file"],
+                "incompatible_libraries": [],
+            }
+
+        # Check for known incompatible imports
+        incompatible = []
+        for risk in analysis.risks:
+            if "import" in risk.lower():
+                incompatible.append(risk)
+
+        return {
+            "compatible": len(incompatible) == 0,
+            "warnings": analysis.risks,
+            "incompatible_libraries": incompatible,
+            "recommended_actions": analysis.recommendations,
+        }
+
+    def track_migration_progress(self, project_path: Path, checkpoint_name: str) -> Dict[str, Any]:
+        """
+        Track migration progress (test compatibility method).
+
+        Args:
+            project_path: Path to project
+            checkpoint_name: Name of checkpoint
+
+        Returns:
+            Dictionary with progress tracking data
+        """
+        stats = self.get_migration_statistics(project_path)
+
+        return {
+            "project_path": str(project_path),
+            "checkpoint_name": checkpoint_name,
+            "timestamp": datetime.now().isoformat(),
+            "files_processed": stats["files_analyzed"],
+            "enhancement_opportunities": stats["enhancement_opportunities"],
+            "readiness_score": stats["readiness_score"],
+            "progress_percentage": min(stats["readiness_score"], 100.0),
+        }
+
+    def run_migration_validation_suite(self, project_path: Path) -> Dict[str, Any]:
+        """
+        Run comprehensive validation suite (test compatibility method).
+
+        Args:
+            project_path: Path to project
+
+        Returns:
+            Dictionary with validation results
+        """
+        stats = self.get_migration_statistics(project_path)
+        dir_analysis = self.analyze_directory(project_path, recursive=True)
+
+        validation_results = {
+            "project_path": str(project_path),
+            "timestamp": datetime.now().isoformat(),
+            "total_tests": dir_analysis.files_analyzed,
+            "passed_tests": len(
+                [fa for fa in dir_analysis.file_analyses if not fa.has_syntax_errors]
+            ),
+            "failed_tests": len([fa for fa in dir_analysis.file_analyses if fa.has_syntax_errors]),
+            "warnings": [],
+            "errors": [],
+            "overall_status": "pass",
+        }
+
+        # Collect warnings and errors
+        for fa in dir_analysis.file_analyses:
+            if fa.risks:
+                validation_results["warnings"].extend(fa.risks)
+            if fa.has_syntax_errors:
+                validation_results["errors"].append(f"Syntax error in {fa.file_path}")
+                validation_results["overall_status"] = "fail"
+
+        return validation_results

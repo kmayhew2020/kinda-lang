@@ -898,8 +898,9 @@ class TestMigrationGradualRollout:
 
     def test_gradual_migration_decorator_usage(self):
         """Test using gradual migration decorators in real scenarios"""
+        import sys
 
-        with patch("kinda.migration.decorators.gradual_kinda") as mock_gradual:
+        with patch.object(sys.modules[__name__], "gradual_kinda") as mock_gradual:
 
             def mock_gradual_decorator(probability=0.5):
                 def decorator(func):
@@ -937,8 +938,9 @@ class TestMigrationGradualRollout:
 
     def test_safe_migration_with_fallback(self):
         """Test safe migration with fallback mechanisms"""
+        import sys
 
-        with patch("kinda.migration.decorators.kinda_safe") as mock_safe:
+        with patch.object(sys.modules[__name__], "kinda_safe") as mock_safe:
 
             def mock_safe_decorator(fallback_mode=True, max_retries=3):
                 def decorator(func):

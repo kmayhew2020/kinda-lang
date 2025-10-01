@@ -160,8 +160,9 @@ class TestKindaSafeDecorator:
 
     def test_kinda_safe_error_handling(self):
         """Test kinda_safe decorator error handling"""
+        import sys
 
-        with patch("kinda.migration.decorators.kinda_safe") as mock_decorator:
+        with patch.object(sys.modules[__name__], "kinda_safe") as mock_decorator:
 
             def mock_kinda_safe(fallback_mode=True, max_retries=3):
                 def decorator(func):
@@ -196,8 +197,9 @@ class TestKindaSafeDecorator:
 
     def test_kinda_safe_rollback_functionality(self):
         """Test kinda_safe decorator rollback functionality"""
+        import sys
 
-        with patch("kinda.migration.decorators.kinda_safe") as mock_decorator:
+        with patch.object(sys.modules[__name__], "kinda_safe") as mock_decorator:
 
             def mock_kinda_safe(rollback_on_error=True, preserve_state=True):
                 def decorator(func):
@@ -248,8 +250,9 @@ class TestKindaSafeDecorator:
 
     def test_kinda_safe_performance_monitoring(self):
         """Test kinda_safe decorator with performance monitoring"""
+        import sys
 
-        with patch("kinda.migration.decorators.kinda_safe") as mock_decorator:
+        with patch.object(sys.modules[__name__], "kinda_safe") as mock_decorator:
 
             def mock_kinda_safe(monitor_performance=True, timeout_seconds=5):
                 def decorator(func):
@@ -301,19 +304,20 @@ class TestDecoratorsIntegration:
 
     def test_combined_decorators_usage(self):
         """Test using gradual_kinda and kinda_safe together"""
+        import sys
 
         with (
-            patch("kinda.migration.decorators.gradual_kinda") as mock_gradual,
-            patch("kinda.migration.decorators.kinda_safe") as mock_safe,
+            patch.object(sys.modules[__name__], "gradual_kinda") as mock_gradual,
+            patch.object(sys.modules[__name__], "kinda_safe") as mock_safe,
         ):
 
             def mock_gradual_impl(probability=0.5):
                 def decorator(func):
                     @functools.wraps(func)
                     def wrapper(*args, **kwargs):
-                        func._gradual_applied = True
                         return func(*args, **kwargs)
 
+                    wrapper._gradual_applied = True
                     return wrapper
 
                 return decorator
@@ -322,9 +326,9 @@ class TestDecoratorsIntegration:
                 def decorator(func):
                     @functools.wraps(func)
                     def wrapper(*args, **kwargs):
-                        func._safe_applied = True
                         return func(*args, **kwargs)
 
+                    wrapper._safe_applied = True
                     return wrapper
 
                 return decorator
@@ -346,10 +350,11 @@ class TestDecoratorsIntegration:
 
     def test_decorators_with_real_world_functions(self):
         """Test decorators with realistic function scenarios"""
+        import sys
 
         with (
-            patch("kinda.migration.decorators.gradual_kinda") as mock_gradual,
-            patch("kinda.migration.decorators.kinda_safe") as mock_safe,
+            patch.object(sys.modules[__name__], "gradual_kinda") as mock_gradual,
+            patch.object(sys.modules[__name__], "kinda_safe") as mock_safe,
         ):
 
             def mock_gradual_impl(probability=0.5):
