@@ -7,8 +7,8 @@ realistic, production-like scenarios and use cases.
 
 import pytest
 
-# Skip all Epic 127 tests temporarily for CI 100% pass rate
-pytestmark = pytest.mark.skip(reason="Epic 127 experimental features - skipped for v0.5.1 release")
+# Epic 127 tests re-enabled for Phase 1 validation - Issue #138
+# pytestmark = pytest.mark.skip(reason="Epic 127 experimental features - skipped for v0.5.1 release")
 import tempfile
 import shutil
 import json
