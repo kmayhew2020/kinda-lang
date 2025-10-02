@@ -317,16 +317,8 @@ class TestSortaPrintBehavioralCompatibility(unittest.TestCase):
         exec(KindaPythonConstructs["maybe"]["body"], exec_scope)
         exec(KindaPythonConstructs["sorta_print"]["body"], exec_scope)
 
-    def test_shrug_responses_preserved(self):
-        """Test that existing shrug responses are preserved"""
-        expected_shrugs = [
-            "[shrug] Meh...",
-            "[shrug] Not feeling it right now",
-            "[shrug] Maybe later?",
-            "[shrug] *waves hand dismissively*",
-            "[shrug] Kinda busy",
-        ]
-
+    def test_failure_produces_silence(self):
+        """Test that ~sorta print respects the ~20% failure rate by producing silence"""
         # Force failure case by mocking both gates to return False and no bridge
         original_sometimes = globals().get("sometimes")
         original_maybe = globals().get("maybe")
@@ -337,16 +329,15 @@ class TestSortaPrintBehavioralCompatibility(unittest.TestCase):
         try:
             with patch(
                 "kinda.personality.chaos_random", return_value=0.9
-            ):  # Above bridge threshold
+            ):  # Above bridge threshold - ensures failure
                 buf = io.StringIO()
                 with contextlib.redirect_stdout(buf):
                     sorta_print("test")
                 output = buf.getvalue()
 
-                # Should contain one of the expected shrug responses
-                found_shrug = any(shrug in output for shrug in expected_shrugs)
-                self.assertTrue(found_shrug, f"Expected shrug response not found in: {output}")
-                self.assertIn("test", output, "Arguments should still be printed with shrug")
+                # When construct fails, should produce NO output (respecting ~20% failure rate)
+                self.assertEqual(output, "",
+                    f"Expected silence on failure, but got output: {output}")
         finally:
             if original_sometimes:
                 globals()["sometimes"] = original_sometimes

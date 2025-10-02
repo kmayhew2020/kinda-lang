@@ -1235,7 +1235,7 @@ class TestSortaPrintCompositionCoverage:
                 assert mock_print.call_count > 0
 
     def test_sorta_print_empty_args_no_execution(self):
-        """Test sorta_print with empty args - no execution path."""
+        """Test sorta_print with empty args - no execution path produces silence."""
         from kinda.langs.python.runtime.fuzzy import sorta_print
 
         PersonalityContext._instance = PersonalityContext("chaotic", 7, seed=222)
@@ -1243,10 +1243,11 @@ class TestSortaPrintCompositionCoverage:
         # Force no execution by mocking gates to return False
         with patch("kinda.langs.python.runtime.fuzzy.sometimes", return_value=False):
             with patch("kinda.langs.python.runtime.fuzzy.maybe", return_value=False):
-                with patch("builtins.print") as mock_print:
-                    sorta_print()
-                    # Should have printed something (fallback or bridge)
-                    assert mock_print.call_count > 0
+                with patch("kinda.personality.chaos_random", return_value=0.9):  # Above bridge threshold
+                    with patch("builtins.print") as mock_print:
+                        sorta_print()
+                        # Should NOT print anything - respects ~20% failure rate
+                        assert mock_print.call_count == 0
 
     def test_sorta_print_missing_constructs_error(self):
         """Test sorta_print when basic constructs are missing."""
@@ -1268,19 +1269,20 @@ class TestSortaPrintCompositionCoverage:
                 globals()["sometimes"] = old_sometimes
 
     def test_sorta_print_chaotic_personality_bridge(self):
-        """Test sorta_print with chaotic personality bridge probability."""
+        """Test sorta_print with chaotic personality bridge probability success."""
         from kinda.langs.python.runtime.fuzzy import sorta_print
 
         PersonalityContext._instance = PersonalityContext("chaotic", 8, seed=333)
 
-        # Mock gates to fail but trigger bridge probability
+        # Mock gates to fail but trigger bridge probability to rescue execution
         with patch("kinda.langs.python.runtime.fuzzy.sometimes", return_value=False):
             with patch("kinda.langs.python.runtime.fuzzy.maybe", return_value=False):
                 with patch(
-                    "kinda.personality.PersonalityContext.chaos_random", return_value=0.1
-                ):  # < 0.2 bridge prob
+                    "kinda.personality.chaos_random", return_value=0.1
+                ):  # < 0.2 bridge prob - should execute via bridge
                     with patch("builtins.print") as mock_print:
                         sorta_print("bridge test")
+                        # Bridge probability should rescue execution
                         assert mock_print.call_count > 0
 
     def test_sorta_print_composition_exception_handling(self):
