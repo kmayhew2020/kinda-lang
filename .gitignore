@@ -229,3 +229,5 @@ __marimo__/
 .claude/status/
 .claude/sessions/
 .claude/.session_*
+.claude/ci/last-ci-state.txt
+.claude/ci/ci-history.log
