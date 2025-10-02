@@ -24,13 +24,26 @@ def _process_conditional_block(
     output_lines: List[str],
     indent: str,
     file_path: Optional[str] = None,
+    if_indent: Optional[str] = None,
 ) -> int:
     """
     Process a conditional block (~sometimes, ~maybe, or ~probably) with proper nesting support.
     Returns the index after processing the block.
+
+    Args:
+        lines: Source lines
+        start_index: Starting line index
+        output_lines: List to append transformed lines to
+        indent: Indentation for block content (4 spaces more than if statement)
+        file_path: Optional file path for error reporting
+        if_indent: Indentation level of the if statement (for matching else indentation)
     """
     i = start_index
     brace_count = 1  # We expect one closing brace
+
+    # If if_indent not provided, calculate it from indent (parent if is one level back)
+    if if_indent is None:
+        if_indent = indent[:-4] if len(indent) >= 4 else ""
 
     while i < len(lines):
         line = lines[i]
@@ -44,10 +57,8 @@ def _process_conditional_block(
                 i += 1  # Move past the closing brace
                 # Check for else block syntax: } {
                 if i < len(lines) and lines[i].strip() == "{":
-                    # Found else block - add Python else syntax
-                    output_lines.append(
-                        indent[:-4] + "else:"
-                    )  # Remove one level of indent for else
+                    # Found else block - add Python else syntax at same indent as if
+                    output_lines.append(if_indent + "else:")
                     i += 1  # Skip the opening brace of else block
                     # Continue processing the else block content
                     brace_count = 1  # Reset for else block processing
@@ -59,8 +70,8 @@ def _process_conditional_block(
         elif stripped == "} {":
             brace_count -= 1
             if brace_count == 0:
-                # Add Python else syntax
-                output_lines.append(indent[:-4] + "else:")  # Remove one level of indent for else
+                # Add Python else syntax at same indent as if
+                output_lines.append(if_indent + "else:")
                 i += 1  # Move to next line
                 # Continue processing the else block content
                 brace_count = 1  # Reset for else block processing
@@ -95,7 +106,15 @@ def _process_conditional_block(
                 output_lines.extend([indent + l for l in transformed_nested])
                 i += 1
                 # Recursively process nested block with increased indentation
-                i = _process_conditional_block(lines, i, output_lines, indent + "    ", file_path)
+                # Calculate if_indent from the actual indentation of the added if statement
+                # The last line added is the if statement - extract its indentation
+                last_added_line = output_lines[-1] if output_lines else ""
+                nested_if_indent = last_added_line[
+                    : len(last_added_line) - len(last_added_line.lstrip())
+                ]
+                i = _process_conditional_block(
+                    lines, i, output_lines, indent + "    ", file_path, if_indent=nested_if_indent
+                )
             else:
                 # Track opening braces in other constructs (shouldn't happen in kinda but just in case)
                 if stripped.endswith("{"):

@@ -535,6 +535,12 @@ KindaPythonConstructs: Dict[str, Dict[str, Any]] = {
             "        return fallback_value"
         ),
     },
+    "welp_prefix": {
+        "type": "fallback",
+        "pattern": re.compile(r"~welp\s+(.+?)\s+(.+)"),
+        "description": "Graceful fallback with prefix syntax (~welp expr fallback)",
+        # No body needed - uses same welp_fallback function as 'welp' construct
+    },
     "time_drift_float": {
         "type": "declaration",
         "pattern": re.compile(r"~time drift float (\w+)\s*[~=]+\s*([^#;]+?)(?:\s*#.*)?(?:;|$)"),

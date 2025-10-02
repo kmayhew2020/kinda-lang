@@ -409,6 +409,62 @@ def match_python_construct(line: str) -> Tuple[Optional[str], Optional[Any]]:
     return None, None
 
 
+def _find_expression_end(line: str, start_pos: int) -> int:
+    """
+    Find the end position of an expression starting at start_pos.
+    Respects parentheses, brackets, strings, and stops at delimiters like comma, semicolon, etc.
+    """
+    paren_depth = 0
+    bracket_depth = 0
+    brace_depth = 0
+    in_string = False
+    string_char = None
+    escaped = False
+    pos = start_pos
+
+    while pos < len(line):
+        char = line[pos]
+
+        if escaped:
+            escaped = False
+            pos += 1
+            continue
+
+        if char == "\\" and in_string:
+            escaped = True
+            pos += 1
+            continue
+
+        if not in_string:
+            if char in "\"'":
+                in_string = True
+                string_char = char
+            elif char == "(":
+                paren_depth += 1
+            elif char == ")":
+                paren_depth -= 1
+                if paren_depth < 0:
+                    return pos
+            elif char == "[":
+                bracket_depth += 1
+            elif char == "]":
+                bracket_depth -= 1
+            elif char == "{":
+                brace_depth += 1
+            elif char == "}":
+                brace_depth -= 1
+            elif char in ",:;#" and paren_depth == 0 and bracket_depth == 0 and brace_depth == 0:
+                return pos
+        else:
+            if char == string_char:
+                in_string = False
+                string_char = None
+
+        pos += 1
+
+    return pos
+
+
 def _is_inside_string_literal(line: str, position: int) -> bool:
     """Check if a position is inside a string literal (single or double quoted)."""
     # Early return for common cases
@@ -509,15 +565,141 @@ def find_ish_constructs(line: str) -> List[Tuple[str, Any, int, int]]:
     return constructs
 
 
+class _WelpMatch:
+    """Match object for ~welp constructs (both prefix and infix syntax)."""
+
+    def __init__(self, full_match: str, primary: str, fallback: str, start: int, end: int) -> None:
+        self.full_match = full_match
+        self.primary = primary
+        self.fallback = fallback
+        self.start_pos = start
+        self.end_pos = end
+
+    def group(self, n: int = 0) -> str:
+        if n == 0:
+            return self.full_match
+        elif n == 1:
+            return self.primary
+        elif n == 2:
+            return self.fallback
+        else:
+            raise IndexError("No such group")
+
+    def start(self) -> int:
+        return self.start_pos
+
+    def end(self) -> int:
+        return self.end_pos
+
+
 def find_welp_constructs(line: str) -> List[Tuple[str, Any, int, int]]:
     """
     Find all ~welp constructs in a line for inline transformation.
     Returns a list of (construct_type, match_object, start_pos, end_pos).
     Only finds constructs that are NOT inside string literals.
+
+    Supports two syntaxes:
+    1. Infix: expr ~welp fallback
+    2. Prefix: ~welp expr fallback
     """
     constructs = []
 
-    # Find all ~welp occurrences in the line
+    # First, check for prefix syntax (~welp expr fallback)
+    # This must be done before infix syntax to avoid conflicts
+    prefix_pattern = re.compile(r"~welp\s+")
+    for prefix_match in prefix_pattern.finditer(line):
+        prefix_pos = prefix_match.start()
+
+        # Skip if inside string literal
+        if _is_inside_string_literal(line, prefix_pos):
+            continue
+
+        # Check if this is at the start of a line/statement (after =, :, etc.)
+        # to distinguish from infix usage
+        is_prefix = False
+        if prefix_pos == 0:
+            is_prefix = True
+        else:
+            # Check characters before ~welp
+            before = line[:prefix_pos].rstrip()
+            if not before or before[-1] in "=,:;({[":
+                is_prefix = True
+
+        if not is_prefix:
+            continue  # This is likely infix syntax, skip
+
+        # Find the expression and fallback after ~welp
+        remainder = line[prefix_match.end() :]
+
+        # Parse the expression and fallback
+        # Expression ends at the last space before fallback value
+        # We need to find where expr ends and fallback begins
+        # Split on spaces, but respect parentheses
+        paren_depth = 0
+        bracket_depth = 0
+        in_string = False
+        string_char = None
+        escaped = False
+        expr_end = -1
+
+        for i, char in enumerate(remainder):
+            if escaped:
+                escaped = False
+                continue
+
+            if char == "\\" and in_string:
+                escaped = True
+                continue
+
+            if not in_string:
+                if char in "\"'":
+                    in_string = True
+                    string_char = char
+                elif char == "(":
+                    paren_depth += 1
+                elif char == ")":
+                    paren_depth -= 1
+                elif char == "[":
+                    bracket_depth += 1
+                elif char == "]":
+                    bracket_depth -= 1
+                elif char.isspace() and paren_depth == 0 and bracket_depth == 0:
+                    # Found potential split point
+                    # Check if there's content after this space
+                    if i + 1 < len(remainder) and not remainder[i + 1].isspace():
+                        expr_end = i
+            else:
+                if char == string_char:
+                    in_string = False
+                    string_char = None
+
+        if expr_end == -1:
+            continue  # Couldn't find split point
+
+        primary_expr = remainder[:expr_end].strip()
+        fallback_value = remainder[expr_end:].strip()
+
+        # Find actual end position (end of fallback, respecting delimiters)
+        fallback_end_pos = _find_expression_end(line, prefix_match.end() + expr_end)
+        fallback_value = line[prefix_match.end() + expr_end : fallback_end_pos].strip()
+
+        if not primary_expr or not fallback_value:
+            continue
+
+        # Create match object for prefix syntax
+        full_match = line[prefix_pos:fallback_end_pos]
+        match_obj = _WelpMatch(
+            full_match, primary_expr, fallback_value, prefix_pos, fallback_end_pos
+        )
+        constructs.append(("welp", match_obj, prefix_pos, fallback_end_pos))
+
+    # Keep track of already-processed positions to avoid duplicates
+    processed_positions = set()
+    for _, _, start, end in constructs:
+        for pos in range(start, end):
+            processed_positions.add(pos)
+
+    # Find all ~welp occurrences for infix syntax (expr ~welp fallback)
     welp_positions = []
     start = 0
     while True:
@@ -528,6 +710,10 @@ def find_welp_constructs(line: str) -> List[Tuple[str, Any, int, int]]:
         start = pos + 1
 
     for welp_pos in welp_positions:
+        # Skip if already processed as prefix syntax
+        if welp_pos in processed_positions:
+            continue
+
         # Skip if inside string literal
         if _is_inside_string_literal(line, welp_pos):
             continue
@@ -727,35 +913,9 @@ def find_welp_constructs(line: str) -> List[Tuple[str, Any, int, int]]:
         if not fallback_value:
             continue
 
-        # Create a synthetic match object that mimics the old regex match
-        class WelpMatch:
-            def __init__(
-                self, full_match: str, primary_expr: str, fallback_val: str, start: int, end: int
-            ) -> None:
-                self.full_match = full_match
-                self.primary_expr = primary_expr
-                self.fallback_val = fallback_val
-                self.start_pos = start
-                self.end_pos = end
-
-            def group(self, n: int = 0) -> str:
-                if n == 0:
-                    return self.full_match
-                elif n == 1:
-                    return self.primary_expr
-                elif n == 2:
-                    return self.fallback_val
-                else:
-                    raise IndexError("No such group")
-
-            def start(self) -> int:
-                return self.start_pos
-
-            def end(self) -> int:
-                return self.end_pos
-
+        # Create a match object for infix syntax
         full_match = line[expr_start:fallback_end]
-        match_obj = WelpMatch(full_match, expr_before, fallback_value, expr_start, fallback_end)
+        match_obj = _WelpMatch(full_match, expr_before, fallback_value, expr_start, fallback_end)
 
         constructs.append(("welp", match_obj, expr_start, fallback_end))
 

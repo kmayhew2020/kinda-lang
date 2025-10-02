@@ -96,3 +96,116 @@ class TestDemoTransformerRegressions:
         result = transform_line('~sorta print("hello world")')
         expected = ['sorta_print("hello world")']
         assert result == expected
+
+
+class TestIssue105WelpPrefixSyntax:
+    """Regression tests for Issue #105: ~welp construct prefix syntax not transformed."""
+
+    def test_welp_infix_syntax(self):
+        """Test that infix syntax (expr ~welp fallback) works."""
+        result = transform_line("result = risky_function() ~welp 42")
+        expected = ["result = welp_fallback(lambda: risky_function(), 42)"]
+        assert result == expected
+
+    def test_welp_prefix_syntax(self):
+        """Test that prefix syntax (~welp expr fallback) works (Issue #105)."""
+        result = transform_line("result = ~welp risky_function() 42")
+        expected = ["result = welp_fallback(lambda: risky_function(), 42)"]
+        assert result == expected
+
+    def test_welp_prefix_with_complex_expression(self):
+        """Test prefix syntax with complex expressions."""
+        result = transform_line("value = ~welp get_data(x, y) default_value")
+        expected = ["value = welp_fallback(lambda: get_data(x, y), default_value)"]
+        assert result == expected
+
+    def test_welp_prefix_in_function_call(self):
+        """Test prefix syntax as function argument."""
+        result = transform_line("process(~welp fetch() None)")
+        expected = ["process(welp_fallback(lambda: fetch(), None))"]
+        assert result == expected
+
+
+class TestIssue107NestedConditionalIndentation:
+    """Regression tests for Issue #107: Invalid indentation in nested conditionals with else blocks."""
+
+    def test_nested_conditionals_with_else_blocks(self):
+        """Test that nested conditionals with else blocks generate correct indentation (Issue #107)."""
+        from pathlib import Path
+        from kinda.langs.python.transformer import transform_file
+        import tempfile
+
+        # Create test file with nested conditionals
+        kinda_code = """~kinda int score = 85
+~sometimes (score > 80) {
+    ~maybe (score > 90) {
+        ~sorta print("Excellent!")
+    } {
+        ~sorta print("Good!")
+    }
+} {
+    ~rarely (score > 70) {
+        ~sorta print("Okay")
+    }
+}
+"""
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".py.knda", delete=False) as f:
+            f.write(kinda_code)
+            temp_path = Path(f.name)
+
+        try:
+            result = transform_file(temp_path)
+
+            # Verify the code compiles without IndentationError
+            compile(result, "<test>", "exec")
+
+            # Verify specific indentation patterns
+            lines = result.split("\n")
+
+            # Find the inner if and inner else
+            inner_if_line = next((i, l) for i, l in enumerate(lines) if "if maybe" in l)
+            inner_else_line = next(
+                (i, l) for i, l in enumerate(lines) if i > inner_if_line[0] and l.strip() == "else:"
+            )
+
+            # Extract indentation (count leading spaces)
+            inner_if_indent = len(inner_if_line[1]) - len(inner_if_line[1].lstrip())
+            inner_else_indent = len(inner_else_line[1]) - len(inner_else_line[1].lstrip())
+
+            # Inner if and inner else should have same indentation
+            assert (
+                inner_if_indent == inner_else_indent
+            ), f"Inner if at {inner_if_indent} spaces, but inner else at {inner_else_indent} spaces"
+        finally:
+            temp_path.unlink()
+
+    def test_double_nested_conditionals(self):
+        """Test deeply nested conditionals maintain correct indentation."""
+        from pathlib import Path
+        from kinda.langs.python.transformer import transform_file
+        import tempfile
+
+        kinda_code = """~sometimes (True) {
+    ~maybe (True) {
+        ~rarely (True) {
+            ~sorta print("Deep!")
+        } {
+            ~sorta print("Not so deep")
+        }
+    } {
+        ~sorta print("Middle")
+    }
+} {
+    ~sorta print("Shallow")
+}
+"""
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".py.knda", delete=False) as f:
+            f.write(kinda_code)
+            temp_path = Path(f.name)
+
+        try:
+            result = transform_file(temp_path)
+            # Should compile without IndentationError
+            compile(result, "<test>", "exec")
+        finally:
+            temp_path.unlink()
