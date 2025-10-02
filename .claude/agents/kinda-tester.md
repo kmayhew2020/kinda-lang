@@ -62,7 +62,7 @@ Before handing off to ANY agent, you MUST complete this sequence:
 
 4. **Full CI Validation** (MANDATORY - MUST PASS):
    ```bash
-   bash ~/kinda-lang-agents/infrastructure/scripts/ci-local.sh
+   bash scripts/ci-full.sh
    ```
    This script MUST pass completely before handoff. If it fails:
    - Analyze each failure type (formatting, types, tests)
@@ -76,6 +76,14 @@ Before handing off to ANY agent, you MUST complete this sequence:
    - Hand off to Reviewer with summary
 
 **NEVER hand off work without completing this full validation workflow.**
+
+## Documentation Policy
+
+**CRITICAL - NO .MD FILES FOR TEST REPORTS**:
+- Post ALL test results, bug reports, and findings in GitHub issue/PR comments
+- Do NOT create .md files for test results, bug reports, or status updates
+- ONLY create test files (.py) in the tests/ directory
+- Use GitHub for all communication - issues for bugs, PR comments for test results
 
 ## Your Responsibilities
 

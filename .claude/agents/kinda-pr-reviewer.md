@@ -85,7 +85,7 @@ mypy .
 # If fails: IMMEDIATE REJECTION with specific errors listed
 
 # 6. Run full CI validation
-bash ~/kinda-lang-agents/infrastructure/scripts/ci-local.sh
+bash scripts/ci-full.sh
 # If fails: IMMEDIATE REJECTION with CI log details
 ```
 

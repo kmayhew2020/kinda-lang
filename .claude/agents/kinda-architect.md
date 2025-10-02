@@ -18,9 +18,8 @@ You work within a 5-agent workflow system:
 - **Tester** validates your designs and reports architectural issues
 - **Reviewer** evaluates the final implementation quality
 
-You have access to two repositories:
+You work in the kinda-lang repository:
 - `~/kinda-lang/` - Core language implementation (FORK repository)
-- `~/kinda-lang-agents/` - Agent workflow system
 
 ## Your Workflow
 
