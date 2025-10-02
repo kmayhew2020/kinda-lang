@@ -393,11 +393,84 @@ reminder: ‘✅ Context saved! You can now call complete_task.’,
 }
 
 // ============================================================================
+// Agent-Specific Policy Checks
+// ============================================================================
+async function checkAgentPolicies(agentRole: string, violations: string[]) {
+  try {
+    // Check for .md files that violate policy (status reports, summaries, etc.)
+    const { stdout } = await execAsync('git status --porcelain', {
+      cwd: CONFIG.workingDir,
+    });
+
+    const files = stdout.split('\n').filter(line => line.trim());
+    const prohibitedMdFiles = files.filter(line => {
+      const file = line.substring(3); // Remove git status prefix
+      return (
+        file.endsWith('_REPORT.md') ||
+        file.endsWith('_SUMMARY.md') ||
+        file.endsWith('_ANALYSIS.md') ||
+        file.match(/BUG_REPORT_.*\.md/) ||
+        file.match(/TEST_ANALYSIS_.*\.md/) ||
+        file.match(/IMPLEMENTATION_SUMMARY.*\.md/)
+      );
+    });
+
+    if (prohibitedMdFiles.length > 0) {
+      violations.push(
+        `POLICY VIOLATION: Created prohibited .md files: ${prohibitedMdFiles.map(f => f.substring(3)).join(', ')}. ` +
+        'All updates must go in GitHub issue/PR comments, NOT .md files. ' +
+        'Only architecture docs in docs/ are allowed.'
+      );
+    }
+
+    // Tester-specific checks
+    if (agentRole === 'tester') {
+      // Check that test results were posted to GitHub, not saved as .md files
+      if (prohibitedMdFiles.some(f => f.includes('TEST') || f.includes('BUG'))) {
+        violations.push(
+          'TESTER POLICY: Test results and bug reports must be posted in GitHub issue comments, ' +
+          'not saved as .md files. Remove the .md files and post to the issue instead.'
+        );
+      }
+    }
+
+    // Coder-specific checks
+    if (agentRole === 'coder') {
+      // Check for implementation summaries
+      if (prohibitedMdFiles.some(f => f.includes('IMPLEMENTATION'))) {
+        violations.push(
+          'CODER POLICY: Implementation notes must be posted in GitHub issue comments, ' +
+          'not saved as .md files.'
+        );
+      }
+    }
+
+    // Architect-specific checks
+    if (agentRole === 'architect') {
+      // Check for bug fix designs in docs/ (should be in issues)
+      const designFiles = files.filter(line => {
+        const file = line.substring(3);
+        return file.startsWith('docs/') && file.includes('bug') && file.endsWith('.md');
+      });
+
+      if (designFiles.length > 0) {
+        violations.push(
+          'ARCHITECT POLICY: Bug fix designs should be posted in GitHub issue comments, ' +
+          'not in docs/. Only major feature designs belong in docs/.'
+        );
+      }
+    }
+  } catch (error) {
+    console.error('Failed to check agent policies:', error);
+  }
+}
+
+// ============================================================================
 // TOOL: Complete Task (ENFORCES requirements)
 // ============================================================================
 const completeTaskTool = {
-name: ‘complete_task’,
-description: ‘Complete current task. ENFORCES: context saved, tests run, GitHub updated.’,
+name: 'complete_task',
+description: 'Complete current task. ENFORCES: context saved, tests run, GitHub updated, agent policies.',
 inputSchema: {
 type: ‘object’,
 properties: {
@@ -427,15 +500,18 @@ const violations = [];
 
 // Check: Was context saved?
 if (!sessionState.lastContextSave) {
-violations.push(‘Context was not saved (call save_context first)’);
+violations.push('Context was not saved (call save_context first)');
 } else if (Date.now() - sessionState.lastContextSave > 5 * 60 * 1000) {
-violations.push(‘Context save is stale (>5 minutes old)’);
+violations.push('Context save is stale (>5 minutes old)');
 }
 
 // Check: Were tests run?
 if (!sessionState.testsRun) {
-violations.push(‘Tests were not run (call run_tests first)’);
+violations.push('Tests were not run (call run_tests first)');
 }
+
+// Agent-specific policy checks
+await checkAgentPolicies(sessionState.currentAgent, violations);
 
 // REJECT if violations
 if (violations.length > 0) {
