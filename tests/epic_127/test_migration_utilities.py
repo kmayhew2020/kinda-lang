@@ -440,12 +440,15 @@ def geometric_calculations():
 """
 
         # Mock the complete workflow
-        with (
-            patch.object(self.utilities, "analyze_migration_potential") as mock_analyze,
-            patch.object(self.utilities, "suggest_migration_points") as mock_suggest,
-            patch.object(self.utilities, "estimate_migration_effort") as mock_effort,
-            patch.object(self.utilities, "validate_migration_safety") as mock_safety,
-        ):
+        with patch.object(
+            self.utilities, "analyze_migration_potential"
+        ) as mock_analyze, patch.object(
+            self.utilities, "suggest_migration_points"
+        ) as mock_suggest, patch.object(
+            self.utilities, "estimate_migration_effort"
+        ) as mock_effort, patch.object(
+            self.utilities, "validate_migration_safety"
+        ) as mock_safety:
 
             # Setup mock returns
             mock_analyze.return_value = {

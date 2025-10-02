@@ -646,12 +646,15 @@ class TestMigrationStrategyIntegration:
         }
 
         # Mock the complete workflow
-        with (
-            patch.object(self.strategy, "analyze_project_requirements") as mock_analyze,
-            patch.object(self.strategy, "select_migration_approach") as mock_select,
-            patch.object(self.strategy, "create_detailed_plan") as mock_plan,
-            patch.object(self.strategy, "validate_strategy") as mock_validate,
-        ):
+        with patch.object(
+            self.strategy, "analyze_project_requirements"
+        ) as mock_analyze, patch.object(
+            self.strategy, "select_migration_approach"
+        ) as mock_select, patch.object(
+            self.strategy, "create_detailed_plan"
+        ) as mock_plan, patch.object(
+            self.strategy, "validate_strategy"
+        ) as mock_validate:
 
             # Setup mock returns for complete workflow
             mock_analyze.return_value = {

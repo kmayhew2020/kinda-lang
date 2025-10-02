@@ -306,10 +306,9 @@ class TestDecoratorsIntegration:
         """Test using gradual_kinda and kinda_safe together"""
         import sys
 
-        with (
-            patch.object(sys.modules[__name__], "gradual_kinda") as mock_gradual,
-            patch.object(sys.modules[__name__], "kinda_safe") as mock_safe,
-        ):
+        with patch.object(sys.modules[__name__], "gradual_kinda") as mock_gradual, patch.object(
+            sys.modules[__name__], "kinda_safe"
+        ) as mock_safe:
 
             def mock_gradual_impl(probability=0.5):
                 def decorator(func):
@@ -352,10 +351,9 @@ class TestDecoratorsIntegration:
         """Test decorators with realistic function scenarios"""
         import sys
 
-        with (
-            patch.object(sys.modules[__name__], "gradual_kinda") as mock_gradual,
-            patch.object(sys.modules[__name__], "kinda_safe") as mock_safe,
-        ):
+        with patch.object(sys.modules[__name__], "gradual_kinda") as mock_gradual, patch.object(
+            sys.modules[__name__], "kinda_safe"
+        ) as mock_safe:
 
             def mock_gradual_impl(probability=0.5):
                 def decorator(func):
@@ -433,10 +431,9 @@ class TestDecoratorsIntegration:
     def test_decorators_configuration_validation(self):
         """Test decorator configuration validation"""
 
-        with (
-            patch("kinda.migration.decorators.gradual_kinda") as mock_gradual,
-            patch("kinda.migration.decorators.kinda_safe") as mock_safe,
-        ):
+        with patch("kinda.migration.decorators.gradual_kinda") as mock_gradual, patch(
+            "kinda.migration.decorators.kinda_safe"
+        ) as mock_safe:
 
             def mock_gradual_impl(probability=0.5):
                 if not isinstance(probability, (int, float)):
@@ -486,10 +483,9 @@ class TestDecoratorsIntegration:
     def test_decorators_performance_impact(self):
         """Test decorators don't significantly impact performance"""
 
-        with (
-            patch("kinda.migration.decorators.gradual_kinda") as mock_gradual,
-            patch("kinda.migration.decorators.kinda_safe") as mock_safe,
-        ):
+        with patch("kinda.migration.decorators.gradual_kinda") as mock_gradual, patch(
+            "kinda.migration.decorators.kinda_safe"
+        ) as mock_safe:
 
             def mock_gradual_impl(probability=0.5):
                 def decorator(func):
