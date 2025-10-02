@@ -219,3 +219,8 @@ __marimo__/
 /kinda/langs/python/runtime/fuzzy.py
 
 # Bot infrastructure is in kinda-lang-agents repo (not here)
+
+# Agent-created status reports (should go in GitHub issues instead)
+*_REPORT.md
+*_SUMMARY.md
+*_ANALYSIS.md
