@@ -1,0 +1,807 @@
+#!/usr/bin/env node
+
+/**
+
+- MCP Server for Agent Workflow Enforcement
+- 
+- This server FORCES agents to:
+- - Save context (or they can’t proceed)
+- - Run tests automatically
+- - Update GitHub issues/PRs
+- - Follow protocol
+- 
+- Install:
+- npm install @modelcontextprotocol/sdk @octokit/rest dotenv
+- 
+- Run:
+- node mcp-agent-server.js
+  */
+
+import { Server } from ‘@modelcontextprotocol/sdk/server/index.js’;
+import { StdioServerTransport } from ‘@modelcontextprotocol/sdk/server/stdio.js’;
+import {
+CallToolRequestSchema,
+ListToolsRequestSchema,
+} from ‘@modelcontextprotocol/sdk/types.js’;
+import { Octokit } from ‘@octokit/rest’;
+import { exec } from ‘child_process’;
+import { promisify } from ‘util’;
+import fs from ‘fs/promises’;
+import path from ‘path’;
+import dotenv from ‘dotenv’;
+
+dotenv.config();
+
+const execAsync = promisify(exec);
+
+// Configuration
+const CONFIG = {
+repoOwner: process.env.GITHUB_OWNER || ‘kmayhew2020’,
+repoName: process.env.GITHUB_REPO || ‘kinda-lang’,
+contextFile: ‘.agent-system/CONTEXT.md’,
+requirementsFile: ‘.agent-system/REQUIREMENTS.txt’,
+workingDir: process.env.WORKING_DIR || process.cwd(),
+};
+
+// Initialize GitHub client
+const octokit = new Octokit({
+auth: process.env.GITHUB_TOKEN,
+});
+
+// In-memory session state (tracks what agents have done)
+const sessionState = {
+lastContextSave: null,
+testsRun: false,
+currentTask: null,
+currentAgent: null,
+protocolViolations: [],
+};
+
+// Create MCP server
+const server = new Server(
+{
+name: ‘agent-workflow-enforcer’,
+version: ‘1.0.0’,
+},
+{
+capabilities: {
+tools: {},
+},
+}
+);
+
+// ============================================================================
+// TOOL: Start Task (MANDATORY - must be called first)
+// ============================================================================
+const startTaskTool = {
+name: ‘start_task’,
+description: ‘Start a new task. MUST be called before any work. Sets up tracking and requirements.’,
+inputSchema: {
+type: ‘object’,
+properties: {
+agent_role: {
+type: ‘string’,
+description: ‘Your role (coder, tester, architect, etc.)’,
+enum: [‘coder’, ‘tester’, ‘architect’, ‘verifier’, ‘main-agent’],
+},
+task_description: {
+type: ‘string’,
+description: ‘What you are going to do’,
+},
+github_issue_number: {
+type: ‘number’,
+description: ‘GitHub issue number this task relates to (optional)’,
+},
+},
+required: [‘agent_role’, ‘task_description’],
+},
+};
+
+async function handleStartTask(args: any) {
+sessionState.currentAgent = args.agent_role;
+sessionState.currentTask = args.task_description;
+sessionState.lastContextSave = null;
+sessionState.testsRun = false;
+
+// Load current requirements
+const requirements = await loadRequirements();
+
+// Check GitHub issue if provided
+let issueInfo = null;
+if (args.github_issue_number) {
+try {
+const { data: issue } = await octokit.issues.get({
+owner: CONFIG.repoOwner,
+repo: CONFIG.repoName,
+issue_number: args.github_issue_number,
+});
+issueInfo = {
+title: issue.title,
+state: issue.state,
+labels: issue.labels.map((l: any) => l.name),
+};
+} catch (error) {
+console.error(‘Failed to fetch GitHub issue:’, error);
+}
+}
+
+return {
+content: [
+{
+type: ‘text’,
+text: JSON.stringify({
+status: ‘task_started’,
+agent: args.agent_role,
+task: args.task_description,
+session_id: Date.now(),
+requirements: requirements.incomplete,
+github_issue: issueInfo,
+reminder: ‘⚠️ You MUST call save_context before calling complete_task’,
+}, null, 2),
+},
+],
+};
+}
+
+// ============================================================================
+// TOOL: Run Tests (AUTOMATIC - runs tests and saves results)
+// ============================================================================
+const runTestsTool = {
+name: ‘run_tests’,
+description: ‘Run test suite with coverage. Automatically saves results. Returns structured test data.’,
+inputSchema: {
+type: ‘object’,
+properties: {
+test_path: {
+type: ‘string’,
+description: ‘Path to tests (default: tests/)’,
+default: ‘tests/’,
+},
+coverage: {
+type: ‘boolean’,
+description: ‘Include coverage report’,
+default: true,
+},
+},
+},
+};
+
+async function handleRunTests(args: any) {
+const testPath = args.test_path || ‘tests/’;
+const includeCoverage = args.coverage !== false;
+
+try {
+// Run pytest with coverage
+const cmd = includeCoverage
+? `pytest ${testPath} --cov=kinda --cov-report=json --json-report --json-report-file=.test-results.json`
+: `pytest ${testPath} --json-report --json-report-file=.test-results.json`;
+
+```
+const { stdout, stderr } = await execAsync(cmd, {
+  cwd: CONFIG.workingDir,
+});
+
+// Parse results
+const resultsFile = path.join(CONFIG.workingDir, '.test-results.json');
+const resultsData = await fs.readFile(resultsFile, 'utf-8');
+const results = JSON.parse(resultsData);
+
+// Parse coverage if available
+let coverage = null;
+if (includeCoverage) {
+  try {
+    const coverageFile = path.join(CONFIG.workingDir, 'coverage.json');
+    const coverageData = await fs.readFile(coverageFile, 'utf-8');
+    const coverageJson = JSON.parse(coverageData);
+    coverage = {
+      total: coverageJson.totals.percent_covered,
+      files: Object.keys(coverageJson.files).length,
+    };
+  } catch (e) {
+    console.error('Failed to parse coverage:', e);
+  }
+}
+
+// Mark tests as run
+sessionState.testsRun = true;
+
+const testResults = {
+  passed: results.summary.passed || 0,
+  failed: results.summary.failed || 0,
+  skipped: results.summary.skipped || 0,
+  total: results.summary.total || 0,
+  duration: results.duration,
+  coverage: coverage,
+  timestamp: new Date().toISOString(),
+};
+
+// Auto-save test results to context
+await appendToContext({
+  type: 'test_results',
+  agent: sessionState.currentAgent || 'unknown',
+  results: testResults,
+});
+
+return {
+  content: [
+    {
+      type: 'text',
+      text: JSON.stringify({
+        status: testResults.failed === 0 ? 'all_tests_passed' : 'tests_failed',
+        results: testResults,
+        reminder: testResults.failed > 0 
+          ? '❌ Tests failed! You must fix failing tests before completing task.'
+          : '✅ All tests passed!',
+      }, null, 2),
+    },
+  ],
+};
+```
+
+} catch (error: any) {
+sessionState.testsRun = true; // Mark as attempted even if failed
+
+```
+return {
+  content: [
+    {
+      type: 'text',
+      text: JSON.stringify({
+        status: 'test_execution_failed',
+        error: error.message,
+        reminder: '❌ Tests could not run. You must fix this before completing task.',
+      }, null, 2),
+    },
+  ],
+  isError: true,
+};
+```
+
+}
+}
+
+// ============================================================================
+// TOOL: Save Context (MANDATORY - enforces format)
+// ============================================================================
+const saveContextTool = {
+name: ‘save_context’,
+description: ‘Save work context. MANDATORY before completing task. Enforces proper format.’,
+inputSchema: {
+type: ‘object’,
+properties: {
+agent_role: {
+type: ‘string’,
+description: ‘Your role’,
+enum: [‘coder’, ‘tester’, ‘architect’, ‘verifier’, ‘main-agent’],
+},
+task_completed: {
+type: ‘string’,
+description: ‘What you did’,
+},
+requirements_addressed: {
+type: ‘array’,
+items: { type: ‘string’ },
+description: ‘Requirement IDs addressed (e.g., [“REQ-1”, “TECH-2”])’,
+},
+files_modified: {
+type: ‘array’,
+items: { type: ‘string’ },
+description: ‘Files you changed’,
+},
+next_steps: {
+type: ‘string’,
+description: ‘What should happen next’,
+},
+blockers: {
+type: ‘string’,
+description: ‘Any blockers or “None”’,
+default: ‘None’,
+},
+},
+required: [‘agent_role’, ‘task_completed’, ‘requirements_addressed’, ‘files_modified’, ‘next_steps’],
+},
+};
+
+async function handleSaveContext(args: any) {
+// Validate format
+if (!args.task_completed || args.task_completed.length < 10) {
+return {
+content: [
+{
+type: ‘text’,
+text: JSON.stringify({
+status: ‘validation_failed’,
+error: ‘task_completed must be at least 10 characters’,
+}),
+},
+],
+isError: true,
+};
+}
+
+if (!args.files_modified || args.files_modified.length === 0) {
+return {
+content: [
+{
+type: ‘text’,
+text: JSON.stringify({
+status: ‘validation_failed’,
+error: ‘files_modified cannot be empty’,
+}),
+},
+],
+isError: true,
+};
+}
+
+// Create context entry
+const timestamp = new Date().toISOString();
+const entry = `
+
+### ${timestamp} - ${args.agent_role.toUpperCase()} - ${sessionState.currentTask || ‘Task’}
+
+**What I did:**
+${args.task_completed}
+
+**Requirements addressed:**
+${args.requirements_addressed.map((req: string) => `- [x] ${req}: Completed`).join(’\n’)}
+
+**Files modified:**
+${args.files_modified.map((file: string) => `- ${file}`).join(’\n’)}
+
+**Verified:**
+
+- [x] Code works
+- [x] Tests ${sessionState.testsRun ? ‘passed’ : ‘not run’}
+- [x] Context saved
+
+**Next steps:**
+${args.next_steps}
+
+**Blockers:**
+${args.blockers}
+
+-----
+
+`;
+
+// Write to context file
+await appendToContext({ type: ‘manual_entry’, entry });
+
+// Update session state
+sessionState.lastContextSave = Date.now();
+
+// Update requirements file
+for (const req of args.requirements_addressed) {
+await markRequirementComplete(req);
+}
+
+return {
+content: [
+{
+type: ‘text’,
+text: JSON.stringify({
+status: ‘context_saved’,
+timestamp,
+entry_length: entry.length,
+requirements_updated: args.requirements_addressed,
+reminder: ‘✅ Context saved! You can now call complete_task.’,
+}, null, 2),
+},
+],
+};
+}
+
+// ============================================================================
+// TOOL: Complete Task (ENFORCES requirements)
+// ============================================================================
+const completeTaskTool = {
+name: ‘complete_task’,
+description: ‘Complete current task. ENFORCES: context saved, tests run, GitHub updated.’,
+inputSchema: {
+type: ‘object’,
+properties: {
+update_github: {
+type: ‘boolean’,
+description: ‘Update GitHub issue/PR’,
+default: true,
+},
+github_issue_number: {
+type: ‘number’,
+description: ‘Issue number to update’,
+},
+github_pr_number: {
+type: ‘number’,
+description: ‘PR number to update’,
+},
+commit_message: {
+type: ‘string’,
+description: ‘Git commit message’,
+},
+},
+},
+};
+
+async function handleCompleteTask(args: any) {
+const violations = [];
+
+// Check: Was context saved?
+if (!sessionState.lastContextSave) {
+violations.push(‘Context was not saved (call save_context first)’);
+} else if (Date.now() - sessionState.lastContextSave > 5 * 60 * 1000) {
+violations.push(‘Context save is stale (>5 minutes old)’);
+}
+
+// Check: Were tests run?
+if (!sessionState.testsRun) {
+violations.push(‘Tests were not run (call run_tests first)’);
+}
+
+// REJECT if violations
+if (violations.length > 0) {
+sessionState.protocolViolations.push(…violations);
+
+```
+return {
+  content: [
+    {
+      type: 'text',
+      text: JSON.stringify({
+        status: 'REJECTED',
+        violations,
+        required_actions: [
+          violations.includes('Tests were not run (call run_tests first)') && 'Call run_tests',
+          violations.includes('Context was not saved (call save_context first)') && 'Call save_context',
+        ].filter(Boolean),
+        message: '❌ Task completion REJECTED. Fix violations above and try again.',
+      }, null, 2),
+    },
+  ],
+  isError: true,
+};
+```
+
+}
+
+// All checks passed - proceed with completion
+const completionActions = [];
+
+// Commit changes if requested
+if (args.commit_message) {
+try {
+await execAsync(`git add -A && git commit -m "${args.commit_message}"`, {
+cwd: CONFIG.workingDir,
+});
+completionActions.push(‘Committed changes to git’);
+} catch (error) {
+console.error(‘Git commit failed:’, error);
+}
+}
+
+// Update GitHub issue
+if (args.update_github && args.github_issue_number) {
+try {
+await octokit.issues.createComment({
+owner: CONFIG.repoOwner,
+repo: CONFIG.repoName,
+issue_number: args.github_issue_number,
+body: `✅ Task completed by ${sessionState.currentAgent}\n\n**Task:** ${sessionState.currentTask}\n\n**Context saved:** Yes\n**Tests run:** Yes\n\nSee CONTEXT.md for details.`,
+});
+completionActions.push(`Updated GitHub issue #${args.github_issue_number}`);
+} catch (error) {
+console.error(‘GitHub comment failed:’, error);
+}
+}
+
+// Update GitHub PR
+if (args.update_github && args.github_pr_number) {
+try {
+await octokit.pulls.createReview({
+owner: CONFIG.repoOwner,
+repo: CONFIG.repoName,
+pull_number: args.github_pr_number,
+event: ‘COMMENT’,
+body: `✅ Task completed and verified\n\n- Context: Saved\n- Tests: ${sessionState.testsRun ? 'Passed' : 'Run'}\n- Agent: ${sessionState.currentAgent}`,
+});
+completionActions.push(`Updated PR #${args.github_pr_number}`);
+} catch (error) {
+console.error(‘GitHub PR update failed:’, error);
+}
+}
+
+// Reset session state
+const summary = {
+agent: sessionState.currentAgent,
+task: sessionState.currentTask,
+duration: sessionState.lastContextSave ? Date.now() - sessionState.lastContextSave : 0,
+};
+
+sessionState.currentAgent = null;
+sessionState.currentTask = null;
+sessionState.lastContextSave = null;
+sessionState.testsRun = false;
+
+return {
+content: [
+{
+type: ‘text’,
+text: JSON.stringify({
+status: ‘COMPLETE’,
+summary,
+actions_taken: completionActions,
+message: ‘✅ Task completed successfully! All requirements met.’,
+}, null, 2),
+},
+],
+};
+}
+
+// ============================================================================
+// TOOL: Get Incomplete Requirements
+// ============================================================================
+const getRequirementsTool = {
+name: ‘get_requirements’,
+description: ‘Get list of incomplete requirements’,
+inputSchema: {
+type: ‘object’,
+properties: {},
+},
+};
+
+async function handleGetRequirements() {
+const requirements = await loadRequirements();
+
+return {
+content: [
+{
+type: ‘text’,
+text: JSON.stringify({
+incomplete: requirements.incomplete,
+complete: requirements.complete,
+total: requirements.incomplete.length + requirements.complete.length,
+completion_percentage: Math.round(
+(requirements.complete.length /
+(requirements.incomplete.length + requirements.complete.length)) * 100
+),
+}, null, 2),
+},
+],
+};
+}
+
+// ============================================================================
+// TOOL: GitHub Issue Operations
+// ============================================================================
+const githubIssueTool = {
+name: ‘github_issue’,
+description: ‘Create, update, or query GitHub issues’,
+inputSchema: {
+type: ‘object’,
+properties: {
+action: {
+type: ‘string’,
+enum: [‘create’, ‘update’, ‘get’, ‘list’],
+description: ‘Action to perform’,
+},
+issue_number: {
+type: ‘number’,
+description: ‘Issue number (for get/update)’,
+},
+title: {
+type: ‘string’,
+description: ‘Issue title (for create)’,
+},
+body: {
+type: ‘string’,
+description: ‘Issue body’,
+},
+labels: {
+type: ‘array’,
+items: { type: ‘string’ },
+description: ‘Issue labels’,
+},
+state: {
+type: ‘string’,
+enum: [‘open’, ‘closed’],
+description: ‘Issue state (for update)’,
+},
+},
+required: [‘action’],
+},
+};
+
+async function handleGitHubIssue(args: any) {
+try {
+switch (args.action) {
+case ‘create’:
+const { data: created } = await octokit.issues.create({
+owner: CONFIG.repoOwner,
+repo: CONFIG.repoName,
+title: args.title,
+body: args.body,
+labels: args.labels,
+});
+return {
+content: [{
+type: ‘text’,
+text: JSON.stringify({ status: ‘created’, issue: created }, null, 2),
+}],
+};
+
+```
+  case 'update':
+    const { data: updated } = await octokit.issues.update({
+      owner: CONFIG.repoOwner,
+      repo: CONFIG.repoName,
+      issue_number: args.issue_number,
+      body: args.body,
+      labels: args.labels,
+      state: args.state,
+    });
+    return {
+      content: [{
+        type: 'text',
+        text: JSON.stringify({ status: 'updated', issue: updated }, null, 2),
+      }],
+    };
+  
+  case 'get':
+    const { data: issue } = await octokit.issues.get({
+      owner: CONFIG.repoOwner,
+      repo: CONFIG.repoName,
+      issue_number: args.issue_number,
+    });
+    return {
+      content: [{
+        type: 'text',
+        text: JSON.stringify({ issue }, null, 2),
+      }],
+    };
+  
+  case 'list':
+    const { data: issues } = await octokit.issues.listForRepo({
+      owner: CONFIG.repoOwner,
+      repo: CONFIG.repoName,
+      state: 'open',
+    });
+    return {
+      content: [{
+        type: 'text',
+        text: JSON.stringify({ issues: issues.map(i => ({
+          number: i.number,
+          title: i.title,
+          state: i.state,
+          labels: i.labels.map((l: any) => l.name),
+        })) }, null, 2),
+      }],
+    };
+}
+```
+
+} catch (error: any) {
+return {
+content: [{
+type: ‘text’,
+text: JSON.stringify({ error: error.message }, null, 2),
+}],
+isError: true,
+};
+}
+}
+
+// ============================================================================
+// Helper Functions
+// ============================================================================
+
+async function loadRequirements() {
+try {
+const reqFile = path.join(CONFIG.workingDir, CONFIG.requirementsFile);
+const content = await fs.readFile(reqFile, ‘utf-8’);
+
+```
+const incomplete = [];
+const complete = [];
+
+for (const line of content.split('\n')) {
+  if (line.match(/^\[ \] (REQ|TECH|DOC)-\d+:/)) {
+    incomplete.push(line.replace('[ ]', '').trim());
+  } else if (line.match(/^\[x\] (REQ|TECH|DOC)-\d+:/)) {
+    complete.push(line.replace('[x]', '').trim());
+  }
+}
+
+return { incomplete, complete };
+```
+
+} catch (error) {
+return { incomplete: [], complete: [] };
+}
+}
+
+async function markRequirementComplete(reqId: string) {
+try {
+const reqFile = path.join(CONFIG.workingDir, CONFIG.requirementsFile);
+let content = await fs.readFile(reqFile, ‘utf-8’);
+
+```
+// Replace [ ] with [x] for this requirement
+content = content.replace(
+  new RegExp(`\\[ \\] (${reqId}:)`, 'g'),
+  '[x] $1'
+);
+
+await fs.writeFile(reqFile, content, 'utf-8');
+```
+
+} catch (error) {
+console.error(‘Failed to mark requirement complete:’, error);
+}
+}
+
+async function appendToContext(data: any) {
+try {
+const contextFile = path.join(CONFIG.workingDir, CONFIG.contextFile);
+const entry = data.entry || `\n[AUTO] ${data.type} at ${new Date().toISOString()}\n${JSON.stringify(data, null, 2)}\n\n`;
+await fs.appendFile(contextFile, entry, ‘utf-8’);
+} catch (error) {
+console.error(‘Failed to append to context:’, error);
+}
+}
+
+// ============================================================================
+// Register Tools
+// ============================================================================
+
+server.setRequestHandler(ListToolsRequestSchema, async () => ({
+tools: [
+startTaskTool,
+runTestsTool,
+saveContextTool,
+completeTaskTool,
+getRequirementsTool,
+githubIssueTool,
+],
+}));
+
+server.setRequestHandler(CallToolRequestSchema, async (request) => {
+const { name, arguments: args } = request.params;
+
+try {
+switch (name) {
+case ‘start_task’:
+return await handleStartTask(args);
+case ‘run_tests’:
+return await handleRunTests(args);
+case ‘save_context’:
+return await handleSaveContext(args);
+case ‘complete_task’:
+return await handleCompleteTask(args);
+case ‘get_requirements’:
+return await handleGetRequirements();
+case ‘github_issue’:
+return await handleGitHubIssue(args);
+default:
+throw new Error(`Unknown tool: ${name}`);
+}
+} catch (error: any) {
+return {
+content: [{
+type: ‘text’,
+text: JSON.stringify({ error: error.message }, null, 2),
+}],
+isError: true,
+};
+}
+});
+
+// ============================================================================
+// Start Server
+// ============================================================================
+
+async function runServer() {
+const transport = new StdioServerTransport();
+await server.connect(transport);
+console.error(‘Agent Workflow Enforcer MCP Server running on stdio’);
+}
+
+runServer().catch(console.error);

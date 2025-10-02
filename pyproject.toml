@@ -77,7 +77,7 @@ platforms = ["linux", "darwin", "windows"]
 
 [tool.black]
 line-length = 100
-target-version = ['py39']
+target-version = ['py38']
 
 [tool.setuptools]
 packages = ["kinda", "kinda.grammar", "kinda.grammar.python", "kinda.grammar.c", "kinda.interpreter", "kinda.langs", "kinda.langs.python", "kinda.testing"]

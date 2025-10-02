@@ -481,8 +481,12 @@ def kinda_safe(
             attempts = 0
             last_exception = None
 
-            # State preservation setup
-            preserved_state = {} if preserve_state else None
+            # State preservation setup - capture state parameter before execution
+            preserved_state = None
+            if preserve_state and "state" in kwargs:
+                import copy
+
+                preserved_state = copy.deepcopy(kwargs.get("state", {}))
 
             while attempts <= max_retries:
                 try:
@@ -549,9 +553,18 @@ def kinda_safe(
                     attempts += 1
 
                     # Rollback state if requested
-                    if rollback_on_error and preserved_state is not None:
-                        # Basic rollback implementation
-                        pass
+                    if rollback_on_error and preserved_state is not None and "state" in kwargs:
+                        # Restore original state
+                        kwargs["state"].clear()
+                        kwargs["state"].update(preserved_state)
+
+                        # If we've exhausted retries, return rollback info
+                        if attempts > max_retries:
+                            return {
+                                "rollback_performed": True,
+                                "original_state": preserved_state,
+                                "error": str(e),
+                            }
 
                     # If we've exhausted retries, handle final error
                     if attempts > max_retries:

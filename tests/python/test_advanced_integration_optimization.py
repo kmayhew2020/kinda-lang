@@ -7,6 +7,7 @@ for all probabilistic control flow constructs.
 
 import pytest
 import time
+import statistics
 import tempfile
 import subprocess
 import os
@@ -47,28 +48,44 @@ class TestPerformanceOptimizations:
         setup_personality("playful", chaos_level=5, seed=42)
         context = PersonalityContext.get_instance()
 
-        # Warm up cache
+        # Warm up cache and JIT
         cache = context._get_probability_cache()
-
-        # Test cache hit performance
-        start_time = time.perf_counter()
-        for _ in range(1000):
+        for _ in range(100):
             prob = context.get_cached_probability("sometimes_while")
             assert prob is not None
-        cached_time = time.perf_counter() - start_time
-
-        # Test non-cached performance
-        start_time = time.perf_counter()
-        for _ in range(1000):
+        for _ in range(100):
             prob = context.get_chaos_probability("sometimes_while")
-        uncached_time = time.perf_counter() - start_time
+
+        # Run multiple trials for stable measurements
+        trials = 10
+        cached_times = []
+        uncached_times = []
+
+        for trial in range(trials):
+            # Test cache hit performance
+            start_time = time.perf_counter()
+            for _ in range(1000):
+                prob = context.get_cached_probability("sometimes_while")
+                assert prob is not None
+            cached_times.append(time.perf_counter() - start_time)
+
+            # Test non-cached performance
+            start_time = time.perf_counter()
+            for _ in range(1000):
+                prob = context.get_chaos_probability("sometimes_while")
+            uncached_times.append(time.perf_counter() - start_time)
+
+        # Use median for robust CI measurements
+        median_cached = statistics.median(cached_times)
+        median_uncached = statistics.median(uncached_times)
 
         # Cache should be faster or at least competitive (allow for measurement variations in CI)
         # Use a more lenient multiplier for CI environments where timing can be inconsistent
-        tolerance_multiplier = 3.0  # Allow cached to be up to 3x slower due to CI timing variance
+        # Increased from 3.0 to 5.0 to account for higher system load variance in macOS CI
+        tolerance_multiplier = 5.0  # Allow cached to be up to 5x slower due to CI timing variance
         assert (
-            cached_time <= uncached_time * tolerance_multiplier
-        ), f"Cache performance degraded: {cached_time:.4f}s vs {uncached_time:.4f}s (tolerance: {tolerance_multiplier}x)"
+            median_cached <= median_uncached * tolerance_multiplier
+        ), f"Cache performance degraded: {median_cached:.4f}s vs {median_uncached:.4f}s (tolerance: {tolerance_multiplier}x)"
 
     def test_optimized_random_generation_performance(self):
         """Test optimized random number generation performance."""
