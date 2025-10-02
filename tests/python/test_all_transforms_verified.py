@@ -41,7 +41,9 @@ class TestAllTransformsVerified:
         # Run multiple times to account for ~sorta print's ~20% silence
         found_output = False
         for _ in range(10):
-            stdout, stderr, returncode, py_content = run_transform_and_execute(knda_content, tmp_path)
+            stdout, stderr, returncode, py_content = run_transform_and_execute(
+                knda_content, tmp_path
+            )
 
             assert returncode == 0, f"Execution failed: {stderr}"
             assert "kinda_int(42)" in py_content, "Transform didn't generate kinda_int call"
@@ -62,7 +64,9 @@ class TestAllTransformsVerified:
         # Run multiple times to account for ~sorta print's ~20% silence
         found_output = False
         for _ in range(10):
-            stdout, stderr, returncode, py_content = run_transform_and_execute(knda_content, tmp_path)
+            stdout, stderr, returncode, py_content = run_transform_and_execute(
+                knda_content, tmp_path
+            )
 
             assert returncode == 0, f"Execution failed: {stderr}"
             assert "sorta_print(" in py_content, "Transform didn't generate sorta_print call"
@@ -85,10 +89,14 @@ x ~= 20;
         # Run multiple times to account for ~sorta print's ~20% silence
         found_output = False
         for _ in range(10):
-            stdout, stderr, returncode, py_content = run_transform_and_execute(knda_content, tmp_path)
+            stdout, stderr, returncode, py_content = run_transform_and_execute(
+                knda_content, tmp_path
+            )
 
             assert returncode == 0, f"Execution failed: {stderr}"
-            assert "fuzzy_assign('x', 20)" in py_content, "Transform didn't generate fuzzy_assign call"
+            assert (
+                "fuzzy_assign('x', 20)" in py_content
+            ), "Transform didn't generate fuzzy_assign call"
 
             # ~sorta print may be silent ~20% of the time (correct behavior)
             if "Final x:" in stdout:
@@ -99,7 +107,9 @@ x ~= 20;
                 numbers = re.findall(r"Final x: (\d+)", stdout)
                 if numbers:
                     final_val = int(numbers[0])
-                    assert 18 <= final_val <= 22, f"Fuzzy value {final_val} should be near 20 ± fuzz"
+                    assert (
+                        18 <= final_val <= 22
+                    ), f"Fuzzy value {final_val} should be near 20 ± fuzz"
                 break
 
         # With 10 runs at 80% success rate, probability of all failing is 0.2^10 ≈ 0.0000001%
@@ -183,7 +193,9 @@ b ~= b + a;
         # Run multiple times to account for ~sorta print's ~20% silence
         found_output = False
         for _ in range(10):
-            stdout, stderr, returncode, py_content = run_transform_and_execute(knda_content, tmp_path)
+            stdout, stderr, returncode, py_content = run_transform_and_execute(
+                knda_content, tmp_path
+            )
 
             assert returncode == 0, f"Execution failed: {stderr}"
 
@@ -222,7 +234,9 @@ result ~= result + (3 * 4);
         # Run multiple times to account for ~sorta print's ~20% silence
         found_output = False
         for _ in range(10):
-            stdout, stderr, returncode, py_content = run_transform_and_execute(knda_content, tmp_path)
+            stdout, stderr, returncode, py_content = run_transform_and_execute(
+                knda_content, tmp_path
+            )
 
             assert returncode == 0, f"Execution failed: {stderr}"
             assert "kinda_int((10 + 5) * 2)" in py_content, "Should preserve complex expression"

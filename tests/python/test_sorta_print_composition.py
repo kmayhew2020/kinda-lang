@@ -336,8 +336,9 @@ class TestSortaPrintBehavioralCompatibility(unittest.TestCase):
                 output = buf.getvalue()
 
                 # When construct fails, should produce NO output (respecting ~20% failure rate)
-                self.assertEqual(output, "",
-                    f"Expected silence on failure, but got output: {output}")
+                self.assertEqual(
+                    output, "", f"Expected silence on failure, but got output: {output}"
+                )
         finally:
             if original_sometimes:
                 globals()["sometimes"] = original_sometimes

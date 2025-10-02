@@ -1243,7 +1243,9 @@ class TestSortaPrintCompositionCoverage:
         # Force no execution by mocking gates to return False
         with patch("kinda.langs.python.runtime.fuzzy.sometimes", return_value=False):
             with patch("kinda.langs.python.runtime.fuzzy.maybe", return_value=False):
-                with patch("kinda.personality.chaos_random", return_value=0.9):  # Above bridge threshold
+                with patch(
+                    "kinda.personality.chaos_random", return_value=0.9
+                ):  # Above bridge threshold
                     with patch("builtins.print") as mock_print:
                         sorta_print()
                         # Should NOT print anything - respects ~20% failure rate
@@ -1251,22 +1253,26 @@ class TestSortaPrintCompositionCoverage:
 
     def test_sorta_print_missing_constructs_error(self):
         """Test sorta_print when basic constructs are missing."""
+        import kinda.langs.python.runtime.fuzzy as fuzzy_module
         from kinda.langs.python.runtime.fuzzy import sorta_print
 
-        # Temporarily remove constructs from globals
-        old_sometimes = globals().get("sometimes")
-        if "sometimes" in globals():
-            del globals()["sometimes"]
+        # Temporarily remove constructs from fuzzy module's namespace
+        old_sometimes = getattr(fuzzy_module, "sometimes", None)
+        if hasattr(fuzzy_module, "sometimes"):
+            delattr(fuzzy_module, "sometimes")
 
         try:
             with patch("builtins.print") as mock_print:
                 sorta_print("test")
-                # Should have printed fallback
-                assert mock_print.call_count > 0
+                # Should have printed error and fallback due to missing construct
+                assert mock_print.call_count > 0, "Expected fallback print when construct missing"
+                # Check that error message was printed
+                call_args = [str(call) for call in mock_print.call_args_list]
+                assert any("[error]" in str(arg) or "[fallback]" in str(arg) for arg in call_args)
         finally:
             # Restore construct
             if old_sometimes:
-                globals()["sometimes"] = old_sometimes
+                setattr(fuzzy_module, "sometimes", old_sometimes)
 
     def test_sorta_print_chaotic_personality_bridge(self):
         """Test sorta_print with chaotic personality bridge probability success."""
