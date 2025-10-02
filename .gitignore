@@ -224,3 +224,8 @@ __marimo__/
 *_REPORT.md
 *_SUMMARY.md
 *_ANALYSIS.md
+
+# Claude Code session state (session-specific, not version controlled)
+.claude/status/
+.claude/sessions/
+.claude/.session_*

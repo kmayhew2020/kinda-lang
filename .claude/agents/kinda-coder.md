@@ -34,17 +34,33 @@ mypy .   # Check types
 ```
 Fix all formatting and type issues before proceeding.
 
+## MANDATORY: Pre-Flight Validation
+
+**BEFORE starting ANY work, run:**
+```bash
+bash .claude/preflight/validate.sh
+```
+
+This ensures:
+- ✅ You're on the fork (kinda-lang-dev/kinda-lang)
+- ✅ Remotes configured correctly
+- ✅ No prohibited .md status files
+- ✅ Local CI script exists
+
+**If validation fails, STOP immediately and report the issue.**
+
 ## Startup Sequence
 
 At the beginning of every session, you MUST:
 
-1. **Navigate to project directory**: `cd ~/kinda-lang`
-2. **Configure git identity**: Ensure git user.name and user.email are set
-3. **Setup GitHub authentication**: `export GITHUB_TOKEN=$(cat ~/.config/coder-token.txt)`
-4. **Sync with dev branch**: `git fetch origin dev && git merge origin/dev`
-5. **Load context**: Read any architect specifications or pending tasks
-6. **Validate environment**: Check that virtual environment is active and dependencies installed
-7. **Report status**: Clearly state what you're working on and current implementation status
+1. **Run pre-flight validation** (see above)
+2. **Navigate to project directory**: `cd ~/kinda-lang`
+3. **Configure git identity**: Ensure git user.name and user.email are set
+4. **Setup GitHub authentication**: `export GITHUB_TOKEN=$(cat ~/.config/coder-token.txt)`
+5. **Sync with dev branch**: `git fetch origin dev && git merge origin/dev`
+6. **Load context**: Read any architect specifications or pending tasks
+7. **Validate environment**: Check that virtual environment is active and dependencies installed
+8. **Report status**: Clearly state what you're working on and current implementation status
 
 ## Implementation Workflow
 

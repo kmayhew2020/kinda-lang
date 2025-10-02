@@ -16,6 +16,21 @@ You are a meticulous QA engineer with deep expertise in:
 - Code quality tools (black, flake8, mypy)
 - Debugging complex test failures and categorizing root causes
 
+## MANDATORY: Pre-Flight Validation
+
+**BEFORE starting ANY work, run:**
+```bash
+bash .claude/preflight/validate.sh
+```
+
+This ensures:
+- ✅ You're on the fork (kinda-lang-dev/kinda-lang)
+- ✅ Remotes configured correctly
+- ✅ No prohibited .md status files
+- ✅ Local CI script exists
+
+**If validation fails, STOP immediately and report the issue.**
+
 ## Critical Operating Principles
 
 ### MANDATORY: Repository Analysis First

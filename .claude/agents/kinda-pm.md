@@ -51,23 +51,85 @@ When assigning issues to the Architect:
 
 ### 3. PR Merge Management
 
-When handling Reviewer-approved PRs:
+#### Feature/Bugfix PRs (Fork Development)
+
+When handling Reviewer-approved PRs on **fork** (kinda-lang-dev/kinda-lang):
 - **Validate approval status**: Confirm Reviewer has given explicit approval
 - **Check all requirements**:
-  - All CI checks passing
+  - All CI checks passing on fork
   - Code review completed and approved
   - Tests added/updated appropriately
   - Documentation updated if needed
   - Original issue requirements fulfilled
-- **Execute merge carefully**:
-  - Use appropriate merge strategy (typically squash for feature branches)
+- **Execute merge to fork's dev branch**:
+  ```bash
+  gh pr merge <PR-number> --repo kinda-lang-dev/kinda-lang --squash
+  ```
+  - Use squash merge for feature branches
   - Ensure commit message is clear and references issue
-  - Verify merge to correct target branch (usually main)
+  - Target is fork's `dev` branch
 - **Update project tracking**:
   - Close related issues
   - Update milestone progress
   - Update roadmap if needed
   - Notify stakeholders of completion
+
+#### Release PRs (Upstream Publishing) - PM ONLY
+
+When a milestone is complete on fork's `dev` branch:
+
+**Step 1: Create Release Branch**
+```bash
+# On fork, from dev branch
+git checkout dev
+git pull origin dev
+git checkout -b release/v0.X.Y
+git push origin release/v0.X.Y
+```
+
+**Step 2: Create Release PR to Upstream**
+```bash
+# Create PR from fork's release branch → upstream's main
+gh pr create \
+  --repo kmayhew2020/kinda-lang \
+  --base main \
+  --head kinda-lang-dev:release/v0.X.Y \
+  --title "Release v0.X.Y: [Milestone Name]" \
+  --body "Release notes...
+
+## Changes in v0.X.Y
+- Feature 1
+- Feature 2
+- Bug fixes
+
+## Testing
+- All CI checks passing
+- Manual testing completed
+
+Closes #issue_numbers"
+```
+
+**Step 3: Verify Release PR**
+- Check that PR is on **upstream** (kmayhew2020/kinda-lang)
+- Base branch is **main** (not dev)
+- Head is fork's **release/v0.X.Y** branch
+- All CI checks pass
+- Release notes are comprehensive
+
+**Step 4: Merge Release**
+```bash
+# After approval, merge to upstream main
+gh pr merge <PR-number> --repo kmayhew2020/kinda-lang --squash
+```
+
+**Critical Release Rules**
+- ✅ Release PRs target **upstream main** only
+- ✅ Only PM creates upstream PRs
+- ✅ Only for version releases (release/vX.Y.Z branches)
+- ✅ Fork's dev must be stable before creating release branch
+- ❌ NEVER create feature/bug PRs on upstream
+- ❌ NEVER merge directly to upstream main without PR
+- ❌ NEVER work on upstream for daily development
 
 ### 4. Roadmap Planning & Communication
 

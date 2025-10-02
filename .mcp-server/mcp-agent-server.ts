@@ -553,6 +553,64 @@ async function checkAgentPolicies(agentRole: string, violations: string[]) {
         );
       }
     }
+
+    // Repository verification - all agents except PM on release branches
+    const { stdout: branch } = await execAsync('git branch --show-current', {
+      cwd: CONFIG.workingDir,
+    });
+    const currentBranch = branch.trim();
+    const isReleaseBranch = currentBranch.startsWith('release/');
+
+    // Non-PM agents: NEVER work on upstream for non-release branches
+    if (agentRole !== 'pm') {
+      // Check if there's a PR on upstream for this branch
+      try {
+        const { stdout: prCheck } = await execAsync(
+          `gh pr list --head ${currentBranch} --repo kmayhew2020/kinda-lang --json number`,
+          { cwd: CONFIG.workingDir }
+        );
+
+        const prs = JSON.parse(prCheck);
+
+        // If non-release branch has PR on upstream, that's wrong
+        if (prs.length > 0 && !isReleaseBranch) {
+          violations.push(
+            `REPOSITORY POLICY VIOLATION: Found PR on upstream (kmayhew2020/kinda-lang) for non-release branch '${currentBranch}'. ` +
+            'Only PM can create release PRs to upstream. ' +
+            'Feature/bugfix PRs must be on fork (kinda-lang-dev/kinda-lang). ' +
+            'Close the upstream PR and create it on the fork instead.'
+          );
+        }
+      } catch (error) {
+        // Ignore errors (PR doesn't exist or gh command failed, which is fine)
+      }
+    }
+
+    // PM-specific: Release branches should target upstream main, not fork dev
+    if (agentRole === 'pm' && isReleaseBranch) {
+      try {
+        const { stdout: prInfo } = await execAsync(
+          `gh pr list --head ${currentBranch} --json baseRefName,headRepository --jq '.[0]'`,
+          { cwd: CONFIG.workingDir }
+        );
+
+        if (prInfo.trim()) {
+          const pr = JSON.parse(prInfo);
+
+          // Release PR should be on upstream, not fork
+          if (pr && pr.headRepository && pr.headRepository.owner &&
+              pr.headRepository.owner.login === 'kinda-lang-dev') {
+            violations.push(
+              `PM RELEASE POLICY: Release branch '${currentBranch}' has PR on fork. ` +
+              'Release PRs must target upstream (kmayhew2020/kinda-lang) main branch, not fork. ' +
+              'Use: gh pr create --repo kmayhew2020/kinda-lang --base main --head kinda-lang-dev:' + currentBranch
+            );
+          }
+        }
+      } catch (error) {
+        // PR might not exist yet or command failed, that's ok
+      }
+    }
   } catch (error) {
     console.error('Failed to check agent policies:', error);
   }
