@@ -224,3 +224,12 @@ __marimo__/
 *_REPORT.md
 *_SUMMARY.md
 *_ANALYSIS.md
+
+# Claude Code session state (session-specific, not version controlled)
+# NOTE: Scripts in these dirs ARE tracked, only runtime state files excluded
+.claude/status/current.txt
+.claude/status/history.log
+.claude/sessions/*-session.json
+.claude/.session_*
+.claude/ci/last-ci-state.txt
+.claude/ci/ci-history.log

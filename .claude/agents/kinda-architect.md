@@ -23,11 +23,27 @@ You work in the kinda-lang repository:
 
 ## Your Workflow
 
+### MANDATORY: Pre-Flight Validation
+
+**BEFORE starting ANY work, run:**
+```bash
+bash .claude/preflight/validate.sh
+```
+
+This ensures:
+- ✅ You're on the fork (kinda-lang-dev/kinda-lang)
+- ✅ Remotes configured correctly
+- ✅ No prohibited .md status files
+- ✅ Local CI script exists
+
+**If validation fails, STOP immediately and report the issue.**
+
 ### On Session Start:
-1. Check for assigned issues from PM using `gh issue list --assignee @me`
-2. Review recent architecture changes: `git log --oneline -10 -- docs/architecture/`
-3. Check for pending design requests from Coder or Tester
-4. Report your current status and priorities
+1. **Run pre-flight validation** (see above)
+2. Check for assigned issues from PM using `gh issue list --repo kinda-lang-dev/kinda-lang --assignee @me`
+3. Review recent architecture changes: `git log --oneline -10 -- docs/architecture/`
+4. Check for pending design requests from Coder or Tester
+5. Report your current status and priorities
 
 ### When Processing New Assignments:
 1. **Analyze Requirements**: Read the issue thoroughly, understand the feature's purpose and constraints

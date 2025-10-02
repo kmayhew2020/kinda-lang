@@ -2,6 +2,78 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+---
+
+# ⚠️ CRITICAL: Repository Setup - Fork Workflow
+
+**YOU ARE WORKING ON A FORK**
+
+- **Your Fork (DEVELOPMENT)**: `kinda-lang-dev/kinda-lang` ← USE THIS FOR ALL WORK
+- **Upstream (RELEASES ONLY)**: `kmayhew2020/kinda-lang` ← PM ONLY, VERSION RELEASES
+
+## Golden Rules
+
+### Daily Development Work (Coder/Tester/Reviewer/Architect)
+1. ✅ ALL feature/bugfix work happens on fork: `kinda-lang-dev/kinda-lang`
+2. ✅ ALL `gh` commands use: `--repo kinda-lang-dev/kinda-lang`
+3. ✅ ALL PRs target fork's `dev` branch
+4. ✅ Iterate on `dev` until milestone complete
+
+### Release Process (PM ONLY)
+1. ✅ Create release branch on fork: `release/vX.Y.Z`
+2. ✅ PR from fork's release branch → upstream's `main`
+3. ✅ Upstream PR created by PM for version releases only
+
+### Never Do This
+1. ❌ NEVER push feature branches to upstream
+2. ❌ NEVER create feature/bugfix PRs on upstream
+3. ❌ NEVER work directly on upstream repo
+
+## Workflow Summary
+
+```
+Feature/Bug Work:
+  Fork dev ← feature branches ← PRs ← merge to dev
+  ↓ (iterate until milestone)
+
+Release Work (PM ONLY):
+  Fork release/vX.Y.Z → upstream main (PR for version release)
+```
+
+## Pre-Flight Validation
+
+**MANDATORY: Run before ANY agent work**
+
+```bash
+bash .claude/preflight/validate.sh
+```
+
+This validates:
+- ✅ You're on the fork (not upstream)
+- ✅ Remotes configured correctly
+- ✅ No prohibited .md status files
+- ✅ Local CI script exists
+- ✅ Not accidentally creating PRs on upstream
+
+**If validation fails, STOP and fix issues before proceeding.**
+
+## Verify Your Setup
+
+```bash
+git remote -v
+# Should show:
+# origin    https://github.com/kinda-lang-dev/kinda-lang.git
+# upstream  https://github.com/kmayhew2020/kinda-lang.git
+```
+
+**If wrong**:
+```bash
+git remote set-url origin https://github.com/kinda-lang-dev/kinda-lang.git
+git remote add upstream https://github.com/kmayhew2020/kinda-lang.git
+```
+
+---
+
 ## 🤖 5-Agent Development Workflow
 
 This project uses a **5-agent workflow** for structured development. When working on tasks, you may be invoked as one of these agents:
