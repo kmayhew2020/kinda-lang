@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "kinda-profile-manager": {
+      "command": "node",
+      "args": [
+        "/absolute/path/to/kinda-lang/mcp/profile-manager/index.js"
+      ],
+      "cwd": "/absolute/path/to/kinda-lang"
+    }
+  }
+}
