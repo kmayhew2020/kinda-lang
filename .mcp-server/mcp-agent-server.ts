@@ -486,16 +486,20 @@ async function checkAgentPolicies(agentRole: string, violations: string[]) {
         file.endsWith('_REPORT.md') ||
         file.endsWith('_SUMMARY.md') ||
         file.endsWith('_ANALYSIS.md') ||
+        file.endsWith('_REPORT.txt') ||
+        file.endsWith('_SUMMARY.txt') ||
+        file.endsWith('_ANALYSIS.txt') ||
         file.match(/BUG_REPORT_.*\.md/) ||
         file.match(/TEST_ANALYSIS_.*\.md/) ||
-        file.match(/IMPLEMENTATION_SUMMARY.*\.md/)
+        file.match(/IMPLEMENTATION_SUMMARY.*\.md/) ||
+        file.match(/PHASE_.*_SUMMARY.*\.(md|txt)/)
       );
     });
 
     if (prohibitedMdFiles.length > 0) {
       violations.push(
-        `POLICY VIOLATION: Created prohibited .md files: ${prohibitedMdFiles.map(f => f.substring(3)).join(', ')}. ` +
-        'All updates must go in GitHub issue/PR comments, NOT .md files. ' +
+        `POLICY VIOLATION: Created prohibited status files: ${prohibitedMdFiles.map(f => f.substring(3)).join(', ')}. ` +
+        'All updates must go in GitHub issue/PR comments, NOT .md or .txt files. ' +
         'Only architecture docs in docs/ are allowed.'
       );
     }

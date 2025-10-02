@@ -224,6 +224,10 @@ __marimo__/
 *_REPORT.md
 *_SUMMARY.md
 *_ANALYSIS.md
+*_REPORT.txt
+*_SUMMARY.txt
+*_ANALYSIS.txt
+PHASE_*_SUMMARY.*
 
 # Claude Code session state (session-specific, not version controlled)
 # NOTE: Scripts in these dirs ARE tracked, only runtime state files excluded
