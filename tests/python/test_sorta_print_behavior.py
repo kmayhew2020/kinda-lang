@@ -1,9 +1,9 @@
 """
-Test suite for Epic #126 Task 1: Core ~sorta Conditional Implementation
+Test suite for Issue #106: ~sorta print Probability Behavior
 
-Tests the composition-based implementation of ~sorta print using ~sometimes and ~maybe constructs.
-This test suite validates the "Kinda builds Kinda" principle by ensuring that composite constructs
-are built from basic probabilistic primitives while maintaining backward compatibility.
+Tests the direct probability implementation of ~sorta print using chaos_probability().
+This test suite validates that ~sorta print correctly uses personality-aware probability
+(~80% base rate) and integrates properly with the personality system.
 """
 
 import unittest
@@ -19,8 +19,8 @@ from kinda.personality import get_personality, PersonalityContext
 from kinda.grammar.python.constructs import KindaPythonConstructs
 
 
-class TestSortaPrintComposition(unittest.TestCase):
-    """Test the composition logic in sorta_print"""
+class TestSortaPrintBehavior(unittest.TestCase):
+    """Test the direct probability behavior in sorta_print"""
 
     def setUp(self):
         """Set up test environment with clean personality context"""
@@ -33,31 +33,21 @@ class TestSortaPrintComposition(unittest.TestCase):
         exec(KindaPythonConstructs["maybe"]["body"], self.exec_scope)
         exec(KindaPythonConstructs["sorta_print"]["body"], self.exec_scope)
 
-    def test_composition_function_calls(self):
-        """Test 5: Verify that sorta_print calls sometimes and maybe functions"""
-        # Mock the functions in the global scope where they're actually called
-        original_sometimes = globals().get("sometimes")
-        original_maybe = globals().get("maybe")
+    def test_direct_probability_execution(self):
+        """Test 5: Verify that sorta_print uses chaos_probability directly (not composition)"""
+        # New implementation uses chaos_probability('sorta_print') directly
+        # This test verifies that it executes without calling sometimes/maybe
 
-        mock_sometimes = MagicMock(return_value=True)
-        mock_maybe = MagicMock(return_value=False)
+        # Mock chaos_probability to return high probability
+        with patch("kinda.personality.chaos_probability", return_value=0.95):
+            with patch("kinda.personality.chaos_random", return_value=0.5):
+                buf = io.StringIO()
+                with contextlib.redirect_stdout(buf):
+                    sorta_print("test")
+                output = buf.getvalue()
 
-        globals()["sometimes"] = mock_sometimes
-        globals()["maybe"] = mock_maybe
-
-        try:
-            # Capture output to avoid console noise
-            with io.StringIO() as buf, contextlib.redirect_stdout(buf):
-                sorta_print("test")
-
-            mock_sometimes.assert_called_with(True)
-            mock_maybe.assert_called_with(True)
-        finally:
-            # Restore original functions
-            if original_sometimes:
-                globals()["sometimes"] = original_sometimes
-            if original_maybe:
-                globals()["maybe"] = original_maybe
+                # Should print because 0.5 < 0.95
+                self.assertIn("[print] test", output)
 
     def test_union_logic_verification(self):
         """Test 6: Verify union logic (gate1 OR gate2) works correctly"""
@@ -156,13 +146,10 @@ class TestSortaPrintComposition(unittest.TestCase):
             if original_maybe:
                 globals()["maybe"] = original_maybe
 
-    def test_exception_handling_during_composition(self):
-        """Test 8: Test error handling when basic constructs fail"""
-        # Mock sometimes to raise exception
-        original_sometimes = globals().get("sometimes")
-        globals()["sometimes"] = MagicMock(side_effect=Exception("Test error"))
-
-        try:
+    def test_exception_handling_during_execution(self):
+        """Test 8: Test error handling when personality system fails"""
+        # Mock chaos_probability to raise exception
+        with patch("kinda.personality.chaos_probability", side_effect=Exception("Test error")):
             buf = io.StringIO()
             with contextlib.redirect_stdout(buf):
                 sorta_print("test")
@@ -170,10 +157,6 @@ class TestSortaPrintComposition(unittest.TestCase):
 
             self.assertIn("[error] Sorta print kinda broke: Test error", output)
             self.assertIn("[fallback] test", output)
-        finally:
-            # Restore original function
-            if original_sometimes:
-                globals()["sometimes"] = original_sometimes
 
 
 class TestSortaPrintPersonalityCompatibility(unittest.TestCase):
@@ -272,8 +255,8 @@ class TestSortaPrintPersonalityCompatibility(unittest.TestCase):
             success_rate, 0.95, f"Playful personality success rate too high: {success_rate}"
         )
 
-    def test_chaotic_personality_bridge_probability(self):
-        """Test 4: Test bridge probability logic for chaotic personality"""
+    def test_chaotic_personality_low_probability(self):
+        """Test 4: Test chaotic personality produces lower execution probability"""
         setup_personality("chaotic", chaos_level=8, seed=42)
 
         # Import construct functions
@@ -284,7 +267,7 @@ class TestSortaPrintPersonalityCompatibility(unittest.TestCase):
 
         # Statistical test with multiple samples
         successes = 0
-        samples = 100
+        samples = 200  # More samples for better statistical accuracy
         for _ in range(samples):
             buf = io.StringIO()
             with contextlib.redirect_stdout(buf):
@@ -294,12 +277,15 @@ class TestSortaPrintPersonalityCompatibility(unittest.TestCase):
                 successes += 1
 
         success_rate = successes / samples
-        # Chaotic should have lower success rate with bridge logic (target ~0.6)
+        # Chaotic with high chaos level should have very low success rate
+        # Base = 0.6, with chaos_amplifier=1.4 and chaos_level=8 (multiplier ~2.2)
+        # Combined amplifier ~3.08 pulls 0.6 toward 0.5, then cascade effects further reduce
+        # Expected range: 0.15 to 0.45 (very unpredictable)
         self.assertGreater(
-            success_rate, 0.30, f"Chaotic personality success rate too low: {success_rate}"
+            success_rate, 0.10, f"Chaotic personality success rate too low: {success_rate}"
         )
         self.assertLess(
-            success_rate, 0.85, f"Chaotic personality success rate too high: {success_rate}"
+            success_rate, 0.50, f"Chaotic personality success rate too high: {success_rate}"
         )
 
 
@@ -317,16 +303,8 @@ class TestSortaPrintBehavioralCompatibility(unittest.TestCase):
         exec(KindaPythonConstructs["maybe"]["body"], exec_scope)
         exec(KindaPythonConstructs["sorta_print"]["body"], exec_scope)
 
-    def test_shrug_responses_preserved(self):
-        """Test that existing shrug responses are preserved"""
-        expected_shrugs = [
-            "[shrug] Meh...",
-            "[shrug] Not feeling it right now",
-            "[shrug] Maybe later?",
-            "[shrug] *waves hand dismissively*",
-            "[shrug] Kinda busy",
-        ]
-
+    def test_failure_produces_silence(self):
+        """Test that ~sorta print respects the ~20% failure rate by producing silence"""
         # Force failure case by mocking both gates to return False and no bridge
         original_sometimes = globals().get("sometimes")
         original_maybe = globals().get("maybe")
@@ -337,16 +315,16 @@ class TestSortaPrintBehavioralCompatibility(unittest.TestCase):
         try:
             with patch(
                 "kinda.personality.chaos_random", return_value=0.9
-            ):  # Above bridge threshold
+            ):  # Above bridge threshold - ensures failure
                 buf = io.StringIO()
                 with contextlib.redirect_stdout(buf):
                     sorta_print("test")
                 output = buf.getvalue()
 
-                # Should contain one of the expected shrug responses
-                found_shrug = any(shrug in output for shrug in expected_shrugs)
-                self.assertTrue(found_shrug, f"Expected shrug response not found in: {output}")
-                self.assertIn("test", output, "Arguments should still be printed with shrug")
+                # When construct fails, should produce NO output (respecting ~20% failure rate)
+                self.assertEqual(
+                    output, "", f"Expected silence on failure, but got output: {output}"
+                )
         finally:
             if original_sometimes:
                 globals()["sometimes"] = original_sometimes
@@ -355,21 +333,15 @@ class TestSortaPrintBehavioralCompatibility(unittest.TestCase):
 
     def test_error_handling_preserved(self):
         """Test that existing error handling patterns are preserved"""
-        # Force exception in main logic
-        original_sometimes = globals().get("sometimes")
-        globals()["sometimes"] = MagicMock(side_effect=Exception("Composition error"))
-
-        try:
+        # Force exception in personality system
+        with patch("kinda.personality.chaos_probability", side_effect=Exception("Chaos error")):
             buf = io.StringIO()
             with contextlib.redirect_stdout(buf):
                 sorta_print("error_test")
             output = buf.getvalue()
 
-            self.assertIn("[error] Sorta print kinda broke: Composition error", output)
+            self.assertIn("[error] Sorta print kinda broke: Chaos error", output)
             self.assertIn("[fallback] error_test", output)
-        finally:
-            if original_sometimes:
-                globals()["sometimes"] = original_sometimes
 
     def test_chaos_state_tracking_preserved(self):
         """Test that chaos state tracking is preserved in composition"""

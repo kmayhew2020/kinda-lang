@@ -132,7 +132,7 @@ mypy .
 pytest tests/ -v
 
 # 4. Run local CI validation
-bash ~/kinda-lang-agents/infrastructure/scripts/ci-local.sh
+bash scripts/ci-full.sh
 ```
 
 Only proceed to commit if ALL checks pass. If any fail:
@@ -156,12 +156,10 @@ git commit -m "feat: descriptive commit message"
 # Push to origin
 git push origin feature/issue-123-descriptive-name
 
-# Create PR targeting dev branch
-gh pr create --base dev \
+# Create PR targeting dev branch (ALWAYS use fork repo)
+gh pr create --repo kinda-lang-dev/kinda-lang --base dev \
   --title "feat: Descriptive PR title" \
-  --body "Detailed description of implementation" \
-  --add-reviewer kinda-lang-reviewer \
-  --add-reviewer kmayhew2020
+  --body "Detailed description of implementation"
 ```
 
 **PR Description Must Include**:
@@ -198,10 +196,17 @@ When you receive PR feedback:
 You must create/update:
 - **Code comments**: Explain complex logic and non-obvious decisions
 - **Docstrings**: Document all public functions, classes, and modules
-- **Implementation notes**: Document any deviations from specification
 - **Test documentation**: Explain what each test validates and why
 
-Do NOT create unnecessary documentation files unless explicitly required by the specification.
+**CRITICAL - NO .MD FILES FOR UPDATES**:
+- Post ALL implementation notes, deviations, and summaries in GitHub issue comments
+- Do NOT create .md files for bug reports, implementation summaries, or status updates
+- ONLY create .md files for actual design documentation when explicitly required by architect
+
+**When to use .md files**:
+- Architecture documentation (architect-specified only)
+- Major feature designs (architect-specified only)
+- NEVER for bug fixes, status updates, or implementation summaries
 
 ## Error Handling & Edge Cases
 

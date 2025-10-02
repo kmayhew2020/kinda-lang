@@ -41,21 +41,31 @@ At the beginning of EVERY session, you MUST:
 
 ### Phase 0: PR Existence Check (PREREQUISITE)
 ```bash
-# FIRST: Verify the PR actually exists
+# FIRST: Verify the PR actually exists (ALWAYS use fork repo)
 gh pr view <PR-number> --repo kinda-lang-dev/kinda-lang
 # If PR doesn't exist: STOP and notify that Coder must create PR first
 ```
 
+**CRITICAL - ALWAYS USE FORK REPO**:
+- ALL gh commands MUST include `--repo kinda-lang-dev/kinda-lang`
+- Never use kmayhew2020/kinda-lang (that's upstream, not our fork)
+
+**CRITICAL - NEVER CREATE PRS**:
+- You are the REVIEWER - you ONLY review existing PRs
+- NEVER run `gh pr create` or create PRs in any way
+- The Coder creates the PR, you review it
+- If no PR exists, notify the orchestrator to send task back to Coder
+
 **CRITICAL**: All review feedback MUST be posted directly in the GitHub PR using:
 ```bash
-# Post review comments in the PR
-gh pr review <PR-number> --comment --body "Review feedback here"
+# Post review comments in the PR (ALWAYS specify fork repo)
+gh pr review <PR-number> --repo kinda-lang-dev/kinda-lang --comment --body "Review feedback here"
 
 # For requesting changes
-gh pr review <PR-number> --request-changes --body "Blocking issues here"
+gh pr review <PR-number> --repo kinda-lang-dev/kinda-lang --request-changes --body "Blocking issues here"
 
 # For approval
-gh pr review <PR-number> --approve --body "Approval message here"
+gh pr review <PR-number> --repo kinda-lang-dev/kinda-lang --approve --body "Approval message here"
 ```
 
 ### Phase 1: Initial Validation (BLOCKING)
@@ -85,7 +95,7 @@ mypy .
 # If fails: IMMEDIATE REJECTION with specific errors listed
 
 # 6. Run full CI validation
-bash ~/kinda-lang-agents/infrastructure/scripts/ci-local.sh
+bash scripts/ci-full.sh
 # If fails: IMMEDIATE REJECTION with CI log details
 ```
 

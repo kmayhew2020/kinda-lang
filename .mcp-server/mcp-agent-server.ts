@@ -36,8 +36,8 @@ const execAsync = promisify(exec);
 
 // Configuration
 const CONFIG = {
-repoOwner: process.env.GITHUB_OWNER || ‘kmayhew2020’,
-repoName: process.env.GITHUB_REPO || ‘kinda-lang’,
+repoOwner: process.env.GITHUB_OWNER || 'kinda-lang-dev',
+repoName: process.env.GITHUB_REPO || 'kinda-lang',
 contextFile: ‘.agent-system/CONTEXT.md’,
 requirementsFile: ‘.agent-system/REQUIREMENTS.txt’,
 workingDir: process.env.WORKING_DIR || process.cwd(),
@@ -52,6 +52,7 @@ auth: process.env.GITHUB_TOKEN,
 const sessionState = {
 lastContextSave: null,
 testsRun: false,
+localCIRun: false,
 currentTask: null,
 currentAgent: null,
 protocolViolations: [],
@@ -102,6 +103,7 @@ sessionState.currentAgent = args.agent_role;
 sessionState.currentTask = args.task_description;
 sessionState.lastContextSave = null;
 sessionState.testsRun = false;
+sessionState.localCIRun = false;
 
 // Load current requirements
 const requirements = await loadRequirements();
@@ -261,10 +263,85 @@ return {
 }
 
 // ============================================================================
+// TOOL: Run Local CI (MANDATORY for tester and coder)
+// ============================================================================
+const runLocalCITool = {
+name: 'run_local_ci',
+description: 'Run local CI validation (scripts/ci-full.sh). REQUIRED for tester and coder agents before completing task.',
+inputSchema: {
+type: 'object',
+properties: {},
+},
+};
+
+async function handleRunLocalCI() {
+try {
+// Run the local CI script
+const cmd = 'bash scripts/ci-full.sh';
+
+```
+const { stdout, stderr } = await execAsync(cmd, {
+  cwd: CONFIG.workingDir,
+  timeout: 300000, // 5 minute timeout
+});
+
+// Mark as run
+sessionState.localCIRun = true;
+
+// Parse output for pass/fail
+const passed = !stderr.includes('FAILED') && stdout.includes('✓');
+
+// Auto-save CI results to context
+await appendToContext({
+  type: 'local_ci_results',
+  agent: sessionState.currentAgent || 'unknown',
+  passed,
+  output: stdout.substring(0, 1000), // First 1000 chars
+});
+
+return {
+  content: [
+    {
+      type: 'text',
+      text: JSON.stringify({
+        status: passed ? 'ci_passed' : 'ci_failed',
+        output: stdout.substring(0, 500),
+        reminder: passed
+          ? '✅ Local CI passed! You can now complete the task.'
+          : '❌ Local CI failed! You must fix issues before completing task.',
+      }, null, 2),
+    },
+  ],
+};
+```
+
+} catch (error: any) {
+sessionState.localCIRun = true; // Mark as attempted
+
+```
+return {
+  content: [
+    {
+      type: 'text',
+      text: JSON.stringify({
+        status: 'ci_execution_failed',
+        error: error.message,
+        reminder: '❌ Local CI could not run. You must fix this before completing task.',
+      }, null, 2),
+    },
+  ],
+  isError: true,
+};
+```
+
+}
+}
+
+// ============================================================================
 // TOOL: Save Context (MANDATORY - enforces format)
 // ============================================================================
 const saveContextTool = {
-name: ‘save_context’,
+name: 'save_context',
 description: ‘Save work context. MANDATORY before completing task. Enforces proper format.’,
 inputSchema: {
 type: ‘object’,
@@ -393,11 +470,100 @@ reminder: ‘✅ Context saved! You can now call complete_task.’,
 }
 
 // ============================================================================
+// Agent-Specific Policy Checks
+// ============================================================================
+async function checkAgentPolicies(agentRole: string, violations: string[]) {
+  try {
+    // Check for .md files that violate policy (status reports, summaries, etc.)
+    const { stdout } = await execAsync('git status --porcelain', {
+      cwd: CONFIG.workingDir,
+    });
+
+    const files = stdout.split('\n').filter(line => line.trim());
+    const prohibitedMdFiles = files.filter(line => {
+      const file = line.substring(3); // Remove git status prefix
+      return (
+        file.endsWith('_REPORT.md') ||
+        file.endsWith('_SUMMARY.md') ||
+        file.endsWith('_ANALYSIS.md') ||
+        file.match(/BUG_REPORT_.*\.md/) ||
+        file.match(/TEST_ANALYSIS_.*\.md/) ||
+        file.match(/IMPLEMENTATION_SUMMARY.*\.md/)
+      );
+    });
+
+    if (prohibitedMdFiles.length > 0) {
+      violations.push(
+        `POLICY VIOLATION: Created prohibited .md files: ${prohibitedMdFiles.map(f => f.substring(3)).join(', ')}. ` +
+        'All updates must go in GitHub issue/PR comments, NOT .md files. ' +
+        'Only architecture docs in docs/ are allowed.'
+      );
+    }
+
+    // Tester-specific checks
+    if (agentRole === 'tester') {
+      // Check that test results were posted to GitHub, not saved as .md files
+      if (prohibitedMdFiles.some(f => f.includes('TEST') || f.includes('BUG'))) {
+        violations.push(
+          'TESTER POLICY: Test results and bug reports must be posted in GitHub issue comments, ' +
+          'not saved as .md files. Remove the .md files and post to the issue instead.'
+        );
+      }
+    }
+
+    // Coder-specific checks
+    if (agentRole === 'coder') {
+      // Check for implementation summaries
+      if (prohibitedMdFiles.some(f => f.includes('IMPLEMENTATION'))) {
+        violations.push(
+          'CODER POLICY: Implementation notes must be posted in GitHub issue comments, ' +
+          'not saved as .md files.'
+        );
+      }
+    }
+
+    // Architect-specific checks
+    if (agentRole === 'architect') {
+      // Check for bug fix designs in docs/ (should be in issues)
+      const designFiles = files.filter(line => {
+        const file = line.substring(3);
+        return file.startsWith('docs/') && file.includes('bug') && file.endsWith('.md');
+      });
+
+      if (designFiles.length > 0) {
+        violations.push(
+          'ARCHITECT POLICY: Bug fix designs should be posted in GitHub issue comments, ' +
+          'not in docs/. Only major feature designs belong in docs/.'
+        );
+      }
+    }
+
+    // Reviewer-specific checks
+    if (agentRole === 'reviewer') {
+      // Check if reviewer tried to create a PR
+      const { stdout: gitLog } = await execAsync('git log -1 --format=%B', {
+        cwd: CONFIG.workingDir,
+      });
+
+      if (gitLog.includes('gh pr create') || gitLog.includes('create.*PR')) {
+        violations.push(
+          'REVIEWER POLICY: Reviewers MUST NOT create PRs. ' +
+          'Only review existing PRs created by Coder. ' +
+          'If no PR exists, notify orchestrator to send task back to Coder.'
+        );
+      }
+    }
+  } catch (error) {
+    console.error('Failed to check agent policies:', error);
+  }
+}
+
+// ============================================================================
 // TOOL: Complete Task (ENFORCES requirements)
 // ============================================================================
 const completeTaskTool = {
-name: ‘complete_task’,
-description: ‘Complete current task. ENFORCES: context saved, tests run, GitHub updated.’,
+name: 'complete_task',
+description: 'Complete current task. ENFORCES: context saved, tests run, GitHub updated, agent policies.',
 inputSchema: {
 type: ‘object’,
 properties: {
@@ -427,15 +593,24 @@ const violations = [];
 
 // Check: Was context saved?
 if (!sessionState.lastContextSave) {
-violations.push(‘Context was not saved (call save_context first)’);
+violations.push('Context was not saved (call save_context first)');
 } else if (Date.now() - sessionState.lastContextSave > 5 * 60 * 1000) {
-violations.push(‘Context save is stale (>5 minutes old)’);
+violations.push('Context save is stale (>5 minutes old)');
 }
 
 // Check: Were tests run?
 if (!sessionState.testsRun) {
-violations.push(‘Tests were not run (call run_tests first)’);
+violations.push('Tests were not run (call run_tests first)');
 }
+
+// Check: Was local CI run (for tester and coder)?
+if ((sessionState.currentAgent === 'tester' || sessionState.currentAgent === 'coder') &&
+    !sessionState.localCIRun) {
+violations.push('Local CI validation not run (must run scripts/ci-full.sh before completing task)');
+}
+
+// Agent-specific policy checks
+await checkAgentPolicies(sessionState.currentAgent, violations);
 
 // REJECT if violations
 if (violations.length > 0) {
@@ -756,6 +931,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
 tools: [
 startTaskTool,
 runTestsTool,
+runLocalCITool,
 saveContextTool,
 completeTaskTool,
 getRequirementsTool,
@@ -768,17 +944,19 @@ const { name, arguments: args } = request.params;
 
 try {
 switch (name) {
-case ‘start_task’:
+case 'start_task':
 return await handleStartTask(args);
-case ‘run_tests’:
+case 'run_tests':
 return await handleRunTests(args);
-case ‘save_context’:
+case 'run_local_ci':
+return await handleRunLocalCI();
+case 'save_context':
 return await handleSaveContext(args);
-case ‘complete_task’:
+case 'complete_task':
 return await handleCompleteTask(args);
-case ‘get_requirements’:
+case 'get_requirements':
 return await handleGetRequirements();
-case ‘github_issue’:
+case 'github_issue':
 return await handleGitHubIssue(args);
 default:
 throw new Error(`Unknown tool: ${name}`);

@@ -162,18 +162,35 @@ class TestExampleIntegration:
         """Test that welp_example runs without issues."""
         project_root = Path(__file__).parent.parent.parent
         example_path = project_root / "examples" / "python" / "individual" / "welp_example.py.knda"
-        result = subprocess.run(
-            ["python", "-m", "kinda.cli", "run", str(example_path)],
-            capture_output=True,
-            text=True,
-            timeout=10,
-            cwd=project_root,  # Ensure we're in project root
-        )
 
-        # Should complete successfully
-        assert result.returncode == 0, f"welp_example run failed: {result.stderr}"
+        # Run multiple times to account for ~sorta print's ~20% silence
+        found_demo_start = False
+        found_fallbacks = False
 
-        # Check for expected welp behavior in output
-        output = result.stdout + result.stderr
-        assert "=== ~welp Construct Demo ===" in output
-        assert "~welp provides graceful fallbacks" in output
+        for _ in range(10):
+            result = subprocess.run(
+                ["python", "-m", "kinda.cli", "run", str(example_path)],
+                capture_output=True,
+                text=True,
+                timeout=10,
+                cwd=project_root,  # Ensure we're in project root
+            )
+
+            # Should complete successfully
+            assert result.returncode == 0, f"welp_example run failed: {result.stderr}"
+
+            # Check for expected welp behavior in output
+            # ~sorta print may be silent ~20% of the time (correct behavior)
+            output = result.stdout + result.stderr
+            if "=== ~welp Construct Demo ===" in output:
+                found_demo_start = True
+            if "~welp provides graceful fallbacks" in output:
+                found_fallbacks = True
+
+            # If both found, we're done
+            if found_demo_start and found_fallbacks:
+                break
+
+        # With multiple ~sorta print calls and 10 runs, we should see both messages at least once
+        assert found_demo_start, "Expected to see demo start message at least once in 10 runs"
+        assert found_fallbacks, "Expected to see fallbacks message at least once in 10 runs"
