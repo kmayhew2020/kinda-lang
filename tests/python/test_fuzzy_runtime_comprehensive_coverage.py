@@ -1227,12 +1227,13 @@ class TestSortaPrintCompositionCoverage:
 
         PersonalityContext._instance = PersonalityContext("playful", 5, seed=111)
 
-        # Force execution path by mocking gates to return True
-        with patch("kinda.langs.python.runtime.fuzzy.sometimes", return_value=True):
-            with patch("builtins.print") as mock_print:
-                sorta_print()
-                # Should have printed something
-                assert mock_print.call_count > 0
+        # Force execution path by mocking chaos_probability to return high prob
+        with patch("kinda.personality.chaos_probability", return_value=0.95):
+            with patch("kinda.personality.chaos_random", return_value=0.5):
+                with patch("builtins.print") as mock_print:
+                    sorta_print()
+                    # Should have printed something (0.5 < 0.95)
+                    assert mock_print.call_count > 0
 
     def test_sorta_print_empty_args_no_execution(self):
         """Test sorta_print with empty args - no execution path produces silence."""
