@@ -52,6 +52,7 @@ auth: process.env.GITHUB_TOKEN,
 const sessionState = {
 lastContextSave: null,
 testsRun: false,
+localCIRun: false,
 currentTask: null,
 currentAgent: null,
 protocolViolations: [],
@@ -102,6 +103,7 @@ sessionState.currentAgent = args.agent_role;
 sessionState.currentTask = args.task_description;
 sessionState.lastContextSave = null;
 sessionState.testsRun = false;
+sessionState.localCIRun = false;
 
 // Load current requirements
 const requirements = await loadRequirements();
@@ -261,10 +263,85 @@ return {
 }
 
 // ============================================================================
+// TOOL: Run Local CI (MANDATORY for tester and coder)
+// ============================================================================
+const runLocalCITool = {
+name: 'run_local_ci',
+description: 'Run local CI validation (scripts/ci-full.sh). REQUIRED for tester and coder agents before completing task.',
+inputSchema: {
+type: 'object',
+properties: {},
+},
+};
+
+async function handleRunLocalCI() {
+try {
+// Run the local CI script
+const cmd = 'bash scripts/ci-full.sh';
+
+```
+const { stdout, stderr } = await execAsync(cmd, {
+  cwd: CONFIG.workingDir,
+  timeout: 300000, // 5 minute timeout
+});
+
+// Mark as run
+sessionState.localCIRun = true;
+
+// Parse output for pass/fail
+const passed = !stderr.includes('FAILED') && stdout.includes('✓');
+
+// Auto-save CI results to context
+await appendToContext({
+  type: 'local_ci_results',
+  agent: sessionState.currentAgent || 'unknown',
+  passed,
+  output: stdout.substring(0, 1000), // First 1000 chars
+});
+
+return {
+  content: [
+    {
+      type: 'text',
+      text: JSON.stringify({
+        status: passed ? 'ci_passed' : 'ci_failed',
+        output: stdout.substring(0, 500),
+        reminder: passed
+          ? '✅ Local CI passed! You can now complete the task.'
+          : '❌ Local CI failed! You must fix issues before completing task.',
+      }, null, 2),
+    },
+  ],
+};
+```
+
+} catch (error: any) {
+sessionState.localCIRun = true; // Mark as attempted
+
+```
+return {
+  content: [
+    {
+      type: 'text',
+      text: JSON.stringify({
+        status: 'ci_execution_failed',
+        error: error.message,
+        reminder: '❌ Local CI could not run. You must fix this before completing task.',
+      }, null, 2),
+    },
+  ],
+  isError: true,
+};
+```
+
+}
+}
+
+// ============================================================================
 // TOOL: Save Context (MANDATORY - enforces format)
 // ============================================================================
 const saveContextTool = {
-name: ‘save_context’,
+name: 'save_context',
 description: ‘Save work context. MANDATORY before completing task. Enforces proper format.’,
 inputSchema: {
 type: ‘object’,
@@ -508,6 +585,12 @@ violations.push('Context save is stale (>5 minutes old)');
 // Check: Were tests run?
 if (!sessionState.testsRun) {
 violations.push('Tests were not run (call run_tests first)');
+}
+
+// Check: Was local CI run (for tester and coder)?
+if ((sessionState.currentAgent === 'tester' || sessionState.currentAgent === 'coder') &&
+    !sessionState.localCIRun) {
+violations.push('Local CI validation not run (must run scripts/ci-full.sh before completing task)');
 }
 
 // Agent-specific policy checks
@@ -832,6 +915,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
 tools: [
 startTaskTool,
 runTestsTool,
+runLocalCITool,
 saveContextTool,
 completeTaskTool,
 getRequirementsTool,
@@ -844,17 +928,19 @@ const { name, arguments: args } = request.params;
 
 try {
 switch (name) {
-case ‘start_task’:
+case 'start_task':
 return await handleStartTask(args);
-case ‘run_tests’:
+case 'run_tests':
 return await handleRunTests(args);
-case ‘save_context’:
+case 'run_local_ci':
+return await handleRunLocalCI();
+case 'save_context':
 return await handleSaveContext(args);
-case ‘complete_task’:
+case 'complete_task':
 return await handleCompleteTask(args);
-case ‘get_requirements’:
+case 'get_requirements':
 return await handleGetRequirements();
-case ‘github_issue’:
+case 'github_issue':
 return await handleGitHubIssue(args);
 default:
 throw new Error(`Unknown tool: ${name}`);
