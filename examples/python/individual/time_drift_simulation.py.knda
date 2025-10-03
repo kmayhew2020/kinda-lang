@@ -17,53 +17,52 @@
 ~sorta print("  Error count:", error_count~drift);
 
 # Simulate system running for extended period
-for uptime_hours in range(1, 101, 10) {
+for uptime_hours in range(1, 101, 10):
     ~sorta print("\n--- After", uptime_hours, "hours of uptime ---");
-    
+
     # Check memory usage (tends to increase due to leaks)
     current_memory = memory_usage~drift;
     ~probably (current_memory > 300.0) {
         ~sorta print("  WARNING: High memory usage:", current_memory, "MB");
         ~sometimes (current_memory > 400.0) {
             ~sorta print("  CRITICAL: Memory leak detected!");
-            error_count~drift = error_count~drift + 1;
+            error_count = error_count~drift + 1;
         }
     }
-    
+
     # Monitor CPU temperature (fluctuates with load and thermal drift)
     current_temp = cpu_temperature~drift;
     ~maybe (current_temp > 60.0) {
         ~sorta print("  CPU running warm:", current_temp, "°C");
         ~rarely (current_temp > 80.0) {
             ~sorta print("  ALERT: CPU overheating!");
-            error_count~drift = error_count~drift + 2;
+            error_count = error_count~drift + 2;
         }
     }
-    
+
     # Network performance degrades
     current_latency = network_latency~drift;
     ~sometimes (current_latency > 100) {
         ~sorta print("  Network slowdown detected:", current_latency, "ms");
         ~maybe (current_latency > 200) {
             ~sorta print("  TIMEOUT: Network issues!");
-            error_count~drift = error_count~drift + 1;
+            error_count = error_count~drift + 1;
         }
     }
-    
+
     # Regular status check
     ~sorta print("  Memory:", current_memory, "MB | CPU:", current_temp, "°C | Latency:", current_latency, "ms");
-    
+
     # System tries to compensate (but becomes less effective over time)
     ~probably (current_memory > 350.0) {
         ~sorta print("  Attempting memory cleanup...");
-        memory_usage~drift = memory_usage~drift * 0.9;  # Cleanup is less effective over time
+        memory_usage = memory_usage~drift * 0.9;  # Cleanup is less effective over time
     }
-    
+
     ~sometimes (current_temp > 70.0) {
         ~sorta print("  Increasing fan speed...");
-        cpu_temperature~drift = cpu_temperature~drift - 5.0;  # Cooling is less effective over time
+        cpu_temperature = cpu_temperature~drift - 5.0;  # Cooling is less effective over time
     }
-}
 
 # Final system state
 ~sorta print("\n=== Final System State ===");

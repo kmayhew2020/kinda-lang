@@ -16,18 +16,18 @@
 ~sorta print("Initial counter:", counter~drift);
 
 # Simulate computational work that causes drift
-for iteration in range(25) {
+for iteration in range(25):
     # Mathematical operations with drift accumulation
     calculation = precision_value~drift * 2.0;
-    counter~drift = counter~drift + 1;
-    
+    counter = counter~drift + 1;
+
     ~sometimes (iteration % 5 == 0) {
         ~sorta print("Iteration", iteration);
         ~sorta print("  Precision value:", precision_value~drift);
         ~sorta print("  Counter:", counter~drift);
         ~sorta print("  Calculation result:", calculation);
     }
-    
+
     # More complex operations increase drift
     ~maybe (precision_value~drift > 3.0) {
         temp = precision_value~drift + counter~drift / 100.0;
@@ -35,7 +35,6 @@ for iteration in range(25) {
             ~sorta print("  Still close to pi:", temp);
         }
     }
-}
 
 ~sorta print("\nFinal values after drift accumulation:");
 ~sorta print("Precision value (started 3.14159...):", precision_value~drift);
@@ -48,12 +47,11 @@ for iteration in range(25) {
 ~time drift int large_int = 50000;
 
 # Access them multiple times to accumulate drift
-for i in range(20) {
+for i in range(20):
     small_check = small_value~drift;
     large_check = large_value~drift;
     small_int_check = small_int~drift;
     large_int_check = large_int~drift;
-}
 
 ~sorta print("\nDrift effects on different magnitudes:");
 ~sorta print("Small value (0.001):", small_value~drift);

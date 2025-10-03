@@ -9,6 +9,7 @@ from kinda.grammar.python.matchers import (
     find_ish_constructs,
     find_welp_constructs,
     _is_inside_string_literal,
+    transform_nested_constructs,
 )
 from kinda.cli import safe_read_file
 
@@ -103,7 +104,7 @@ def _process_conditional_block(
                 # The recursive call will handle the nested block's braces
 
                 transformed_nested = transform_line(line)
-                output_lines.extend([indent + l for l in transformed_nested])
+                output_lines.extend(transformed_nested)
                 i += 1
                 # Recursively process nested block with increased indentation
                 # Calculate if_indent from the actual indentation of the added if statement
@@ -124,7 +125,7 @@ def _process_conditional_block(
                 transformed_block = transform_line(line)
                 if not transformed_block:
                     _warn_about_line(stripped, line_number, file_path or "unknown")
-                output_lines.extend([indent + l for l in transformed_block])
+                output_lines.extend(transformed_block)
                 i += 1
         except Exception as e:
             raise KindaParseError(
@@ -301,6 +302,71 @@ def _extract_single_line_block(line: str, construct_end_pos: int):
         return "", remaining
 
 
+def _is_assignment_statement(content: str) -> bool:
+    """
+    Detect if content contains an assignment statement (not an expression).
+
+    Returns True if the content is an assignment statement, False if it's an expression.
+
+    Examples:
+        _is_assignment_statement("x = 5") -> True
+        _is_assignment_statement("x == 5") -> False
+        _is_assignment_statement("x <= 5") -> False
+        _is_assignment_statement("time_counter = time_counter + 1") -> True
+        _is_assignment_statement("func(timeout=5.0)") -> False  # Named parameter, not assignment
+        _is_assignment_statement("~assert_eventually (~rarely True, timeout=5.0, confidence=0.7)") -> False
+    """
+    if not content:
+        return False
+
+    # Strip whitespace
+    content = content.strip()
+
+    # Check if this looks like a function call with named parameters
+    # If there are parentheses with = inside them, it's likely named parameters, not assignment
+    if "(" in content and ")" in content:
+        # Find balanced parentheses and check for = inside them
+        paren_start = content.find("(")
+        paren_depth = 0
+        for i in range(paren_start, len(content)):
+            if content[i] == "(":
+                paren_depth += 1
+            elif content[i] == ")":
+                paren_depth -= 1
+                if paren_depth == 0:
+                    # Check if there's a = inside the parentheses
+                    inside_parens = content[paren_start : i + 1]
+                    if "=" in inside_parens:
+                        # This is likely a function call with named parameters
+                        # Check if there's also an = outside the parentheses
+                        before_parens = content[:paren_start]
+                        after_parens = content[i + 1 :]
+
+                        # Only return True if there's an assignment = before the function call
+                        # and it's not a comparison operator
+                        if "=" in before_parens:
+                            # Check it's not a comparison
+                            if any(op in before_parens for op in ["==", "!=", "<=", ">="]):
+                                return False
+                            return True
+                        return False  # Named parameters only, not an assignment
+                    break
+
+    # Check for comparison operators first (these are expressions, not assignments)
+    comparison_ops = ["==", "!=", "<=", ">=", "<", ">"]
+    for op in comparison_ops:
+        if op in content:
+            return False
+
+    # Check for single '=' which indicates assignment
+    if "=" in content:
+        # Make sure it's not part of a comparison or other operator
+        # Simple heuristic: if there's a single = not part of ==, !=, <=, >=
+        return True
+
+    return False
+
+
 def _transform_conditional_constructs(line: str) -> str:
     """Transform inline conditional constructs like ~sometimes True, ~maybe False."""
     import re
@@ -309,25 +375,64 @@ def _transform_conditional_constructs(line: str) -> str:
     # This avoids interfering with statement-level constructs like ~probably (...) { ... }
 
     # First handle ~assert_eventually inline usage (this needs to be first)
-    assert_eventually_pattern = re.compile(r"~assert_eventually\s*\(([^)]+)\)")
+    # We need to match the full construct including the closing paren
+    # to avoid duplication when replacing
+    def transform_assert_eventually_inline(line_to_transform):
+        pattern = re.compile(r"~assert_eventually\s*\(")
+        match = pattern.search(line_to_transform)
+        if not match:
+            return line_to_transform
 
-    def replace_assert_eventually(match):
         # Skip if inside string literal
-        if _is_inside_string_literal(line, match.start()):
-            return match.group(0)  # Return original text
-        args = match.group(1)
-        # Preserve kinda syntax in the arguments
-        args = _restore_kinda_syntax_in_condition(args)
-        used_helpers.add("assert_eventually")
-        return f"assert_eventually({args})"
+        if _is_inside_string_literal(line_to_transform, match.start()):
+            return line_to_transform
 
-    line = assert_eventually_pattern.sub(replace_assert_eventually, line)
+        # Find balanced parentheses from the match position
+        start_pos = match.end() - 1  # Position of opening paren
+        from kinda.grammar.python.matchers import _parse_balanced_parentheses
+
+        args, is_balanced = _parse_balanced_parentheses(line_to_transform, start_pos)
+
+        if not is_balanced or args is None:
+            # Return original if parsing failed
+            return line_to_transform
+
+        # Parse the arguments to extract condition and optional parameters
+        # Simple split on comma for now (doesn't handle nested commas perfectly)
+        parts = [p.strip() for p in args.split(",")]
+        if not parts:
+            return line_to_transform
+
+        # First part is the condition - transform nested constructs
+        condition = parts[0]
+        condition = transform_nested_constructs(condition)
+
+        # Rebuild arguments with transformed condition
+        transformed_args = [condition] + parts[1:]
+        args_str = ", ".join(transformed_args)
+
+        used_helpers.add("assert_eventually")
+
+        # Calculate the end position of the full construct (including closing paren)
+        end_pos = start_pos + len(args) + 2  # +2 for opening and closing parens
+
+        # Replace the full matched construct
+        replacement = f"assert_eventually({args_str})"
+        result = line_to_transform[: match.start()] + replacement + line_to_transform[end_pos:]
+
+        # Recursively handle multiple occurrences
+        if "~assert_eventually" in result:
+            return transform_assert_eventually_inline(result)
+        return result
+
+    line = transform_assert_eventually_inline(line)
 
     # Pattern to match inline conditional constructs without parentheses
     # Only match when NOT followed by braces (statement-level constructs)
     # Look ahead to ensure there's no { after the condition
+    # Stop at: comma, closing parens/brackets/braces, comment, or end of line
     conditional_pattern = re.compile(
-        r"~(sometimes|maybe|probably|rarely)\s+([^,\(\)\{\~]+?)(?=\s*[,\)\]\}]|$)(?!\s*\{)"
+        r"~(sometimes|maybe|probably|rarely)\s+([^,\(\)\{\~#]+?)(?=\s*[,\)\]\}#]|$)(?!\s*\{)"
     )
 
     def replace_conditional(match):
@@ -335,19 +440,32 @@ def _transform_conditional_constructs(line: str) -> str:
         if _is_inside_string_literal(line, match.start()):
             return match.group(0)  # Return original text
 
-        # Skip if inside a statistical assertion to preserve kinda syntax
+        # Skip if inside a statistical assertion to preserve kinda syntax (Bug Fix #96)
+        # Check for BOTH ~assert_eventually and assert_eventually forms
         start_pos = match.start()
         line_before = line[:start_pos]
-        if (
-            "assert_eventually(" in line_before
-            and ")" not in line_before[line_before.rfind("assert_eventually(") :]
-        ):
-            return match.group(0)  # Preserve original kinda syntax
-        if (
-            "assert_probability(" in line_before
-            and ")" not in line_before[line_before.rfind("assert_probability(") :]
-        ):
-            return match.group(0)  # Preserve original kinda syntax
+
+        # Check for ~assert_eventually( or assert_eventually(
+        if "assert_eventually(" in line_before or "~assert_eventually (" in line_before:
+            # Find the last occurrence
+            last_pos_1 = line_before.rfind("assert_eventually(")
+            last_pos_2 = line_before.rfind("~assert_eventually (")
+            last_pos = max(last_pos_1, last_pos_2)
+            if last_pos != -1:
+                # Check if we're still inside the call (no closing paren after it)
+                if ")" not in line_before[last_pos:]:
+                    return match.group(0)  # Preserve original kinda syntax
+
+        # Check for ~assert_probability( or assert_probability(
+        if "assert_probability(" in line_before or "~assert_probability (" in line_before:
+            # Find the last occurrence
+            last_pos_1 = line_before.rfind("assert_probability(")
+            last_pos_2 = line_before.rfind("~assert_probability (")
+            last_pos = max(last_pos_1, last_pos_2)
+            if last_pos != -1:
+                # Check if we're still inside the call (no closing paren after it)
+                if ")" not in line_before[last_pos:]:
+                    return match.group(0)  # Preserve original kinda syntax
 
         construct_name = match.group(1)
         condition = match.group(2).strip()
@@ -489,17 +607,29 @@ def transform_line(line: str) -> List[str]:
     if key == "kinda_int" and groups:
         var, val = groups
         used_helpers.add("kinda_int")
-        transformed_code = f"{var} = kinda_int({val})"
+        # BUG FIX #96: Transform nested probabilistic constructs in value
+        from kinda.grammar.python.matchers import _transform_probabilistic_syntax
+
+        transformed_val = _transform_probabilistic_syntax(val)
+        transformed_code = f"{var} = kinda_int({transformed_val})"
 
     elif key == "kinda_bool" and groups:
         var, val = groups
         used_helpers.add("kinda_bool")
-        transformed_code = f"{var} = kinda_bool({val})"
+        # BUG FIX #96: Transform nested probabilistic constructs in value
+        from kinda.grammar.python.matchers import _transform_probabilistic_syntax
+
+        transformed_val = _transform_probabilistic_syntax(val)
+        transformed_code = f"{var} = kinda_bool({transformed_val})"
 
     elif key == "kinda_float" and groups:
         var, val = groups
         used_helpers.add("kinda_float")
-        transformed_code = f"{var} = kinda_float({val})"
+        # BUG FIX #96: Transform nested probabilistic constructs in value
+        from kinda.grammar.python.matchers import _transform_probabilistic_syntax
+
+        transformed_val = _transform_probabilistic_syntax(val)
+        transformed_code = f"{var} = kinda_float({transformed_val})"
 
     elif key == "time_drift_float" and groups:
         var, val = groups
@@ -534,103 +664,132 @@ def transform_line(line: str) -> List[str]:
     elif key == "sometimes":
         used_helpers.add("sometimes")
         cond = groups[0].strip() if groups and groups[0] else ""
-        base_code = f"if sometimes({cond}):" if cond else "if sometimes():"
 
-        # Check for single-line block
-        construct_match = welp_transformed_line.find("~sometimes")
-        if construct_match != -1:
-            # Find where the construct pattern ends
-            import re
+        # BUG FIX #96-2: Check if condition contains an assignment statement
+        if cond and _is_assignment_statement(cond):
+            # Assignment statement: transform to block with statement inside
+            # Return as multiple lines to indicate block structure
+            transformed_code = f"if sometimes(True):\n    {cond}"
+        else:
+            # Expression: use as condition (current behavior)
+            base_code = f"if sometimes({cond}):" if cond else "if sometimes():"
 
-            pattern = re.compile(r"~sometimes\s*\([^)]*\)")
-            match = pattern.search(welp_transformed_line)
-            if match:
-                block_content, remaining = _extract_single_line_block(
-                    welp_transformed_line, match.end()
-                )
-                if block_content:
-                    transformed_code = f"{base_code} {block_content}"
+            # Check for single-line block
+            construct_match = welp_transformed_line.find("~sometimes")
+            if construct_match != -1:
+                # Find where the construct pattern ends
+                import re
+
+                pattern = re.compile(r"~sometimes\s*\([^)]*\)")
+                match = pattern.search(welp_transformed_line)
+                if match:
+                    block_content, remaining = _extract_single_line_block(
+                        welp_transformed_line, match.end()
+                    )
+                    if block_content:
+                        transformed_code = f"{base_code} {block_content}"
+                    else:
+                        transformed_code = base_code
                 else:
                     transformed_code = base_code
             else:
                 transformed_code = base_code
-        else:
-            transformed_code = base_code
 
     elif key == "maybe":
         used_helpers.add("maybe")
         cond = groups[0].strip() if groups and groups[0] else ""
-        base_code = f"if maybe({cond}):" if cond else "if maybe():"
 
-        # Check for single-line block
-        construct_match = welp_transformed_line.find("~maybe")
-        if construct_match != -1:
-            import re
+        # BUG FIX #96-2: Check if condition contains an assignment statement
+        if cond and _is_assignment_statement(cond):
+            # Assignment statement: transform to block with statement inside
+            transformed_code = f"if maybe(True):\n    {cond}"
+        else:
+            # Expression: use as condition (current behavior)
+            base_code = f"if maybe({cond}):" if cond else "if maybe():"
 
-            pattern = re.compile(r"~maybe\s*\([^)]*\)")
-            match = pattern.search(welp_transformed_line)
-            if match:
-                block_content, remaining = _extract_single_line_block(
-                    welp_transformed_line, match.end()
-                )
-                if block_content:
-                    transformed_code = f"{base_code} {block_content}"
+            # Check for single-line block
+            construct_match = welp_transformed_line.find("~maybe")
+            if construct_match != -1:
+                import re
+
+                pattern = re.compile(r"~maybe\s*\([^)]*\)")
+                match = pattern.search(welp_transformed_line)
+                if match:
+                    block_content, remaining = _extract_single_line_block(
+                        welp_transformed_line, match.end()
+                    )
+                    if block_content:
+                        transformed_code = f"{base_code} {block_content}"
+                    else:
+                        transformed_code = base_code
                 else:
                     transformed_code = base_code
             else:
                 transformed_code = base_code
-        else:
-            transformed_code = base_code
 
     elif key == "probably":
         used_helpers.add("probably")
         cond = groups[0].strip() if groups and groups[0] else ""
-        base_code = f"if probably({cond}):" if cond else "if probably():"
 
-        # Check for single-line block
-        construct_match = welp_transformed_line.find("~probably")
-        if construct_match != -1:
-            import re
+        # BUG FIX #96-2: Check if condition contains an assignment statement
+        if cond and _is_assignment_statement(cond):
+            # Assignment statement: transform to block with statement inside
+            transformed_code = f"if probably(True):\n    {cond}"
+        else:
+            # Expression: use as condition (current behavior)
+            base_code = f"if probably({cond}):" if cond else "if probably():"
 
-            pattern = re.compile(r"~probably\s*\([^)]*\)")
-            match = pattern.search(welp_transformed_line)
-            if match:
-                block_content, remaining = _extract_single_line_block(
-                    welp_transformed_line, match.end()
-                )
-                if block_content:
-                    transformed_code = f"{base_code} {block_content}"
+            # Check for single-line block
+            construct_match = welp_transformed_line.find("~probably")
+            if construct_match != -1:
+                import re
+
+                pattern = re.compile(r"~probably\s*\([^)]*\)")
+                match = pattern.search(welp_transformed_line)
+                if match:
+                    block_content, remaining = _extract_single_line_block(
+                        welp_transformed_line, match.end()
+                    )
+                    if block_content:
+                        transformed_code = f"{base_code} {block_content}"
+                    else:
+                        transformed_code = base_code
                 else:
                     transformed_code = base_code
             else:
                 transformed_code = base_code
-        else:
-            transformed_code = base_code
 
     elif key == "rarely":
         used_helpers.add("rarely")
         cond = groups[0].strip() if groups and groups[0] else ""
-        base_code = f"if rarely({cond}):" if cond else "if rarely():"
 
-        # Check for single-line block
-        construct_match = welp_transformed_line.find("~rarely")
-        if construct_match != -1:
-            import re
+        # BUG FIX #96-2: Check if condition contains an assignment statement
+        if cond and _is_assignment_statement(cond):
+            # Assignment statement: transform to block with statement inside
+            transformed_code = f"if rarely(True):\n    {cond}"
+        else:
+            # Expression: use as condition (current behavior)
+            base_code = f"if rarely({cond}):" if cond else "if rarely():"
 
-            pattern = re.compile(r"~rarely\s*\([^)]*\)")
-            match = pattern.search(welp_transformed_line)
-            if match:
-                block_content, remaining = _extract_single_line_block(
-                    welp_transformed_line, match.end()
-                )
-                if block_content:
-                    transformed_code = f"{base_code} {block_content}"
+            # Check for single-line block
+            construct_match = welp_transformed_line.find("~rarely")
+            if construct_match != -1:
+                import re
+
+                pattern = re.compile(r"~rarely\s*\([^)]*\)")
+                match = pattern.search(welp_transformed_line)
+                if match:
+                    block_content, remaining = _extract_single_line_block(
+                        welp_transformed_line, match.end()
+                    )
+                    if block_content:
+                        transformed_code = f"{base_code} {block_content}"
+                    else:
+                        transformed_code = base_code
                 else:
                     transformed_code = base_code
             else:
                 transformed_code = base_code
-        else:
-            transformed_code = base_code
 
     elif key == "sometimes_while":
         used_helpers.add("sometimes_while_condition")
@@ -670,9 +829,9 @@ def transform_line(line: str) -> List[str]:
         used_helpers.add("assert_eventually")
         condition, timeout, confidence = groups
 
-        # Preserve kinda syntax in condition by converting function calls back to tilde syntax
+        # Transform nested probabilistic constructs into lambdas
         if condition:
-            condition = _restore_kinda_syntax_in_condition(condition)
+            condition = transform_nested_constructs(condition)
 
         # Build function call with optional parameters
         args = [condition] if condition else ["True"]
@@ -687,9 +846,9 @@ def transform_line(line: str) -> List[str]:
         used_helpers.add("assert_probability")
         event, expected_prob, tolerance, samples = groups
 
-        # Preserve kinda syntax in event by converting function calls back to tilde syntax
+        # Transform nested probabilistic constructs into lambdas
         if event:
-            event = _restore_kinda_syntax_in_condition(event)
+            event = transform_nested_constructs(event)
 
         # Build function call with optional parameters
         args = [event] if event else ["True"]
@@ -741,7 +900,22 @@ def transform_line(line: str) -> List[str]:
 
     # Debug removed for clean UX
 
-    return [welp_transformed_line.replace(stripped_for_matching, transformed_code)]
+    # BUG FIX #96-2: Handle multi-line transformed code (e.g., assignment statements in conditionals)
+    if "\n" in transformed_code:
+        # Split the transformed code into multiple lines and preserve indentation
+        base_indent = original_line[: len(original_line) - len(original_line.lstrip())]
+        lines = transformed_code.split("\n")
+        result_lines = []
+        for i, line in enumerate(lines):
+            if i == 0:
+                # First line: replace the stripped content in the original line
+                result_lines.append(welp_transformed_line.replace(stripped_for_matching, line))
+            else:
+                # Subsequent lines: add with base indentation
+                result_lines.append(base_indent + line)
+        return result_lines
+    else:
+        return [welp_transformed_line.replace(stripped_for_matching, transformed_code)]
 
 
 class KindaParseError(Exception):
@@ -808,13 +982,20 @@ def transform_file(path: Path, target_language="python") -> str:
                     i += 1
                     continue
 
-                output_lines.extend(transform_line(line))
+                transformed_lines = transform_line(line)
+                output_lines.extend(transformed_lines)
                 i += 1
 
                 # Only process as block if there's an opening brace
                 if stripped.endswith("{"):
+                    # Calculate the indent for the block content based on the last added line
+                    # The last line is the if/while/for statement - its indentation + 4 spaces
+                    last_line = transformed_lines[-1] if transformed_lines else ""
+                    last_line_indent = last_line[: len(last_line) - len(last_line.lstrip())]
+                    block_indent = last_line_indent + "    "
+
                     # Process block with proper nesting support and error handling
-                    i = _process_conditional_block(lines, i, output_lines, "    ", str(path))
+                    i = _process_conditional_block(lines, i, output_lines, block_indent, str(path))
                 else:
                     # Python-style indented block - process indented lines
                     i = _process_python_indented_block(lines, i, output_lines, line, str(path))

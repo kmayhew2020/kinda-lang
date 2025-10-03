@@ -592,6 +592,242 @@ class _WelpMatch:
         return self.end_pos
 
 
+def _transform_probabilistic_syntax(expression: str) -> str:
+    """
+    Helper function to transform ~construct syntax to function() syntax WITHOUT adding lambdas.
+    This is used internally by transform_nested_constructs.
+
+    CRITICAL BUG FIX (Issue #96 Bug 1): Now truly recursive - handles ALL nested constructs
+    including those in conditional expressions, parenthesized expressions, and complex nesting.
+    """
+    import re
+
+    transformed = expression
+    probabilistic_constructs = ["sometimes", "maybe", "probably", "rarely"]
+
+    # Process each type of construct
+    for construct in probabilistic_constructs:
+        # Pattern for ~construct(expr) - has explicit parentheses
+        pattern_with_parens = re.compile(rf"~{construct}\s*\(")
+
+        while True:
+            match = pattern_with_parens.search(transformed)
+            if not match:
+                break
+
+            # Find balanced parentheses
+            start_paren = match.end() - 1
+            content, is_balanced = _parse_balanced_parentheses(transformed, start_paren)
+
+            if not is_balanced or content is None:
+                break  # Stop if we can't parse balanced parens
+
+            # Recursively transform the content (but don't add lambda)
+            transformed_content = _transform_probabilistic_syntax(content)
+
+            # Replace the matched construct
+            end_paren = start_paren + len(content) + 2  # +2 for the parens
+            replacement = f"{construct}({transformed_content})"
+            transformed = transformed[: match.start()] + replacement + transformed[end_paren:]
+
+        # Pattern for ~construct expr - no explicit parentheses around condition
+        # FIX: Improved to handle complex expressions properly
+        pattern_no_parens = re.compile(rf"~{construct}\s+(?!\()")
+
+        while True:
+            match = pattern_no_parens.search(transformed)
+            if not match:
+                break
+
+            # Find the end of the argument expression
+            # Need to handle Python expressions: literals, identifiers, if-else, operators, etc.
+            condition_start = match.end()
+            condition_end = _find_probabilistic_expression_end(transformed, condition_start)
+
+            condition = transformed[condition_start:condition_end].strip()
+
+            # Don't process empty conditions
+            if not condition:
+                break
+
+            # Recursively transform the condition (but don't add lambda)
+            transformed_condition = _transform_probabilistic_syntax(condition)
+
+            # Replace the matched construct
+            replacement = f"{construct}({transformed_condition})"
+            transformed = transformed[: match.start()] + replacement + transformed[condition_end:]
+
+    return transformed
+
+
+def _find_probabilistic_expression_end(line: str, start_pos: int) -> int:
+    """
+    Find the end of a probabilistic expression argument.
+    Handles Python expressions including:
+    - Simple values: True, False, 42, 3.14, "string"
+    - Conditionals: x if condition else y
+    - Operators: x + y, x == y, etc.
+    - Nested parentheses: (expr)
+    - Function calls: func(args)
+
+    Stops at:
+    - Comma (at same depth)
+    - Closing paren/bracket/brace (at outer depth)
+    - Semicolon, hash (comment)
+    - End of line
+    """
+    paren_depth = 0
+    bracket_depth = 0
+    brace_depth = 0
+    in_string = False
+    string_char = None
+    escaped = False
+    pos = start_pos
+
+    # Track if we've seen 'if' to handle conditional expressions
+    saw_if = False
+    saw_else = False
+
+    while pos < len(line):
+        char = line[pos]
+
+        if escaped:
+            escaped = False
+            pos += 1
+            continue
+
+        if char == "\\" and in_string:
+            escaped = True
+            pos += 1
+            continue
+
+        if not in_string:
+            # Check for string delimiters
+            if char in "\"'":
+                in_string = True
+                string_char = char
+            # Track nesting depth
+            elif char == "(":
+                paren_depth += 1
+            elif char == ")":
+                paren_depth -= 1
+                if paren_depth < 0:
+                    return pos  # Hit closing paren at outer level
+            elif char == "[":
+                bracket_depth += 1
+            elif char == "]":
+                bracket_depth -= 1
+                if bracket_depth < 0:
+                    return pos  # Hit closing bracket at outer level
+            elif char == "{":
+                brace_depth += 1
+            elif char == "}":
+                brace_depth -= 1
+                if brace_depth < 0:
+                    return pos  # Hit closing brace at outer level
+            # Stop conditions at same depth
+            elif paren_depth == 0 and bracket_depth == 0 and brace_depth == 0:
+                if char in ",;#":
+                    return pos
+                # Check for Python keywords that indicate expression boundaries
+                # Extract word at current position
+                if char.isalpha() or char == "_":
+                    word_end = pos
+                    while word_end < len(line) and (
+                        line[word_end].isalnum() or line[word_end] == "_"
+                    ):
+                        word_end += 1
+                    word = line[pos:word_end]
+
+                    # Handle 'if' and 'else' keywords in conditional expressions
+                    if word == "if":
+                        saw_if = True
+                        pos = word_end
+                        continue
+                    elif word == "else":
+                        if saw_if:
+                            # This is part of a conditional expression, keep going
+                            saw_else = True
+                            pos = word_end
+                            continue
+                        else:
+                            # This might be a statement-level else, stop here
+                            return pos
+                    # Other keywords that end expressions
+                    elif word in ["and", "or", "not", "is", "in"]:
+                        # These are operators, keep going
+                        pos = word_end
+                        continue
+                    elif word in [
+                        "for",
+                        "while",
+                        "with",
+                        "try",
+                        "except",
+                        "finally",
+                        "class",
+                        "def",
+                        "return",
+                        "yield",
+                        "raise",
+                        "import",
+                        "from",
+                        "as",
+                        "lambda",
+                    ]:
+                        # These indicate statement boundaries or lambda (which we treat specially)
+                        if word == "lambda":
+                            # Lambda is complex, for now treat as expression continuation
+                            pos = word_end
+                            continue
+                        else:
+                            return pos
+        else:
+            # We're inside a string
+            if char == string_char:
+                in_string = False
+                string_char = None
+
+        pos += 1
+
+    return pos
+
+
+def transform_nested_constructs(expression: str) -> str:
+    """
+    Transform nested probabilistic constructs into lambdas for use in function arguments.
+
+    This function detects probabilistic constructs (~sometimes, ~maybe, etc.) in expressions
+    and wraps them in lambdas so they can be evaluated repeatedly.
+
+    Example:
+        "~sometimes True" -> "lambda: sometimes(True)"
+        "~maybe x > 5" -> "lambda: maybe(x > 5)"
+        "~sometimes (meta_result == ~sometimes True)" -> "lambda: sometimes(meta_result == sometimes(True))"
+
+    Args:
+        expression: The expression to transform
+
+    Returns:
+        Transformed expression with nested constructs wrapped in lambda if needed
+    """
+    # Strip whitespace
+    expression = expression.strip()
+
+    # Check if expression contains any probabilistic constructs
+    probabilistic_constructs = ["sometimes", "maybe", "probably", "rarely"]
+    has_probabilistic = any(f"~{c}" in expression for c in probabilistic_constructs)
+
+    if not has_probabilistic:
+        return expression
+
+    # First, transform all the tilde syntax to function call syntax
+    transformed = _transform_probabilistic_syntax(expression)
+
+    # Then wrap the ENTIRE expression in a lambda (only once, at the top level)
+    return f"lambda: {transformed}"
+
+
 def find_welp_constructs(line: str) -> List[Tuple[str, Any, int, int]]:
     """
     Find all ~welp constructs in a line for inline transformation.

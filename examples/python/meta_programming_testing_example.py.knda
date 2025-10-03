@@ -53,7 +53,7 @@ print("\n⏱️ Time-Based Meta-Testing")
 ~kinda bool eventually_incremented = False
 ~assert_eventually ((time_counter > 0), timeout=1.0, confidence=0.7)
 
-~sorta print f"✅ Time-based: Counter reached {time_counter} (temporal meta-validation)"
+~sorta print(f"✅ Time-based: Counter reached {time_counter} (temporal meta-validation)")
 
 # Example 5: Recursive Meta-Framework Demonstration
 # The ultimate expression: a test that tests the testing framework
@@ -83,7 +83,7 @@ print("\n🌪️ Chaos-Adaptive Meta-Testing")
 ~kinda float adaptive_prob = 0.5 * chaos_factor  # Scale expectation by chaos
 ~assert_probability (~sometimes True, expected_prob=adaptive_prob, tolerance=0.3, samples=150)
 
-~sorta print f"✅ Chaos-adaptive: Validated with chaos factor {chaos_factor}"
+~sorta print(f"✅ Chaos-adaptive: Validated with chaos factor {chaos_factor}")
 
 # Example 7: Meta-Statistical Validation
 # Using statistical assertions to validate statistical behavior
@@ -97,13 +97,13 @@ print("\n📊 Meta-Statistical Analysis")
 ~probably (assertion_successes = assertion_successes + (~maybe 1 if True else 0))
 ~assert_probability ((assertion_successes >= 2), expected_prob=0.8, tolerance=0.2, samples=50)
 
-~sorta print f"✅ Meta-statistical: Assertion success rate meta-validated!"
+~sorta print(f"✅ Meta-statistical: Assertion success rate meta-validated!")
 
 # Example 8: Ultimate Meta-Programming: Self-Modifying Test Logic
 # Tests that use kinda constructs to modify their own testing behavior
 print("\n🎪 Self-Modifying Meta-Test Logic")
 
-~kinda str test_mode = (~sometimes "strict" if True else "lenient")
+test_mode = (~sometimes "strict") if True else "lenient"
 ~kinda float dynamic_confidence = (~maybe 0.9 if test_mode == "strict" else 0.6)
 ~kinda float dynamic_timeout = (~rarely 3.0 if test_mode == "strict" else 1.0)
 
@@ -114,21 +114,21 @@ print(f"Dynamic timeout: {dynamic_timeout}")
 # Execute self-modifying validation
 ~assert_eventually (~sometimes (test_mode != "impossible"), timeout=dynamic_timeout, confidence=dynamic_confidence)
 
-~sorta print f"✅ Self-modifying: Test adapted its behavior based on ~{test_mode} mode!"
+~sorta print(f"✅ Self-modifying: Test adapted its behavior based on ~{test_mode} mode!")
 
 # Final Meta-Philosophy Statement
 print("\n🎭 ULTIMATE META-PROGRAMMING ACHIEVED!")
 print("=" * 50)
-~sorta (print("🏆 This example demonstrates the pinnacle of 'Kinda tests Kinda' philosophy:"))
-~probably (print("   • Kinda constructs testing themselves"))  
-~maybe (print("   • Dynamic parameter generation using fuzzy logic"))
-~sometimes (print("   • Recursive meta-validation frameworks"))
-~rarely (print("   • Self-modifying test behaviors"))
+~sorta print("🏆 This example demonstrates the pinnacle of 'Kinda tests Kinda' philosophy:")
+~probably () { print("   • Kinda constructs testing themselves") }
+~maybe () { print("   • Dynamic parameter generation using fuzzy logic") }
+~sometimes () { print("   • Recursive meta-validation frameworks") }
+~rarely () { print("   • Self-modifying test behaviors") }
 print("   • Chaos-adaptive statistical assertions")
 print("   • Multi-level probabilistic meta-analysis")
 print("")
-~sorta (print("🎯 The tests themselves have become kinda - embracing uncertainty,"))
-~maybe (print("   chaos, and probabilistic thinking at every level."))
+~sorta print("🎯 The tests themselves have become kinda - embracing uncertainty,")
+~maybe () { print("   chaos, and probabilistic thinking at every level.") }
 print("")
 print("This is not just testing WITH kinda constructs -")  
 print("This IS kinda constructs testing kinda constructs recursively!")

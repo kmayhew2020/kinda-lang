@@ -2,6 +2,13 @@
 
 ## Current Status (2025-10-02) - v0.5.0 ACTIVE DEVELOPMENT
 
+### 🎉 Latest Completion (2025-10-02)
+- ✅ **PR #144 MERGED**: Critical transformer regression bugs fixed (Issues #105, #107)
+  - ~welp prefix syntax now transforms correctly
+  - Nested conditional indentation generates valid Python
+  - 6 new regression tests prevent future regressions
+  - All 1,691 tests passing across Python 3.8-3.12
+
 ### ✅ Completed (v0.5.0)
 - **Epic #127 Python Enhancement Bridge**: ✅ **100% COMPLETE AND VALIDATED** - Seamless Python injection framework
   - Phase 1: Infrastructure Implementation ✅ COMPLETE (392KB code across injection/migration modules)
@@ -147,10 +154,13 @@
 - ✅ **Issue #83**: `~ish` transformer uses wrong function (ish_comparison vs ish_value) - **FIXED in PR #108**
 - ✅ **Issue #84**: Documentation: `~ish` construct usage patterns need clarification - **COMPLETED in PR #112**
 
-### ✅ Recently Fixed Critical Issues (2025-08-30) 
-- ✅ **Issue #105**: Critical Bug: ~ish variable modification syntax completely broken - **FIXED in PR #108**
-- ✅ **Issue #106**: Bug: ~ish construct uses wrong runtime function for assignments - **FIXED in PR #108**
-- ✅ **Issue #107**: UX Bug: ~ish variable modification fails silently causing user confusion - **FIXED in PR #108**
+### ✅ Recently Fixed Critical Issues (2025-10-02)
+- ✅ **Issue #105**: 🚨 CRITICAL: ~welp construct not transformed by kinda transformer - **FIXED in PR #144**
+  - Fixed raw ~welp being left in output causing SyntaxError
+  - Now properly transforms to welp_fallback() function with comprehensive regression tests
+- ✅ **Issue #107**: 🚨 CRITICAL: Transformer generates invalid Python indentation in nested conditionals - **FIXED in PR #144**
+  - Fixed invalid indentation in else blocks causing IndentationError
+  - Implemented smart indentation tracking with full edge case coverage
 
 ### ✅ Recently Completed Features (2025-08-30)
 - ✅ **Issue #97**: Feature: Implement ~rarely construct (15% probability) - **COMPLETED in PR #109**
