@@ -4,57 +4,20 @@ This is a Model Context Protocol (MCP) server that enforces the 5-agent workflow
 
 ## 🚀 Quick Start
 
-### 1. Install Dependencies
-
 ```bash
 cd .mcp-server
-npm install
+./install.sh  # Interactive installer does everything
+# Restart Claude Code when prompted
 ```
 
-### 2. Configure Environment
+The installer will:
+1. Install npm dependencies
+2. Build TypeScript to JavaScript
+3. Prompt for your GitHub token (or skip to configure manually)
+4. Optionally configure Claude Code automatically
+5. Show you the MCP tools that will be available
 
-```bash
-# Copy the example environment file
-cp .env.example .env
-
-# Edit .env and add your GitHub token
-# Get a token from: https://github.com/settings/tokens
-# Needs: repo, workflow permissions
-```
-
-### 3. Build the Server
-
-```bash
-npm run build
-```
-
-### 4. Configure Claude Code
-
-Add to your Claude Code MCP settings:
-
-**Linux/macOS:** `~/.config/claude/claude_desktop_config.json`
-**Windows:** `%APPDATA%\Claude\claude_desktop_config.json`
-
-```json
-{
-  "mcpServers": {
-    "kinda-agent-workflow": {
-      "command": "node",
-      "args": ["/absolute/path/to/kinda-lang/.mcp-server/build/mcp-agent-server.js"],
-      "env": {
-        "GITHUB_TOKEN": "your_github_token_here",
-        "GITHUB_OWNER": "kinda-lang-dev",
-        "GITHUB_REPO": "kinda-lang",
-        "WORKING_DIR": "/absolute/path/to/kinda-lang"
-      }
-    }
-  }
-}
-```
-
-### 5. Restart Claude Code
-
-The MCP server tools will now be available to agents.
+**Manual configuration:** If you skip auto-config, the installer shows you exactly what to add to your Claude Code settings.
 
 ## 📋 Available Tools
 

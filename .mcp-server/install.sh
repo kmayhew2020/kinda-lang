@@ -1,9 +1,11 @@
 #!/bin/bash
 # MCP Server Installation Script for Kinda-Lang
+# This script installs, builds, and configures the MCP server in one step
 
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 cd "$SCRIPT_DIR"
 
 echo "🚀 Installing Kinda-Lang MCP Agent Server"
@@ -46,55 +48,169 @@ echo ""
 if [ ! -f ".env" ]; then
     echo "📝 Creating .env from template..."
     cp .env.example .env
-    echo "⚠️  Please edit .env and add your GitHub token"
-    echo ""
+    NEED_TOKEN=true
 else
     echo "✅ .env already exists"
+    NEED_TOKEN=false
+fi
+
+# Check if GitHub token is configured
+if ! grep -q "^GITHUB_TOKEN=" ".env" || grep -q "^GITHUB_TOKEN=ghp_your_github" ".env"; then
+    NEED_TOKEN=true
+fi
+
+# Prompt for GitHub token if needed
+if [ "$NEED_TOKEN" = true ]; then
+    echo ""
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "🔑 GitHub Token Required"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo ""
+    echo "Get a token from: https://github.com/settings/tokens"
+    echo "Required scopes: repo, workflow"
+    echo ""
+    read -p "Enter your GitHub token (or press Enter to skip): " GITHUB_TOKEN
+
+    if [ -n "$GITHUB_TOKEN" ]; then
+        sed -i.bak "s|GITHUB_TOKEN=.*|GITHUB_TOKEN=$GITHUB_TOKEN|" .env
+        rm .env.bak 2>/dev/null || true
+        echo "✅ GitHub token configured"
+        NEED_TOKEN=false
+    else
+        echo "⚠️  Skipped - you'll need to edit .env manually later"
+        NEED_TOKEN=true
+    fi
+fi
+
+echo ""
+
+# Detect OS for Claude config path
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    CLAUDE_CONFIG="$HOME/Library/Application Support/Claude/claude_desktop_config.json"
+elif [[ "$OSTYPE" == "msys" || "$OSTYPE" == "win32" ]]; then
+    CLAUDE_CONFIG="$APPDATA/Claude/claude_desktop_config.json"
+else
+    CLAUDE_CONFIG="$HOME/.config/claude/claude_desktop_config.json"
+fi
+
+ABS_PATH="$SCRIPT_DIR/build/mcp-agent-server.js"
+
+# Offer to configure Claude automatically
+if [ "$NEED_TOKEN" = false ]; then
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "🔧 Claude Code Configuration"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo ""
+    read -p "Configure Claude Code automatically? (y/n): " -n 1 -r
+    echo ""
+
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+        # Create config directory if needed
+        CLAUDE_CONFIG_DIR=$(dirname "$CLAUDE_CONFIG")
+        if [ ! -d "$CLAUDE_CONFIG_DIR" ]; then
+            echo "📁 Creating Claude config directory..."
+            mkdir -p "$CLAUDE_CONFIG_DIR"
+        fi
+
+        # Backup existing config
+        if [ -f "$CLAUDE_CONFIG" ]; then
+            BACKUP="$CLAUDE_CONFIG.backup.$(date +%Y%m%d_%H%M%S)"
+            echo "💾 Backing up existing config to: $(basename $BACKUP)"
+            cp "$CLAUDE_CONFIG" "$BACKUP"
+        fi
+
+        # Get GitHub token from .env
+        GITHUB_TOKEN=$(grep "^GITHUB_TOKEN=" .env | cut -d'=' -f2)
+
+        # Create or update configuration using Python
+        python3 - <<EOF
+import json
+import sys
+
+config_file = "$CLAUDE_CONFIG"
+
+try:
+    with open(config_file, 'r') as f:
+        config = json.load(f)
+except:
+    config = {}
+
+if 'mcpServers' not in config:
+    config['mcpServers'] = {}
+
+config['mcpServers']['kinda-agent-workflow'] = {
+    "command": "node",
+    "args": ["$ABS_PATH"],
+    "env": {
+        "GITHUB_TOKEN": "$GITHUB_TOKEN",
+        "GITHUB_OWNER": "kinda-lang-dev",
+        "GITHUB_REPO": "kinda-lang",
+        "WORKING_DIR": "$REPO_ROOT"
+    }
+}
+
+with open(config_file, 'w') as f:
+    json.dump(config, f, indent=2)
+
+print("✅ Claude Code configured successfully")
+EOF
+
+        echo ""
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo "✅ Installation Complete!"
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo ""
+        echo "🔄 Next Step: Restart Claude Code"
+        echo ""
+        echo "After restart, these MCP tools will be available:"
+        echo "  - start_task"
+        echo "  - run_tests"
+        echo "  - run_local_ci"
+        echo "  - save_context"
+        echo "  - complete_task"
+        echo "  - github_issue"
+        echo "  - get_requirements"
+        echo ""
+    else
+        echo ""
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo "📋 Manual Configuration Required"
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo ""
+        echo "Add to: $CLAUDE_CONFIG"
+        echo ""
+        cat <<CONFIG
+{
+  "mcpServers": {
+    "kinda-agent-workflow": {
+      "command": "node",
+      "args": ["$ABS_PATH"],
+      "env": {
+        "GITHUB_TOKEN": "$(grep "^GITHUB_TOKEN=" .env | cut -d'=' -f2)",
+        "GITHUB_OWNER": "kinda-lang-dev",
+        "GITHUB_REPO": "kinda-lang",
+        "WORKING_DIR": "$REPO_ROOT"
+      }
+    }
+  }
+}
+CONFIG
+        echo ""
+        echo "Then restart Claude Code"
+        echo ""
+    fi
+else
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "📋 Next Steps:"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo ""
+    echo "1. Edit .env and add your GitHub token:"
+    echo "   $ nano $SCRIPT_DIR/.env"
+    echo ""
+    echo "2. Run this script again to configure Claude Code"
+    echo "   $ ./install.sh"
     echo ""
 fi
 
-# Get absolute path for configuration
-ABS_PATH="$SCRIPT_DIR/build/mcp-agent-server.js"
-REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-
-echo "✅ MCP Server installed successfully!"
-echo ""
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "📋 Next Steps:"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo ""
-echo "1. Configure GitHub Token"
-echo "   Edit .env and add your GitHub token:"
-echo "   $ nano $SCRIPT_DIR/.env"
-echo ""
-echo "   Get a token from: https://github.com/settings/tokens"
-echo "   Required permissions: repo, workflow"
-echo ""
-echo "2. Add to Claude Code Configuration"
-echo ""
-echo "   Linux/macOS: ~/.config/claude/claude_desktop_config.json"
-echo "   Windows: %APPDATA%\\Claude\\claude_desktop_config.json"
-echo ""
-echo "   Add this configuration:"
-echo ""
-echo '   {'
-echo '     "mcpServers": {'
-echo '       "kinda-agent-workflow": {'
-echo '         "command": "node",'
-echo "         \"args\": [\"$ABS_PATH\"],"
-echo '         "env": {'
-echo '           "GITHUB_TOKEN": "your_github_token_here",'
-echo '           "GITHUB_OWNER": "kinda-lang-dev",'
-echo '           "GITHUB_REPO": "kinda-lang",'
-echo "           \"WORKING_DIR\": \"$REPO_ROOT\""
-echo '         }'
-echo '       }'
-echo '     }'
-echo '   }'
-echo ""
-echo "3. Restart Claude Code"
-echo ""
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo ""
 echo "📚 Documentation: $SCRIPT_DIR/README.md"
 echo ""

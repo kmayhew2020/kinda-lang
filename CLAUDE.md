@@ -105,10 +105,8 @@ The repository includes an **optional MCP (Model Context Protocol) server** that
 **Setup (one-time, done by repository owner):**
 ```bash
 cd .mcp-server
-./install.sh              # Install dependencies and build
-cp .env.example .env      # Configure GitHub token
-./setup-claude-config.sh  # Auto-configure Claude Code
-# Restart Claude Code
+./install.sh  # Interactive: installs, configures token, sets up Claude Code
+# Restart Claude Code when prompted
 ```
 
 **MCP Tools Available (when configured):**
