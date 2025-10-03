@@ -34,6 +34,11 @@ This ensures you have the latest workflow infrastructure and validates your envi
     ├── kinda-coder.md          # Implementation Specialist
     ├── kinda-tester.md         # Quality Assurance Tester
     └── kinda-pr-reviewer.md    # Code Reviewer
+
+../.mcp-server/                  # Optional MCP server (separate from .claude/)
+    ├── install.sh              # Interactive MCP setup
+    ├── README.md               # MCP tool documentation
+    └── mcp-agent-server.ts     # MCP server implementation
 ```
 
 ## 🔧 Core Tools
@@ -178,6 +183,7 @@ See `.gitignore` for complete exclusion list.
 - **Agent Profiles** - Individual agent instructions in `.claude/agents/`
 - **ROADMAP.md** - Project status, epic tracking, development timeline
 - **This README** - Infrastructure usage and reference
+- **../.mcp-server/README.md** - Optional MCP server tools and usage (if configured)
 
 ## 🚦 Workflow Gates
 
