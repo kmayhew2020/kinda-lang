@@ -91,10 +91,12 @@ See `docs/agents/WORKFLOW.md` for complete workflow documentation including qual
 ### For Claude Code Agents
 
 If you're an agent:
+- **FIRST**: Run preflight validation: `bash .claude/preflight/validate.sh`
 - Check your agent definition file in `.claude/agents/` to understand your role
 - Follow the workflow chain: complete your work and hand off to the next agent
 - Use the appropriate tools for your role (see workflow doc)
 - Update ROADMAP.md and issue tracking as you progress
+- Always use `--repo kinda-lang-dev/kinda-lang` for all `gh` commands (see fork workflow above)
 
 ## Project Overview
 
@@ -117,12 +119,25 @@ If you're an agent:
 pipx install kinda-lang
 
 # Developer setup with all dependencies
-./install.sh --dev
+./install.sh --dev    # Unix/Linux/macOS
+install.bat           # Windows
 # OR
 pip install -e .[dev]
 
 # Regular installation
 pip install -e .
+```
+
+### Quick Commands (via Makefile)
+
+```bash
+make help      # Show all available commands
+make install   # Install kinda (pip install -e .)
+make dev       # Install with dev dependencies
+make test      # Run full test suite
+make clean     # Clean build artifacts
+make examples  # Show kinda examples
+make docs      # Build Sphinx documentation
 ```
 
 ### Testing
@@ -152,12 +167,48 @@ pytest tests/python/test_fuzzy_constructs.py::test_kinda_int -v
 # Format code with Black
 black kinda/ tests/
 
+# Check formatting (CI-style)
+black --check --diff .
+
 # Type checking (excludes fuzzy.py runtime)
 mypy kinda/
 
 # Run linting
 make test
 ```
+
+### Local Testing & Validation
+
+```bash
+# Preflight validation (checks remotes, files, etc.)
+bash .claude/preflight/validate.sh
+
+# Run full local CI equivalent
+pytest --cov=kinda --cov-report=term-missing tests/ --tb=short
+black --check --diff .
+
+# Run performance tests (skipped in CI by default)
+pytest -m performance
+```
+
+### GitHub Actions CI
+
+```bash
+# CI runs on push/PR to main, dev, feature/*, bugfix/*, ci/* branches
+# Tests run on: Ubuntu, macOS, Windows × Python 3.8-3.12
+
+# Local CI validation
+pytest --cov=kinda --cov-report=term-missing tests/ --tb=short
+black --check --diff .
+
+# CI skips performance tests by default (marked with @pytest.mark.performance)
+# Run performance tests locally: pytest -m performance
+```
+
+**CI Platform Matrix:**
+- **OS**: ubuntu-latest, macos-latest, windows-latest
+- **Python**: 3.8, 3.9, 3.10, 3.11, 3.12
+- **Workflows**: `.github/workflows/main.yml` (main CI), `.github/workflows/docs.yml`, `.github/workflows/demo-validation.yml`
 
 ### Running Kinda Programs
 
@@ -350,7 +401,7 @@ Main CLI is in `kinda/cli.py`:
 ## Project Status & Licensing
 
 ### Current Version
-**v0.5.5** - "Python Enhancement Bridge Complete"
+**v0.5.0** - "Complete Probabilistic Programming"
 
 Recent completions:
 - ✅ **Epic #127**: Python Enhancement Bridge (injection framework, 100% complete)
