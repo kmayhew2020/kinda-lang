@@ -98,6 +98,29 @@ If you're an agent:
 - Update ROADMAP.md and issue tracking as you progress
 - Always use `--repo kinda-lang-dev/kinda-lang` for all `gh` commands (see fork workflow above)
 
+### Optional: MCP Server Enhancement
+
+The repository includes an **optional MCP (Model Context Protocol) server** that provides programmatic workflow enforcement:
+
+**Setup (one-time, done by repository owner):**
+```bash
+cd .mcp-server
+./install.sh              # Install dependencies and build
+cp .env.example .env      # Configure GitHub token
+./setup-claude-config.sh  # Auto-configure Claude Code
+# Restart Claude Code
+```
+
+**MCP Tools Available (when configured):**
+- `start_task` - Initialize agent task tracking
+- `run_tests` - Automated test execution with coverage
+- `run_local_ci` - Full CI validation
+- `save_context` - Agent state preservation
+- `complete_task` - Task completion with validation
+- `github_issue` - GitHub integration
+
+**Note:** MCP server is **optional**. The `.claude/` bash scripts work independently. See `.mcp-server/SETUP.md` for details.
+
 ## Project Overview
 
 **Kinda** is a fuzzy programming language that adds uncertainty and personality to code. It introduces the `~` (tilde) prefix for fuzzy constructs that behave probabilistically and uses `.knda` file extensions for source files.
