@@ -19,28 +19,61 @@ echo "🔧 MCP Server Setup for Claude Code CLI"
 echo "========================================"
 echo ""
 
-# Check if Node.js is installed
+# Check Node.js
 if ! command -v node &> /dev/null; then
     echo "❌ Error: Node.js is not installed"
     echo "   Install from: https://nodejs.org/"
+    echo "   Required version: 18 or higher"
     exit 1
 fi
 
-# Check if Claude Code CLI is installed
+NODE_VERSION=$(node --version | cut -d'v' -f2 | cut -d'.' -f1)
+if [ "$NODE_VERSION" -lt 18 ]; then
+    echo "❌ Error: Node.js version $NODE_VERSION is too old"
+    echo "   Required version: 18 or higher"
+    echo "   Current version: $(node --version)"
+    exit 1
+fi
+
+echo "✅ Node.js $(node --version)"
+
+# Check npm
+if ! command -v npm &> /dev/null; then
+    echo "❌ Error: npm is not installed"
+    echo "   npm should come with Node.js"
+    echo "   Reinstall Node.js from: https://nodejs.org/"
+    exit 1
+fi
+
+echo "✅ npm $(npm --version)"
+
+# Check Claude Code CLI
 if ! command -v claude &> /dev/null; then
     echo "❌ Error: Claude Code CLI is not installed"
     echo "   Install from: https://docs.claude.com/en/docs/claude-code"
     exit 1
 fi
 
-echo "✅ Prerequisites check passed"
+echo "✅ Claude Code CLI installed"
 echo ""
 
 # Step 1: Build the MCP server
 echo "📦 Step 1: Building MCP server..."
 cd "$SCRIPT_DIR"
-npm install
-npm run build
+
+echo "   Installing npm dependencies..."
+if ! npm install --silent; then
+    echo "❌ Error: npm install failed"
+    echo "   Check your internet connection and npm configuration"
+    exit 1
+fi
+
+echo "   Compiling TypeScript..."
+if ! npm run build --silent; then
+    echo "❌ Error: TypeScript build failed"
+    echo "   Check mcp-agent-server.ts for syntax errors"
+    exit 1
+fi
 
 if [ ! -f "$SCRIPT_DIR/build/mcp-agent-server.js" ]; then
     echo "❌ Error: Build failed - mcp-agent-server.js not found"
