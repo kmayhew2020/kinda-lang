@@ -5,7 +5,7 @@
 - MCP Server for Agent Workflow Enforcement
 - 
 - This server FORCES agents to:
-- - Save context (or they can’t proceed)
+- - Save context (or they can't proceed)
 - - Run tests automatically
 - - Update GitHub issues/PRs
 - - Follow protocol
@@ -17,18 +17,18 @@
 - node mcp-agent-server.js
   */
 
-import { Server } from ‘@modelcontextprotocol/sdk/server/index.js’;
-import { StdioServerTransport } from ‘@modelcontextprotocol/sdk/server/stdio.js’;
+import { Server } from '@modelcontextprotocol/sdk/server/index.js';
+import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import {
 CallToolRequestSchema,
 ListToolsRequestSchema,
-} from ‘@modelcontextprotocol/sdk/types.js’;
-import { Octokit } from ‘@octokit/rest’;
-import { exec } from ‘child_process’;
-import { promisify } from ‘util’;
-import fs from ‘fs/promises’;
-import path from ‘path’;
-import dotenv from ‘dotenv’;
+} from '@modelcontextprotocol/sdk/types.js';
+import { Octokit } from '@octokit/rest';
+import { exec } from 'child_process';
+import { promisify } from 'util';
+import fs from 'fs/promises';
+import path from 'path';
+import dotenv from 'dotenv';
 
 dotenv.config();
 
@@ -38,8 +38,8 @@ const execAsync = promisify(exec);
 const CONFIG = {
 repoOwner: process.env.GITHUB_OWNER || 'kinda-lang-dev',
 repoName: process.env.GITHUB_REPO || 'kinda-lang',
-contextFile: ‘.agent-system/CONTEXT.md’,
-requirementsFile: ‘.agent-system/REQUIREMENTS.txt’,
+contextFile: '.agent-system/CONTEXT.md',
+requirementsFile: '.agent-system/REQUIREMENTS.txt',
 workingDir: process.env.WORKING_DIR || process.cwd(),
 };
 
@@ -49,20 +49,27 @@ auth: process.env.GITHUB_TOKEN,
 });
 
 // In-memory session state (tracks what agents have done)
-const sessionState = {
-lastContextSave: null,
-testsRun: false,
-localCIRun: false,
-currentTask: null,
-currentAgent: null,
-protocolViolations: [],
+const sessionState: {
+  lastContextSave: number | null;
+  testsRun: boolean;
+  localCIRun: boolean;
+  currentTask: string | null;
+  currentAgent: string | null;
+  protocolViolations: string[];
+} = {
+  lastContextSave: null,
+  testsRun: false,
+  localCIRun: false,
+  currentTask: null,
+  currentAgent: null,
+  protocolViolations: [],
 };
 
 // Create MCP server
 const server = new Server(
 {
-name: ‘agent-workflow-enforcer’,
-version: ‘1.0.0’,
+name: 'agent-workflow-enforcer',
+version: '1.0.0',
 },
 {
 capabilities: {
@@ -75,26 +82,26 @@ tools: {},
 // TOOL: Start Task (MANDATORY - must be called first)
 // ============================================================================
 const startTaskTool = {
-name: ‘start_task’,
-description: ‘Start a new task. MUST be called before any work. Sets up tracking and requirements.’,
+name: 'start_task',
+description: 'Start a new task. MUST be called before any work. Sets up tracking and requirements.',
 inputSchema: {
-type: ‘object’,
+type: 'object',
 properties: {
 agent_role: {
-type: ‘string’,
-description: ‘Your role (coder, tester, architect, etc.)’,
-enum: [‘coder’, ‘tester’, ‘architect’, ‘verifier’, ‘main-agent’],
+type: 'string',
+description: 'Your role (coder, tester, architect, etc.)',
+enum: ['coder', 'tester', 'architect', 'verifier', 'main-agent'],
 },
 task_description: {
-type: ‘string’,
-description: ‘What you are going to do’,
+type: 'string',
+description: 'What you are going to do',
 },
 github_issue_number: {
-type: ‘number’,
-description: ‘GitHub issue number this task relates to (optional)’,
+type: 'number',
+description: 'GitHub issue number this task relates to (optional)',
 },
 },
-required: [‘agent_role’, ‘task_description’],
+required: ['agent_role', 'task_description'],
 },
 };
 
@@ -123,22 +130,22 @@ state: issue.state,
 labels: issue.labels.map((l: any) => l.name),
 };
 } catch (error) {
-console.error(‘Failed to fetch GitHub issue:’, error);
+console.error('Failed to fetch GitHub issue:', error);
 }
 }
 
 return {
 content: [
 {
-type: ‘text’,
+type: 'text',
 text: JSON.stringify({
-status: ‘task_started’,
+status: 'task_started',
 agent: args.agent_role,
 task: args.task_description,
 session_id: Date.now(),
 requirements: requirements.incomplete,
 github_issue: issueInfo,
-reminder: ‘⚠️ You MUST call save_context before calling complete_task’,
+reminder: '⚠️ You MUST call save_context before calling complete_task',
 }, null, 2),
 },
 ],
@@ -149,19 +156,19 @@ reminder: ‘⚠️ You MUST call save_context before calling complete_task’,
 // TOOL: Run Tests (AUTOMATIC - runs tests and saves results)
 // ============================================================================
 const runTestsTool = {
-name: ‘run_tests’,
-description: ‘Run test suite with coverage. Automatically saves results. Returns structured test data.’,
+name: 'run_tests',
+description: 'Run test suite with coverage. Automatically saves results. Returns structured test data.',
 inputSchema: {
-type: ‘object’,
+type: 'object',
 properties: {
 test_path: {
-type: ‘string’,
-description: ‘Path to tests (default: tests/)’,
-default: ‘tests/’,
+type: 'string',
+description: 'Path to tests (default: tests/)',
+default: 'tests/',
 },
 coverage: {
-type: ‘boolean’,
-description: ‘Include coverage report’,
+type: 'boolean',
+description: 'Include coverage report',
 default: true,
 },
 },
@@ -169,7 +176,7 @@ default: true,
 };
 
 async function handleRunTests(args: any) {
-const testPath = args.test_path || ‘tests/’;
+const testPath = args.test_path || 'tests/';
 const includeCoverage = args.coverage !== false;
 
 try {
@@ -178,7 +185,6 @@ const cmd = includeCoverage
 ? `pytest ${testPath} --cov=kinda --cov-report=json --json-report --json-report-file=.test-results.json`
 : `pytest ${testPath} --json-report --json-report-file=.test-results.json`;
 
-```
 const { stdout, stderr } = await execAsync(cmd, {
   cwd: CONFIG.workingDir,
 });
@@ -238,12 +244,10 @@ return {
     },
   ],
 };
-```
 
 } catch (error: any) {
 sessionState.testsRun = true; // Mark as attempted even if failed
 
-```
 return {
   content: [
     {
@@ -257,7 +261,6 @@ return {
   ],
   isError: true,
 };
-```
 
 }
 }
@@ -279,7 +282,6 @@ try {
 // Run the local CI script
 const cmd = 'bash scripts/ci-full.sh';
 
-```
 const { stdout, stderr } = await execAsync(cmd, {
   cwd: CONFIG.workingDir,
   timeout: 300000, // 5 minute timeout
@@ -313,12 +315,10 @@ return {
     },
   ],
 };
-```
 
 } catch (error: any) {
 sessionState.localCIRun = true; // Mark as attempted
 
-```
 return {
   content: [
     {
@@ -332,7 +332,6 @@ return {
   ],
   isError: true,
 };
-```
 
 }
 }
@@ -342,40 +341,40 @@ return {
 // ============================================================================
 const saveContextTool = {
 name: 'save_context',
-description: ‘Save work context. MANDATORY before completing task. Enforces proper format.’,
+description: 'Save work context. MANDATORY before completing task. Enforces proper format.',
 inputSchema: {
-type: ‘object’,
+type: 'object',
 properties: {
 agent_role: {
-type: ‘string’,
-description: ‘Your role’,
-enum: [‘coder’, ‘tester’, ‘architect’, ‘verifier’, ‘main-agent’],
+type: 'string',
+description: 'Your role',
+enum: ['coder', 'tester', 'architect', 'verifier', 'main-agent'],
 },
 task_completed: {
-type: ‘string’,
-description: ‘What you did’,
+type: 'string',
+description: 'What you did',
 },
 requirements_addressed: {
-type: ‘array’,
-items: { type: ‘string’ },
-description: ‘Requirement IDs addressed (e.g., [“REQ-1”, “TECH-2”])’,
+type: 'array',
+items: { type: 'string' },
+description: 'Requirement IDs addressed (e.g., ["REQ-1", "TECH-2"])',
 },
 files_modified: {
-type: ‘array’,
-items: { type: ‘string’ },
-description: ‘Files you changed’,
+type: 'array',
+items: { type: 'string' },
+description: 'Files you changed',
 },
 next_steps: {
-type: ‘string’,
-description: ‘What should happen next’,
+type: 'string',
+description: 'What should happen next',
 },
 blockers: {
-type: ‘string’,
-description: ‘Any blockers or “None”’,
-default: ‘None’,
+type: 'string',
+description: 'Any blockers or "None"',
+default: 'None',
 },
 },
-required: [‘agent_role’, ‘task_completed’, ‘requirements_addressed’, ‘files_modified’, ‘next_steps’],
+required: ['agent_role', 'task_completed', 'requirements_addressed', 'files_modified', 'next_steps'],
 },
 };
 
@@ -385,10 +384,10 @@ if (!args.task_completed || args.task_completed.length < 10) {
 return {
 content: [
 {
-type: ‘text’,
+type: 'text',
 text: JSON.stringify({
-status: ‘validation_failed’,
-error: ‘task_completed must be at least 10 characters’,
+status: 'validation_failed',
+error: 'task_completed must be at least 10 characters',
 }),
 },
 ],
@@ -400,10 +399,10 @@ if (!args.files_modified || args.files_modified.length === 0) {
 return {
 content: [
 {
-type: ‘text’,
+type: 'text',
 text: JSON.stringify({
-status: ‘validation_failed’,
-error: ‘files_modified cannot be empty’,
+status: 'validation_failed',
+error: 'files_modified cannot be empty',
 }),
 },
 ],
@@ -415,21 +414,21 @@ isError: true,
 const timestamp = new Date().toISOString();
 const entry = `
 
-### ${timestamp} - ${args.agent_role.toUpperCase()} - ${sessionState.currentTask || ‘Task’}
+### ${timestamp} - ${args.agent_role.toUpperCase()} - ${sessionState.currentTask || 'Task'}
 
 **What I did:**
 ${args.task_completed}
 
 **Requirements addressed:**
-${args.requirements_addressed.map((req: string) => `- [x] ${req}: Completed`).join(’\n’)}
+${args.requirements_addressed.map((req: string) => `- [x] ${req}: Completed`).join('\n')}
 
 **Files modified:**
-${args.files_modified.map((file: string) => `- ${file}`).join(’\n’)}
+${args.files_modified.map((file: string) => `- ${file}`).join('\n')}
 
 **Verified:**
 
 - [x] Code works
-- [x] Tests ${sessionState.testsRun ? ‘passed’ : ‘not run’}
+- [x] Tests ${sessionState.testsRun ? 'passed' : 'not run'}
 - [x] Context saved
 
 **Next steps:**
@@ -443,7 +442,7 @@ ${args.blockers}
 `;
 
 // Write to context file
-await appendToContext({ type: ‘manual_entry’, entry });
+await appendToContext({ type: 'manual_entry', entry });
 
 // Update session state
 sessionState.lastContextSave = Date.now();
@@ -456,13 +455,13 @@ await markRequirementComplete(req);
 return {
 content: [
 {
-type: ‘text’,
+type: 'text',
 text: JSON.stringify({
-status: ‘context_saved’,
+status: 'context_saved',
 timestamp,
 entry_length: entry.length,
 requirements_updated: args.requirements_addressed,
-reminder: ‘✅ Context saved! You can now call complete_task.’,
+reminder: '✅ Context saved! You can now call complete_task.',
 }, null, 2),
 },
 ],
@@ -627,24 +626,24 @@ const completeTaskTool = {
 name: 'complete_task',
 description: 'Complete current task. ENFORCES: context saved, tests run, GitHub updated, agent policies.',
 inputSchema: {
-type: ‘object’,
+type: 'object',
 properties: {
 update_github: {
-type: ‘boolean’,
-description: ‘Update GitHub issue/PR’,
+type: 'boolean',
+description: 'Update GitHub issue/PR',
 default: true,
 },
 github_issue_number: {
-type: ‘number’,
-description: ‘Issue number to update’,
+type: 'number',
+description: 'Issue number to update',
 },
 github_pr_number: {
-type: ‘number’,
-description: ‘PR number to update’,
+type: 'number',
+description: 'PR number to update',
 },
 commit_message: {
-type: ‘string’,
-description: ‘Git commit message’,
+type: 'string',
+description: 'Git commit message',
 },
 },
 },
@@ -672,13 +671,14 @@ violations.push('Local CI validation not run (must run scripts/ci-full.sh before
 }
 
 // Agent-specific policy checks
-await checkAgentPolicies(sessionState.currentAgent, violations);
+if (sessionState.currentAgent) {
+  await checkAgentPolicies(sessionState.currentAgent, violations);
+}
 
 // REJECT if violations
 if (violations.length > 0) {
-sessionState.protocolViolations.push(…violations);
+sessionState.protocolViolations.push(...violations);
 
-```
 return {
   content: [
     {
@@ -696,7 +696,6 @@ return {
   ],
   isError: true,
 };
-```
 
 }
 
@@ -709,9 +708,9 @@ try {
 await execAsync(`git add -A && git commit -m "${args.commit_message}"`, {
 cwd: CONFIG.workingDir,
 });
-completionActions.push(‘Committed changes to git’);
+completionActions.push('Committed changes to git');
 } catch (error) {
-console.error(‘Git commit failed:’, error);
+console.error('Git commit failed:', error);
 }
 }
 
@@ -726,7 +725,7 @@ body: `✅ Task completed by ${sessionState.currentAgent}\n\n**Task:** ${session
 });
 completionActions.push(`Updated GitHub issue #${args.github_issue_number}`);
 } catch (error) {
-console.error(‘GitHub comment failed:’, error);
+console.error('GitHub comment failed:', error);
 }
 }
 
@@ -737,12 +736,12 @@ await octokit.pulls.createReview({
 owner: CONFIG.repoOwner,
 repo: CONFIG.repoName,
 pull_number: args.github_pr_number,
-event: ‘COMMENT’,
+event: 'COMMENT',
 body: `✅ Task completed and verified\n\n- Context: Saved\n- Tests: ${sessionState.testsRun ? 'Passed' : 'Run'}\n- Agent: ${sessionState.currentAgent}`,
 });
 completionActions.push(`Updated PR #${args.github_pr_number}`);
 } catch (error) {
-console.error(‘GitHub PR update failed:’, error);
+console.error('GitHub PR update failed:', error);
 }
 }
 
@@ -761,12 +760,12 @@ sessionState.testsRun = false;
 return {
 content: [
 {
-type: ‘text’,
+type: 'text',
 text: JSON.stringify({
-status: ‘COMPLETE’,
+status: 'COMPLETE',
 summary,
 actions_taken: completionActions,
-message: ‘✅ Task completed successfully! All requirements met.’,
+message: '✅ Task completed successfully! All requirements met.',
 }, null, 2),
 },
 ],
@@ -777,10 +776,10 @@ message: ‘✅ Task completed successfully! All requirements met.’,
 // TOOL: Get Incomplete Requirements
 // ============================================================================
 const getRequirementsTool = {
-name: ‘get_requirements’,
-description: ‘Get list of incomplete requirements’,
+name: 'get_requirements',
+description: 'Get list of incomplete requirements',
 inputSchema: {
-type: ‘object’,
+type: 'object',
 properties: {},
 },
 };
@@ -791,7 +790,7 @@ const requirements = await loadRequirements();
 return {
 content: [
 {
-type: ‘text’,
+type: 'text',
 text: JSON.stringify({
 incomplete: requirements.incomplete,
 complete: requirements.complete,
@@ -810,47 +809,47 @@ completion_percentage: Math.round(
 // TOOL: GitHub Issue Operations
 // ============================================================================
 const githubIssueTool = {
-name: ‘github_issue’,
-description: ‘Create, update, or query GitHub issues’,
+name: 'github_issue',
+description: 'Create, update, or query GitHub issues',
 inputSchema: {
-type: ‘object’,
+type: 'object',
 properties: {
 action: {
-type: ‘string’,
-enum: [‘create’, ‘update’, ‘get’, ‘list’],
-description: ‘Action to perform’,
+type: 'string',
+enum: ['create', 'update', 'get', 'list'],
+description: 'Action to perform',
 },
 issue_number: {
-type: ‘number’,
-description: ‘Issue number (for get/update)’,
+type: 'number',
+description: 'Issue number (for get/update)',
 },
 title: {
-type: ‘string’,
-description: ‘Issue title (for create)’,
+type: 'string',
+description: 'Issue title (for create)',
 },
 body: {
-type: ‘string’,
-description: ‘Issue body’,
+type: 'string',
+description: 'Issue body',
 },
 labels: {
-type: ‘array’,
-items: { type: ‘string’ },
-description: ‘Issue labels’,
+type: 'array',
+items: { type: 'string' },
+description: 'Issue labels',
 },
 state: {
-type: ‘string’,
-enum: [‘open’, ‘closed’],
-description: ‘Issue state (for update)’,
+type: 'string',
+enum: ['open', 'closed'],
+description: 'Issue state (for update)',
 },
 },
-required: [‘action’],
+required: ['action'],
 },
 };
 
 async function handleGitHubIssue(args: any) {
 try {
 switch (args.action) {
-case ‘create’:
+case 'create':
 const { data: created } = await octokit.issues.create({
 owner: CONFIG.repoOwner,
 repo: CONFIG.repoName,
@@ -860,12 +859,11 @@ labels: args.labels,
 });
 return {
 content: [{
-type: ‘text’,
-text: JSON.stringify({ status: ‘created’, issue: created }, null, 2),
+type: 'text',
+text: JSON.stringify({ status: 'created', issue: created }, null, 2),
 }],
 };
 
-```
   case 'update':
     const { data: updated } = await octokit.issues.update({
       owner: CONFIG.repoOwner,
@@ -912,13 +910,15 @@ text: JSON.stringify({ status: ‘created’, issue: created }, null, 2),
         })) }, null, 2),
       }],
     };
+
+  default:
+    throw new Error(`Unknown action: ${args.action}`);
 }
-```
 
 } catch (error: any) {
 return {
 content: [{
-type: ‘text’,
+type: 'text',
 text: JSON.stringify({ error: error.message }, null, 2),
 }],
 isError: true,
@@ -933,9 +933,8 @@ isError: true,
 async function loadRequirements() {
 try {
 const reqFile = path.join(CONFIG.workingDir, CONFIG.requirementsFile);
-const content = await fs.readFile(reqFile, ‘utf-8’);
+const content = await fs.readFile(reqFile, 'utf-8');
 
-```
 const incomplete = [];
 const complete = [];
 
@@ -948,7 +947,6 @@ for (const line of content.split('\n')) {
 }
 
 return { incomplete, complete };
-```
 
 } catch (error) {
 return { incomplete: [], complete: [] };
@@ -958,9 +956,8 @@ return { incomplete: [], complete: [] };
 async function markRequirementComplete(reqId: string) {
 try {
 const reqFile = path.join(CONFIG.workingDir, CONFIG.requirementsFile);
-let content = await fs.readFile(reqFile, ‘utf-8’);
+let content = await fs.readFile(reqFile, 'utf-8');
 
-```
 // Replace [ ] with [x] for this requirement
 content = content.replace(
   new RegExp(`\\[ \\] (${reqId}:)`, 'g'),
@@ -968,10 +965,9 @@ content = content.replace(
 );
 
 await fs.writeFile(reqFile, content, 'utf-8');
-```
 
 } catch (error) {
-console.error(‘Failed to mark requirement complete:’, error);
+console.error('Failed to mark requirement complete:', error);
 }
 }
 
@@ -979,9 +975,9 @@ async function appendToContext(data: any) {
 try {
 const contextFile = path.join(CONFIG.workingDir, CONFIG.contextFile);
 const entry = data.entry || `\n[AUTO] ${data.type} at ${new Date().toISOString()}\n${JSON.stringify(data, null, 2)}\n\n`;
-await fs.appendFile(contextFile, entry, ‘utf-8’);
+await fs.appendFile(contextFile, entry, 'utf-8');
 } catch (error) {
-console.error(‘Failed to append to context:’, error);
+console.error('Failed to append to context:', error);
 }
 }
 
@@ -1002,36 +998,36 @@ githubIssueTool,
 }));
 
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
-const { name, arguments: args } = request.params;
+  const { name, arguments: args } = request.params;
 
-try {
-switch (name) {
-case 'start_task':
-return await handleStartTask(args);
-case 'run_tests':
-return await handleRunTests(args);
-case 'run_local_ci':
-return await handleRunLocalCI();
-case 'save_context':
-return await handleSaveContext(args);
-case 'complete_task':
-return await handleCompleteTask(args);
-case 'get_requirements':
-return await handleGetRequirements();
-case 'github_issue':
-return await handleGitHubIssue(args);
-default:
-throw new Error(`Unknown tool: ${name}`);
-}
-} catch (error: any) {
-return {
-content: [{
-type: ‘text’,
-text: JSON.stringify({ error: error.message }, null, 2),
-}],
-isError: true,
-};
-}
+  try {
+    switch (name) {
+      case 'start_task':
+        return await handleStartTask(args);
+      case 'run_tests':
+        return await handleRunTests(args);
+      case 'run_local_ci':
+        return await handleRunLocalCI();
+      case 'save_context':
+        return await handleSaveContext(args);
+      case 'complete_task':
+        return await handleCompleteTask(args);
+      case 'get_requirements':
+        return await handleGetRequirements();
+      case 'github_issue':
+        return await handleGitHubIssue(args);
+      default:
+        throw new Error(`Unknown tool: ${name}`);
+    }
+  } catch (error: any) {
+    return {
+      content: [{
+        type: 'text',
+        text: JSON.stringify({ error: error.message }, null, 2),
+      }],
+      isError: true,
+    };
+  }
 });
 
 // ============================================================================
@@ -1041,7 +1037,7 @@ isError: true,
 async function runServer() {
 const transport = new StdioServerTransport();
 await server.connect(transport);
-console.error(‘Agent Workflow Enforcer MCP Server running on stdio’);
+console.error('Agent Workflow Enforcer MCP Server running on stdio');
 }
 
 runServer().catch(console.error);
