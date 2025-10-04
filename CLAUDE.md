@@ -74,6 +74,26 @@ git remote add upstream https://github.com/kmayhew2020/kinda-lang.git
 
 ---
 
+## Quick Reference Card
+
+**Most Common Commands:**
+```bash
+make dev                    # Install dev environment
+pytest tests/               # Run all tests
+pytest tests/python/ -v     # Run specific test category
+black kinda/ tests/         # Format code
+kinda run examples/hello.py.knda  # Test installation
+bash .claude/preflight/validate.sh  # Validate setup
+```
+
+**Common Workflows:**
+- **Fix failing test**: `pytest tests/test_file.py::test_name -vvs` → edit code → repeat
+- **Add new construct**: Edit `kinda/grammar/python/constructs.py` → add tests → `pytest tests/python/`
+- **Format before commit**: `black --check --diff .` → `black kinda/ tests/`
+- **Check CI locally**: `pytest --cov=kinda --cov-report=term-missing tests/ --tb=short && black --check --diff .`
+
+---
+
 ## 🤖 5-Agent Development Workflow
 
 This project uses a **5-agent workflow** for structured development. When working on tasks, you may be invoked as one of these agents:
@@ -172,6 +192,27 @@ Once configured, these MCP tools are available in your Claude Code session:
 - **Statistical testing**: `~assert_eventually()` and `~assert_probability()` for testing probabilistic code
 - **File extension**: Kinda source files use `.py.knda` suffix for Python-like syntax
 
+## Directory Structure (High-Level)
+
+```
+kinda-lang/
+├── kinda/                      # Core package
+│   ├── grammar/python/         # Python transformation (constructs.py, matchers.py)
+│   ├── personality.py          # Chaos/personality system (CRITICAL - all RNG goes here)
+│   ├── security/               # Sandboxing (Issue #109)
+│   ├── injection/              # Epic #127 Python enhancement bridge
+│   ├── composition/            # Epic #126 construct composition
+│   ├── transpiler/             # Multi-language support
+│   ├── cli.py                  # CLI entry point
+│   └── langs/python/runtime/   # Auto-generated runtime (fuzzy.py - excluded from mypy)
+├── tests/                      # Test suite organized by category
+├── examples/                   # Example .knda programs
+├── .claude/                    # Agent workflow & scripts
+│   ├── agents/                 # 5-agent definitions
+│   └── preflight/              # Validation scripts
+└── .mcp-server/                # Optional MCP server (requires build)
+```
+
 ## Development Commands
 
 ### Installation & Setup
@@ -237,6 +278,50 @@ mypy kinda/
 
 # Run linting
 make test
+```
+
+### Debugging & Troubleshooting
+
+```bash
+# Debug transformation issues - see generated Python
+kinda transform file.py.knda > file_transformed.py
+cat file_transformed.py  # Inspect the output
+
+# Verify installation
+python -c "import kinda; print(kinda.__version__)"
+which kinda  # Unix
+where kinda  # Windows
+
+# Check encoding issues (important for cross-platform)
+file -i file.py.knda  # Check file encoding on Unix
+# Windows: Check with Notepad++ or VSCode encoding display
+
+# Test specific construct behavior with verbose output
+pytest tests/python/test_fuzzy_constructs.py::test_specific_construct -vvs
+
+# Debug failing tests with full output
+pytest tests/test_file.py -vvs --tb=long
+
+# Run single test file with detailed output
+pytest tests/test_cli.py -v --tb=short
+```
+
+### Environment Variables
+
+```bash
+# Seed for reproducible randomness
+export KINDA_SEED=42
+
+# Override personality mood (if supported)
+export KINDA_MOOD=chaotic
+
+# Override chaos level (if supported)
+export KINDA_CHAOS_LEVEL=8
+
+# All environment variables work with CLI flags
+kinda run file.knda --seed 42      # CLI overrides environment
+kinda run file.knda --mood reliable
+kinda run file.knda --chaos-level 5
 ```
 
 ### Local Testing & Validation
@@ -421,6 +506,39 @@ Tests are organized by category:
 - `@pytest.mark.ci_unstable` - Tests that may be flaky in CI
 - `@pytest.mark.slow` - Long-running tests
 
+### Performance Testing
+
+```bash
+# Run performance tests (skipped in CI by default)
+pytest -m performance
+
+# Run with specific performance parameters
+pytest tests/performance/ --iterations=1000
+
+# Check performance cache
+ls -la .performance-cache/
+
+# Performance test configuration in pyproject.toml:
+# - cache_directory: .performance-cache
+# - baseline_retention_days: 30
+# - confidence_level: 0.95
+# - default_iterations: 100
+```
+
+**Performance markers:**
+- `@pytest.mark.performance` - Skip in CI, run locally for benchmarks
+- `@pytest.mark.ci_unstable` - May be flaky in CI environments
+- `@pytest.mark.slow` - Long-running tests (>5s typically)
+
+### Windows-Specific Notes
+
+- **Emoji handling**: `safe_print()` in `kinda/cli.py` handles cp1252 encoding fallbacks
+- **Install script**: Use `install.bat` instead of `install.sh`
+- **CI examples**: Some emoji-heavy examples skipped on Windows (see `.github/workflows/main.yml:59-64`)
+- **Path separators**: Code uses `pathlib.Path` for cross-platform compatibility
+- **Line endings**: Git should auto-convert (check `.gitattributes` if issues)
+- **Shell commands**: Use `bash` in Git Bash or WSL for Unix-style commands
+
 ### Adding New Constructs
 
 To add a new fuzzy construct:
@@ -504,14 +622,32 @@ From `PERFORMANCE.md`:
 - **Pre-compiled regex patterns**: Module-level compilation for speed
 - Coverage: 78% maintained across 101 passing tests
 
-### Record/Replay System
+### Record/Replay System (Debugging)
 
 The system includes debugging capabilities via `kinda.record_replay`:
+
+```bash
+# Record execution session
+kinda record run file.py.knda
+
+# Session files are saved as JSON
+# Location: Project root or .kinda-sessions/ directory
+
+# Replay recorded session (verify actual CLI command)
+kinda replay <session-id>
+
+# Analyze recorded decisions manually
+# Session files are JSON - can be inspected
+cat .kinda-sessions/session_*.json | jq  # If jq available
+python -m json.tool .kinda-sessions/session_*.json  # Built-in formatter
+```
+
+**Capabilities:**
 - Record all random decisions to JSON session files
 - Exact reproduction of program execution
 - Thread-safe operation with minimal overhead
 - Stack trace analysis and construct context inference
-- Commands: `kinda record run file.knda`
+- Useful for debugging non-deterministic behavior
 
 ## Epic #127 - Python Enhancement Bridge
 
