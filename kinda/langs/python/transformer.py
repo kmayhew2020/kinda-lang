@@ -1,7 +1,7 @@
 import re
 import os
 from pathlib import Path
-from typing import List, Optional, Any
+from typing import List, Optional, Any, Tuple
 from kinda.langs.python.runtime_gen import generate_runtime_helpers, generate_runtime
 from kinda.grammar.python.constructs import KindaPythonConstructs
 from kinda.grammar.python.matchers import (
@@ -19,7 +19,191 @@ from kinda.exceptions import KindaSizeError
 # Feature flag for composition framework integration
 USE_COMPOSITION_FRAMEWORK = os.getenv("KINDA_USE_COMPOSITION_ISH", "true").lower() == "true"
 
+# Issue #111: Deep nesting protection
+# Maximum nesting depth to prevent unbounded resource usage
+KINDA_MAX_NESTING_DEPTH = int(os.getenv("KINDA_MAX_NESTING_DEPTH", "5000"))
+
+# Threshold for switching from recursive to iterative processing
+# Below this depth: use fast recursive approach
+# At or above: switch to iterative to prevent stack overflow
+NESTING_DEPTH_THRESHOLD = 50
+
 used_helpers = set()
+
+
+def _process_conditional_block_iterative(
+    lines: List[str],
+    start_index: int,
+    output_lines: List[str],
+    indent: str,
+    file_path: Optional[str] = None,
+    if_indent: Optional[str] = None,
+    depth: int = 0,
+) -> int:
+    """
+    Iterative version of _process_conditional_block for deep nesting (Issue #111).
+    Uses explicit stack to avoid Python recursion limit.
+
+    This function processes nested conditional blocks iteratively using a stack-based
+    approach, allowing support for 1000+ nesting levels without stack overflow.
+
+    The stack-based approach simulates the recursive call stack:
+    - When we hit a nested construct, we push current state and "descend" into the nested block
+    - When we complete a block (brace_count == 0), we "return" by popping parent state
+    - Parent continues from the index AFTER the nested block (which we track via stack)
+    """
+    # If if_indent not provided, calculate it from indent
+    if if_indent is None:
+        if_indent = indent[:-4] if len(indent) >= 4 else ""
+
+    # Stack stores: (return_index, parent_brace_count, parent_indent, parent_if_indent, parent_depth, is_nested_block)
+    # is_nested_block flag tells us whether we should resume processing or just return the index
+    stack: List[Tuple[int, int, str, str, int, bool]] = []
+
+    i = start_index
+    brace_count = 1
+    current_indent = indent
+    current_if_indent = if_indent
+    current_depth = depth
+
+    while True:
+        # Issue #111: Check maximum depth limit
+        if current_depth >= KINDA_MAX_NESTING_DEPTH:
+            raise KindaParseError(
+                f"Maximum nesting depth exceeded ({KINDA_MAX_NESTING_DEPTH} levels). "
+                f"Consider refactoring or increasing KINDA_MAX_NESTING_DEPTH environment variable.",
+                i,
+                lines[i] if i < len(lines) else "",
+                file_path,
+            )
+
+        # Process lines at current nesting level
+        block_complete = False
+        while i < len(lines) and not block_complete:
+            line = lines[i]
+            stripped = line.strip()
+            line_number = i + 1
+
+            # Handle closing brace and potential else block
+            if stripped == "}":
+                brace_count -= 1
+                if brace_count == 0:
+                    i += 1  # Move past the closing brace
+                    # Check for else block syntax: } {
+                    if i < len(lines) and lines[i].strip() == "{":
+                        # Found else block - add Python else syntax at same indent as if
+                        output_lines.append(current_if_indent + "else:")
+                        i += 1  # Skip the opening brace of else block
+                        # Reset brace_count for else block processing
+                        brace_count = 1
+                        continue
+                    else:
+                        # Block is complete
+                        block_complete = True
+                        break
+
+            # Handle same-line else syntax: } {
+            elif stripped == "} {":
+                brace_count -= 1
+                if brace_count == 0:
+                    # Add Python else syntax at same indent as if
+                    output_lines.append(current_if_indent + "else:")
+                    i += 1  # Move to next line
+                    # Reset brace_count for else block processing
+                    brace_count = 1
+                    continue
+
+            # Empty lines or comments - pass through with indentation
+            elif not stripped or stripped.startswith("#"):
+                output_lines.append(current_indent + line)
+                i += 1
+                continue
+
+            else:
+                try:
+                    # Handle nested conditional and loop constructs
+                    if (
+                        stripped.startswith("~sometimes")
+                        or stripped.startswith("~maybe")
+                        or stripped.startswith("~probably")
+                        or stripped.startswith("~rarely")
+                        or stripped.startswith("~sometimes_while")
+                        or stripped.startswith("~maybe_for")
+                        or stripped.startswith("~kinda_repeat")
+                        or stripped.startswith("~eventually_until")
+                    ):
+                        if not _validate_conditional_syntax(
+                            stripped, line_number, file_path or "unknown"
+                        ):
+                            i += 1
+                            continue
+
+                        transformed_nested = transform_line(line)
+                        output_lines.extend(transformed_nested)
+                        i += 1
+
+                        # Calculate nested indentation
+                        last_added_line = output_lines[-1] if output_lines else ""
+                        nested_if_indent = last_added_line[
+                            : len(last_added_line) - len(last_added_line.lstrip())
+                        ]
+
+                        # Push current state onto stack - we'll resume from index i (after the nested block completes)
+                        # Mark as nested_block=True so we know to continue processing
+                        stack.append(
+                            (i, brace_count, current_indent, current_if_indent, current_depth, True)
+                        )
+
+                        # Set up nested block state
+                        brace_count = 1
+                        current_indent = current_indent + "    "
+                        current_if_indent = nested_if_indent
+                        current_depth = current_depth + 1
+                        # Continue processing the nested block (don't increment i, start from here)
+                        break  # Break to outer while True loop to process nested block
+                    else:
+                        # Track opening braces in other constructs
+                        if stripped.endswith("{"):
+                            brace_count += 1
+
+                        # Regular kinda constructs or normal python
+                        transformed_block = transform_line(line)
+                        if not transformed_block:
+                            _warn_about_line(stripped, line_number, file_path or "unknown")
+                        output_lines.extend(transformed_block)
+                        i += 1
+                except KindaSizeError:
+                    # Re-raise KindaSizeError to preserve DoS protection
+                    raise
+                except Exception as e:
+                    raise KindaParseError(
+                        f"Error in conditional block: {str(e)}", line_number, line, file_path
+                    )
+
+        # If block is complete or we've exhausted lines
+        if block_complete or i >= len(lines):
+            if stack:
+                # Pop parent state and check if we should continue processing
+                parent_i, parent_brace, parent_indent, parent_if_indent, parent_depth, is_nested = (
+                    stack.pop()
+                )
+
+                if is_nested:
+                    # This was a nested block call - update i to the index AFTER the nested block
+                    # (which is the current i), then restore parent context and continue
+                    next_i = i  # Save the index after nested block
+                    i = next_i  # Resume from after the nested block
+                    brace_count = parent_brace
+                    current_indent = parent_indent
+                    current_if_indent = parent_if_indent
+                    current_depth = parent_depth
+                    # Continue processing at parent level
+                else:
+                    # This shouldn't happen in our usage pattern
+                    return i
+            else:
+                # No parent context - we're done
+                return i
 
 
 def _process_conditional_block(
@@ -29,10 +213,15 @@ def _process_conditional_block(
     indent: str,
     file_path: Optional[str] = None,
     if_indent: Optional[str] = None,
+    depth: int = 0,
 ) -> int:
     """
     Process a conditional block (~sometimes, ~maybe, or ~probably) with proper nesting support.
     Returns the index after processing the block.
+
+    Issue #111: Hybrid recursive/iterative approach to support deep nesting (1000+ levels)
+    - Depth < NESTING_DEPTH_THRESHOLD (50): Use fast recursive approach
+    - Depth >= NESTING_DEPTH_THRESHOLD: Switch to iterative processing
 
     Args:
         lines: Source lines
@@ -41,7 +230,25 @@ def _process_conditional_block(
         indent: Indentation for block content (4 spaces more than if statement)
         file_path: Optional file path for error reporting
         if_indent: Indentation level of the if statement (for matching else indentation)
+        depth: Current nesting depth (for stack overflow prevention)
     """
+    # Issue #111: Check maximum depth limit
+    if depth >= KINDA_MAX_NESTING_DEPTH:
+        raise KindaParseError(
+            f"Maximum nesting depth exceeded ({KINDA_MAX_NESTING_DEPTH} levels). "
+            f"Consider refactoring or increasing KINDA_MAX_NESTING_DEPTH environment variable.",
+            start_index,
+            lines[start_index] if start_index < len(lines) else "",
+            file_path,
+        )
+
+    # Issue #111: Auto-switch to iterative processing at threshold
+    if depth >= NESTING_DEPTH_THRESHOLD:
+        return _process_conditional_block_iterative(
+            lines, start_index, output_lines, indent, file_path, if_indent, depth
+        )
+
+    # Continue with recursive processing for shallow nesting (fast path)
     i = start_index
     brace_count = 1  # We expect one closing brace
 
@@ -117,7 +324,13 @@ def _process_conditional_block(
                     : len(last_added_line) - len(last_added_line.lstrip())
                 ]
                 i = _process_conditional_block(
-                    lines, i, output_lines, indent + "    ", file_path, if_indent=nested_if_indent
+                    lines,
+                    i,
+                    output_lines,
+                    indent + "    ",
+                    file_path,
+                    if_indent=nested_if_indent,
+                    depth=depth + 1,
                 )
             else:
                 # Track opening braces in other constructs (shouldn't happen in kinda but just in case)
