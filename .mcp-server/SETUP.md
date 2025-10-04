@@ -2,6 +2,17 @@
 
 This guide explains how to set up the Kinda-Lang MCP (Model Context Protocol) server from scratch. Everything needed is in this repository.
 
+## ⚠️ CRITICAL: Build Files Not in Git
+
+**The `.mcp-server/build/` directory is gitignored.** After cloning this repository on any new machine, you **MUST** build the MCP server before it will work:
+
+```bash
+cd .mcp-server
+npm install && npm run build
+```
+
+Without this step, the MCP server will fail with "file not found" errors.
+
 ## Prerequisites
 
 - **Node.js 18+** - Install from https://nodejs.org/
@@ -13,24 +24,26 @@ This guide explains how to set up the Kinda-Lang MCP (Model Context Protocol) se
 ### For Claude Code CLI (Terminal)
 
 ```bash
-# From the kinda-lang repository root
+# STEP 1: Build the MCP server (REQUIRED on every fresh clone)
 cd .mcp-server
 npm install && npm run build
 
-# Add MCP server to Claude Code CLI
+# STEP 2: Add MCP server to Claude Code CLI
 claude mcp add kinda-agent-workflow node /workspace/kinda-lang/.mcp-server/build/mcp-agent-server.js --scope user \
   -e GITHUB_TOKEN=your_token_here \
   -e GITHUB_OWNER=kinda-lang-dev \
   -e GITHUB_REPO=kinda-lang \
   -e WORKING_DIR=/workspace/kinda-lang
 
-# Verify connection
+# STEP 3: Verify connection
 claude mcp list  # Should show ✓ Connected
 
-# Start new Claude Code session to load tools
+# STEP 4: Start new Claude Code session to load tools
 exit  # Exit current session
 claude  # Start fresh - MCP tools now available
 ```
+
+**Note:** Replace `your_token_here` with your actual GitHub token from https://github.com/settings/tokens
 
 ### For Claude Code Desktop (GUI Application)
 

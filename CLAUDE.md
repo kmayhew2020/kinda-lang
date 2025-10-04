@@ -102,7 +102,16 @@ If you're an agent:
 
 The repository includes an **optional MCP (Model Context Protocol) server** that provides programmatic workflow enforcement and GitHub integration.
 
-**Setup (one-time, done by repository owner):**
+**⚠️ IMPORTANT: Build Required on Fresh Clone**
+
+The MCP server build files (`.mcp-server/build/`) are **not** version controlled. After cloning this repository, you **must** build the server before use:
+
+```bash
+cd .mcp-server
+npm install && npm run build
+```
+
+**Setup (one-time per machine):**
 
 1. **Get a GitHub Token** (if you don't have one):
    - Visit: https://github.com/settings/tokens/new
@@ -110,17 +119,21 @@ The repository includes an **optional MCP (Model Context Protocol) server** that
    - Scopes: Select `repo` (full control) and `workflow`
    - Generate token and copy it (starts with `ghp_`)
 
-2. **Install and Configure:**
+2. **Build and Configure:**
 
    **For Claude Code CLI (Terminal):**
    ```bash
+   # REQUIRED FIRST: Build the MCP server
    cd .mcp-server
    npm install && npm run build
+
+   # Then add to Claude Code CLI
    claude mcp add kinda-agent-workflow node $(pwd)/build/mcp-agent-server.js --scope user \
      -e GITHUB_TOKEN=your_token_here \
      -e GITHUB_OWNER=kinda-lang-dev \
      -e GITHUB_REPO=kinda-lang \
      -e WORKING_DIR=$(dirname $(pwd))
+
    # Verify: claude mcp list (should show ✓ Connected)
    # Exit and restart Claude Code session to load tools
    ```
@@ -128,7 +141,7 @@ The repository includes an **optional MCP (Model Context Protocol) server** that
    **For Claude Code Desktop (GUI):**
    ```bash
    cd .mcp-server
-   ./install.sh  # Interactive installer
+   ./install.sh  # Interactive installer handles build + config
    # Enter your GitHub token when prompted
    # Choose 'y' to auto-configure Claude Code
    # Restart Claude Code Desktop when complete
