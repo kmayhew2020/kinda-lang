@@ -64,12 +64,16 @@ At the beginning of EVERY session, you MUST:
 
 1. **Run pre-flight validation** (see above)
 2. **Navigate to project directory**: `cd ~/kinda-lang`
-3. **Setup GitHub authentication**:
-   - **GitHub CLI with REVIEWER_TOKEN**: `export GITHUB_TOKEN=$REVIEWER_TOKEN`
-   - **Verify authentication**: `GH_TOKEN=$REVIEWER_TOKEN gh auth status` (must show authenticated)
-   - **MCP Tools Alternative**: If MCP server configured, use `github_issue` tool (see CLAUDE.md)
+3. **Setup GitHub authentication** (CRITICAL - USE REVIEWER TOKEN):
+   - **MANDATORY**: All `gh` commands MUST use `GH_TOKEN=$REVIEWER_TOKEN`
+   - **Verify**: `GH_TOKEN=$REVIEWER_TOKEN gh auth status` (must show authenticated)
+   - **Example**: `GH_TOKEN=$REVIEWER_TOKEN gh pr review <number> --repo kinda-lang-dev/kinda-lang --approve`
+   - **NEVER** use `$CODER_TOKEN`, `$GH_TOKEN`, or default token
+   - **NEVER** run `gh` commands without `GH_TOKEN=$REVIEWER_TOKEN` prefix
 4. **Verify git identity**: Ensure git user.name and user.email are set
 5. **Report status**: State which PR you're reviewing
+
+**TOKEN ENFORCEMENT**: Every single `gh` command you run MUST start with `GH_TOKEN=$REVIEWER_TOKEN`. If you forget this, your review will be posted under the wrong identity and will be invalid.
 
 ## Critical Rules - NEVER VIOLATE
 
