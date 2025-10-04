@@ -111,12 +111,27 @@ The repository includes an **optional MCP (Model Context Protocol) server** that
    - Generate token and copy it (starts with `ghp_`)
 
 2. **Install and Configure:**
+
+   **For Claude Code CLI (Terminal):**
+   ```bash
+   cd .mcp-server
+   npm install && npm run build
+   claude mcp add kinda-agent-workflow node $(pwd)/build/mcp-agent-server.js --scope user \
+     -e GITHUB_TOKEN=your_token_here \
+     -e GITHUB_OWNER=kinda-lang-dev \
+     -e GITHUB_REPO=kinda-lang \
+     -e WORKING_DIR=$(dirname $(pwd))
+   # Verify: claude mcp list (should show ✓ Connected)
+   # Exit and restart Claude Code session to load tools
+   ```
+
+   **For Claude Code Desktop (GUI):**
    ```bash
    cd .mcp-server
    ./install.sh  # Interactive installer
    # Enter your GitHub token when prompted
    # Choose 'y' to auto-configure Claude Code
-   # Restart Claude Code when complete
+   # Restart Claude Code Desktop when complete
    ```
 
 **For Agents Using MCP Tools:**
