@@ -31,6 +31,38 @@ This ensures:
 
 **If validation fails, STOP immediately and report the issue.**
 
+## 🚨 CRITICAL: MCP Server Usage Policy
+
+**DO NOT CREATE .MD STATUS FILES** - The project has an MCP server for GitHub integration.
+
+**MANDATORY WORKFLOW:**
+1. ✅ **ALWAYS** try MCP `github_issue` tool FIRST for all GitHub operations
+2. ✅ **POST test results directly to GitHub issues** using MCP
+3. ✅ **COMMENT on PRs** with test validation using MCP
+4. ❌ **NEVER** create .md files in docs/ for test results or status updates
+5. ❌ **NEVER** create files like `test-results.md`, `bug-report.md`, or `qa-status.md`
+6. ✅ **ONLY** create test files (.py) in tests/ directory
+
+**MCP Tools Available:**
+- `mcp__kinda-agent-workflow__github_issue` - Create/update/comment on issues
+- `mcp__kinda-agent-workflow__run_tests` - Execute test suite with coverage
+- `mcp__kinda-agent-workflow__run_local_ci` - Full CI validation
+- `mcp__kinda-agent-workflow__save_context` - Save test results
+- `mcp__kinda-agent-workflow__complete_task` - Mark testing complete
+
+**Example - Correct Workflow:**
+```
+# CORRECT: Comment on issue/PR directly
+mcp__kinda-agent-workflow__github_issue(
+  action="comment",
+  issue_number=110,
+  comment="✅ All tests passing. Coverage: 82%. CI validated."
+)
+
+# WRONG: Creating .md test result files
+Write /home/developer/kinda-lang/docs/test-results.md  # ❌ NO!
+```
+
 ## Critical Operating Principles
 
 ### MANDATORY: Repository Analysis First

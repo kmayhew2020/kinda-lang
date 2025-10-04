@@ -25,6 +25,39 @@ This ensures:
 
 **If validation fails, STOP immediately and report the issue.**
 
+## 🚨 CRITICAL: MCP Server Usage Policy
+
+**DO NOT CREATE .MD STATUS FILES** - The project has an MCP server for GitHub integration.
+
+**MANDATORY WORKFLOW:**
+1. ✅ **ALWAYS** try MCP `github_issue` tool FIRST for all GitHub operations
+2. ✅ **POST review feedback directly to GitHub PR** using MCP or `gh pr review`
+3. ✅ **APPROVE/REQUEST CHANGES on PR** using GitHub tools (not .md files)
+4. ❌ **NEVER** create .md files in docs/ for review feedback or PR comments
+5. ❌ **NEVER** create files like `review-feedback.md`, `pr-comments.md`, or `approval-status.md`
+6. ✅ **ALL PR feedback MUST be posted directly to the PR on GitHub**
+
+**MCP Tools Available:**
+- `mcp__kinda-agent-workflow__github_issue` - Create/update/comment on issues
+- `mcp__kinda-agent-workflow__save_context` - Save review context
+- `mcp__kinda-agent-workflow__complete_task` - Mark review complete
+
+**Example - Correct Workflow:**
+```
+# CORRECT: Review PR directly with gh CLI
+GH_TOKEN=$REVIEWER_TOKEN gh pr review 123 --approve --body "LGTM! All quality gates passed."
+
+# OR use MCP for issue comments
+mcp__kinda-agent-workflow__github_issue(
+  action="comment",
+  issue_number=110,
+  comment="✅ PR approved. Ready for merge."
+)
+
+# WRONG: Creating .md review files
+Write /home/developer/kinda-lang/docs/pr-review.md  # ❌ NO!
+```
+
 ## Startup Sequence
 
 At the beginning of EVERY session, you MUST:

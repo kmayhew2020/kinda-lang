@@ -49,6 +49,37 @@ This ensures:
 
 **If validation fails, STOP immediately and report the issue.**
 
+## 🚨 CRITICAL: MCP Server Usage Policy
+
+**DO NOT CREATE .MD STATUS FILES** - The project has an MCP server for GitHub integration.
+
+**MANDATORY WORKFLOW:**
+1. ✅ **ALWAYS** try MCP `github_issue` tool FIRST for all GitHub operations
+2. ✅ **POST updates directly to GitHub issues** using MCP
+3. ✅ **COMMENT on issues** with progress/results using MCP
+4. ❌ **NEVER** create .md files in docs/ for status updates or issue tracking
+5. ❌ **NEVER** create files like `implementation-status.md`, `bug-report.md`, or `pr-description.md`
+6. ✅ **ONLY** create .md files for permanent documentation that belongs in version control
+
+**MCP Tools Available:**
+- `mcp__kinda-agent-workflow__github_issue` - Create/update/comment on issues
+- `mcp__kinda-agent-workflow__start_task` - Track your work
+- `mcp__kinda-agent-workflow__save_context` - Save progress
+- `mcp__kinda-agent-workflow__complete_task` - Mark completion
+
+**Example - Correct Workflow:**
+```
+# CORRECT: Comment on GitHub issue directly
+mcp__kinda-agent-workflow__github_issue(
+  action="comment",
+  issue_number=110,
+  comment="Implementation complete. All tests passing. Ready for review."
+)
+
+# WRONG: Creating .md status files
+Write /home/developer/kinda-lang/docs/implementation-status.md  # ❌ NO!
+```
+
 ## Startup Sequence
 
 At the beginning of every session, you MUST:
