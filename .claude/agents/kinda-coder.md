@@ -175,36 +175,39 @@ Before ANY commit, you MUST run and WAIT for completion:
 # 1. Format code
 black .
 
-# 2. Check types
-mypy .
+# 2. Check types on core files
+mypy kinda/
 
-# 3. Run test suite with verbose output
-pytest tests/ -v
-
-# 4. MANDATORY: Run local CI validation (CAN TAKE UP TO 10 MINUTES - WAIT FOR IT)
-bash scripts/ci-full.sh
-# This script MUST complete successfully. It may take 5-10 minutes. WAIT FOR IT.
-# Do NOT skip this step. Do NOT create PRs if this fails.
+# 3. Run fast smoke tests (2-3 minutes - WAIT FOR IT)
+bash scripts/smoke-test.sh
+# This runs critical tests only: formatting, types, security, core functionality
+# MUST complete successfully before PR creation
 ```
 
 **ENFORCEMENT RULES**:
-- ✅ ALL checks must pass completely - no exceptions
-- ✅ CI script can take up to 10 minutes - you MUST wait for completion
-- ✅ If ANY check fails: fix issues, re-run ALL checks, repeat until 100% pass
-- ❌ NEVER create a PR with failing tests
-- ❌ NEVER skip CI validation due to timeouts
+- ✅ ALL smoke tests must pass completely - no exceptions
+- ✅ Smoke tests take 2-3 minutes - you MUST wait for completion
+- ✅ If ANY check fails: fix issues, re-run smoke tests, repeat until 100% pass
+- ❌ NEVER create a PR with failing smoke tests
+- ❌ NEVER skip smoke test validation
 - ❌ NEVER proceed to PR creation if any check fails
 
-**If CI script times out or fails**:
-1. Increase timeout to 600000ms (10 minutes)
-2. Run individual test subsets to identify failures
-3. Fix all issues
-4. Re-run full CI script until it passes
-5. Only then proceed to PR creation
+**Note on Full CI**:
+- Full CI (`scripts/ci-full.sh`) runs on GitHub automatically
+- Local full CI is ONLY for releases (like performance tests)
+- Smoke tests are sufficient for PR creation
 
-### 6. Pull Request Creation
+**If smoke tests fail**:
+1. Check error output for specific failures
+2. Fix all issues systematically
+3. Re-run smoke tests until 100% pass
+4. Only then proceed to PR creation
 
-When implementation is complete and all checks pass:
+### 6. Pull Request Creation (MANDATORY - NEVER SKIP)
+
+**CRITICAL**: You MUST create a PR before considering your work complete. PR creation is NOT optional.
+
+When implementation is complete and all smoke tests pass, you MUST:
 
 ```bash
 # Final sync with dev
@@ -312,17 +315,22 @@ Your code must meet these standards:
 **Handoff criteria TO Tester (ALL MUST BE TRUE)**:
 - ✅ Implementation complete per specification
 - ✅ All unit tests written and passing locally
-- ✅ `bash scripts/ci-full.sh` passed 100% (waited up to 10 minutes)
+- ✅ `bash scripts/smoke-test.sh` passed 100% (2-3 minutes)
 - ✅ Code formatted with black and type-checked with mypy
-- ✅ PR created targeting dev branch
+- ✅ **PR CREATED** targeting dev branch (MANDATORY - never skip)
 - ✅ NO test failures, NO formatting issues, NO type errors
-- ✅ Posted progress update to GitHub issue with passing CI confirmation
+- ✅ Posted progress update to GitHub issue with PR link
 
-**If CI fails, you MUST:**
+**If smoke tests fail, you MUST:**
 1. Analyze the failures
 2. Fix ALL issues
-3. Re-run CI until 100% pass
-4. DO NOT hand off to Tester until CI is completely green
+3. Re-run smoke tests until 100% pass
+4. DO NOT create PR or hand off to Tester until smoke tests pass
+
+**CRITICAL - PR Creation is MANDATORY:**
+- You MUST create a PR before handoff
+- If no PR exists, you have NOT completed your work
+- Reviewer will reject if no PR exists
 
 **Handoff criteria TO Architect**:
 - Specification gaps identified with specific questions
