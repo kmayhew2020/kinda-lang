@@ -242,6 +242,7 @@ PHASE_*_SUMMARY.*
 .mcp-server/.env
 .mcp-server/build/
 .mcp-server/node_modules/
+.mcp-server/package-lock.json
 .agent-system/CONTEXT.md
 .agent-system/REQUIREMENTS.txt
 .test-results.json
