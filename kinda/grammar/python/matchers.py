@@ -1,8 +1,26 @@
 # kinda/grammar/python/matchers.py
 
+import os
 import re
 from typing import Optional, Tuple, Any, List
 from kinda.grammar.python.constructs import KindaPythonConstructs
+from kinda.exceptions import KindaSizeError
+
+# Parser DoS Protection Limits (Issue #110)
+# These limits prevent malicious input from causing Denial of Service attacks
+# All limits are configurable via environment variables
+
+# Maximum file size in bytes (default: 1MB)
+KINDA_MAX_FILE_SIZE = int(os.getenv("KINDA_MAX_FILE_SIZE", str(1024 * 1024)))
+
+# Maximum line length in characters (default: 10,000)
+KINDA_MAX_LINE_LENGTH = int(os.getenv("KINDA_MAX_LINE_LENGTH", "10000"))
+
+# Maximum parsing iterations to prevent infinite loops (default: 50,000)
+KINDA_MAX_PARSE_ITERATIONS = int(os.getenv("KINDA_MAX_PARSE_ITERATIONS", "50000"))
+
+# Maximum string literal size in characters (default: 5,000)
+KINDA_MAX_STRING_SIZE = int(os.getenv("KINDA_MAX_STRING_SIZE", "5000"))
 
 # Compiled regex patterns for performance optimization
 _SORTA_PRINT_PATTERN = re.compile(r"^\s*~sorta\s+print\s*\(")
@@ -13,6 +31,54 @@ _ISH_COMPARISON_PATTERN = re.compile(
 )
 _WELP_PATTERN = re.compile(r'([^~"\']*)\s*~welp\s+([^\n]+)')
 _STRING_DELIMITERS = re.compile(r'["\']{1,3}')
+
+
+def validate_line_length(line: str, line_number: int, file_path: str = "unknown") -> None:
+    """
+    Validate that a line does not exceed the maximum allowed length.
+
+    Args:
+        line: The line to validate
+        line_number: Line number in the source file (1-indexed)
+        file_path: Path to the source file for error reporting
+
+    Raises:
+        KindaSizeError: If line exceeds KINDA_MAX_LINE_LENGTH
+    """
+    line_len = len(line)
+    if line_len > KINDA_MAX_LINE_LENGTH:
+        raise KindaSizeError(
+            f"Line {line_number} in {file_path} exceeds maximum length",
+            limit_type="line_length",
+            current_value=line_len,
+            max_value=KINDA_MAX_LINE_LENGTH,
+            context=f"Line {line_number} in {file_path}",
+        )
+
+
+def validate_string_literal(
+    string_content: str, line_number: int, file_path: str = "unknown"
+) -> None:
+    """
+    Validate that a string literal does not exceed the maximum allowed size.
+
+    Args:
+        string_content: The string literal content (without quotes)
+        line_number: Line number in the source file (1-indexed)
+        file_path: Path to the source file for error reporting
+
+    Raises:
+        KindaSizeError: If string literal exceeds KINDA_MAX_STRING_SIZE
+    """
+    string_len = len(string_content)
+    if string_len > KINDA_MAX_STRING_SIZE:
+        raise KindaSizeError(
+            f"String literal on line {line_number} in {file_path} exceeds maximum size",
+            limit_type="string_size",
+            current_value=string_len,
+            max_value=KINDA_MAX_STRING_SIZE,
+            context=f"Line {line_number} in {file_path}",
+        )
 
 
 def _parse_sorta_print_arguments(line: str) -> Optional[str]:
@@ -30,14 +96,26 @@ def _parse_sorta_print_arguments(line: str) -> Optional[str]:
     if start_idx >= len(line) or line[start_idx] != "(":
         return None
 
-    # String-aware parentheses parsing
+    # String-aware parentheses parsing with iteration bounds
     paren_count = 0
     in_string = False
     string_char = None
     escaped = False
     end_idx = start_idx
+    iterations = 0
 
     for i in range(start_idx, len(line)):
+        # DoS protection: Check iteration bounds
+        iterations += 1
+        if iterations > KINDA_MAX_PARSE_ITERATIONS:
+            raise KindaSizeError(
+                f"Parsing exceeded maximum iterations while processing ~sorta print",
+                limit_type="parse_iterations",
+                current_value=iterations,
+                max_value=KINDA_MAX_PARSE_ITERATIONS,
+                context="~sorta print argument parsing",
+            )
+
         char = line[i]
 
         if escaped:
@@ -88,8 +166,20 @@ def _parse_balanced_parentheses(line: str, start_pos: int) -> Tuple[Optional[str
     string_char = None
     escaped = False
     end_pos = start_pos
+    iterations = 0
 
     for i in range(start_pos, len(line)):
+        # DoS protection: Check iteration bounds
+        iterations += 1
+        if iterations > KINDA_MAX_PARSE_ITERATIONS:
+            raise KindaSizeError(
+                f"Parsing exceeded maximum iterations while balancing parentheses",
+                limit_type="parse_iterations",
+                current_value=iterations,
+                max_value=KINDA_MAX_PARSE_ITERATIONS,
+                context="balanced parentheses parsing",
+            )
+
         char = line[i]
 
         if escaped:
@@ -314,8 +404,20 @@ def _split_function_arguments(content: str) -> List[str]:
     in_string = False
     string_char = None
     escaped = False
+    iterations = 0
 
     for char in content:
+        # DoS protection: Check iteration bounds
+        iterations += 1
+        if iterations > KINDA_MAX_PARSE_ITERATIONS:
+            raise KindaSizeError(
+                f"Parsing exceeded maximum iterations while splitting function arguments",
+                limit_type="parse_iterations",
+                current_value=iterations,
+                max_value=KINDA_MAX_PARSE_ITERATIONS,
+                context="function argument splitting",
+            )
+
         if escaped:
             current_arg.append(char)
             escaped = False

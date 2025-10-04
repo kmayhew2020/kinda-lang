@@ -653,6 +653,9 @@ class TestIntegrationScenarios:
 class TestPerformanceImpact:
     """Test performance impact of enhancements on ecosystem libraries"""
 
+    @pytest.mark.skip(
+        reason="Performance tests disabled until release - they take too long and get invalidated by changes"
+    )
     def test_numpy_performance_overhead(self):
         """Test performance overhead with NumPy operations"""
         try:

@@ -10,8 +10,11 @@ from kinda.grammar.python.matchers import (
     find_welp_constructs,
     _is_inside_string_literal,
     transform_nested_constructs,
+    validate_line_length,
+    KINDA_MAX_FILE_SIZE,
 )
 from kinda.cli import safe_read_file
+from kinda.exceptions import KindaSizeError
 
 # Feature flag for composition framework integration
 USE_COMPOSITION_FRAMEWORK = os.getenv("KINDA_USE_COMPOSITION_ISH", "true").lower() == "true"
@@ -127,6 +130,9 @@ def _process_conditional_block(
                     _warn_about_line(stripped, line_number, file_path or "unknown")
                 output_lines.extend(transformed_block)
                 i += 1
+        except KindaSizeError:
+            # Re-raise KindaSizeError to preserve DoS protection
+            raise
         except Exception as e:
             raise KindaParseError(
                 f"Error in conditional block: {str(e)}", line_number, line, file_path
@@ -200,6 +206,9 @@ def _process_python_indented_block(
             else:
                 output_lines.extend(transformed)
             i += 1
+        except KindaSizeError:
+            # Re-raise KindaSizeError to preserve DoS protection
+            raise
         except Exception as e:
             raise KindaParseError(
                 f"Error in Python indented block: {str(e)}", line_number, line, file_path
@@ -949,6 +958,20 @@ def transform_file(path: Path, target_language="python") -> str:
     global used_helpers
     used_helpers = set()
 
+    # Layer 1: File size validation (DoS protection - Issue #110)
+    try:
+        file_size = os.path.getsize(path)
+        if file_size > KINDA_MAX_FILE_SIZE:
+            raise KindaSizeError(
+                f"File {path} exceeds maximum allowed size",
+                limit_type="file_size",
+                current_value=file_size,
+                max_value=KINDA_MAX_FILE_SIZE,
+                context=str(path),
+            )
+    except OSError as e:
+        raise KindaParseError(f"Cannot read file: {e}", 0, "", str(path))
+
     try:
         # Use safe encoding-aware file reading for Windows compatibility
         content = safe_read_file(path)
@@ -965,6 +988,9 @@ def transform_file(path: Path, target_language="python") -> str:
         line = lines[i]
         stripped = line.strip()
         line_number = i + 1  # 1-based line numbers
+
+        # Layer 2: Line length validation (DoS protection - Issue #110)
+        validate_line_length(line, line_number, str(path))
 
         try:
             if (
@@ -1006,6 +1032,9 @@ def transform_file(path: Path, target_language="python") -> str:
                 output_lines.extend(transformed)
                 i += 1
 
+        except KindaSizeError:
+            # Re-raise KindaSizeError to preserve DoS protection
+            raise
         except Exception as e:
             raise KindaParseError(f"Transform failed: {str(e)}", line_number, line, str(path))
 

@@ -165,9 +165,11 @@ def test_sorta_print_probability():
 - Cover happy paths, edge cases, and error conditions
 - Include tests for probabilistic behavior validation
 
-### 5. Pre-Commit Quality Checks
+### 5. Pre-Commit Quality Checks (MANDATORY - NO EXCEPTIONS)
 
-Before ANY commit, you MUST run:
+**CRITICAL - BLOCKING REQUIREMENT**: You MUST NOT create a PR until ALL checks pass.
+
+Before ANY commit, you MUST run and WAIT for completion:
 
 ```bash
 # 1. Format code
@@ -176,18 +178,29 @@ black .
 # 2. Check types
 mypy .
 
-# 3. Run test suite
+# 3. Run test suite with verbose output
 pytest tests/ -v
 
-# 4. Run local CI validation
+# 4. MANDATORY: Run local CI validation (CAN TAKE UP TO 10 MINUTES - WAIT FOR IT)
 bash scripts/ci-full.sh
+# This script MUST complete successfully. It may take 5-10 minutes. WAIT FOR IT.
+# Do NOT skip this step. Do NOT create PRs if this fails.
 ```
 
-Only proceed to commit if ALL checks pass. If any fail:
-- Analyze the failure
-- Fix the issues
-- Re-run all checks
-- Repeat until everything passes
+**ENFORCEMENT RULES**:
+- ✅ ALL checks must pass completely - no exceptions
+- ✅ CI script can take up to 10 minutes - you MUST wait for completion
+- ✅ If ANY check fails: fix issues, re-run ALL checks, repeat until 100% pass
+- ❌ NEVER create a PR with failing tests
+- ❌ NEVER skip CI validation due to timeouts
+- ❌ NEVER proceed to PR creation if any check fails
+
+**If CI script times out or fails**:
+1. Increase timeout to 600000ms (10 minutes)
+2. Run individual test subsets to identify failures
+3. Fix all issues
+4. Re-run full CI script until it passes
+5. Only then proceed to PR creation
 
 ### 6. Pull Request Creation
 
@@ -296,12 +309,20 @@ Your code must meet these standards:
 - **Tester**: Completed implementations ready for testing (after all local checks pass)
 - **Architect**: Requests for specification clarification or design changes
 
-**Handoff criteria TO Tester**:
-- Implementation complete per specification
-- All unit tests written and passing
-- Local CI validation passing
-- Code formatted and type-checked
-- PR created and ready for review
+**Handoff criteria TO Tester (ALL MUST BE TRUE)**:
+- ✅ Implementation complete per specification
+- ✅ All unit tests written and passing locally
+- ✅ `bash scripts/ci-full.sh` passed 100% (waited up to 10 minutes)
+- ✅ Code formatted with black and type-checked with mypy
+- ✅ PR created targeting dev branch
+- ✅ NO test failures, NO formatting issues, NO type errors
+- ✅ Posted progress update to GitHub issue with passing CI confirmation
+
+**If CI fails, you MUST:**
+1. Analyze the failures
+2. Fix ALL issues
+3. Re-run CI until 100% pass
+4. DO NOT hand off to Tester until CI is completely green
 
 **Handoff criteria TO Architect**:
 - Specification gaps identified with specific questions

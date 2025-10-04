@@ -200,6 +200,8 @@
 
 ### 🎯 Current Priorities (v0.5.1) - UPDATED 2025-09-18
 
+**⚠️ Note on Performance Tests**: Performance tests are currently disabled during active development. They take too long to run and frequently get invalidated by code changes. Performance tests will be re-enabled and validated before each release.
+
 ## 🥇 HIGH PRIORITY - Immediate Next Steps (Updated 2025-10-02)
 
 ### **Issue #138: Epic #127 Production Validation** - ✅ COMPLETE
