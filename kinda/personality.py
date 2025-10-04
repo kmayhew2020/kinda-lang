@@ -15,9 +15,118 @@ Advanced Performance Optimization (Epic #125 Task 3):
 import random
 import time
 import weakref
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Dict, Optional, Any, Tuple, List
 from collections import deque, defaultdict
+from enum import Enum
+
+
+class ErrorHandlingMode(Enum):
+    """Error handling modes for fuzzy construct failures (Issue #112)."""
+
+    STRICT = "strict"  # Fail immediately on errors
+    WARNING = "warning"  # Log errors and continue
+    SILENT = "silent"  # Silently handle errors
+
+
+@dataclass
+class ErrorRecord:
+    """Record of a fuzzy construct error."""
+
+    construct_type: str  # Type of construct that errored
+    error_message: str  # Error message
+    context: str  # Additional context (e.g., input values)
+    timestamp: float = field(default_factory=time.time)
+    recovered: bool = True  # Whether error was recovered from
+
+
+class ErrorTracker:
+    """Centralized error collection for fuzzy constructs (Issue #112)."""
+
+    def __init__(self, mode: ErrorHandlingMode = ErrorHandlingMode.WARNING) -> None:
+        self.mode = mode
+        self.errors: List[ErrorRecord] = []
+        self.error_count_by_construct: Dict[str, int] = defaultdict(int)
+
+    def record_error(
+        self,
+        construct_type: str,
+        error_message: str,
+        context: str = "",
+        recovered: bool = True,
+    ) -> None:
+        """Record an error from a fuzzy construct."""
+        error = ErrorRecord(
+            construct_type=construct_type,
+            error_message=error_message,
+            context=context,
+            recovered=recovered,
+        )
+        self.errors.append(error)
+        self.error_count_by_construct[construct_type] += 1
+
+        # Handle based on mode
+        if self.mode == ErrorHandlingMode.STRICT and not recovered:
+            raise RuntimeError(
+                f"[STRICT MODE] {construct_type} error: {error_message} (context: {context})"
+            )
+        elif self.mode == ErrorHandlingMode.WARNING:
+            print(f"[!] {construct_type} error: {error_message}")
+            if context:
+                print(f"    Context: {context}")
+
+    def get_error_rate(self) -> float:
+        """Calculate overall error handling rate (errors caught / errors that could occur)."""
+        if not self.errors:
+            return 1.0  # No errors = 100% success
+        recovered_count = sum(1 for e in self.errors if e.recovered)
+        return recovered_count / len(self.errors)
+
+    def get_construct_stats(self) -> Dict[str, Dict[str, Any]]:
+        """Get error statistics by construct type."""
+        stats = {}
+        for construct_type in self.error_count_by_construct:
+            construct_errors = [e for e in self.errors if e.construct_type == construct_type]
+            recovered = sum(1 for e in construct_errors if e.recovered)
+            stats[construct_type] = {
+                "total_errors": len(construct_errors),
+                "recovered": recovered,
+                "failed": len(construct_errors) - recovered,
+                "recovery_rate": recovered / len(construct_errors) if construct_errors else 1.0,
+            }
+        return stats
+
+    def clear(self) -> None:
+        """Clear all recorded errors."""
+        self.errors.clear()
+        self.error_count_by_construct.clear()
+
+    def summary(self) -> str:
+        """Get a summary of error tracking."""
+        if not self.errors:
+            return "No errors recorded"
+
+        total = len(self.errors)
+        recovered = sum(1 for e in self.errors if e.recovered)
+        rate = self.get_error_rate()
+
+        lines = [
+            f"Error Handling Summary:",
+            f"  Mode: {self.mode.value}",
+            f"  Total errors: {total}",
+            f"  Recovered: {recovered}",
+            f"  Failed: {total - recovered}",
+            f"  Recovery rate: {rate:.1%}",
+        ]
+
+        if self.error_count_by_construct:
+            lines.append("  By construct:")
+            for construct, count in sorted(
+                self.error_count_by_construct.items(), key=lambda x: x[1], reverse=True
+            ):
+                lines.append(f"    - {construct}: {count} errors")
+
+        return "\n".join(lines)
 
 
 @dataclass
@@ -441,7 +550,13 @@ class PersonalityContext:
 
     _instance: Optional["PersonalityContext"] = None
 
-    def __init__(self, mood: str = "playful", chaos_level: int = 5, seed: Optional[int] = None):
+    def __init__(
+        self,
+        mood: str = "playful",
+        chaos_level: int = 5,
+        seed: Optional[int] = None,
+        error_mode: ErrorHandlingMode = ErrorHandlingMode.WARNING,
+    ):
         self.mood = mood.lower()
         self.profile = PERSONALITY_PROFILES.get(self.mood, PERSONALITY_PROFILES["playful"])
         self.chaos_level = chaos_level
@@ -457,6 +572,9 @@ class PersonalityContext:
         # Centralized random number generator for reproducibility (keeping for backward compatibility)
         self.seed = seed
         self.rng = random.Random(seed)  # Create seeded RNG instance
+
+        # Error tracking (Issue #112)
+        self.error_tracker = ErrorTracker(error_mode)
 
     @classmethod
     def get_instance(cls) -> "PersonalityContext":
@@ -960,3 +1078,16 @@ def get_eventually_until_confidence() -> float:
 def get_seed_info() -> Dict[str, Any]:
     """Get information about the current seed configuration."""
     return get_personality().get_seed_info()
+
+
+# Error tracking convenience functions (Issue #112)
+def get_error_tracker() -> ErrorTracker:
+    """Get the global error tracker."""
+    return get_personality().error_tracker
+
+
+def record_construct_error(
+    construct_type: str, error_message: str, context: str = "", recovered: bool = True
+) -> None:
+    """Record an error from a fuzzy construct."""
+    get_error_tracker().record_error(construct_type, error_message, context, recovered)
