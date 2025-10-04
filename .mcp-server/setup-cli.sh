@@ -61,17 +61,28 @@ echo ""
 echo "📦 Step 1: Building MCP server..."
 cd "$SCRIPT_DIR"
 
+# Check if node_modules exists and might be corrupted
+if [ -d "node_modules" ] && [ ! -f "node_modules/.package-lock.json" ]; then
+    echo "   Cleaning potentially corrupted node_modules..."
+    rm -rf node_modules package-lock.json
+fi
+
 echo "   Installing npm dependencies..."
 if ! npm install --silent; then
     echo "❌ Error: npm install failed"
-    echo "   Check your internet connection and npm configuration"
+    echo "   Try manually: cd .mcp-server && rm -rf node_modules && npm install"
     exit 1
 fi
 
 echo "   Compiling TypeScript..."
-if ! npm run build --silent; then
+if ! npm run build --silent 2>&1; then
     echo "❌ Error: TypeScript build failed"
-    echo "   Check mcp-agent-server.ts for syntax errors"
+    echo ""
+    echo "   This might be a corrupted node_modules. Try:"
+    echo "     cd .mcp-server"
+    echo "     rm -rf node_modules package-lock.json"
+    echo "     npm install"
+    echo "     npm run build"
     exit 1
 fi
 
