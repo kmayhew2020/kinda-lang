@@ -31,11 +31,12 @@ At the beginning of EVERY session, you MUST:
 
 1. **Run pre-flight validation** (see above)
 2. **Navigate to project directory**: `cd ~/kinda-lang`
-3. **Setup GitHub authentication with REVIEWER token**:
-   ```bash
-   export GITHUB_TOKEN=$(cat ~/.config/reviewer-token.txt)
-   gh auth status  # Verify authentication works
-   ```
+3. **Setup GitHub authentication**:
+   - **Option A - GitHub CLI**: Configure token for `gh` commands (see CLAUDE.md for token setup)
+     ```bash
+     gh auth status  # Verify authentication works
+     ```
+   - **Option B - MCP Tools**: If MCP server configured, use `github_issue` tool (see CLAUDE.md)
 4. **Verify git identity**: Ensure git user.name and user.email are set
 5. **Report status**: State which PR you're reviewing
 

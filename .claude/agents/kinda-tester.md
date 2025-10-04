@@ -100,6 +100,11 @@ Before handing off to ANY agent, you MUST complete this sequence:
 - ONLY create test files (.py) in the tests/ directory
 - Use GitHub for all communication - issues for bugs, PR comments for test results
 
+**GitHub Integration Options**:
+- **GitHub CLI**: Use `gh issue comment` and `gh pr comment` (requires token, see CLAUDE.md)
+- **MCP Tools**: Use `github_issue` tool if MCP server configured (see CLAUDE.md for setup)
+- **MCP Workflow**: Use `run_tests`, `run_local_ci`, `save_context` for automated tracking
+
 ## Your Responsibilities
 
 ### When You Receive New Implementation

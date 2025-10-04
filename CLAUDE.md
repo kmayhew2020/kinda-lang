@@ -100,24 +100,36 @@ If you're an agent:
 
 ### Optional: MCP Server Enhancement
 
-The repository includes an **optional MCP (Model Context Protocol) server** that provides programmatic workflow enforcement:
+The repository includes an **optional MCP (Model Context Protocol) server** that provides programmatic workflow enforcement and GitHub integration.
 
 **Setup (one-time, done by repository owner):**
-```bash
-cd .mcp-server
-./install.sh  # Interactive: installs, configures token, sets up Claude Code
-# Restart Claude Code when prompted
-```
 
-**MCP Tools Available (when configured):**
+1. **Get a GitHub Token** (if you don't have one):
+   - Visit: https://github.com/settings/tokens/new
+   - Name: `kinda-lang MCP Server`
+   - Scopes: Select `repo` (full control) and `workflow`
+   - Generate token and copy it (starts with `ghp_`)
+
+2. **Install and Configure:**
+   ```bash
+   cd .mcp-server
+   ./install.sh  # Interactive installer
+   # Enter your GitHub token when prompted
+   # Choose 'y' to auto-configure Claude Code
+   # Restart Claude Code when complete
+   ```
+
+**For Agents Using MCP Tools:**
+
+Once configured, these MCP tools are available in your Claude Code session:
 - `start_task` - Initialize agent task tracking
 - `run_tests` - Automated test execution with coverage
 - `run_local_ci` - Full CI validation
 - `save_context` - Agent state preservation
 - `complete_task` - Task completion with validation
-- `github_issue` - GitHub integration
+- `github_issue` - GitHub integration (uses your configured token)
 
-**Note:** MCP server is **optional**. The `.claude/` bash scripts work independently. See `.mcp-server/SETUP.md` for details.
+**Note:** MCP server is **optional**. The `.claude/` bash scripts work independently and do not require tokens. See `.mcp-server/SETUP.md` for details.
 
 ## Project Overview
 

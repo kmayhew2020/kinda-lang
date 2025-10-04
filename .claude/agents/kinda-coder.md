@@ -173,10 +173,15 @@ git commit -m "feat: descriptive commit message"
 git push origin feature/issue-123-descriptive-name
 
 # Create PR targeting dev branch (ALWAYS use fork repo)
+# Note: Requires GitHub CLI with token configured (see CLAUDE.md)
 gh pr create --repo kinda-lang-dev/kinda-lang --base dev \
   --title "feat: Descriptive PR title" \
   --body "Detailed description of implementation"
 ```
+
+**MCP Tools Alternative** (if configured, see CLAUDE.md for setup):
+- Use MCP `github_issue` tool to programmatically create/update issues (uses configured token)
+- Use MCP `start_task`, `save_context`, `complete_task` for workflow tracking
 
 **PR Description Must Include**:
 - Summary of what was implemented
