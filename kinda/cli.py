@@ -15,7 +15,7 @@ except ImportError:
     HAS_CHARDET = False
 
 # Import personality system
-from kinda.personality import PersonalityContext, PERSONALITY_PROFILES
+from kinda.personality import PersonalityContext, PERSONALITY_PROFILES, ErrorHandlingMode
 
 
 def safe_print(text: str) -> None:
@@ -273,8 +273,13 @@ def validate_seed(seed: Optional[int]) -> Optional[int]:
     return seed
 
 
-def setup_personality(mood: str, chaos_level: int = 5, seed: Optional[int] = None) -> None:
-    """Initialize personality system with specified mood, chaos level, and seed."""
+def setup_personality(
+    mood: str,
+    chaos_level: int = 5,
+    seed: Optional[int] = None,
+    error_mode: str = "warning",
+) -> None:
+    """Initialize personality system with specified mood, chaos level, seed, and error mode."""
     if mood and mood.lower() not in PERSONALITY_PROFILES:
         available_moods = ", ".join(PERSONALITY_PROFILES.keys())
         safe_print(f"[?] Unknown mood '{mood}'. Available moods: {available_moods}")
@@ -283,6 +288,17 @@ def setup_personality(mood: str, chaos_level: int = 5, seed: Optional[int] = Non
 
     # Validate chaos level
     chaos_level = validate_chaos_level(chaos_level)
+
+    # Validate error mode
+    error_mode_enum = ErrorHandlingMode.WARNING  # default
+    if error_mode:
+        try:
+            error_mode_enum = ErrorHandlingMode(error_mode.lower())
+        except ValueError:
+            available_modes = ", ".join([m.value for m in ErrorHandlingMode])
+            safe_print(f"[?] Unknown error mode '{error_mode}'. Available modes: {available_modes}")
+            safe_print("[tip] Defaulting to 'warning' mode")
+            error_mode_enum = ErrorHandlingMode.WARNING
 
     # Handle seed resolution: CLI arg > environment variable > None
     resolved_seed = seed
@@ -319,13 +335,15 @@ def setup_personality(mood: str, chaos_level: int = 5, seed: Optional[int] = Non
     # Validate and sanitize seed for security
     resolved_seed = validate_seed(resolved_seed)
 
-    PersonalityContext.set_mood(mood or "playful")
-    PersonalityContext.set_chaos_level(chaos_level)
-    PersonalityContext.set_seed(resolved_seed)
+    # Create new personality context with error mode
+    PersonalityContext._instance = PersonalityContext(
+        mood or "playful", chaos_level, resolved_seed, error_mode_enum
+    )
 
     if mood:
         safe_print(f"🎭 Setting kinda mood to '{mood}'")
     safe_print(f"🎲 Setting chaos level to {chaos_level} (1=minimal, 10=maximum chaos)")
+    safe_print(f"🛡️ Error handling mode: {error_mode_enum.value}")
     if resolved_seed is not None:
         seed_source = "CLI" if seed is not None else "environment"
         safe_print(f"🌱 Using random seed {resolved_seed} for reproducible chaos ({seed_source})")
@@ -678,6 +696,12 @@ def main(argv=None) -> int:
         default=None,
         help="Random seed for reproducible chaos (overrides KINDA_SEED environment variable)",
     )
+    p_transform.add_argument(
+        "--error-mode",
+        choices=["strict", "warning", "silent"],
+        default="warning",
+        help="Error handling mode (strict=fail on errors, warning=log and continue, silent=silent)",
+    )
 
     p_run = sub.add_parser("run", help="Transform then execute (living dangerously, I see)")
     p_run.add_argument("input", help="The .knda file you want to run")
@@ -703,6 +727,12 @@ def main(argv=None) -> int:
         choices=["safe", "caution", "risky"],
         default="safe",
         help="Security level for execution (safe=maximum security, risky=minimal security)",
+    )
+    p_run.add_argument(
+        "--error-mode",
+        choices=["strict", "warning", "silent"],
+        default="warning",
+        help="Error handling mode (strict=fail on errors, warning=log and continue, silent=silent)",
     )
 
     p_interpret = sub.add_parser(
@@ -733,6 +763,12 @@ def main(argv=None) -> int:
         choices=["safe", "caution", "risky"],
         default="safe",
         help="Security level for execution (safe=maximum security, risky=minimal security)",
+    )
+    p_interpret.add_argument(
+        "--error-mode",
+        choices=["strict", "warning", "silent"],
+        default="warning",
+        help="Error handling mode (strict=fail on errors, warning=log and continue, silent=silent)",
     )
 
     p_examples = sub.add_parser("examples", help="Show example kinda programs (for inspiration)")
@@ -858,6 +894,7 @@ def main(argv=None) -> int:
             getattr(args, "mood", None) or "playful",
             getattr(args, "chaos_level", 5),
             getattr(args, "seed", None),
+            getattr(args, "error_mode", "warning"),
         )
 
         input_path = Path(args.input)
@@ -941,6 +978,7 @@ def main(argv=None) -> int:
             getattr(args, "mood", None) or "playful",
             getattr(args, "chaos_level", 5),
             getattr(args, "seed", None),
+            getattr(args, "error_mode", "warning"),
         )
 
         input_path = Path(args.input)
@@ -1070,6 +1108,7 @@ def main(argv=None) -> int:
             getattr(args, "mood", None) or "playful",
             getattr(args, "chaos_level", 5),
             getattr(args, "seed", None),
+            getattr(args, "error_mode", "warning"),
         )
 
         input_path = Path(args.input)

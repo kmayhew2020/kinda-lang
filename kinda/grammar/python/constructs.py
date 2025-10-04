@@ -11,15 +11,17 @@ KindaPythonConstructs: Dict[str, Dict[str, Any]] = {
         "body": (
             "def kinda_int(val):\n"
             '    """Fuzzy integer with personality-adjusted fuzz and chaos tracking"""\n'
-            "    from kinda.personality import chaos_fuzz_range, update_chaos_state, chaos_randint\n"
+            "    from kinda.personality import chaos_fuzz_range, update_chaos_state, chaos_randint, record_construct_error\n"
             "    try:\n"
             "        # Check if value is numeric\n"
             "        if not isinstance(val, (int, float)):\n"
             "            try:\n"
             "                val = float(val)\n"
             "            except (ValueError, TypeError):\n"
+            "                error_msg = f'Expected a number but got {type(val).__name__}'\n"
+            "                record_construct_error('kinda_int', error_msg, f'value={repr(val)}', recovered=True)\n"
             '                print(f"[?] kinda int got something weird: {repr(val)}")\n'
-            '                print(f"[tip] Expected a number but got {type(val).__name__}")\n'
+            '                print(f"[tip] {error_msg}")\n'
             "                update_chaos_state(failed=True)\n"
             "                return chaos_randint(0, 10)\n"
             "        \n"
@@ -29,6 +31,8 @@ KindaPythonConstructs: Dict[str, Dict[str, Any]] = {
             "        update_chaos_state(failed=False)\n"
             "        return result\n"
             "    except Exception as e:\n"
+            "        error_msg = f'Unexpected error: {e}'\n"
+            "        record_construct_error('kinda_int', error_msg, f'value={repr(val)}', recovered=True)\n"
             '        print(f"[shrug] Kinda int got kinda confused: {e}")\n'
             '        print(f"[tip] Just picking a random number instead")\n'
             "        update_chaos_state(failed=True)\n"
@@ -42,15 +46,17 @@ KindaPythonConstructs: Dict[str, Dict[str, Any]] = {
         "body": (
             "def kinda_float(val):\n"
             '    """Fuzzy floating-point with personality-adjusted drift and chaos tracking"""\n'
-            "    from kinda.personality import chaos_float_drift_range, update_chaos_state, chaos_uniform\n"
+            "    from kinda.personality import chaos_float_drift_range, update_chaos_state, chaos_uniform, record_construct_error\n"
             "    try:\n"
             "        # Check if value is numeric\n"
             "        if not isinstance(val, (int, float)):\n"
             "            try:\n"
             "                val = float(val)\n"
             "            except (ValueError, TypeError):\n"
+            "                error_msg = f'Expected a number but got {type(val).__name__}'\n"
+            "                record_construct_error('kinda_float', error_msg, f'value={repr(val)}', recovered=True)\n"
             '                print(f"[?] kinda float got something weird: {repr(val)}")\n'
-            '                print(f"[tip] Expected a number but got {type(val).__name__}")\n'
+            '                print(f"[tip] {error_msg}")\n'
             "                update_chaos_state(failed=True)\n"
             "                return chaos_uniform(0.0, 10.0)\n"
             "        \n"
@@ -64,6 +70,8 @@ KindaPythonConstructs: Dict[str, Dict[str, Any]] = {
             "        update_chaos_state(failed=False)\n"
             "        return result\n"
             "    except Exception as e:\n"
+            "        error_msg = f'Unexpected error: {e}'\n"
+            "        record_construct_error('kinda_float', error_msg, f'value={repr(val)}', recovered=True)\n"
             '        print(f"[shrug] Kinda float got kinda confused: {e}")\n'
             '        print(f"[tip] Just picking a random float instead")\n'
             "        update_chaos_state(failed=True)\n"
