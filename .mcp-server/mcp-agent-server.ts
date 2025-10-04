@@ -523,6 +523,39 @@ async function checkAgentPolicies(agentRole: string, violations: string[]) {
           'not saved as .md files.'
         );
       }
+
+      // CRITICAL: Check that PR was created (MANDATORY for Coder)
+      const { stdout: currentBranch } = await execAsync('git branch --show-current', {
+        cwd: CONFIG.workingDir,
+      });
+      const branch = currentBranch.trim();
+
+      // Only check if on a feature/bugfix branch (not dev or main)
+      if (branch.startsWith('feature/') || branch.startsWith('fix/') || branch.startsWith('bugfix/')) {
+        try {
+          const { stdout: prCheck } = await execAsync(
+            `gh pr list --head ${branch} --repo kinda-lang-dev/kinda-lang --json number`,
+            { cwd: CONFIG.workingDir }
+          );
+
+          const prs = JSON.parse(prCheck);
+
+          if (prs.length === 0) {
+            violations.push(
+              `CODER POLICY VIOLATION: No PR found for branch '${branch}'. ` +
+              'PR creation is MANDATORY before task completion. ' +
+              'You MUST run: gh pr create --repo kinda-lang-dev/kinda-lang --base dev --head ' + branch + ' ' +
+              'PR creation is NOT optional - it is required before handoff to Tester.'
+            );
+          }
+        } catch (error) {
+          // gh command failed - likely no PR exists
+          violations.push(
+            `CODER POLICY VIOLATION: Failed to check PR status for branch '${branch}'. ` +
+            'PR creation is MANDATORY. Create PR before completing task.'
+          );
+        }
+      }
     }
 
     // Architect-specific checks
