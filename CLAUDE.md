@@ -123,11 +123,12 @@ npm install && npm run build
 
    **For Claude Code CLI (Terminal):**
    ```bash
-   # REQUIRED FIRST: Build the MCP server
+   # Easy way: Use the setup script
    cd .mcp-server
-   npm install && npm run build
+   ./setup-cli.sh your_github_token_here
 
-   # Then add to Claude Code CLI
+   # OR manual setup:
+   npm install && npm run build
    claude mcp add kinda-agent-workflow node $(pwd)/build/mcp-agent-server.js --scope user \
      -e GITHUB_TOKEN=your_token_here \
      -e GITHUB_OWNER=kinda-lang-dev \

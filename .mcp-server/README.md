@@ -17,6 +17,16 @@ This creates the `.mcp-server/build/` directory with the compiled JavaScript (gi
 
 ### Claude Code CLI (Terminal)
 
+**Easy way - use the setup script:**
+
+```bash
+cd .mcp-server
+./setup-cli.sh your_github_token_here
+# Follow the prompts, then restart your Claude session
+```
+
+**Manual way:**
+
 ```bash
 # 1. Build the server (required on every fresh clone)
 cd .mcp-server

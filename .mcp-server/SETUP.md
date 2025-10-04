@@ -23,6 +23,21 @@ Without this step, the MCP server will fail with "file not found" errors.
 
 ### For Claude Code CLI (Terminal)
 
+**Easy way - use the setup script:**
+
+```bash
+cd .mcp-server
+./setup-cli.sh your_github_token_here
+```
+
+The script will:
+- Build the MCP server
+- Configure Claude Code CLI
+- Verify the connection
+- Show you next steps
+
+**Manual way:**
+
 ```bash
 # STEP 1: Build the MCP server (REQUIRED on every fresh clone)
 cd .mcp-server
