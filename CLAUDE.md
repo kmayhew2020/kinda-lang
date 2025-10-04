@@ -133,24 +133,23 @@ npm install && npm run build
 
 **Setup (one-time per machine):**
 
-1. **Get a GitHub Token** (if you don't have one):
-   - Visit: https://github.com/settings/tokens/new
-   - Name: `kinda-lang MCP Server`
-   - Scopes: Select `repo` (full control) and `workflow`
-   - Generate token and copy it (starts with `ghp_`)
+1. **Ensure GitHub Tokens are Set** (see GitHub Authentication section above):
+   - `$GH_TOKEN`, `$CODER_TOKEN`, `$REVIEWER_TOKEN` must be exported
+   - All need `repo` and `workflow` scopes
+   - Create at: https://github.com/settings/tokens
 
 2. **Build and Configure:**
 
    **For Claude Code CLI (Terminal):**
    ```bash
-   # Easy way: Use the setup script
+   # Easy way: Use the setup script (uses $GH_TOKEN)
    cd .mcp-server
-   ./setup-cli.sh your_github_token_here
+   ./setup-cli.sh $GH_TOKEN
 
    # OR manual setup:
    npm install && npm run build
    claude mcp add kinda-agent-workflow node $(pwd)/build/mcp-agent-server.js --scope user \
-     -e GITHUB_TOKEN=your_token_here \
+     -e GITHUB_TOKEN=$GH_TOKEN \
      -e GITHUB_OWNER=kinda-lang-dev \
      -e GITHUB_REPO=kinda-lang \
      -e WORKING_DIR=$(dirname $(pwd))
@@ -163,7 +162,7 @@ npm install && npm run build
    ```bash
    cd .mcp-server
    ./install.sh  # Interactive installer handles build + config
-   # Enter your GitHub token when prompted
+   # Uses $GH_TOKEN environment variable if set
    # Choose 'y' to auto-configure Claude Code
    # Restart Claude Code Desktop when complete
    ```
@@ -176,9 +175,9 @@ Once configured, these MCP tools are available in your Claude Code session:
 - `run_local_ci` - Full CI validation
 - `save_context` - Agent state preservation
 - `complete_task` - Task completion with validation
-- `github_issue` - GitHub integration (uses your configured token)
+- `github_issue` - GitHub integration (uses environment variable tokens)
 
-**Note:** MCP server is **optional**. The `.claude/` bash scripts work independently and do not require tokens. See `.mcp-server/SETUP.md` for details.
+**Note:** MCP server is **optional**. The `.claude/` bash scripts work independently. Agents use environment variable tokens ($GH_TOKEN, $CODER_TOKEN, $REVIEWER_TOKEN) for GitHub operations. See `.mcp-server/SETUP.md` for details.
 
 ## Project Overview
 
@@ -323,6 +322,49 @@ kinda run file.knda --seed 42      # CLI overrides environment
 kinda run file.knda --mood reliable
 kinda run file.knda --chaos-level 5
 ```
+
+### GitHub Authentication
+
+**All agents use environment variable tokens (no file-based tokens):**
+
+```bash
+# General purpose token (PM, Architect, Tester)
+export GH_TOKEN=ghp_your_general_token_here
+
+# Coder-specific token (for implementations and PRs)
+export CODER_TOKEN=ghp_your_coder_token_here
+
+# Reviewer-specific token (for PR approvals)
+export REVIEWER_TOKEN=ghp_your_reviewer_token_here
+```
+
+**Token Requirements:**
+- All tokens need `repo` and `workflow` scopes
+- Create tokens at: https://github.com/settings/tokens
+- Use Classic Personal Access Tokens (not fine-grained)
+
+**Token-to-Agent Mapping:**
+- **$GH_TOKEN**: Used by PM, Architect, Tester for general operations
+- **$CODER_TOKEN**: Used by Coder for creating PRs and pushing code
+- **$REVIEWER_TOKEN**: Used by Reviewer for approving and reviewing PRs
+
+**Verify Token Configuration:**
+```bash
+# Check if tokens are set
+echo $GH_TOKEN | cut -c1-10        # Should show: ghp_...
+echo $CODER_TOKEN | cut -c1-10     # Should show: ghp_...
+echo $REVIEWER_TOKEN | cut -c1-10  # Should show: ghp_...
+
+# Verify GitHub CLI authentication
+GH_TOKEN=$GH_TOKEN gh auth status           # PM/Architect/Tester
+GH_TOKEN=$CODER_TOKEN gh auth status        # Coder
+GH_TOKEN=$REVIEWER_TOKEN gh auth status     # Reviewer
+```
+
+**MCP Server Integration:**
+- MCP server can use any of these tokens via environment variables
+- Configure in MCP server .env or Claude Code MCP config
+- Agents will automatically use their designated tokens
 
 ### Local Testing & Validation
 

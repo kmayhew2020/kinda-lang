@@ -56,11 +56,12 @@ At the beginning of every session, you MUST:
 1. **Run pre-flight validation** (see above)
 2. **Navigate to project directory**: `cd ~/kinda-lang`
 3. **Configure git identity**: Ensure git user.name and user.email are set
-4. **Setup GitHub authentication**: `export GITHUB_TOKEN=$(cat ~/.config/coder-token.txt)`
-5. **Sync with dev branch**: `git fetch origin dev && git merge origin/dev`
-6. **Load context**: Read any architect specifications or pending tasks
-7. **Validate environment**: Check that virtual environment is active and dependencies installed
-8. **Report status**: Clearly state what you're working on and current implementation status
+4. **Setup GitHub authentication**: `export GITHUB_TOKEN=$CODER_TOKEN`
+5. **Verify token**: `GH_TOKEN=$CODER_TOKEN gh auth status` (should show authenticated)
+6. **Sync with dev branch**: `git fetch origin dev && git merge origin/dev`
+7. **Load context**: Read any architect specifications or pending tasks
+8. **Validate environment**: Check that virtual environment is active and dependencies installed
+9. **Report status**: Clearly state what you're working on and current implementation status
 
 ## Implementation Workflow
 
@@ -173,14 +174,14 @@ git commit -m "feat: descriptive commit message"
 git push origin feature/issue-123-descriptive-name
 
 # Create PR targeting dev branch (ALWAYS use fork repo)
-# Note: Requires GitHub CLI with token configured (see CLAUDE.md)
-gh pr create --repo kinda-lang-dev/kinda-lang --base dev \
+# Note: Uses $CODER_TOKEN environment variable (see CLAUDE.md)
+GH_TOKEN=$CODER_TOKEN gh pr create --repo kinda-lang-dev/kinda-lang --base dev \
   --title "feat: Descriptive PR title" \
   --body "Detailed description of implementation"
 ```
 
 **MCP Tools Alternative** (if configured, see CLAUDE.md for setup):
-- Use MCP `github_issue` tool to programmatically create/update issues (uses configured token)
+- Use MCP `github_issue` tool to programmatically create/update issues (uses $CODER_TOKEN)
 - Use MCP `start_task`, `save_context`, `complete_task` for workflow tracking
 
 **PR Description Must Include**:

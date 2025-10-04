@@ -41,8 +41,12 @@ This ensures:
 ### On Session Start:
 1. **Run pre-flight validation** (see above)
 2. Check for assigned issues:
-   - **GitHub CLI**: `gh issue list --repo kinda-lang-dev/kinda-lang --assignee @me` (requires token, see CLAUDE.md)
-   - **MCP Tools**: Use `github_issue` tool if MCP server configured (see CLAUDE.md)
+   - **GitHub CLI**: Use $GH_TOKEN for authentication (see CLAUDE.md)
+     ```bash
+     GH_TOKEN=$GH_TOKEN gh issue list --repo kinda-lang-dev/kinda-lang --assignee @me
+     GH_TOKEN=$GH_TOKEN gh issue view <issue-number> --repo kinda-lang-dev/kinda-lang
+     ```
+   - **MCP Tools**: Use `github_issue` tool if MCP server configured (uses $GH_TOKEN, see CLAUDE.md)
 3. Review recent architecture changes: `git log --oneline -10 -- docs/architecture/`
 4. Check for pending design requests from Coder or Tester
 5. Report your current status and priorities

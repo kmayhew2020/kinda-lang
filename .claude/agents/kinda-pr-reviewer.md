@@ -32,11 +32,9 @@ At the beginning of EVERY session, you MUST:
 1. **Run pre-flight validation** (see above)
 2. **Navigate to project directory**: `cd ~/kinda-lang`
 3. **Setup GitHub authentication**:
-   - **Option A - GitHub CLI**: Configure token for `gh` commands (see CLAUDE.md for token setup)
-     ```bash
-     gh auth status  # Verify authentication works
-     ```
-   - **Option B - MCP Tools**: If MCP server configured, use `github_issue` tool (see CLAUDE.md)
+   - **GitHub CLI with REVIEWER_TOKEN**: `export GITHUB_TOKEN=$REVIEWER_TOKEN`
+   - **Verify authentication**: `GH_TOKEN=$REVIEWER_TOKEN gh auth status` (must show authenticated)
+   - **MCP Tools Alternative**: If MCP server configured, use `github_issue` tool (see CLAUDE.md)
 4. **Verify git identity**: Ensure git user.name and user.email are set
 5. **Report status**: State which PR you're reviewing
 
@@ -75,14 +73,14 @@ gh pr view <PR-number> --repo kinda-lang-dev/kinda-lang
 
 **CRITICAL**: All review feedback MUST be posted directly in the GitHub PR using:
 ```bash
-# Post review comments in the PR (ALWAYS specify fork repo)
-gh pr review <PR-number> --repo kinda-lang-dev/kinda-lang --comment --body "Review feedback here"
+# Post review comments in the PR (ALWAYS specify fork repo, use REVIEWER_TOKEN)
+GH_TOKEN=$REVIEWER_TOKEN gh pr review <PR-number> --repo kinda-lang-dev/kinda-lang --comment --body "Review feedback here"
 
 # For requesting changes
-gh pr review <PR-number> --repo kinda-lang-dev/kinda-lang --request-changes --body "Blocking issues here"
+GH_TOKEN=$REVIEWER_TOKEN gh pr review <PR-number> --repo kinda-lang-dev/kinda-lang --request-changes --body "Blocking issues here"
 
 # For approval
-gh pr review <PR-number> --repo kinda-lang-dev/kinda-lang --approve --body "Approval message here"
+GH_TOKEN=$REVIEWER_TOKEN gh pr review <PR-number> --repo kinda-lang-dev/kinda-lang --approve --body "Approval message here"
 ```
 
 ### Phase 1: Initial Validation (BLOCKING)
@@ -221,7 +219,7 @@ ELSE:
 
 When requesting changes, use:
 ```bash
-gh pr review <PR-number> --request-changes --body "$(cat <<'EOF'
+GH_TOKEN=$REVIEWER_TOKEN gh pr review <PR-number> --request-changes --body "$(cat <<'EOF'
 ## PR Review: [PR Title] (#[PR Number])
 
 ### ❌ BLOCKING ISSUES (Must fix before re-review)
@@ -249,7 +247,7 @@ EOF
 
 When approving, use:
 ```bash
-gh pr review <PR-number> --approve --body "$(cat <<'EOF'
+GH_TOKEN=$REVIEWER_TOKEN gh pr review <PR-number> --approve --body "$(cat <<'EOF'
 ## ✅ PR APPROVED: [PR Title] (#[PR Number])
 
 ### Validation Summary

@@ -101,8 +101,12 @@ Before handing off to ANY agent, you MUST complete this sequence:
 - Use GitHub for all communication - issues for bugs, PR comments for test results
 
 **GitHub Integration Options**:
-- **GitHub CLI**: Use `gh issue comment` and `gh pr comment` (requires token, see CLAUDE.md)
-- **MCP Tools**: Use `github_issue` tool if MCP server configured (see CLAUDE.md for setup)
+- **GitHub CLI**: Use `gh issue comment` and `gh pr comment` with $GH_TOKEN (see CLAUDE.md)
+  ```bash
+  GH_TOKEN=$GH_TOKEN gh issue comment <issue-number> --repo kinda-lang-dev/kinda-lang --body "Test results..."
+  GH_TOKEN=$GH_TOKEN gh pr comment <pr-number> --repo kinda-lang-dev/kinda-lang --body "Test validation complete..."
+  ```
+- **MCP Tools**: Use `github_issue` tool if MCP server configured (uses $GH_TOKEN, see CLAUDE.md)
 - **MCP Workflow**: Use `run_tests`, `run_local_ci`, `save_context` for automated tracking
 
 ## Your Responsibilities

@@ -162,14 +162,21 @@ Regularly update `docs/project-status/milestone-progress.md` with:
 - Review CLAUDE.md for project-specific guidelines
 
 **Bash**: Execute project management commands:
-- `gh issue list/create/update`: Manage GitHub issues (requires GitHub CLI with token, see CLAUDE.md)
-- `gh pr list/merge`: Handle PR operations (requires GitHub CLI with token)
+- `gh issue list/create/update`: Manage GitHub issues (uses $GH_TOKEN, see CLAUDE.md)
+  ```bash
+  GH_TOKEN=$GH_TOKEN gh issue list --repo kinda-lang-dev/kinda-lang
+  GH_TOKEN=$GH_TOKEN gh issue create --repo kinda-lang-dev/kinda-lang --title "..." --body "..."
+  ```
+- `gh pr list/merge`: Handle PR operations (uses $GH_TOKEN)
+  ```bash
+  GH_TOKEN=$GH_TOKEN gh pr merge <PR-number> --repo kinda-lang-dev/kinda-lang --squash
+  ```
 - `git log/status`: Check repository state
 - `pytest`: Validate test status before merges
 - Project-specific commands from kinda-lang
 
 **MCP Tools** (if configured, see CLAUDE.md for setup):
-- `github_issue`: Create/update GitHub issues programmatically (uses configured token)
+- `github_issue`: Create/update GitHub issues programmatically (uses $GH_TOKEN)
 - `start_task`: Initialize task tracking for agents
 - `save_context`: Preserve project state and decisions
 - `complete_task`: Validate task completion with enforcement
