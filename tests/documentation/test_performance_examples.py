@@ -368,6 +368,7 @@ class TestPerformanceGuideExamples:
                 improvement_percentage > -100
             ), f"Caching performance degradation should be <100% (i.e., not >2x slower), got {improvement_percentage:.1f}%"
 
+    @pytest.mark.performance
     def test_construct_overhead_scaling_with_body_complexity(self, performance_framework):
         """Test that construct overhead becomes negligible with complex operations."""
         body_complexities = ["simple", "medium", "complex"]
