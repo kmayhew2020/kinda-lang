@@ -14,7 +14,7 @@ from kinda.grammar.python.matchers import (
     KINDA_MAX_FILE_SIZE,
 )
 from kinda.cli import safe_read_file
-from kinda.exceptions import KindaSizeError
+from kinda.exceptions import KindaSizeError, KindaParseError
 
 # Feature flag for composition framework integration
 USE_COMPOSITION_FRAMEWORK = os.getenv("KINDA_USE_COMPOSITION_ISH", "true").lower() == "true"
@@ -1138,31 +1138,6 @@ def transform_line(line: str) -> List[str]:
         return result_lines
     else:
         return [welp_transformed_line.replace(stripped_for_matching, transformed_code)]
-
-
-class KindaParseError(Exception):
-    """Exception raised for kinda parsing errors with line number context"""
-
-    def __init__(
-        self, message: str, line_number: int, line_content: str, file_path: Optional[str] = None
-    ):
-        self.message = message
-        self.line_number = line_number
-        self.line_content = line_content
-        self.file_path = file_path
-        super().__init__(self._format_message())
-
-    def _format_message(self) -> str:
-        location = f"line {self.line_number}"
-        if self.file_path:
-            location = f"{self.file_path}:{self.line_number}"
-
-        return f"""
-[?] Kinda parse error at {location}:
-   {self.line_number:3d} | {self.line_content}
-   
-[tip] {self.message}
-"""
 
 
 def transform_file(path: Path, target_language="python") -> str:
