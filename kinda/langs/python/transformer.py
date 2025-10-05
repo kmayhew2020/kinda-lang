@@ -28,6 +28,9 @@ KINDA_MAX_NESTING_DEPTH = int(os.getenv("KINDA_MAX_NESTING_DEPTH", "5000"))
 # At or above: switch to iterative to prevent stack overflow
 NESTING_DEPTH_THRESHOLD = 50
 
+# Feature flag for composition framework integration
+USE_COMPOSITION_FRAMEWORK = os.getenv("KINDA_USE_COMPOSITION_ISH", "true").lower() == "true"
+
 used_helpers = set()
 
 
