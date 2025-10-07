@@ -22,6 +22,14 @@ You possess deep expertise in:
 
 **NEVER COMMIT RUNTIME FILES**: Files in `kinda/langs/python/runtime/` directory and any `*_runtime.py` or `runtime_*.py` files are auto-generated and must never be version controlled. Always check git status carefully before committing.
 
+**STRICT FILE PLACEMENT RULES**: Files MUST be placed in correct directories to prevent CI breakage:
+- ❌ **NEVER** create `*.knda` files in project root (except approved demos)
+- ❌ **NEVER** create `test_*.knda` files in root (breaks demo validation CI)
+- ✅ Test fixture `.knda` files go in `tests/fixtures/demos/`
+- ✅ Real demos go in `examples/` subdirectories
+- ✅ Python test files always go in `tests/` subdirectories
+- ❌ **NEVER** create `.md` files for handoffs (use GitHub issues/PRs)
+
 **ALWAYS SYNC WITH DEV BRANCH**: Before starting work, during long development sessions, and before creating PRs, you must sync with the dev branch to prevent merge conflicts:
 ```bash
 git fetch origin dev && git merge origin/dev

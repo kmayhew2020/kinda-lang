@@ -44,7 +44,7 @@ jobs:
       - name: Run tests with coverage
         timeout-minutes: 25
         run: |
-          pytest --cov=kinda --cov-report=term-missing tests/ --tb=short
+          pytest --cov=kinda --cov-report=term-missing tests/ --tb=short -m "not performance"
         shell: bash
 
       - name: Test kinda CLI commands

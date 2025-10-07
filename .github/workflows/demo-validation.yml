@@ -36,6 +36,11 @@ jobs:
         echo "Testing demo files with chaos level ${{ matrix.chaos-level }}"
         for demo in *.knda; do
           if [ -f "$demo" ]; then
+            # Skip test files (should be in tests/fixtures/ but defensive check)
+            if [[ "$demo" == test_* ]]; then
+              echo "Skipping test file: $demo"
+              continue
+            fi
             echo "Testing $demo"
             timeout 30s python -m kinda.cli run "$demo" --chaos-level ${{ matrix.chaos-level }} --seed 42 || {
               echo "FAILED: $demo"
