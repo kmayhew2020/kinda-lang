@@ -152,39 +152,43 @@ class TestStatisticalAssertionsTransformation:
     """Test transformation of statistical assertion constructs"""
 
     def test_assert_eventually_transformation_basic(self):
-        """Test basic ~assert_eventually transformation"""
+        """Test basic ~assert_eventually transformation with lambda wrapping"""
         line = "~assert_eventually (~sometimes True)"
         transformed = transform_line(line)
 
         assert len(transformed) == 1
-        assert "assert_eventually(~sometimes True)" in transformed[0]
+        # Bug Fix #96: Probabilistic constructs should be lambda-wrapped
+        assert "assert_eventually(lambda: sometimes(True))" in transformed[0]
 
     def test_assert_eventually_transformation_with_params(self):
-        """Test ~assert_eventually transformation with parameters"""
+        """Test ~assert_eventually transformation with parameters and lambda wrapping"""
         line = "~assert_eventually (~maybe True, timeout=3.0, confidence=0.8)"
         transformed = transform_line(line)
 
         assert len(transformed) == 1
         result = transformed[0]
-        assert "assert_eventually(~maybe True, timeout=3.0, confidence=0.8)" in result
+        # Bug Fix #96: Probabilistic constructs should be lambda-wrapped
+        assert "assert_eventually(lambda: maybe(True), timeout=3.0, confidence=0.8)" in result
 
     def test_assert_probability_transformation_basic(self):
-        """Test basic ~assert_probability transformation"""
+        """Test basic ~assert_probability transformation with lambda wrapping"""
         line = "~assert_probability (~sometimes True)"
         transformed = transform_line(line)
 
         assert len(transformed) == 1
-        assert "assert_probability(~sometimes True)" in transformed[0]
+        # Bug Fix #96: Probabilistic constructs should be lambda-wrapped
+        assert "assert_probability(lambda: sometimes(True))" in transformed[0]
 
     def test_assert_probability_transformation_with_params(self):
-        """Test ~assert_probability transformation with parameters"""
+        """Test ~assert_probability transformation with parameters and lambda wrapping"""
         line = "~assert_probability (~maybe True, expected_prob=0.6, tolerance=0.1, samples=200)"
         transformed = transform_line(line)
 
         assert len(transformed) == 1
         result = transformed[0]
+        # Bug Fix #96: Probabilistic constructs should be lambda-wrapped
         assert (
-            "assert_probability(~maybe True, expected_prob=0.6, tolerance=0.1, samples=200)"
+            "assert_probability(lambda: maybe(True), expected_prob=0.6, tolerance=0.1, samples=200)"
             in result
         )
 

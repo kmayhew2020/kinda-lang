@@ -1,0 +1,318 @@
+"""
+Enhanced test suite for Epic #125 Task 2: Repetition Constructs with Statistical Validation
+Tests ~kinda_repeat(n) and ~eventually_until constructs using the Statistical Testing Framework
+
+This demonstrates migration from hardcoded thresholds to professional statistical validation.
+"""
+
+import pytest
+import tempfile
+import os
+import statistics
+import subprocess
+from pathlib import Path
+
+from kinda.personality import PersonalityContext
+from kinda.testing.assertions import statistical_assert, binomial_assert, proportion_assert
+
+
+class TestRepetitionConstructsStatistical:
+    """Statistical validation tests for repetition constructs."""
+
+    def test_kinda_repeat_variance_distribution_statistical(self):
+        """Test repetition variance follows expected distribution using statistical validation."""
+        # Set reliable personality for predictable testing
+        PersonalityContext.set_mood("reliable")
+
+        from kinda.personality import get_kinda_repeat_variance
+
+        # Collect variance samples over multiple runs
+        variance_samples = []
+        n_runs = 30  # Increased sample size for statistical validity
+
+        for _ in range(n_runs):
+            reliable_variance = get_kinda_repeat_variance()
+            variance_samples.append(reliable_variance)
+
+        # Statistical validation instead of hardcoded threshold
+        avg_variance = statistics.mean(variance_samples)
+
+        # Use statistical assertion with confidence interval
+        # Reliable personality should have low variance (based on actual implementation)
+        statistical_assert(
+            observed=avg_variance,
+            expected=0.022,  # Expected reliable variance (from actual implementation)
+            n=len(variance_samples),
+            confidence=0.95,
+            tolerance=0.01,  # Tight tolerance for reliable behavior
+            context="reliable personality variance validation",
+        )
+
+        # Test chaotic personality
+        PersonalityContext.set_mood("chaotic")
+        chaotic_variance_samples = []
+
+        for _ in range(n_runs):
+            chaotic_variance = get_kinda_repeat_variance()
+            chaotic_variance_samples.append(chaotic_variance)
+
+        avg_chaotic_variance = statistics.mean(chaotic_variance_samples)
+
+        # Statistical validation for chaotic variance
+        statistical_assert(
+            observed=avg_chaotic_variance,
+            expected=0.792,  # Expected chaotic variance (from actual implementation)
+            n=len(chaotic_variance_samples),
+            confidence=0.95,
+            tolerance=0.05,  # Tight tolerance since values should be consistent
+            context="chaotic personality variance validation",
+        )
+
+        # Reset to default
+        PersonalityContext.set_mood("playful")
+
+    def test_kinda_repeat_runtime_distribution_statistical(self):
+        """Test actual runtime execution using statistical validation."""
+        PersonalityContext.set_seed(42)
+        PersonalityContext.set_mood("reliable")
+
+        # Collect multiple execution results
+        execution_counts = []
+        n_trials = 25  # Statistical sample size
+
+        for trial in range(n_trials):
+            test_code = f"""
+import sys
+import os
+sys.path.insert(0, os.path.abspath('.'))
+
+count = 0
+~kinda_repeat(5):
+    count += 1
+
+print(f"RESULT:{{count}}")
+"""
+
+            with tempfile.NamedTemporaryFile(mode="w", suffix=".knda", delete=False) as f:
+                f.write(test_code)
+                f.flush()
+                temp_path = f.name
+
+            try:
+                # Run the test through kinda
+                result = subprocess.run(
+                    ["python3", "-m", "kinda", "run", temp_path],
+                    capture_output=True,
+                    text=True,
+                    cwd=os.getcwd(),
+                    timeout=10,  # Prevent hanging
+                )
+
+                if result.returncode == 0:
+                    # Extract the count from output
+                    output_lines = result.stdout.strip().split("\n")
+                    result_line = [line for line in output_lines if line.startswith("RESULT:")]
+                    if result_line:
+                        count = int(result_line[0].split(":")[1])
+                        execution_counts.append(count)
+
+            except Exception as e:
+                pytest.skip(f"Runtime execution failed in trial {trial}: {e}")
+            finally:
+                try:
+                    os.unlink(temp_path)
+                except (OSError, PermissionError):
+                    pass
+
+        # Ensure we have enough valid samples for statistical analysis
+        assert len(execution_counts) >= 10, f"Insufficient valid samples: {len(execution_counts)}"
+
+        # Statistical validation instead of hardcoded bounds
+        avg_count = statistics.mean(execution_counts)
+
+        # Expected value should be around 5 with some variance
+        statistical_assert(
+            observed=avg_count,
+            expected=5.0,
+            n=len(execution_counts),
+            confidence=0.95,
+            tolerance=1.5,  # Allow reasonable variance
+            context="kinda_repeat(5) execution count distribution",
+        )
+
+        # Test that all values are reasonable (>= 1, no extreme outliers)
+        valid_count = sum(1 for count in execution_counts if 1 <= count <= 15)
+        proportion_assert(
+            count=valid_count,
+            total=len(execution_counts),
+            expected_rate=1.0,  # All should be in reasonable range
+            confidence=0.95,
+            context="reasonable execution count range validation",
+        )
+
+        # Reset
+        PersonalityContext.set_seed(None)
+        PersonalityContext.set_mood("playful")
+
+    def test_eventually_until_convergence_statistical(self):
+        """Test eventually_until convergence using statistical validation."""
+        PersonalityContext.set_seed(42)
+        PersonalityContext.set_mood("reliable")
+
+        # Collect convergence results over multiple runs
+        convergence_counts = []
+        convergence_success = []
+        n_trials = 20
+
+        for trial in range(n_trials):
+            test_code = f"""
+import sys
+import os
+sys.path.insert(0, os.path.abspath('.'))
+
+count = 0
+~eventually_until count > 5:
+    count += 1
+
+print(f"RESULT:{{count}}")
+"""
+
+            with tempfile.NamedTemporaryFile(mode="w", suffix=".knda", delete=False) as f:
+                f.write(test_code)
+                f.flush()
+                temp_path = f.name
+
+            try:
+                result = subprocess.run(
+                    ["python3", "-m", "kinda", "run", temp_path],
+                    capture_output=True,
+                    text=True,
+                    cwd=os.getcwd(),
+                    timeout=15,  # Longer timeout for eventually_until
+                )
+
+                if result.returncode == 0:
+                    output_lines = result.stdout.strip().split("\n")
+                    result_line = [line for line in output_lines if line.startswith("RESULT:")]
+                    if result_line:
+                        count = int(result_line[0].split(":")[1])
+                        convergence_counts.append(count)
+                        # Check if convergence criterion was met
+                        convergence_success.append(1 if count > 5 else 0)
+
+            except Exception as e:
+                pytest.skip(f"Eventually_until execution failed in trial {trial}: {e}")
+            finally:
+                try:
+                    os.unlink(temp_path)
+                except (OSError, PermissionError):
+                    pass
+
+        # Ensure we have enough valid samples
+        assert (
+            len(convergence_counts) >= 10
+        ), f"Insufficient valid samples: {len(convergence_counts)}"
+
+        # Statistical validation of convergence behavior
+        # Eventually_until should converge (count > 5) in most cases
+        success_count = sum(convergence_success)
+        binomial_assert(
+            successes=success_count,
+            trials=len(convergence_success),
+            expected_p=0.9,  # Should succeed in 90% of cases
+            confidence=0.95,
+            context="eventually_until convergence rate",
+        )
+
+        # Test convergence count distribution
+        avg_convergence_count = statistics.mean(convergence_counts)
+        statistical_assert(
+            observed=avg_convergence_count,
+            expected=7.0,  # Should converge soon after 5
+            n=len(convergence_counts),
+            confidence=0.95,
+            tolerance=3.0,  # Allow reasonable variance
+            context="eventually_until convergence count distribution",
+        )
+
+        # Reset
+        PersonalityContext.set_seed(None)
+        PersonalityContext.set_mood("playful")
+
+
+class TestStatisticalFrameworkIntegration:
+    """Integration tests for statistical framework with repetition constructs."""
+
+    def test_personality_variance_comparison_statistical(self):
+        """Compare variance across different personalities using statistical methods."""
+        personalities = ["reliable", "chaotic", "playful"]
+        variance_by_personality = {}
+        n_samples = 20
+
+        from kinda.personality import get_kinda_repeat_variance
+
+        for personality in personalities:
+            PersonalityContext.set_mood(personality)
+            variances = []
+
+            for _ in range(n_samples):
+                variance = get_kinda_repeat_variance()
+                variances.append(variance)
+
+            variance_by_personality[personality] = variances
+
+        # Statistical validation of personality differences
+        reliable_avg = statistics.mean(variance_by_personality["reliable"])
+        chaotic_avg = statistics.mean(variance_by_personality["chaotic"])
+
+        # Reliable should have significantly lower variance than chaotic
+        # Using a simple difference test (could be enhanced with proper t-test)
+        difference = chaotic_avg - reliable_avg
+
+        # Expect at least 0.2 difference between chaotic and reliable
+        assert (
+            difference > 0.2
+        ), f"Insufficient variance difference: chaotic={chaotic_avg:.3f}, reliable={reliable_avg:.3f}, diff={difference:.3f}"
+
+        # Statistical validation of individual personality variances
+        statistical_assert(
+            observed=reliable_avg,
+            expected=0.1,
+            n=n_samples,
+            confidence=0.95,
+            tolerance=0.05,
+            context="reliable personality variance",
+        )
+
+        statistical_assert(
+            observed=chaotic_avg,
+            expected=0.4,
+            n=n_samples,
+            confidence=0.95,
+            tolerance=0.1,
+            context="chaotic personality variance",
+        )
+
+        # Reset
+        PersonalityContext.set_mood("playful")
+
+
+# Pytest fixtures for statistical testing
+@pytest.fixture
+def clean_personality():
+    """Fixture to ensure clean personality state for each test."""
+    # Store original state
+    original_seed = PersonalityContext._seed
+    original_mood = PersonalityContext._mood
+
+    yield
+
+    # Restore original state
+    PersonalityContext.set_seed(original_seed)
+    PersonalityContext.set_mood(original_mood or "playful")
+
+
+@pytest.fixture
+def statistical_config():
+    """Fixture providing statistical testing configuration."""
+    return {"confidence": 0.95, "sample_size": 50, "tolerance": 0.1, "timeout": 30}

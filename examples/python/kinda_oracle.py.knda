@@ -1,0 +1,140 @@
+# Kinda Oracle - A Probabilistic Fortune Teller with Emotional Intelligence
+
+~sorta print("🔮 The Kinda Oracle awakens...")
+~sorta print("Ask me anything, but know that truth is ~kinda subjective here.")
+~sorta print("")
+
+# Oracle state tracking
+~kinda int questions_asked ~= 0
+~kinda int oracle_confidence ~= 95  # Starts confident, drifts with fatigue
+
+~sorta print("=== ROMANCE QUESTION SIMULATION ===")
+questions_asked ~= 1
+
+~sorta print("Example: 'Will I find love this year?'")
+~sorta print("Oracle analyzing romance patterns...")
+
+# Romance questions use ~maybe (60%) - love is uncertain
+~maybe (oracle_confidence > 50) {
+    ~sorta print("💕 The heart speaks in maybes...")
+    ~maybe (True) {
+        ~sorta print("🔮 I see romantic possibilities in your future.")
+        ~sorta print("   But timing? That's where it gets fuzzy.")
+    }
+    ~maybe (False) {
+        ~sorta print("💔 Love may find you when you're not looking.")
+        ~sorta print("   Sometimes the universe has different timing.")
+    }
+}
+
+~sorta print("")
+
+# Oracle fatigue starts kicking in
+oracle_confidence ~= -10
+
+~sorta print("=== CAREER QUESTION SIMULATION ===")
+questions_asked ~= 1
+
+~sorta print("Example: 'Should I take this new job?'")
+~sorta print("Oracle analyzing career patterns...")
+
+# Career questions use ~probably (70%) - more confident territory
+~probably (oracle_confidence > 30) {
+    ~sorta print("💼 Career decisions require ~probably-level confidence...")
+    ~probably (True) {
+        ~sorta print("🔮 The signs point to yes, but with calculated risk.")
+        ~sorta print("   Trust your skills, but keep backup plans.")
+    }
+    ~sometimes (True) {
+        ~sorta print("💰 Financial stability awaits those who dare.")
+    }
+}
+
+~sorta print("")
+
+# More fatigue
+oracle_confidence ~= -15
+
+~sorta print("=== EXISTENTIAL QUESTION SIMULATION ===")
+questions_asked ~= 1
+
+~sorta print("Example: 'What is the meaning of life?'")
+~sorta print("Oracle entering deep wisdom mode...")
+
+# Existential questions trigger COMPOSITION MODE
+~sometimes (oracle_confidence > 20) {
+    ~sorta print("🌌 Deep questions require deep answers...")
+    ~sorta print("   Entering composition mode...")
+
+    # Use composition framework for complex wisdom
+    ~sometimes (True) {
+        ~maybe (True) {
+            ~probably (True) {
+                ~sorta print("🔮 DEEP ORACLE WISDOM:")
+                ~sorta print("   Life is ~kinda like debugging code:")
+                ~sorta print("   - ~sometimes it works mysteriously")
+                ~sorta print("   - ~maybe you understand why")
+                ~sorta print("   - ~probably there's a better way")
+                ~sorta print("   - But ~sorta, it's the journey that matters.")
+            }
+        }
+    }
+}
+
+~sorta print("")
+
+# Oracle getting tired
+oracle_confidence ~= -20
+
+~sorta print("=== SILLY QUESTION SIMULATION ===")
+questions_asked ~= 1
+
+~sorta print("Example: 'Will my cat ever appreciate my cooking?'")
+~sorta print("Oracle analyzing feline culinary preferences...")
+
+# Silly questions use ~sometimes (50%) - pure chaos when tired
+~sometimes (True) {
+    ~sorta print("🐱 Your cat's culinary opinions are ~kinda mysterious...")
+    ~sometimes (oracle_confidence < 30) {
+        ~sorta print("😴 Oracle fatigue detected... switching to chaotic wisdom...")
+        ~sorta print("🔮 Signs point to... maybe try more tuna?")
+        ~sorta print("   Or accept that cats are just chaotic critics.")
+    }
+    ~maybe (False) {
+        ~sorta print("🍽️ Cooking is love, even if cats don't get it.")
+    }
+}
+
+~sorta print("")
+
+# Oracle status report
+~sorta print("=== ORACLE STATUS REPORT ===")
+~sorta print("Questions answered:", questions_asked)
+~sorta print("Current confidence:", oracle_confidence)
+
+# Different personality-based farewell
+~probably (oracle_confidence > 50) {
+    ~sorta print("🔮 The Oracle remains confident and ready for more!")
+}
+~maybe (oracle_confidence > 20) {
+    ~sorta print("🔮 The Oracle is ~kinda tired but still wise...")
+}
+~sometimes (oracle_confidence <= 20) {
+    ~sorta print("😵 The Oracle needs a nap. Wisdom is exhausting.")
+    ~sorta print("   Come back later for more probabilistic insights!")
+}
+
+~sorta print("")
+~sorta print("=== ORACLE WISDOM SUMMARY ===")
+~sorta print("Remember: In kinda-lang, uncertainty is a feature, not a bug.")
+~sorta print("Different questions need different levels of probabilistic confidence:")
+~sorta print("  💕 Romance: ~maybe (60%) - love is beautifully uncertain")
+~sorta print("  💼 Career: ~probably (70%) - calculated confidence")
+~sorta print("  🌌 Existential: Composition mode - deep probabilistic wisdom")
+~sorta print("  🎲 Silly: ~sometimes (50%) - pure chaotic fun")
+~sorta print("")
+~sorta print("Try running with different --mood settings to see Oracle personality changes!")
+~sorta print("  --mood reliable : Oracle becomes very confident")
+~sorta print("  --mood chaotic  : Oracle becomes wonderfully unpredictable")
+~sorta print("  --mood cautious : Oracle gives conservative advice")
+~sorta print("  --mood playful  : Oracle balances wisdom with whimsy")

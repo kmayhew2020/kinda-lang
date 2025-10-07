@@ -261,13 +261,32 @@ class TestRunCommandErrorHandling:
             mock_transformer.transform.return_value = [Path("/tmp/output.py")]
 
             with patch("kinda.cli.get_transformer", return_value=mock_transformer):
-                with patch("runpy.run_path") as mock_run_path:
-                    mock_run_path.side_effect = RuntimeError("Division by zero")
+                # Mock SecureExecutionEngine instead of runpy.run_path
+                with patch("kinda.security.execution.SecureExecutionEngine") as mock_engine_class:
+                    from kinda.security.execution import ExecutionResult
+
+                    mock_engine = MagicMock()
+                    mock_engine_class.return_value = mock_engine
+                    # Create a failed execution result
+                    mock_result = ExecutionResult(
+                        success=False,
+                        return_code=1,
+                        stdout="",
+                        stderr="RuntimeError: Division by zero",
+                        execution_time=0.0,
+                        security_violations=[],
+                        blocked_operations=[],
+                        resource_usage={},
+                    )
+                    mock_engine.execute_file.return_value = mock_result
+
                     with patch("builtins.print") as mock_print:
                         result = cli.main(["run", temp_path])
                         assert result == 1
                         calls = [call.args[0] for call in mock_print.call_args_list]
-                        assert any("Runtime error: Division by zero" in call for call in calls)
+                        # Check for the new security-enabled error format
+                        assert any("Runtime error:" in call for call in calls)
+                        assert any("Division by zero" in call for call in calls)
                         assert any(
                             "Your code transformed fine but crashed during execution" in call
                             for call in calls

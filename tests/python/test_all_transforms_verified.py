@@ -38,23 +38,47 @@ class TestAllTransformsVerified:
         knda_content = """~kinda int x = 42;
 ~sorta print("Value is:", x);"""
 
-        stdout, stderr, returncode, py_content = run_transform_and_execute(knda_content, tmp_path)
+        # Run multiple times to account for ~sorta print's ~20% silence
+        found_output = False
+        for _ in range(10):
+            stdout, stderr, returncode, py_content = run_transform_and_execute(
+                knda_content, tmp_path
+            )
 
-        assert returncode == 0, f"Execution failed: {stderr}"
-        assert "kinda_int(42)" in py_content, "Transform didn't generate kinda_int call"
-        assert "Value is:" in stdout, "Output should contain the print statement"
-        assert "[print]" in stdout or "[shrug]" in stdout, "Should use sorta_print format"
+            assert returncode == 0, f"Execution failed: {stderr}"
+            assert "kinda_int(42)" in py_content, "Transform didn't generate kinda_int call"
+
+            # ~sorta print may be silent ~20% of the time (correct behavior)
+            if "Value is:" in stdout:
+                found_output = True
+                assert "[print]" in stdout, "Should use [print] format when it executes"
+                break
+
+        # With 10 runs at 80% success rate, probability of all failing is 0.2^10 ≈ 0.0000001%
+        assert found_output, "~sorta print should execute at least once in 10 runs"
 
     def test_sorta_print_transform_execution(self, tmp_path):
         """Test ~sorta print executes correctly"""
         knda_content = """~sorta print("Hello World", 123);"""
 
-        stdout, stderr, returncode, py_content = run_transform_and_execute(knda_content, tmp_path)
+        # Run multiple times to account for ~sorta print's ~20% silence
+        found_output = False
+        for _ in range(10):
+            stdout, stderr, returncode, py_content = run_transform_and_execute(
+                knda_content, tmp_path
+            )
 
-        assert returncode == 0, f"Execution failed: {stderr}"
-        assert "sorta_print(" in py_content, "Transform didn't generate sorta_print call"
-        assert "Hello World" in stdout and "123" in stdout, "Output should contain arguments"
-        assert "[print]" in stdout or "[shrug]" in stdout, "Should use sorta_print format"
+            assert returncode == 0, f"Execution failed: {stderr}"
+            assert "sorta_print(" in py_content, "Transform didn't generate sorta_print call"
+
+            # ~sorta print may be silent ~20% of the time (correct behavior)
+            if "Hello World" in stdout and "123" in stdout:
+                found_output = True
+                assert "[print]" in stdout, "Should use [print] format when it executes"
+                break
+
+        # With 10 runs at 80% success rate, probability of all failing is 0.2^10 ≈ 0.0000001%
+        assert found_output, "~sorta print should execute at least once in 10 runs"
 
     def test_fuzzy_reassign_transform_execution(self, tmp_path):
         """Test x ~= value fuzzy reassignment executes correctly"""
@@ -62,18 +86,34 @@ class TestAllTransformsVerified:
 x ~= 20;
 ~sorta print("Final x:", x);"""
 
-        stdout, stderr, returncode, py_content = run_transform_and_execute(knda_content, tmp_path)
+        # Run multiple times to account for ~sorta print's ~20% silence
+        found_output = False
+        for _ in range(10):
+            stdout, stderr, returncode, py_content = run_transform_and_execute(
+                knda_content, tmp_path
+            )
 
-        assert returncode == 0, f"Execution failed: {stderr}"
-        assert "fuzzy_assign('x', 20)" in py_content, "Transform didn't generate fuzzy_assign call"
-        assert "Final x:" in stdout, "Should print the final value"
-        # Value should be around 20 +/- fuzziness
-        import re
+            assert returncode == 0, f"Execution failed: {stderr}"
+            assert (
+                "fuzzy_assign('x', 20)" in py_content
+            ), "Transform didn't generate fuzzy_assign call"
 
-        numbers = re.findall(r"Final x: (\d+)", stdout)
-        if numbers:
-            final_val = int(numbers[0])
-            assert 18 <= final_val <= 22, f"Fuzzy value {final_val} should be near 20 ± fuzz"
+            # ~sorta print may be silent ~20% of the time (correct behavior)
+            if "Final x:" in stdout:
+                found_output = True
+                # Value should be around 20 +/- fuzziness
+                import re
+
+                numbers = re.findall(r"Final x: (\d+)", stdout)
+                if numbers:
+                    final_val = int(numbers[0])
+                    assert (
+                        18 <= final_val <= 22
+                    ), f"Fuzzy value {final_val} should be near 20 ± fuzz"
+                break
+
+        # With 10 runs at 80% success rate, probability of all failing is 0.2^10 ≈ 0.0000001%
+        assert found_output, "~sorta print should execute at least once in 10 runs"
 
     def test_sometimes_block_transform_execution(self, tmp_path):
         """Test ~sometimes conditional executes correctly"""
@@ -97,12 +137,13 @@ x ~= 20;
             assert (
                 "if sometimes(True):" in py_content
             ), "Transform didn't generate sometimes conditional"
-            assert "Final counter:" in stdout, "Should always print final counter"
+            # Note: ~sorta print may be silent ~20% of the time (correct behavior)
+            # So we only check when it actually printed
 
             if "Sometimes executed!" in stdout:
                 executed_sometimes = True
 
-            # Extract final counter value
+            # Extract final counter value (only present when ~sorta print executed)
             import re
 
             numbers = re.findall(r"Final counter: (-?\d+)", stdout)
@@ -149,19 +190,29 @@ b ~= b + a;
 
 ~sorta print("Final values - A:", a, "B:", b);"""
 
-        stdout, stderr, returncode, py_content = run_transform_and_execute(knda_content, tmp_path)
+        # Run multiple times to account for ~sorta print's ~20% silence
+        found_output = False
+        for _ in range(10):
+            stdout, stderr, returncode, py_content = run_transform_and_execute(
+                knda_content, tmp_path
+            )
 
-        assert returncode == 0, f"Execution failed: {stderr}"
+            assert returncode == 0, f"Execution failed: {stderr}"
 
-        # Check all transforms were applied
-        assert "kinda_int(5)" in py_content and "kinda_int(10)" in py_content
-        assert "fuzzy_assign('a'" in py_content and "fuzzy_assign('b'" in py_content
-        assert "if sometimes(a > b):" in py_content and "if sometimes(b > a):" in py_content
-        assert py_content.count("sorta_print(") >= 3, "Should have multiple sorta_print calls"
+            # Check all transforms were applied
+            assert "kinda_int(5)" in py_content and "kinda_int(10)" in py_content
+            assert "fuzzy_assign('a'" in py_content and "fuzzy_assign('b'" in py_content
+            assert "if sometimes(a > b):" in py_content and "if sometimes(b > a):" in py_content
+            assert py_content.count("sorta_print(") >= 3, "Should have multiple sorta_print calls"
 
-        # Check execution produces output
-        assert "Final values" in stdout, "Should print final values"
-        assert "[print]" in stdout or "[shrug]" in stdout, "Should use sorta_print format"
+            # ~sorta print may be silent ~20% of the time (correct behavior)
+            if "Final values" in stdout:
+                found_output = True
+                assert "[print]" in stdout, "Should use [print] format when it executes"
+                break
+
+        # With 10 runs at 80% success rate, probability of all failing is 0.2^10 ≈ 0.0000001%
+        assert found_output, "~sorta print should execute at least once in 10 runs"
 
     def test_empty_sometimes_condition(self, tmp_path):
         """Test ~sometimes with empty condition"""
@@ -180,12 +231,24 @@ b ~= b + a;
 result ~= result + (3 * 4);
 ~sorta print("Complex result:", result);"""
 
-        stdout, stderr, returncode, py_content = run_transform_and_execute(knda_content, tmp_path)
+        # Run multiple times to account for ~sorta print's ~20% silence
+        found_output = False
+        for _ in range(10):
+            stdout, stderr, returncode, py_content = run_transform_and_execute(
+                knda_content, tmp_path
+            )
 
-        assert returncode == 0, f"Execution failed: {stderr}"
-        assert "kinda_int((10 + 5) * 2)" in py_content, "Should preserve complex expression"
-        assert "fuzzy_assign('result', result + (3 * 4))" in py_content
-        assert "Complex result:" in stdout
+            assert returncode == 0, f"Execution failed: {stderr}"
+            assert "kinda_int((10 + 5) * 2)" in py_content, "Should preserve complex expression"
+            assert "fuzzy_assign('result', result + (3 * 4))" in py_content
+
+            # ~sorta print may be silent ~20% of the time (correct behavior)
+            if "Complex result:" in stdout:
+                found_output = True
+                break
+
+        # With 10 runs at 80% success rate, probability of all failing is 0.2^10 ≈ 0.0000001%
+        assert found_output, "~sorta print should execute at least once in 10 runs"
 
 
 class TestTransformValidation:

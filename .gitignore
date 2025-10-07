@@ -219,3 +219,30 @@ __marimo__/
 /kinda/langs/python/runtime/fuzzy.py
 
 # Bot infrastructure is in kinda-lang-agents repo (not here)
+
+# Agent-created status reports (should go in GitHub issues instead)
+*_REPORT.md
+*_SUMMARY.md
+*_ANALYSIS.md
+*_REPORT.txt
+*_SUMMARY.txt
+*_ANALYSIS.txt
+PHASE_*_SUMMARY.*
+
+# Claude Code session state (session-specific, not version controlled)
+# NOTE: Scripts in these dirs ARE tracked, only runtime state files excluded
+.claude/status/current.txt
+.claude/status/history.log
+.claude/sessions/*-session.json
+.claude/.session_*
+.claude/ci/last-ci-state.txt
+.claude/ci/ci-history.log
+
+# MCP Server artifacts (session-specific, not version controlled)
+.mcp-server/.env
+.mcp-server/build/
+.mcp-server/node_modules/
+.mcp-server/package-lock.json
+.agent-system/CONTEXT.md
+.agent-system/REQUIREMENTS.txt
+.test-results.json

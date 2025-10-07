@@ -12,19 +12,36 @@ def run_kinda_test(path):
 
 
 def test_fuzzy_declaration():
-    output = run_kinda_test("tests/python/input/test_fuzzy_declaration.py.knda")
-    assert any("[print]" in line or "[shrug]" in line for line in output)
+    # After Issue #106 fix: ~sorta print has ~20% failure rate (produces no output)
+    # Run multiple times to account for probabilistic behavior
+    for attempt in range(10):  # 10 attempts gives us 99.9% chance of seeing output at least once
+        output = run_kinda_test("tests/python/input/test_fuzzy_declaration.py.knda")
+        if any("[print]" in line or "[shrug]" in line for line in output):
+            return  # Success - we got output
+    # If we get here, we failed 10 times in a row (0.2^10 = 0.0001% chance)
+    assert False, "~sorta print failed to produce output in 10 attempts (extremely unlikely)"
 
 
 def test_fuzzy_reassignment():
-    output = run_kinda_test("tests/python/input/test_fuzzy_reassignment.py.knda")
-    # We can’t predict exact count due to chaos, so check that at least one line printed something
-    assert any("[print]" in line or "[shrug]" in line for line in output)
+    # After Issue #106 fix: ~sorta print has ~20% failure rate (produces no output)
+    # Run multiple times to account for probabilistic behavior
+    for attempt in range(10):  # 10 attempts gives us 99.9% chance of seeing output at least once
+        output = run_kinda_test("tests/python/input/test_fuzzy_reassignment.py.knda")
+        if any("[print]" in line or "[shrug]" in line for line in output):
+            return  # Success - we got output
+    # If we get here, we failed 10 times in a row (0.2^10 = 0.0001% chance)
+    assert False, "~sorta print failed to produce output in 10 attempts (extremely unlikely)"
 
 
 def test_sorta_print():
-    output = run_kinda_test("tests/python/input/test_sorta_print.py.knda")
-    assert any("[print]" in line or "[shrug]" in line for line in output)
+    # After Issue #106 fix: ~sorta print has ~20% failure rate (produces no output)
+    # Run multiple times to account for probabilistic behavior
+    for attempt in range(10):  # 10 attempts gives us 99.9% chance of seeing output at least once
+        output = run_kinda_test("tests/python/input/test_sorta_print.py.knda")
+        if any("[print]" in line or "[shrug]" in line for line in output):
+            return  # Success - we got output
+    # If we get here, we failed 10 times in a row (0.2^10 = 0.0001% chance)
+    assert False, "~sorta print failed to produce output in 10 attempts (extremely unlikely)"
 
 
 def test_sometimes_block():

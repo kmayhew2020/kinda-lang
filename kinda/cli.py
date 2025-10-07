@@ -15,7 +15,7 @@ except ImportError:
     HAS_CHARDET = False
 
 # Import personality system
-from kinda.personality import PersonalityContext, PERSONALITY_PROFILES
+from kinda.personality import PersonalityContext, PERSONALITY_PROFILES, ErrorHandlingMode
 
 
 def safe_print(text: str) -> None:
@@ -273,8 +273,13 @@ def validate_seed(seed: Optional[int]) -> Optional[int]:
     return seed
 
 
-def setup_personality(mood: str, chaos_level: int = 5, seed: Optional[int] = None) -> None:
-    """Initialize personality system with specified mood, chaos level, and seed."""
+def setup_personality(
+    mood: str,
+    chaos_level: int = 5,
+    seed: Optional[int] = None,
+    error_mode: str = "warning",
+) -> None:
+    """Initialize personality system with specified mood, chaos level, seed, and error mode."""
     if mood and mood.lower() not in PERSONALITY_PROFILES:
         available_moods = ", ".join(PERSONALITY_PROFILES.keys())
         safe_print(f"[?] Unknown mood '{mood}'. Available moods: {available_moods}")
@@ -283,6 +288,17 @@ def setup_personality(mood: str, chaos_level: int = 5, seed: Optional[int] = Non
 
     # Validate chaos level
     chaos_level = validate_chaos_level(chaos_level)
+
+    # Validate error mode
+    error_mode_enum = ErrorHandlingMode.WARNING  # default
+    if error_mode:
+        try:
+            error_mode_enum = ErrorHandlingMode(error_mode.lower())
+        except ValueError:
+            available_modes = ", ".join([m.value for m in ErrorHandlingMode])
+            safe_print(f"[?] Unknown error mode '{error_mode}'. Available modes: {available_modes}")
+            safe_print("[tip] Defaulting to 'warning' mode")
+            error_mode_enum = ErrorHandlingMode.WARNING
 
     # Handle seed resolution: CLI arg > environment variable > None
     resolved_seed = seed
@@ -319,13 +335,15 @@ def setup_personality(mood: str, chaos_level: int = 5, seed: Optional[int] = Non
     # Validate and sanitize seed for security
     resolved_seed = validate_seed(resolved_seed)
 
-    PersonalityContext.set_mood(mood or "playful")
-    PersonalityContext.set_chaos_level(chaos_level)
-    PersonalityContext.set_seed(resolved_seed)
+    # Create new personality context with error mode
+    PersonalityContext._instance = PersonalityContext(
+        mood or "playful", chaos_level, resolved_seed, error_mode_enum
+    )
 
     if mood:
         safe_print(f"🎭 Setting kinda mood to '{mood}'")
     safe_print(f"🎲 Setting chaos level to {chaos_level} (1=minimal, 10=maximum chaos)")
+    safe_print(f"🛡️ Error handling mode: {error_mode_enum.value}")
     if resolved_seed is not None:
         seed_source = "CLI" if seed is not None else "environment"
         safe_print(f"🌱 Using random seed {resolved_seed} for reproducible chaos ({seed_source})")
@@ -363,6 +381,288 @@ def detect_language(path: Path, forced: Union[str, None]) -> str:
     return "python"
 
 
+def handle_inject_command(args) -> int:
+    """Handle Epic #127 injection commands"""
+    try:
+        from kinda.injection.injection_engine import InjectionEngine, InjectionConfig
+        from kinda.injection.ast_analyzer import PatternType
+        from pathlib import Path
+
+        if args.inject_command == "run":
+            return handle_inject_run(args)
+        elif args.inject_command == "analyze":
+            return handle_inject_analyze(args)
+        elif args.inject_command == "convert":
+            return handle_inject_convert(args)
+        elif args.inject_command == "examples":
+            return handle_inject_examples(args)
+        else:
+            safe_print(f"Unknown inject command: {args.inject_command}")
+            return 1
+
+    except ImportError as e:
+        safe_print(f"Injection framework not available: {e}")
+        safe_print("Epic #127 components may not be fully implemented yet.")
+        return 1
+
+
+def handle_inject_run(args) -> int:
+    """Handle inject run command"""
+    from kinda.injection.injection_engine import InjectionEngine, InjectionConfig
+    from kinda.injection.ast_analyzer import PatternType
+    from pathlib import Path
+    import subprocess
+    import tempfile
+
+    file_path = Path(args.file)
+    if not file_path.exists():
+        safe_print(f"File not found: {file_path}")
+        return 1
+
+    # Parse patterns
+    patterns = set()
+    if args.patterns:
+        pattern_map = {
+            "kinda_int": PatternType.KINDA_INT,
+            "kinda_float": PatternType.KINDA_FLOAT,
+            "sorta_print": PatternType.SORTA_PRINT,
+            "sometimes": PatternType.SOMETIMES,
+            "maybe": PatternType.MAYBE,
+            "kinda_repeat": PatternType.KINDA_REPEAT,
+        }
+        for pattern_name in args.patterns:
+            if pattern_name in pattern_map:
+                patterns.add(pattern_map[pattern_name])
+    else:
+        # Default patterns based on level
+        if args.level == "basic":
+            patterns = {PatternType.KINDA_INT, PatternType.KINDA_FLOAT, PatternType.SORTA_PRINT}
+        elif args.level == "intermediate":
+            patterns = {
+                PatternType.KINDA_INT,
+                PatternType.KINDA_FLOAT,
+                PatternType.SORTA_PRINT,
+                PatternType.SOMETIMES,
+            }
+        else:  # advanced
+            patterns = {
+                PatternType.KINDA_INT,
+                PatternType.KINDA_FLOAT,
+                PatternType.SORTA_PRINT,
+                PatternType.SOMETIMES,
+                PatternType.MAYBE,
+                PatternType.KINDA_REPEAT,
+            }
+
+    # Create injection config
+    config = InjectionConfig(enabled_patterns=patterns, safety_level=args.safety)
+
+    # Inject and run
+    engine = InjectionEngine()
+    result = engine.inject_file(file_path, config)
+
+    if not result.success:
+        safe_print("Injection failed:")
+        for error in result.errors:
+            safe_print(f"  • {error}")
+        return 1
+
+    safe_print(f"Enhanced with patterns: {', '.join(result.applied_patterns)}")
+
+    # Write enhanced code to temporary file and run it
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as f:
+        f.write(result.transformed_code)
+        temp_path = f.name
+
+    try:
+        # Run the enhanced Python file with security protection
+        from kinda.security.execution import SecureExecutionEngine, SecurityLevel
+
+        # Map safety level to security level
+        security_mapping = {
+            "safe": SecurityLevel.SAFE,
+            "caution": SecurityLevel.CAUTION,
+            "risky": SecurityLevel.RISKY,
+        }
+        security_level = security_mapping.get(args.safety, SecurityLevel.SAFE)
+
+        safe_print(f"🛡️ Running with security level: {security_level.value}")
+
+        secure_engine = SecureExecutionEngine(security_level)
+        exec_result = secure_engine.execute_file(Path(temp_path))
+
+        if exec_result.success:
+            if exec_result.stdout:
+                print(exec_result.stdout, end="")
+            if exec_result.has_security_issues:
+                safe_print("⚠️ Security restrictions were applied:")
+                for violation in exec_result.security_violations:
+                    safe_print(f"   • {violation}")
+            return 0
+        else:
+            safe_print(f"Execution failed: {exec_result.stderr}")
+            if exec_result.has_security_issues:
+                safe_print("🔒 Security violations detected:")
+                for violation in exec_result.security_violations:
+                    safe_print(f"   • {violation}")
+            return 1
+    finally:
+        Path(temp_path).unlink()
+
+
+def handle_inject_analyze(args) -> int:
+    """Handle inject analyze command"""
+    from kinda.injection.ast_analyzer import PythonASTAnalyzer
+    from pathlib import Path
+
+    file_path = Path(args.file)
+    if not file_path.exists():
+        safe_print(f"File not found: {file_path}")
+        return 1
+
+    analyzer = PythonASTAnalyzer()
+
+    try:
+        tree = analyzer.parse_file(file_path)
+        points = analyzer.find_injection_points(tree)
+        validation = analyzer.validate_syntax(tree)
+
+        safe_print(f"Analysis of {file_path.name}:")
+        safe_print(f"  Found {len(points)} injection opportunities")
+
+        if args.verbose:
+            for point in points:
+                safe_print(f"    • {point}")
+        else:
+            pattern_counts: Dict[str, int] = {}
+            for point in points:
+                pattern_name = point.pattern_type.value
+                pattern_counts[pattern_name] = pattern_counts.get(pattern_name, 0) + 1
+
+            for pattern, count in pattern_counts.items():
+                safe_print(f"    • {pattern}: {count} opportunities")
+
+        if validation.warnings:
+            safe_print("  Warnings:")
+            for warning in validation.warnings:
+                safe_print(f"    ⚠ {warning}")
+
+        if validation.suggestions:
+            safe_print("  Suggestions:")
+            for suggestion in validation.suggestions:
+                safe_print(f"    💡 {suggestion}")
+
+        return 0
+
+    except Exception as e:
+        safe_print(f"Analysis failed: {e}")
+        return 1
+
+
+def handle_inject_convert(args) -> int:
+    """Handle inject convert command"""
+    from kinda.injection.injection_engine import InjectionEngine, InjectionConfig
+    from kinda.injection.ast_analyzer import PatternType
+    from pathlib import Path
+
+    file_path = Path(args.file)
+    if not file_path.exists():
+        safe_print(f"File not found: {file_path}")
+        return 1
+
+    # Determine output path
+    if args.output:
+        output_path = Path(args.output)
+    else:
+        output_path = file_path.with_name(f"{file_path.stem}.knda")
+
+    # Pattern selection based on level
+    if args.level == "basic":
+        patterns = {PatternType.KINDA_INT, PatternType.KINDA_FLOAT, PatternType.SORTA_PRINT}
+    elif args.level == "intermediate":
+        patterns = {
+            PatternType.KINDA_INT,
+            PatternType.KINDA_FLOAT,
+            PatternType.SORTA_PRINT,
+            PatternType.SOMETIMES,
+        }
+    else:  # advanced
+        patterns = {
+            PatternType.KINDA_INT,
+            PatternType.KINDA_FLOAT,
+            PatternType.SORTA_PRINT,
+            PatternType.SOMETIMES,
+            PatternType.MAYBE,
+            PatternType.KINDA_REPEAT,
+        }
+
+    config = InjectionConfig(enabled_patterns=patterns, add_kinda_imports=False)
+
+    engine = InjectionEngine()
+    result = engine.inject_file(file_path, config)
+
+    if not result.success:
+        safe_print("Conversion failed:")
+        for error in result.errors:
+            safe_print(f"  • {error}")
+        return 1
+
+    # Write enhanced code
+    output_path.write_text(result.transformed_code, encoding="utf-8")
+
+    safe_print(f"Enhanced file written to: {output_path}")
+    safe_print(f"Applied patterns: {', '.join(result.applied_patterns)}")
+    safe_print(f"Estimated performance impact: {result.performance_estimate:.1f}%")
+
+    return 0
+
+
+def handle_inject_examples(args) -> int:
+    """Handle inject examples command"""
+    from kinda.injection.patterns import PatternLibrary
+
+    library = PatternLibrary()
+
+    if args.pattern:
+        # Show examples for specific pattern
+        from kinda.injection.ast_analyzer import PatternType
+
+        try:
+            pattern_type = PatternType(args.pattern)
+            pattern = library.get_pattern(pattern_type)
+            if pattern:
+                safe_print(f"Examples for {pattern.info.name}:")
+                safe_print(f"  Description: {pattern.info.description}")
+                for example in pattern.info.examples:
+                    safe_print(f"    {example}")
+            else:
+                safe_print(f"Pattern not found: {args.pattern}")
+                return 1
+        except ValueError:
+            safe_print(f"Invalid pattern: {args.pattern}")
+            return 1
+    else:
+        # Show general examples
+        safe_print("Kinda-Lang Python Injection Examples:")
+        safe_print("")
+        safe_print("Basic Enhancement:")
+        safe_print("  @kinda.enhance(patterns=['kinda_int', 'sorta_print'])")
+        safe_print("  def calculate_score(base):")
+        safe_print("      bonus = 10  # Becomes fuzzy")
+        safe_print("      print(f'Score: {base + bonus}')  # Maybe prints")
+        safe_print("      return base + bonus")
+        safe_print("")
+        safe_print("Class Enhancement:")
+        safe_print("  @kinda.enhance_class(patterns=['sometimes', 'kinda_float'])")
+        safe_print("  class Calculator:")
+        safe_print("      def multiply(self, a, b):")
+        safe_print("          return a * b  # Values become fuzzy")
+        safe_print("")
+        safe_print("Use 'kinda inject examples --pattern <name>' for pattern-specific examples")
+
+    return 0
+
+
 def main(argv=None) -> int:
     argv = argv or sys.argv[1:]
     parser = argparse.ArgumentParser(
@@ -396,6 +696,12 @@ def main(argv=None) -> int:
         default=None,
         help="Random seed for reproducible chaos (overrides KINDA_SEED environment variable)",
     )
+    p_transform.add_argument(
+        "--error-mode",
+        choices=["strict", "warning", "silent"],
+        default="warning",
+        help="Error handling mode (strict=fail on errors, warning=log and continue, silent=silent)",
+    )
 
     p_run = sub.add_parser("run", help="Transform then execute (living dangerously, I see)")
     p_run.add_argument("input", help="The .knda file you want to run")
@@ -415,6 +721,18 @@ def main(argv=None) -> int:
         type=int,
         default=None,
         help="Random seed for reproducible chaos (overrides KINDA_SEED environment variable)",
+    )
+    p_run.add_argument(
+        "--security-level",
+        choices=["safe", "caution", "risky"],
+        default="safe",
+        help="Security level for execution (safe=maximum security, risky=minimal security)",
+    )
+    p_run.add_argument(
+        "--error-mode",
+        choices=["strict", "warning", "silent"],
+        default="warning",
+        help="Error handling mode (strict=fail on errors, warning=log and continue, silent=silent)",
     )
 
     p_interpret = sub.add_parser(
@@ -439,6 +757,18 @@ def main(argv=None) -> int:
         type=int,
         default=None,
         help="Random seed for reproducible chaos (overrides KINDA_SEED environment variable)",
+    )
+    p_interpret.add_argument(
+        "--security-level",
+        choices=["safe", "caution", "risky"],
+        default="safe",
+        help="Security level for execution (safe=maximum security, risky=minimal security)",
+    )
+    p_interpret.add_argument(
+        "--error-mode",
+        choices=["strict", "warning", "silent"],
+        default="warning",
+        help="Error handling mode (strict=fail on errors, warning=log and continue, silent=silent)",
     )
 
     p_examples = sub.add_parser("examples", help="Show example kinda programs (for inspiration)")
@@ -502,6 +832,60 @@ def main(argv=None) -> int:
     p_analyze.add_argument("--construct", "-c", help="Focus analysis on specific construct type")
     p_analyze.add_argument("--export", "-e", help="Export analysis to file (format: csv, json)")
 
+    # Epic #127: Python Injection Commands
+    p_inject = sub.add_parser(
+        "inject", help="Inject kinda-lang constructs into Python code (Epic #127)"
+    )
+    inject_sub = p_inject.add_subparsers(dest="inject_command", required=True)
+
+    # inject run command
+    p_inject_run = inject_sub.add_parser(
+        "run", help="Run Python file with injected kinda constructs"
+    )
+    p_inject_run.add_argument("file", help="Python file to enhance and run")
+    p_inject_run.add_argument(
+        "--level",
+        choices=["basic", "intermediate", "advanced"],
+        default="basic",
+        help="Enhancement level",
+    )
+    p_inject_run.add_argument(
+        "--patterns", nargs="*", help="Specific patterns to enable (e.g., kinda_int sorta_print)"
+    )
+    p_inject_run.add_argument(
+        "--safety",
+        choices=["safe", "caution", "risky"],
+        default="safe",
+        help="Safety level for injection operations",
+    )
+
+    # inject analyze command
+    p_inject_analyze = inject_sub.add_parser(
+        "analyze", help="Analyze Python file for injection opportunities"
+    )
+    p_inject_analyze.add_argument("file", help="Python file to analyze")
+    p_inject_analyze.add_argument(
+        "--verbose", "-v", action="store_true", help="Show detailed analysis"
+    )
+
+    # inject convert command
+    p_inject_convert = inject_sub.add_parser(
+        "convert", help="Convert Python file with kinda enhancements"
+    )
+    p_inject_convert.add_argument("file", help="Python file to convert")
+    p_inject_convert.add_argument("--output", "-o", help="Output file (default: <file>.py.knda)")
+    p_inject_convert.add_argument(
+        "--level", choices=["basic", "intermediate", "advanced"], default="basic"
+    )
+    p_inject_convert.add_argument(
+        "--interactive", action="store_true", help="Interactive enhancement selection"
+    )
+
+    # inject examples command
+    p_inject_examples = inject_sub.add_parser("examples", help="Show injection examples")
+    p_inject_examples.add_argument("--pattern", help="Show examples for specific pattern")
+    p_inject_examples.add_argument("--level", help="Show examples for specific enhancement level")
+
     args = parser.parse_args(argv)
 
     if args.command == "transform":
@@ -510,6 +894,7 @@ def main(argv=None) -> int:
             getattr(args, "mood", None) or "playful",
             getattr(args, "chaos_level", 5),
             getattr(args, "seed", None),
+            getattr(args, "error_mode", "warning"),
         )
 
         input_path = Path(args.input)
@@ -593,6 +978,7 @@ def main(argv=None) -> int:
             getattr(args, "mood", None) or "playful",
             getattr(args, "chaos_level", 5),
             getattr(args, "seed", None),
+            getattr(args, "error_mode", "warning"),
         )
 
         input_path = Path(args.input)
@@ -627,19 +1013,52 @@ def main(argv=None) -> int:
             out_dir = Path(".kinda-build")
             out_paths = transformer.transform(input_path, out_dir=out_dir)
             if lang == "python":
-                import runpy
+                # Use secure execution engine for Issue #109 protection
+                from kinda.security.execution import SecureExecutionEngine, SecurityLevel
 
-                safe_print("🎮 Running your questionable code...")
-                # Execute the transformed file
-                try:
-                    runpy.run_path(str(out_paths[0]), run_name="__main__")
+                # Map CLI security level to enum
+                security_mapping = {
+                    "safe": SecurityLevel.SAFE,
+                    "caution": SecurityLevel.CAUTION,
+                    "risky": SecurityLevel.RISKY,
+                }
+                security_level = security_mapping.get(
+                    getattr(args, "security_level", "safe"), SecurityLevel.SAFE
+                )
+
+                safe_print("🎮 Running your questionable code with security protection...")
+                safe_print(f"🛡️ Security level: {security_level.value}")
+
+                # Execute with security sandbox
+                engine = SecureExecutionEngine(security_level)
+                result = engine.execute_file(out_paths[0], working_directory=out_dir)
+
+                if result.success:
                     safe_print("🎉 Well, that didn't crash. Success?")
-                except Exception as e:
-                    safe_print(f"💥 Runtime error: {e}")
+                    if result.stdout:
+                        print(result.stdout, end="")
+                    if result.has_security_issues:
+                        safe_print(
+                            "⚠️ Note: Some security restrictions were applied during execution"
+                        )
+                        for violation in result.security_violations:
+                            safe_print(f"   • Security: {violation}")
+                        for blocked in result.blocked_operations:
+                            safe_print(f"   • Blocked: {blocked}")
+                else:
+                    safe_print(f"💥 Runtime error: {result.stderr}")
                     safe_print("[?] Your code transformed fine but crashed during execution")
 
+                    if result.has_security_issues:
+                        safe_print("🔒 Security violations detected:")
+                        for violation in result.security_violations:
+                            safe_print(f"   • {violation}")
+                        for blocked in result.blocked_operations:
+                            safe_print(f"   • {blocked}")
+
+                    # Provide error handling for the new result format
                     # Provide snarky but helpful suggestions based on error type
-                    error_str = str(e).lower()
+                    error_str = result.stderr.lower()
                     if "invalid syntax" in error_str:
                         safe_print(
                             "[shrug] Well, that's syntactically questionable. Common kinda fails:"
@@ -668,7 +1087,9 @@ def main(argv=None) -> int:
                         safe_print("   • Missing ~ before kinda constructs (very important)")
                         safe_print("   • General syntax weirdness")
                     return 1
-                return 0
+
+                # Return based on execution result
+                return 0 if result.success else 1
             safe_print(f"😅 I can transform {lang} but can't run it. Try 'transform' instead?")
             return 1
         except Exception as e:
@@ -687,6 +1108,7 @@ def main(argv=None) -> int:
             getattr(args, "mood", None) or "playful",
             getattr(args, "chaos_level", 5),
             getattr(args, "seed", None),
+            getattr(args, "error_mode", "warning"),
         )
 
         input_path = Path(args.input)
@@ -1149,6 +1571,9 @@ def main(argv=None) -> int:
     if args.command == "syntax":
         show_syntax_reference()
         return 0
+
+    if args.command == "inject":
+        return handle_inject_command(args)
 
     return 1
 

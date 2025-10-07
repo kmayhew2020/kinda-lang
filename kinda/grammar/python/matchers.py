@@ -1,8 +1,26 @@
 # kinda/grammar/python/matchers.py
 
+import os
 import re
 from typing import Optional, Tuple, Any, List
 from kinda.grammar.python.constructs import KindaPythonConstructs
+from kinda.exceptions import KindaSizeError
+
+# Parser DoS Protection Limits (Issue #110)
+# These limits prevent malicious input from causing Denial of Service attacks
+# All limits are configurable via environment variables
+
+# Maximum file size in bytes (default: 1MB)
+KINDA_MAX_FILE_SIZE = int(os.getenv("KINDA_MAX_FILE_SIZE", str(1024 * 1024)))
+
+# Maximum line length in characters (default: 10,000)
+KINDA_MAX_LINE_LENGTH = int(os.getenv("KINDA_MAX_LINE_LENGTH", "10000"))
+
+# Maximum parsing iterations to prevent infinite loops (default: 50,000)
+KINDA_MAX_PARSE_ITERATIONS = int(os.getenv("KINDA_MAX_PARSE_ITERATIONS", "50000"))
+
+# Maximum string literal size in characters (default: 5,000)
+KINDA_MAX_STRING_SIZE = int(os.getenv("KINDA_MAX_STRING_SIZE", "5000"))
 
 # Compiled regex patterns for performance optimization
 _SORTA_PRINT_PATTERN = re.compile(r"^\s*~sorta\s+print\s*\(")
@@ -13,6 +31,54 @@ _ISH_COMPARISON_PATTERN = re.compile(
 )
 _WELP_PATTERN = re.compile(r'([^~"\']*)\s*~welp\s+([^\n]+)')
 _STRING_DELIMITERS = re.compile(r'["\']{1,3}')
+
+
+def validate_line_length(line: str, line_number: int, file_path: str = "unknown") -> None:
+    """
+    Validate that a line does not exceed the maximum allowed length.
+
+    Args:
+        line: The line to validate
+        line_number: Line number in the source file (1-indexed)
+        file_path: Path to the source file for error reporting
+
+    Raises:
+        KindaSizeError: If line exceeds KINDA_MAX_LINE_LENGTH
+    """
+    line_len = len(line)
+    if line_len > KINDA_MAX_LINE_LENGTH:
+        raise KindaSizeError(
+            f"Line {line_number} in {file_path} exceeds maximum length",
+            limit_type="line_length",
+            current_value=line_len,
+            max_value=KINDA_MAX_LINE_LENGTH,
+            context=f"Line {line_number} in {file_path}",
+        )
+
+
+def validate_string_literal(
+    string_content: str, line_number: int, file_path: str = "unknown"
+) -> None:
+    """
+    Validate that a string literal does not exceed the maximum allowed size.
+
+    Args:
+        string_content: The string literal content (without quotes)
+        line_number: Line number in the source file (1-indexed)
+        file_path: Path to the source file for error reporting
+
+    Raises:
+        KindaSizeError: If string literal exceeds KINDA_MAX_STRING_SIZE
+    """
+    string_len = len(string_content)
+    if string_len > KINDA_MAX_STRING_SIZE:
+        raise KindaSizeError(
+            f"String literal on line {line_number} in {file_path} exceeds maximum size",
+            limit_type="string_size",
+            current_value=string_len,
+            max_value=KINDA_MAX_STRING_SIZE,
+            context=f"Line {line_number} in {file_path}",
+        )
 
 
 def _parse_sorta_print_arguments(line: str) -> Optional[str]:
@@ -30,14 +96,26 @@ def _parse_sorta_print_arguments(line: str) -> Optional[str]:
     if start_idx >= len(line) or line[start_idx] != "(":
         return None
 
-    # String-aware parentheses parsing
+    # String-aware parentheses parsing with iteration bounds
     paren_count = 0
     in_string = False
     string_char = None
     escaped = False
     end_idx = start_idx
+    iterations = 0
 
     for i in range(start_idx, len(line)):
+        # DoS protection: Check iteration bounds
+        iterations += 1
+        if iterations > KINDA_MAX_PARSE_ITERATIONS:
+            raise KindaSizeError(
+                f"Parsing exceeded maximum iterations while processing ~sorta print",
+                limit_type="parse_iterations",
+                current_value=iterations,
+                max_value=KINDA_MAX_PARSE_ITERATIONS,
+                context="~sorta print argument parsing",
+            )
+
         char = line[i]
 
         if escaped:
@@ -88,8 +166,20 @@ def _parse_balanced_parentheses(line: str, start_pos: int) -> Tuple[Optional[str
     string_char = None
     escaped = False
     end_pos = start_pos
+    iterations = 0
 
     for i in range(start_pos, len(line)):
+        # DoS protection: Check iteration bounds
+        iterations += 1
+        if iterations > KINDA_MAX_PARSE_ITERATIONS:
+            raise KindaSizeError(
+                f"Parsing exceeded maximum iterations while balancing parentheses",
+                limit_type="parse_iterations",
+                current_value=iterations,
+                max_value=KINDA_MAX_PARSE_ITERATIONS,
+                context="balanced parentheses parsing",
+            )
+
         char = line[i]
 
         if escaped:
@@ -314,8 +404,20 @@ def _split_function_arguments(content: str) -> List[str]:
     in_string = False
     string_char = None
     escaped = False
+    iterations = 0
 
     for char in content:
+        # DoS protection: Check iteration bounds
+        iterations += 1
+        if iterations > KINDA_MAX_PARSE_ITERATIONS:
+            raise KindaSizeError(
+                f"Parsing exceeded maximum iterations while splitting function arguments",
+                limit_type="parse_iterations",
+                current_value=iterations,
+                max_value=KINDA_MAX_PARSE_ITERATIONS,
+                context="function argument splitting",
+            )
+
         if escaped:
             current_arg.append(char)
             escaped = False
@@ -407,6 +509,62 @@ def match_python_construct(line: str) -> Tuple[Optional[str], Optional[Any]]:
                         return key, match.groups()
 
     return None, None
+
+
+def _find_expression_end(line: str, start_pos: int) -> int:
+    """
+    Find the end position of an expression starting at start_pos.
+    Respects parentheses, brackets, strings, and stops at delimiters like comma, semicolon, etc.
+    """
+    paren_depth = 0
+    bracket_depth = 0
+    brace_depth = 0
+    in_string = False
+    string_char = None
+    escaped = False
+    pos = start_pos
+
+    while pos < len(line):
+        char = line[pos]
+
+        if escaped:
+            escaped = False
+            pos += 1
+            continue
+
+        if char == "\\" and in_string:
+            escaped = True
+            pos += 1
+            continue
+
+        if not in_string:
+            if char in "\"'":
+                in_string = True
+                string_char = char
+            elif char == "(":
+                paren_depth += 1
+            elif char == ")":
+                paren_depth -= 1
+                if paren_depth < 0:
+                    return pos
+            elif char == "[":
+                bracket_depth += 1
+            elif char == "]":
+                bracket_depth -= 1
+            elif char == "{":
+                brace_depth += 1
+            elif char == "}":
+                brace_depth -= 1
+            elif char in ",:;#" and paren_depth == 0 and bracket_depth == 0 and brace_depth == 0:
+                return pos
+        else:
+            if char == string_char:
+                in_string = False
+                string_char = None
+
+        pos += 1
+
+    return pos
 
 
 def _is_inside_string_literal(line: str, position: int) -> bool:
@@ -509,15 +667,377 @@ def find_ish_constructs(line: str) -> List[Tuple[str, Any, int, int]]:
     return constructs
 
 
+class _WelpMatch:
+    """Match object for ~welp constructs (both prefix and infix syntax)."""
+
+    def __init__(self, full_match: str, primary: str, fallback: str, start: int, end: int) -> None:
+        self.full_match = full_match
+        self.primary = primary
+        self.fallback = fallback
+        self.start_pos = start
+        self.end_pos = end
+
+    def group(self, n: int = 0) -> str:
+        if n == 0:
+            return self.full_match
+        elif n == 1:
+            return self.primary
+        elif n == 2:
+            return self.fallback
+        else:
+            raise IndexError("No such group")
+
+    def start(self) -> int:
+        return self.start_pos
+
+    def end(self) -> int:
+        return self.end_pos
+
+
+def _transform_probabilistic_syntax(expression: str) -> str:
+    """
+    Helper function to transform ~construct syntax to function() syntax WITHOUT adding lambdas.
+    This is used internally by transform_nested_constructs.
+
+    CRITICAL BUG FIX (Issue #96 Bug 1): Now truly recursive - handles ALL nested constructs
+    including those in conditional expressions, parenthesized expressions, and complex nesting.
+    """
+    import re
+
+    transformed = expression
+    probabilistic_constructs = ["sometimes", "maybe", "probably", "rarely"]
+
+    # Process each type of construct
+    for construct in probabilistic_constructs:
+        # Pattern for ~construct(expr) - has explicit parentheses
+        pattern_with_parens = re.compile(rf"~{construct}\s*\(")
+
+        while True:
+            match = pattern_with_parens.search(transformed)
+            if not match:
+                break
+
+            # Find balanced parentheses
+            start_paren = match.end() - 1
+            content, is_balanced = _parse_balanced_parentheses(transformed, start_paren)
+
+            if not is_balanced or content is None:
+                break  # Stop if we can't parse balanced parens
+
+            # Recursively transform the content (but don't add lambda)
+            transformed_content = _transform_probabilistic_syntax(content)
+
+            # Replace the matched construct
+            end_paren = start_paren + len(content) + 2  # +2 for the parens
+            replacement = f"{construct}({transformed_content})"
+            transformed = transformed[: match.start()] + replacement + transformed[end_paren:]
+
+        # Pattern for ~construct expr - no explicit parentheses around condition
+        # FIX: Improved to handle complex expressions properly
+        pattern_no_parens = re.compile(rf"~{construct}\s+(?!\()")
+
+        while True:
+            match = pattern_no_parens.search(transformed)
+            if not match:
+                break
+
+            # Find the end of the argument expression
+            # Need to handle Python expressions: literals, identifiers, if-else, operators, etc.
+            condition_start = match.end()
+            condition_end = _find_probabilistic_expression_end(transformed, condition_start)
+
+            condition = transformed[condition_start:condition_end].strip()
+
+            # Don't process empty conditions
+            if not condition:
+                break
+
+            # Recursively transform the condition (but don't add lambda)
+            transformed_condition = _transform_probabilistic_syntax(condition)
+
+            # Replace the matched construct
+            replacement = f"{construct}({transformed_condition})"
+            transformed = transformed[: match.start()] + replacement + transformed[condition_end:]
+
+    return transformed
+
+
+def _find_probabilistic_expression_end(line: str, start_pos: int) -> int:
+    """
+    Find the end of a probabilistic expression argument.
+    Handles Python expressions including:
+    - Simple values: True, False, 42, 3.14, "string"
+    - Conditionals: x if condition else y
+    - Operators: x + y, x == y, etc.
+    - Nested parentheses: (expr)
+    - Function calls: func(args)
+
+    Stops at:
+    - Comma (at same depth)
+    - Closing paren/bracket/brace (at outer depth)
+    - Semicolon, hash (comment)
+    - End of line
+    """
+    paren_depth = 0
+    bracket_depth = 0
+    brace_depth = 0
+    in_string = False
+    string_char = None
+    escaped = False
+    pos = start_pos
+
+    # Track if we've seen 'if' to handle conditional expressions
+    saw_if = False
+    saw_else = False
+
+    while pos < len(line):
+        char = line[pos]
+
+        if escaped:
+            escaped = False
+            pos += 1
+            continue
+
+        if char == "\\" and in_string:
+            escaped = True
+            pos += 1
+            continue
+
+        if not in_string:
+            # Check for string delimiters
+            if char in "\"'":
+                in_string = True
+                string_char = char
+            # Track nesting depth
+            elif char == "(":
+                paren_depth += 1
+            elif char == ")":
+                paren_depth -= 1
+                if paren_depth < 0:
+                    return pos  # Hit closing paren at outer level
+            elif char == "[":
+                bracket_depth += 1
+            elif char == "]":
+                bracket_depth -= 1
+                if bracket_depth < 0:
+                    return pos  # Hit closing bracket at outer level
+            elif char == "{":
+                brace_depth += 1
+            elif char == "}":
+                brace_depth -= 1
+                if brace_depth < 0:
+                    return pos  # Hit closing brace at outer level
+            # Stop conditions at same depth
+            elif paren_depth == 0 and bracket_depth == 0 and brace_depth == 0:
+                if char in ",;#":
+                    return pos
+                # Check for Python keywords that indicate expression boundaries
+                # Extract word at current position
+                if char.isalpha() or char == "_":
+                    word_end = pos
+                    while word_end < len(line) and (
+                        line[word_end].isalnum() or line[word_end] == "_"
+                    ):
+                        word_end += 1
+                    word = line[pos:word_end]
+
+                    # Handle 'if' and 'else' keywords in conditional expressions
+                    if word == "if":
+                        saw_if = True
+                        pos = word_end
+                        continue
+                    elif word == "else":
+                        if saw_if:
+                            # This is part of a conditional expression, keep going
+                            saw_else = True
+                            pos = word_end
+                            continue
+                        else:
+                            # This might be a statement-level else, stop here
+                            return pos
+                    # Other keywords that end expressions
+                    elif word in ["and", "or", "not", "is", "in"]:
+                        # These are operators, keep going
+                        pos = word_end
+                        continue
+                    elif word in [
+                        "for",
+                        "while",
+                        "with",
+                        "try",
+                        "except",
+                        "finally",
+                        "class",
+                        "def",
+                        "return",
+                        "yield",
+                        "raise",
+                        "import",
+                        "from",
+                        "as",
+                        "lambda",
+                    ]:
+                        # These indicate statement boundaries or lambda (which we treat specially)
+                        if word == "lambda":
+                            # Lambda is complex, for now treat as expression continuation
+                            pos = word_end
+                            continue
+                        else:
+                            return pos
+        else:
+            # We're inside a string
+            if char == string_char:
+                in_string = False
+                string_char = None
+
+        pos += 1
+
+    return pos
+
+
+def transform_nested_constructs(expression: str) -> str:
+    """
+    Transform nested probabilistic constructs into lambdas for use in function arguments.
+
+    This function detects probabilistic constructs (~sometimes, ~maybe, etc.) in expressions
+    and wraps them in lambdas so they can be evaluated repeatedly.
+
+    Example:
+        "~sometimes True" -> "lambda: sometimes(True)"
+        "~maybe x > 5" -> "lambda: maybe(x > 5)"
+        "~sometimes (meta_result == ~sometimes True)" -> "lambda: sometimes(meta_result == sometimes(True))"
+
+    Args:
+        expression: The expression to transform
+
+    Returns:
+        Transformed expression with nested constructs wrapped in lambda if needed
+    """
+    # Strip whitespace
+    expression = expression.strip()
+
+    # Check if expression contains any probabilistic constructs
+    probabilistic_constructs = ["sometimes", "maybe", "probably", "rarely"]
+    has_probabilistic = any(f"~{c}" in expression for c in probabilistic_constructs)
+
+    if not has_probabilistic:
+        return expression
+
+    # First, transform all the tilde syntax to function call syntax
+    transformed = _transform_probabilistic_syntax(expression)
+
+    # Then wrap the ENTIRE expression in a lambda (only once, at the top level)
+    return f"lambda: {transformed}"
+
+
 def find_welp_constructs(line: str) -> List[Tuple[str, Any, int, int]]:
     """
     Find all ~welp constructs in a line for inline transformation.
     Returns a list of (construct_type, match_object, start_pos, end_pos).
     Only finds constructs that are NOT inside string literals.
+
+    Supports two syntaxes:
+    1. Infix: expr ~welp fallback
+    2. Prefix: ~welp expr fallback
     """
     constructs = []
 
-    # Find all ~welp occurrences in the line
+    # First, check for prefix syntax (~welp expr fallback)
+    # This must be done before infix syntax to avoid conflicts
+    prefix_pattern = re.compile(r"~welp\s+")
+    for prefix_match in prefix_pattern.finditer(line):
+        prefix_pos = prefix_match.start()
+
+        # Skip if inside string literal
+        if _is_inside_string_literal(line, prefix_pos):
+            continue
+
+        # Check if this is at the start of a line/statement (after =, :, etc.)
+        # to distinguish from infix usage
+        is_prefix = False
+        if prefix_pos == 0:
+            is_prefix = True
+        else:
+            # Check characters before ~welp
+            before = line[:prefix_pos].rstrip()
+            if not before or before[-1] in "=,:;({[":
+                is_prefix = True
+
+        if not is_prefix:
+            continue  # This is likely infix syntax, skip
+
+        # Find the expression and fallback after ~welp
+        remainder = line[prefix_match.end() :]
+
+        # Parse the expression and fallback
+        # Expression ends at the last space before fallback value
+        # We need to find where expr ends and fallback begins
+        # Split on spaces, but respect parentheses
+        paren_depth = 0
+        bracket_depth = 0
+        in_string = False
+        string_char = None
+        escaped = False
+        expr_end = -1
+
+        for i, char in enumerate(remainder):
+            if escaped:
+                escaped = False
+                continue
+
+            if char == "\\" and in_string:
+                escaped = True
+                continue
+
+            if not in_string:
+                if char in "\"'":
+                    in_string = True
+                    string_char = char
+                elif char == "(":
+                    paren_depth += 1
+                elif char == ")":
+                    paren_depth -= 1
+                elif char == "[":
+                    bracket_depth += 1
+                elif char == "]":
+                    bracket_depth -= 1
+                elif char.isspace() and paren_depth == 0 and bracket_depth == 0:
+                    # Found potential split point
+                    # Check if there's content after this space
+                    if i + 1 < len(remainder) and not remainder[i + 1].isspace():
+                        expr_end = i
+            else:
+                if char == string_char:
+                    in_string = False
+                    string_char = None
+
+        if expr_end == -1:
+            continue  # Couldn't find split point
+
+        primary_expr = remainder[:expr_end].strip()
+        fallback_value = remainder[expr_end:].strip()
+
+        # Find actual end position (end of fallback, respecting delimiters)
+        fallback_end_pos = _find_expression_end(line, prefix_match.end() + expr_end)
+        fallback_value = line[prefix_match.end() + expr_end : fallback_end_pos].strip()
+
+        if not primary_expr or not fallback_value:
+            continue
+
+        # Create match object for prefix syntax
+        full_match = line[prefix_pos:fallback_end_pos]
+        match_obj = _WelpMatch(
+            full_match, primary_expr, fallback_value, prefix_pos, fallback_end_pos
+        )
+        constructs.append(("welp", match_obj, prefix_pos, fallback_end_pos))
+
+    # Keep track of already-processed positions to avoid duplicates
+    processed_positions = set()
+    for _, _, start, end in constructs:
+        for pos in range(start, end):
+            processed_positions.add(pos)
+
+    # Find all ~welp occurrences for infix syntax (expr ~welp fallback)
     welp_positions = []
     start = 0
     while True:
@@ -528,6 +1048,10 @@ def find_welp_constructs(line: str) -> List[Tuple[str, Any, int, int]]:
         start = pos + 1
 
     for welp_pos in welp_positions:
+        # Skip if already processed as prefix syntax
+        if welp_pos in processed_positions:
+            continue
+
         # Skip if inside string literal
         if _is_inside_string_literal(line, welp_pos):
             continue
@@ -727,35 +1251,9 @@ def find_welp_constructs(line: str) -> List[Tuple[str, Any, int, int]]:
         if not fallback_value:
             continue
 
-        # Create a synthetic match object that mimics the old regex match
-        class WelpMatch:
-            def __init__(
-                self, full_match: str, primary_expr: str, fallback_val: str, start: int, end: int
-            ) -> None:
-                self.full_match = full_match
-                self.primary_expr = primary_expr
-                self.fallback_val = fallback_val
-                self.start_pos = start
-                self.end_pos = end
-
-            def group(self, n: int = 0) -> str:
-                if n == 0:
-                    return self.full_match
-                elif n == 1:
-                    return self.primary_expr
-                elif n == 2:
-                    return self.fallback_val
-                else:
-                    raise IndexError("No such group")
-
-            def start(self) -> int:
-                return self.start_pos
-
-            def end(self) -> int:
-                return self.end_pos
-
+        # Create a match object for infix syntax
         full_match = line[expr_start:fallback_end]
-        match_obj = WelpMatch(full_match, expr_before, fallback_value, expr_start, fallback_end)
+        match_obj = _WelpMatch(full_match, expr_before, fallback_value, expr_start, fallback_end)
 
         constructs.append(("welp", match_obj, expr_start, fallback_end))
 

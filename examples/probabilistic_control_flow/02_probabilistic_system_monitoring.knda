@@ -47,8 +47,8 @@ class SystemMetrics:
         return self.get_health_score() >= threshold
 
     def __str__(self):
-        return f"CPU: {self.cpu_usage:.1f}%, Mem: {self.memory_usage:.1f}%, " \\
-               f"Disk: {self.disk_usage:.1f}%, Latency: {self.network_latency:.1f}ms, " \\
+        return f"CPU: {self.cpu_usage:.1f}%, Mem: {self.memory_usage:.1f}%, " \
+               f"Disk: {self.disk_usage:.1f}%, Latency: {self.network_latency:.1f}ms, " \
                f"Errors: {self.error_rate:.3f}, Health: {self.get_health_score():.3f}"
 
 def log_metrics(metrics, alert_sent=False):

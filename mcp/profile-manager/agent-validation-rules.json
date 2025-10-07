@@ -1,0 +1,167 @@
+{
+  "kinda-pm": {
+    "role": "Project Manager",
+    "required_checks": {
+      "new_issues": [
+        "Requirements are clear and complete",
+        "Acceptance criteria are measurable",
+        "Priority is justified",
+        "Dependencies are identified",
+        "Effort estimate is reasonable"
+      ],
+      "assignments": [
+        "Assignment package is comprehensive",
+        "Agent has all necessary context",
+        "Timeline expectations are clear",
+        "Success criteria are defined",
+        "Tracking is updated"
+      ],
+      "pr_merges": [
+        "All merge criteria met",
+        "Correct target branch confirmed",
+        "Commit message is clear",
+        "Related issues will be closed",
+        "Project tracking will be updated"
+      ],
+      "status_updates": [
+        "Information is current and accurate",
+        "Progress is measured objectively",
+        "Blockers are clearly identified",
+        "Next steps are defined",
+        "Stakeholders are informed"
+      ]
+    }
+  },
+  "kinda-architect": {
+    "role": "System Architect",
+    "required_checks": {
+      "before_handoff": [
+        "Design supports probabilistic behavior appropriately",
+        "Interfaces are clearly defined with contracts",
+        "Error handling strategy is specified",
+        "Testing approach is documented",
+        "Integration points are identified",
+        "Performance implications are considered",
+        "Documentation is complete and accurate",
+        "Design aligns with existing architecture patterns"
+      ]
+    }
+  },
+  "kinda-coder": {
+    "role": "Implementation Specialist",
+    "startup_sequence": [
+      "Navigate to project directory: cd ~/kinda-lang",
+      "Configure git identity",
+      "Setup GitHub authentication: export GITHUB_TOKEN=$(cat ~/.config/coder-token.txt)",
+      "Sync with dev branch: git fetch origin dev && git merge origin/dev",
+      "Load context from architect specifications",
+      "Validate environment (venv active, dependencies installed)",
+      "Report status and current work"
+    ],
+    "required_checks": {
+      "before_commit": [
+        "Code formatted with black .",
+        "Type checking passed with mypy .",
+        "All tests passing with pytest tests/ -v",
+        "Local CI validation passed: bash ~/kinda-lang-agents/infrastructure/scripts/ci-local.sh"
+      ],
+      "before_pr": [
+        "Final sync with dev: git fetch origin dev && git merge origin/dev",
+        "All pre-commit checks passed",
+        "PR targets dev branch (NEVER main)",
+        "PR includes summary, issue reference, implementation decisions, test coverage",
+        "No runtime files committed (kinda/langs/python/runtime/)"
+      ],
+      "task_complete": [
+        "Specification requirements fully implemented",
+        "All tests written and passing",
+        "Code formatted and type-checked",
+        "Local CI validation passed",
+        "No runtime files in commit",
+        "Feature branch synced with dev",
+        "PR created with proper reviewers",
+        "Documentation updated appropriately"
+      ]
+    }
+  },
+  "kinda-tester": {
+    "role": "Quality Assurance Tester",
+    "pre_analysis": [
+      "Read Epic Specifications (.github/EPIC_*.md)",
+      "Read ROADMAP.md to understand scope",
+      "Inventory existing constructs in kinda/grammar/python/constructs.py",
+      "Check existing tests in tests/python/",
+      "Validate scope - only test features that exist"
+    ],
+    "required_checks": {
+      "before_handoff": [
+        "Code quality: black . --check && black . && mypy .",
+        "Local testing: pytest tests/ -v (all must pass)",
+        "New tests validated individually",
+        "All changes committed with detailed message",
+        "Full CI validation PASSED: bash ~/kinda-lang-agents/infrastructure/scripts/ci-local.sh",
+        "Changes pushed to remote",
+        "GitHub CI verified"
+      ]
+    }
+  },
+  "kinda-pr-reviewer": {
+    "role": "Code Reviewer",
+    "startup_sequence": [
+      "Navigate to project directory: cd ~/kinda-lang",
+      "Setup GitHub authentication with REVIEWER token: export GITHUB_TOKEN=$(cat ~/.config/reviewer-token.txt)",
+      "Verify authentication: gh auth status",
+      "Verify git identity",
+      "Report which PR being reviewed"
+    ],
+    "critical_enforcement": {
+      "reviewer_token_required": {
+        "description": "MUST use reviewer token for GitHub operations",
+        "validation_command": "gh auth status | grep -q 'Logged in to github.com' && echo $GITHUB_TOKEN | grep -q '.'",
+        "failure_message": "ERROR: Reviewer token not set. Run: export GITHUB_TOKEN=$(cat ~/.config/reviewer-token.txt)",
+        "when_to_check": "Before ANY gh pr review commands"
+      },
+      "approval_command_format": {
+        "description": "Approvals MUST use gh pr review --approve to be recorded in GitHub",
+        "required_command": "gh pr review <PR-number> --approve --body \"<approval message>\"",
+        "forbidden": "Comments without --approve flag (will not record reviewDecision)",
+        "validation": "After approval, check: gh pr view <PR-number> --json reviewDecision shows APPROVED"
+      }
+    },
+    "absolute_rejection_criteria": [
+      "MERGE CONFLICTS - PR must merge cleanly",
+      "FAILING TESTS - ALL tests must pass",
+      "CI FAILURES - Complete CI validation required",
+      "FORMATTING ISSUES - Black formatting check must pass",
+      "TYPE ERRORS - MyPy must pass without errors",
+      "COVERAGE BELOW 75% - Minimum test coverage required",
+      "DIRECT MAIN COMMITS - Reject PR from main/dev to main",
+      "SECURITY VULNERABILITIES - No known issues allowed",
+      "MISSING REQUIREMENTS - All specs must be implemented",
+      "INADEQUATE DOCUMENTATION - Changes must be documented"
+    ],
+    "review_phases": {
+      "phase_0": "PR existence check: gh pr view <PR-number>",
+      "phase_1": "Initial validation: target branch check, merge conflict check",
+      "phase_2": "Code quality: black --check, mypy, CI validation",
+      "phase_3": "Test validation: pytest with coverage >=75%",
+      "phase_4": "Requirements & security review",
+      "phase_5": "Code quality deep dive",
+      "phase_6": "Documentation review"
+    },
+    "required_checks": {
+      "before_approval": [
+        "No merge conflicts",
+        "All tests passing",
+        "CI validation passed",
+        "Black formatting passed",
+        "MyPy typing passed",
+        "Coverage >= 75%",
+        "No security issues",
+        "All requirements met",
+        "Documentation adequate",
+        "Code quality acceptable"
+      ]
+    }
+  }
+}
