@@ -524,6 +524,19 @@ async function checkAgentPolicies(agentRole: string, violations: string[]) {
         );
       }
 
+      // Check for incorrectly placed .knda files (PREVENTS CI BREAKAGE)
+      const rootKndaFiles = files.filter(line => {
+        const file = line.substring(3);
+        return file.match(/^[^\/]+\.knda$/) && file.startsWith('test_');
+      });
+
+      if (rootKndaFiles.length > 0) {
+        violations.push(
+          'CODER POLICY VIOLATION: test_*.knda files found in project root: ' + rootKndaFiles.join(', ') + '. ' +
+          'These break demo validation CI. Move to tests/fixtures/demos/ instead.'
+        );
+      }
+
       // CRITICAL: Check that PR was created (MANDATORY for Coder)
       const { stdout: currentBranch } = await execAsync('git branch --show-current', {
         cwd: CONFIG.workingDir,
